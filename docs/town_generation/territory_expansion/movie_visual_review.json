@@ -1,0 +1,251 @@
+{
+  "schema": "living_town.expansion_agent_movie_visual_review.v1",
+  "status": "PASS",
+  "native_sha256": "1d0434d87063165a5e9e04312a88d13426375b9a3f80d7ba288bfdd164f18a82",
+  "reviewed_utc": "2026-10-20T15:56:57.120910+00:00",
+  "movie": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\expanded_town_architectural_tour.mp4",
+    "bytes": 300376404,
+    "sha256": "8b4933989628ea7c0f2db10f570ebc3bcd91d66f4d008b2f508ba89aa82bf0de"
+  },
+  "config": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\tour.json",
+    "bytes": 16586,
+    "sha256": "1abaa223fb536b59b2c6067a826b71e2ec82d6faeaba814d5f67172e778da577"
+  },
+  "technical_verification": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\verification_report.json",
+    "bytes": 28348,
+    "sha256": "5161dd5c2f5987e839db88ee2f8abfdabbb8792e94cc7b9500f9fc85f2fc1699"
+  },
+  "capture_guard": {
+    "schema": "living_town.recorder_guard.v1",
+    "status": "PASS",
+    "command": [
+      "C:/Users/yp/AppData/Local/Programs/Godot/4.6.2-stable/Godot_v4.6.2-stable_win64.exe",
+      "--path",
+      "tools/town_generation/godot_viewer",
+      "--rendering-method",
+      "gl_compatibility",
+      "--fixed-fps",
+      "18",
+      "--disable-vsync",
+      "--windowed",
+      "--resolution",
+      "1280x800",
+      "--write-movie",
+      "D:/Dev/2026-10-07/LivingTown_Territory_v6_capture.avi",
+      "--",
+      "--config=C:/Users/yp/.codex/worktrees/114e/living-town/build/town_generation/territory_v6/inspection/tour.json",
+      "--movie"
+    ],
+    "pid": 1456,
+    "exit_code": 0,
+    "errors": [],
+    "elapsed_seconds": 829.953,
+    "config": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\tour.json",
+      "bytes": 16586,
+      "sha256": "1abaa223fb536b59b2c6067a826b71e2ec82d6faeaba814d5f67172e778da577"
+    },
+    "sources": {
+      "project": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\godot_viewer\\project.godot",
+        "bytes": 728,
+        "sha256": "e071b36328721a24d5c760f8e5f6aacc5c9d98e7d6bb9590b007a704d5673b7f"
+      },
+      "script": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\godot_viewer\\main.gd",
+        "bytes": 14132,
+        "sha256": "4a9775ce30d63f0e99a6631932811a32717971bc848154196ec7e7c108cdad9c"
+      }
+    },
+    "raw_path": "D:\\Dev\\2026-10-07\\LivingTown_Territory_v6_capture.avi",
+    "maximum_raw_bytes_observed": 1178809764,
+    "limits": {
+      "raw_bytes": 3900000000,
+      "disk_reserve_bytes": 2000000000,
+      "overall_seconds": 7200,
+      "post_pass_shutdown_seconds": 15.0
+    },
+    "scope": "Process/size/receipt guard only. Complete raw video timing and decoding require separate media verification.",
+    "consumer_report": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\tour_report.json",
+      "bytes": 28464,
+      "sha256": "a9757fd2f193855d76c04ac557f89281db19a4eac8aa47387ef2ed1b54369c00"
+    }
+  },
+  "reviewed_frames": [
+    {
+      "time_seconds": 6,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_01.png",
+        "bytes": 386368,
+        "sha256": "e34e717ee7fe1b711365c11fe58718f1844a38e7304d276d1e073ac1a911395a"
+      },
+      "scene_roi_stddev": 49.39773643110711
+    },
+    {
+      "time_seconds": 30,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_02.png",
+        "bytes": 380606,
+        "sha256": "6559fef6bd062b8a6461de0d952cc90b5d8a4c1df210d1005eeea97324739829"
+      },
+      "scene_roi_stddev": 49.27955516562375
+    },
+    {
+      "time_seconds": 46,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_03.png",
+        "bytes": 425725,
+        "sha256": "267d8af8ed7ab0431b1596a07ecc416eba99eee2de1bdcc07b5f59ac881883e8"
+      },
+      "scene_roi_stddev": 49.40828888224723
+    },
+    {
+      "time_seconds": 70,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_04.png",
+        "bytes": 422475,
+        "sha256": "10a5a398f34ee207204d03a10013670929369048e890bd0bd6284d1564cf3393"
+      },
+      "scene_roi_stddev": 47.353346763976305
+    },
+    {
+      "time_seconds": 86,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_05.png",
+        "bytes": 507671,
+        "sha256": "a38a912b8d094335f2b9e17cbbbdced122f9ed627264c250e4431d21e80607a4"
+      },
+      "scene_roi_stddev": 47.328270501991035
+    },
+    {
+      "time_seconds": 110,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_06.png",
+        "bytes": 484637,
+        "sha256": "8d4bcc0e0557aea68e99736b7840d5e12cfe1c3456414352461fc24c80d43608"
+      },
+      "scene_roi_stddev": 47.682443012364956
+    },
+    {
+      "time_seconds": 126,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_07.png",
+        "bytes": 476659,
+        "sha256": "5be151ac0d586f4750daf80bdeeb440af662b055527fa84851b59563dbe843b3"
+      },
+      "scene_roi_stddev": 46.57495620059026
+    },
+    {
+      "time_seconds": 150,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_08.png",
+        "bytes": 462383,
+        "sha256": "757936b9b0f648509af318b40aa1596c92630fb87c302f2ca23fac6733887d64"
+      },
+      "scene_roi_stddev": 46.352192232785
+    },
+    {
+      "time_seconds": 166,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_09.png",
+        "bytes": 488387,
+        "sha256": "ff3b80eb67c41790d31ad885d84ab86120720f176a8f9963197f3b7996784848"
+      },
+      "scene_roi_stddev": 44.808548417296784
+    },
+    {
+      "time_seconds": 190,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_10.png",
+        "bytes": 484556,
+        "sha256": "8ab5eae730430bd4a82bd73e07e9a1e1f554bbda74c2dbedabb72056099b88d7"
+      },
+      "scene_roi_stddev": 45.674667161123104
+    },
+    {
+      "time_seconds": 206,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_11.png",
+        "bytes": 449014,
+        "sha256": "2f57ca20ae95d3a67866dd5d4ab5aee3dcbd556a1c3ce1118762c0573b6c5386"
+      },
+      "scene_roi_stddev": 47.595870453046736
+    },
+    {
+      "time_seconds": 230,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_12.png",
+        "bytes": 451851,
+        "sha256": "9381dbefafebe417c2197e962e9f5ca6a9dee9c426eadfe64f8d9d565091bb92"
+      },
+      "scene_roi_stddev": 47.03088915060957
+    },
+    {
+      "time_seconds": 246,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_13.png",
+        "bytes": 307504,
+        "sha256": "22a4842e3c3d23a39d4f9ad3acb31e42451f63825a3dfa9a503ff6356884cd6e"
+      },
+      "scene_roi_stddev": 62.85720330076648
+    },
+    {
+      "time_seconds": 270,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_14.png",
+        "bytes": 307089,
+        "sha256": "fe85d96133e9d18fa4e084fc2f76aecaadb3f8dba3aadbfabf27f07e07f33b0c"
+      },
+      "scene_roi_stddev": 63.413455176933645
+    },
+    {
+      "time_seconds": 286,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_15.png",
+        "bytes": 367184,
+        "sha256": "c8ebace2f565857413f6cf1303c5787cc18e919f63dc62e2d602a3c9d01e99f6"
+      },
+      "scene_roi_stddev": 68.29884827214099
+    },
+    {
+      "time_seconds": 310,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_16.png",
+        "bytes": 366451,
+        "sha256": "cd4fbedc90801a46cdebe1804c71041d50291f3fa03efd3c70c9c5e924631b51"
+      },
+      "scene_roi_stddev": 68.085267688163
+    },
+    {
+      "time_seconds": 326,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_17.png",
+        "bytes": 237003,
+        "sha256": "dba8757d38749c5dd86d4cc0663d023691884f06c1297f6e965ed2fd717faf50"
+      },
+      "scene_roi_stddev": 46.04926044551677
+    },
+    {
+      "time_seconds": 350,
+      "file": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\qa_frames\\frame_18.png",
+        "bytes": 239514,
+        "sha256": "eaf748190f9191247fe28cf73ddd9b712ba00f3de8099aa442e98d07ca7e0543"
+      },
+      "scene_roi_stddev": 46.406777541829534
+    }
+  ],
+  "scope": "Agent visual inspection of eighteen actual decoded final MP4 samples, at6s and30s in each chapter. Complete decoding, timing, motion and audio are separate technical gates; this is not a claim of continuous human viewing or human listening.",
+  "findings": [
+    "All five irregular neighborhoods are legible within the retained coast and woodland; sampled camera positions are unobstructed.",
+    "The pale plaster grain/weather variation, granite, slate, oak and fascia lettering remain visible; range conversion preserves the reviewed color balance.",
+    "The cafe cutaway retains its stairs, ground-floor room walls, detailed counter and seating; roofs and upper furnishings do not obscure the room.",
+    "The sampled foundation/sidewalk views show the reviewed terrain contact, entrance steps and flower planting.",
+    "Chapter labels and sampled two-line subtitles fit the viewport/caption band without overlap."
+  ],
+  "human_listening_status": "PENDING; technical AAC decoding and nonclipping checks passed."
+}

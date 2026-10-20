@@ -1,0 +1,65 @@
+{
+  "schema": "living_town.portable_delivery_review.v1",
+  "status": "PASS",
+  "engine_launched": false,
+  "helper": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\territory_generation\\verify_portable_delivery.py",
+    "sha256": "b139c2f2d5848cda40d32b84a0c3afd8ad8eff602ec985a026728e83f7d9dfd4"
+  },
+  "destination": "D:\\Dev\\2026-10-07\\LivingTown_Territory_Expansion_Portable_Check_2026-10-20",
+  "archive": {
+    "path": "D:\\Dev\\2026-10-07\\LivingTown_Territory_Expansion_2026-10-20\\LivingTown_Territory_Expansion_v1.zip",
+    "bytes": 1367667202,
+    "sha256": "a169bc0e53d8e48d81f31b7cc6e4d52d5c6c086344edd8fa70b6714acd83ad15"
+  },
+  "package_report": {
+    "path": "D:\\Dev\\2026-10-07\\LivingTown_Territory_Expansion_2026-10-20\\package_report.json",
+    "sha256": "8b5a6eb0694c45b766bda1d8b37970b54b1bf8a3f011b428ecc40fd2a0f750f7"
+  },
+  "bundle_manifest_sha256": "16189888ceb0a142a36f63f855d4280839642b7534cd687b7a0bba0bebfbac03",
+  "archive_members": 190,
+  "source_helpers": {
+    "tools/town_generation/prepare_inspection.py": {
+      "current_path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\prepare_inspection.py",
+      "sha256": "0336ae97d9ce34979526f29962fd590c865117e1f23ccd38836ec6f74ea0b8b6",
+      "extracted_path": "D:\\Dev\\2026-10-07\\LivingTown_Territory_Expansion_Portable_Check_2026-10-20\\tools\\town_generation\\prepare_inspection.py"
+    },
+    "tools/town_generation/verify_expansion.py": {
+      "current_path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\verify_expansion.py",
+      "sha256": "31bf9a63298ea377777021c761edf5e2234fa7f8c59a3a23ab249ae7b5e9f81c",
+      "extracted_path": "D:\\Dev\\2026-10-07\\LivingTown_Territory_Expansion_Portable_Check_2026-10-20\\tools\\town_generation\\verify_expansion.py"
+    },
+    "tools/town_generation/package_expansion.py": {
+      "current_path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_generation\\package_expansion.py",
+      "sha256": "ed791a250777a4e0a00f20e65c9a91be8a34b7462be2d3dd25f631483cc12aba",
+      "extracted_path": "D:\\Dev\\2026-10-07\\LivingTown_Territory_Expansion_Portable_Check_2026-10-20\\tools\\town_generation\\package_expansion.py"
+    }
+  },
+  "plan_sha256": "a43dcde7a7d0f8d66573dbf53c1be027d32aa7d2a25175f543c2caf69c7ad205",
+  "portable_plan_source_bindings": [
+    "masterplan.json",
+    "landscape_plan.json",
+    "terrain_plan.json",
+    "reserve_plan.json",
+    "tools/reserve_plan.py",
+    "tools/terrain_profile.py"
+  ],
+  "historical_payloads_unchanged": true,
+  "local_inspection": {
+    "path": "D:\\Dev\\2026-10-07\\LivingTown_Territory_Expansion_Portable_Check_2026-10-20\\portable_verification\\local_inspection.json",
+    "sha256": "6e2464bbfb6a1fe8c2ca68d35ff0c96b23237b56b272f786d12c15bbd1b0bce6",
+    "assets": 8,
+    "cameras": 9
+  },
+  "offline_review": {
+    "path": "D:\\Dev\\2026-10-07\\LivingTown_Territory_Expansion_Portable_Check_2026-10-20\\portable_verification\\offline_review.json",
+    "sha256": "49d4be718dfba9ab85685e056d227aefd9c6be5388ad5ca599869d4e22316098",
+    "status": "PASS",
+    "building_count": 81,
+    "room_count": 929,
+    "baseline": "D:\\Dev\\2026-10-07\\LivingTown_Territory_Expansion_Portable_Check_2026-10-20\\art\\living_town\\living_town_complete.blend"
+  },
+  "offline_report_routing": "Only the verifier's final offline_review.json write is routed to the fresh portable_verification directory; all other writes fail.",
+  "scope": "Archive/extraction identities, portable sources, regenerated local inspection paths and offline GLB/PBR ownership verification. No engine launch, new native rebuild, physics/navigation, or runtime portability claim.",
+  "elapsed_seconds": 11.688
+}

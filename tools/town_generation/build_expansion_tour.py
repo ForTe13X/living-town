@@ -301,13 +301,13 @@ def phase_compose(args):
     metadata = args.output / "chapters.ffmetadata"
     metadata.write_text(metadata_text(config), encoding="utf-8")
     graph = args.output / "composition_filters.txt"
-    graph.write_text(f"[0:v]{timeline['filter']},pad=1280:896:0:0:color=0x111b1c,subtitles=filename=narration.ass[v]\n", encoding="utf-8")
+    graph.write_text(f"[0:v]{timeline['filter']},scale=out_range=tv,format=yuv420p,setparams=range=limited,pad=1280:896:0:0:color=0x111b1c,subtitles=filename=narration.ass[v]\n", encoding="utf-8")
     movie = args.output / MOVIE_NAME
     command = [args.ffmpeg, "-y", "-hide_banner", "-threads", "4", "-i", str(args.raw), "-i", str(normalized),
                "-f", "ffmetadata", "-i", str(metadata), "-filter_complex_threads", "2", "-filter_complex_script", str(graph),
                "-map", "[v]", "-map", "1:a:0", "-map_metadata", "2", "-map_chapters", "2",
                "-frames:v", str(FRAMES), "-t", str(DURATION), "-c:v", "libx264", "-threads:v", "6",
-               "-preset", "fast", "-crf", "20", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k",
+               "-preset", "fast", "-crf", "20", "-pix_fmt", "yuv420p", "-color_range", "tv", "-c:a", "aac", "-b:a", "160k",
                "-ar", str(SAMPLE_RATE), "-movflags", "+faststart", str(movie)]
     H.run(command, args.output / "logs/compose.log", cwd=args.output)
     gif = make_gif(args, movie)

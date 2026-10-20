@@ -1,0 +1,249 @@
+{
+  "schema": "living_town.territory_acceptance.v1",
+  "status": "PASS",
+  "seed": 20261020,
+  "scope": "Architectural asset expansion; actual independent Godot glTF consumer. Resident simulation, navigation, physics and real-time performance integration are separate.",
+  "added": {
+    "building_count": 81,
+    "district_count": 5,
+    "floor_count": 153,
+    "room_count": 929,
+    "furnishing_count": 1174,
+    "window_aperture_count": 1283
+  },
+  "retained_urban_buildings": 49,
+  "retained_reserve_buildings": 21,
+  "scale": {
+    "original_urban_bounds_xyxy_m": [
+      -58.5,
+      -44.302,
+      53.0,
+      52.0
+    ],
+    "expanded_urban_bounds_xyxy_m": [
+      -230.608,
+      -132.761,
+      53.0,
+      155.059
+    ],
+    "urban_convex_hull_area_ratio": 6.32
+  },
+  "baseline_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+  "baseline_unchanged": true,
+  "expanded_native_sha256": "1d0434d87063165a5e9e04312a88d13426375b9a3f80d7ba288bfdd164f18a82",
+  "layout": {
+    "connected": true,
+    "building_overlaps": 0,
+    "blocked_entrances": 0,
+    "maximum_designed_centerline_grade": 0.0799914
+  },
+  "native": {
+    "status": "PASS",
+    "objects": 32922,
+    "shared_mesh_references": 2180,
+    "packed_images": 55,
+    "actual_doorway_sweeps": {
+      "buildings": 81,
+      "width_m": 0.5,
+      "heights_m": [
+        0.1,
+        0.9,
+        1.7
+      ],
+      "blocked": []
+    },
+    "road_width_failures": 0
+  },
+  "exports": {
+    "chunks": 7,
+    "shared_mesh_references": 2166
+  },
+  "consumer": {
+    "stills": 9,
+    "movie_frames": 6480,
+    "status": "PASS",
+    "config_sha256": "1abaa223fb536b59b2c6067a826b71e2ec82d6faeaba814d5f67172e778da577"
+  },
+  "media": {
+    "seconds": 360,
+    "fps": 18,
+    "mp4": "https://github.com/ForTe13X/living-town/releases/download/town-territory-2026-10-20/expanded_town_architectural_tour.mp4",
+    "gif_sha256": "d9327e68f594acfd36cc78ca51da722c2062bb75e157d95d95945dc51db7f00c",
+    "audio_acceptance": "Technical checks passed; human listening remains pending."
+  },
+  "archive": {
+    "path": "LivingTown_Territory_Expansion_v1.zip",
+    "bytes": 1367667202,
+    "sha256": "a169bc0e53d8e48d81f31b7cc6e4d52d5c6c086344edd8fa70b6714acd83ad15",
+    "url": "https://github.com/ForTe13X/living-town/releases/download/town-territory-2026-10-20/LivingTown_Territory_Expansion_v1.zip"
+  },
+  "readme_showcase_preservation": [
+    {
+      "file": "README.md",
+      "original_showcase_prefix_preserved": true,
+      "normalized_prefix_sha256": "552a01a57a928f1d5726c867f70fedbc5b027f050901b6558946c3712cbf91f3"
+    },
+    {
+      "file": "README_EN.md",
+      "original_showcase_prefix_preserved": true,
+      "normalized_prefix_sha256": "b2e7856e9ef2cf983374b8067fe0b2f9398ec22cb7651b9844d0ec86830e7eca"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "territory_map.png",
+      "bytes": 171055,
+      "sha256": "606efc8ca9a9773185d4484f646c6c4942df0c3882f69b3555c85f7d3dce4880"
+    },
+    {
+      "path": "generation_run.json",
+      "bytes": 3803,
+      "sha256": "6818121181b159e0fc02ce941385ff12f37e697e4f5fcb6cccbf8c0f9047a2f2"
+    },
+    {
+      "path": "offline_review.json",
+      "bytes": 8727,
+      "sha256": "49d4be718dfba9ab85685e056d227aefd9c6be5388ad5ca599869d4e22316098"
+    },
+    {
+      "path": "native_review.json",
+      "bytes": 152137,
+      "sha256": "0455d30e0af6856f3cbb22d9a7bac5265d296bc7ca5950d31377b43f9c7a3b3d"
+    },
+    {
+      "path": "interior_preflight.json",
+      "bytes": 989971,
+      "sha256": "3155f6d8d7b85da05455ca192c28f6dcbde92981e4437ce7fc8703dd6d9380b4"
+    },
+    {
+      "path": "actual_interior_audit.json",
+      "bytes": 1353819,
+      "sha256": "e69c4c97278b04cbce588645c3037ab9a6345c8568ce8c2f6d19398418ea00ce"
+    },
+    {
+      "path": "render_manifest.json",
+      "bytes": 3560,
+      "sha256": "59cbfc1b53a1f60c5158822d78aa2c287b43edfbf031ad9600d7757b73c30859"
+    },
+    {
+      "path": "visual_review.json",
+      "bytes": 2668,
+      "sha256": "6dcb49628ef7bd905ac9beecd6759b015b575ded0e79f9116fa43d59b89fcc2f"
+    },
+    {
+      "path": "movie_visual_review.json",
+      "bytes": 11039,
+      "sha256": "a1cf6fea07c4c0db7e50ed41ead361fbdb8f16f9528f51e2a8074559fa6b5245"
+    },
+    {
+      "path": "avi_capture_guard.json",
+      "bytes": 2170,
+      "sha256": "729d54b7d6e30e38a257bc5934312c6e7719b7677d40147ab9fd55c8e9e5e033"
+    },
+    {
+      "path": "consumer_stills_report.json",
+      "bytes": 36143,
+      "sha256": "e698e448ce9a83587acb32419eb1a8fbe67dbb3d8ac4186f77ee60ad9c42aa77"
+    },
+    {
+      "path": "consumer_movie_report.json",
+      "bytes": 28464,
+      "sha256": "a9757fd2f193855d76c04ac557f89281db19a4eac8aa47387ef2ed1b54369c00"
+    },
+    {
+      "path": "voice_report.json",
+      "bytes": 86037,
+      "sha256": "e672f20ce5df078db6c037b53aba361967e30e007b17175b836d655a10f56095"
+    },
+    {
+      "path": "composition_report.json",
+      "bytes": 10148,
+      "sha256": "1452ee927986a773969968fe2ddd696162db2c13b328950fef840defdfa5d366"
+    },
+    {
+      "path": "tour_verification.json",
+      "bytes": 28348,
+      "sha256": "5161dd5c2f5987e839db88ee2f8abfdabbb8792e94cc7b9500f9fc85f2fc1699"
+    },
+    {
+      "path": "package_report.json",
+      "bytes": 34271,
+      "sha256": "8b5a6eb0694c45b766bda1d8b37970b54b1bf8a3f011b428ecc40fd2a0f750f7"
+    },
+    {
+      "path": "bundle_manifest.json",
+      "bytes": 66043,
+      "sha256": "16189888ceb0a142a36f63f855d4280839642b7534cd687b7a0bba0bebfbac03"
+    },
+    {
+      "path": "portable_delivery_review.json",
+      "bytes": 3767,
+      "sha256": "55456849ad2244e0d759a30ad95a9ff5a080636fb56179d83a86e1039a6d7905"
+    },
+    {
+      "path": "upstream_worker_result.json",
+      "bytes": 59577,
+      "sha256": "5c9e36fd920fb5cf797b81aa902252e20c8656dea123ff95ab3ddb7c7ef351b1"
+    },
+    {
+      "path": "upstream_environment_audit.json",
+      "bytes": 57184,
+      "sha256": "4fb31a80808c98c0c602a7e1c398e51476294f72d3236dfb650e19e12cd100df"
+    },
+    {
+      "path": "expansion_overview.png",
+      "bytes": 2540135,
+      "sha256": "a4994c7601e7c3ed85a9acdbb1929b7cfd5fd48015c58c4416d4b1a4842b189e"
+    },
+    {
+      "path": "expansion_street.png",
+      "bytes": 1872880,
+      "sha256": "37d2c2162fe2b677e514f6803588e853936fbc8b507d24865af733ed3058108a"
+    },
+    {
+      "path": "expansion_interior.png",
+      "bytes": 2157225,
+      "sha256": "959bf1c4a049e55ef5d7e032a428719893d2c86cc616e7ed0df893fe11b5f552"
+    },
+    {
+      "path": "expansion_terrain.png",
+      "bytes": 1824958,
+      "sha256": "b331683047e6d1b5a77a7bf5a13d42e8d26f4afb8555c1d365e88df52296e6c5"
+    },
+    {
+      "path": "terrain_review/render_manifest.json",
+      "bytes": 3191,
+      "sha256": "d3a72771c6a7bf40cbcd555593f8f876184c6dd48047845b8d9e72a1d3e37509"
+    },
+    {
+      "path": "terrain_review/expansion_overview.png",
+      "bytes": 1017578,
+      "sha256": "8298877e632d23c7e2c5047520e6514bac0ed88790c9da906a1a2f59b6967bc0"
+    },
+    {
+      "path": "terrain_review/expansion_street.png",
+      "bytes": 952731,
+      "sha256": "445846e8a950d6f636ad011aa12bf1eea0a642a9288c0a0dcb5bd7f3cff17735"
+    },
+    {
+      "path": "terrain_review/expansion_terrain.png",
+      "bytes": 839002,
+      "sha256": "cdbd54cbc20ebbacaa35a456cd16d7c2ab84af257257e978f0e64c156c049bb5"
+    },
+    {
+      "path": "retaining_review_final/render_manifest.json",
+      "bytes": 914,
+      "sha256": "376f6daf80fbf9e73dbb7f93041593a2d773fda913908cb62093dbb8e200cd90"
+    },
+    {
+      "path": "retaining_review_final/expansion_overview.png",
+      "bytes": 981939,
+      "sha256": "436f95d998dd319160085abdf48a8b742b30af0ec064e042a202edbb4f2a472c"
+    },
+    {
+      "path": "godot_import_contact_sheet.png",
+      "bytes": 1880813,
+      "sha256": "b42b2a3419c30196f082c8b6e255a4d0c7f06745819450ed97fcaabb0d4c07ed"
+    }
+  ]
+}

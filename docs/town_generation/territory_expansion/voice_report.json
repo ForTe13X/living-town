@@ -1,0 +1,3264 @@
+{
+  "schema": "living_town.expansion_tour_voice.v1",
+  "status": "PASS",
+  "generated_utc": "2026-10-20T15:53:02.201404+00:00",
+  "config": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\inspection\\tour.json",
+    "bytes": 16586,
+    "sha256": "1abaa223fb536b59b2c6067a826b71e2ec82d6faeaba814d5f67172e778da577"
+  },
+  "scene_manifest": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6\\scene\\expansion_manifest.json",
+    "bytes": 1065803,
+    "sha256": "d92e4cc492da879c2977bd4b00d316b1d3987bf65a2dbfe1a74d75ed948462d5"
+  },
+  "script": {
+    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\narration_script.json",
+    "bytes": 6455,
+    "sha256": "f37b3706e3c7925769b76be64de9023c57a0b7cf1cc7aff92c1860b878413595"
+  },
+  "voice": "en-US-AriaNeural",
+  "rate": "-5%",
+  "provenance": {
+    "edge_tts_version": "7.2.8",
+    "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+    "shim_applied": true,
+    "shim_scope": "process-local edge_tts.communicate.WSS_URL assignment only",
+    "upstream_reference": "https://github.com/rany2/edge-tts/pull/491",
+    "reference_reviewed_date": "2026-10-12",
+    "installed_library_sources_modified": false,
+    "proxy_environment_used": false
+  },
+  "duration_seconds": 360,
+  "takes": [
+    {
+      "id": "compound_overview",
+      "start": 1.0,
+      "end": 36.0,
+      "duration_seconds": 28.968,
+      "cached": true,
+      "request_hash": "7847ec308f5ca351ddaa00f1d65a88309dfff24b927f68c37e6c377619447271",
+      "request": {
+        "text": "Welcome to Living Town. This is an architectural inspection of the actual exported assets running in Godot. The extension adds eighty one furnished buildings across five connected districts. The original coastal town and natural reserve remain part of the setting. Slow camera movements reveal the new territory as a connected place, with irregular streets, planted courts, and buildings that respond to their terrain.",
+        "voice": "en-US-AriaNeural",
+        "rate": "-5%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\7847ec308f5ca351ddaa00f1d65a88309dfff24b927f68c37e6c377619447271.mp3",
+        "bytes": 173808,
+        "sha256": "af6ab323e16ca7df33ef0d2505c79cda712d19288b0b050d0fd6221e921c1f29"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\7847ec308f5ca351ddaa00f1d65a88309dfff24b927f68c37e6c377619447271.words.json",
+        "bytes": 5952,
+        "sha256": "6d25f8cb0cf07546e2e3050e010d1fa67796bd0a2cd7178273db6f888b59f50e"
+      },
+      "words": [
+        {
+          "start": 1.052625,
+          "end": 1.539458,
+          "text": "Welcome "
+        },
+        {
+          "start": 1.552625,
+          "end": 1.671041,
+          "text": "to "
+        },
+        {
+          "start": 1.684208,
+          "end": 2.026333,
+          "text": "Living "
+        },
+        {
+          "start": 2.0394579999999998,
+          "end": 2.5394579999999998,
+          "text": "Town. "
+        },
+        {
+          "start": 3.447375,
+          "end": 3.75,
+          "text": "This "
+        },
+        {
+          "start": 3.763166,
+          "end": 3.868416,
+          "text": "is "
+        },
+        {
+          "start": 3.881583,
+          "end": 4.013166,
+          "text": "an "
+        },
+        {
+          "start": 4.026333,
+          "end": 4.802666,
+          "text": "architectural "
+        },
+        {
+          "start": 4.815791,
+          "end": 5.447374,
+          "text": "inspection "
+        },
+        {
+          "start": 5.460541,
+          "end": 5.552666,
+          "text": "of "
+        },
+        {
+          "start": 5.565791,
+          "end": 5.671041,
+          "text": "the "
+        },
+        {
+          "start": 5.684208,
+          "end": 6.171041,
+          "text": "actual "
+        },
+        {
+          "start": 6.184208,
+          "end": 6.723666,
+          "text": "exported "
+        },
+        {
+          "start": 6.736833,
+          "end": 7.315791,
+          "text": "assets "
+        },
+        {
+          "start": 7.328958,
+          "end": 7.644749,
+          "text": "running "
+        },
+        {
+          "start": 7.657875,
+          "end": 7.75,
+          "text": "in "
+        },
+        {
+          "start": 7.763166,
+          "end": 8.289499,
+          "text": "Godot. "
+        },
+        {
+          "start": 9.210541,
+          "end": 9.368416,
+          "text": "The "
+        },
+        {
+          "start": 9.381583,
+          "end": 10.065790999999999,
+          "text": "extension "
+        },
+        {
+          "start": 10.078958,
+          "end": 10.447374,
+          "text": "adds "
+        },
+        {
+          "start": 10.460541,
+          "end": 10.684206999999999,
+          "text": "eighty "
+        },
+        {
+          "start": 10.697375,
+          "end": 11.0,
+          "text": "one "
+        },
+        {
+          "start": 11.013166,
+          "end": 11.473707,
+          "text": "furnished "
+        },
+        {
+          "start": 11.486833,
+          "end": 11.973666000000001,
+          "text": "buildings "
+        },
+        {
+          "start": 11.986833,
+          "end": 12.394708000000001,
+          "text": "across "
+        },
+        {
+          "start": 12.407875,
+          "end": 12.736833,
+          "text": "five "
+        },
+        {
+          "start": 12.75,
+          "end": 13.210541,
+          "text": "connected "
+        },
+        {
+          "start": 13.223666,
+          "end": 13.973666,
+          "text": "districts. "
+        },
+        {
+          "start": 14.881583,
+          "end": 15.052624,
+          "text": "The "
+        },
+        {
+          "start": 15.065791,
+          "end": 15.592124,
+          "text": "original "
+        },
+        {
+          "start": 15.60525,
+          "end": 16.039458,
+          "text": "coastal "
+        },
+        {
+          "start": 16.052625,
+          "end": 16.421041,
+          "text": "town "
+        },
+        {
+          "start": 16.434207999999998,
+          "end": 16.565790999999997,
+          "text": "and "
+        },
+        {
+          "start": 16.578958,
+          "end": 16.999999,
+          "text": "natural "
+        },
+        {
+          "start": 17.013166,
+          "end": 17.486832,
+          "text": "reserve "
+        },
+        {
+          "start": 17.5,
+          "end": 17.881583,
+          "text": "remain "
+        },
+        {
+          "start": 17.89475,
+          "end": 18.157916,
+          "text": "part "
+        },
+        {
+          "start": 18.171041,
+          "end": 18.249999,
+          "text": "of "
+        },
+        {
+          "start": 18.263166,
+          "end": 18.355290999999998,
+          "text": "the "
+        },
+        {
+          "start": 18.368416,
+          "end": 18.855249,
+          "text": "setting. "
+        },
+        {
+          "start": 19.776333,
+          "end": 20.171083,
+          "text": "Slow "
+        },
+        {
+          "start": 20.184208,
+          "end": 20.605249,
+          "text": "camera "
+        },
+        {
+          "start": 20.618416,
+          "end": 21.157874,
+          "text": "movements "
+        },
+        {
+          "start": 21.171041,
+          "end": 21.592081999999998,
+          "text": "reveal "
+        },
+        {
+          "start": 21.60525,
+          "end": 21.723666,
+          "text": "the "
+        },
+        {
+          "start": 21.736833,
+          "end": 21.960499000000002,
+          "text": "new "
+        },
+        {
+          "start": 21.973666,
+          "end": 22.697332000000003,
+          "text": "territory "
+        },
+        {
+          "start": 22.710541,
+          "end": 22.855290999999998,
+          "text": "as "
+        },
+        {
+          "start": 22.868416,
+          "end": 22.934207,
+          "text": "a "
+        },
+        {
+          "start": 22.947375,
+          "end": 23.421041000000002,
+          "text": "connected "
+        },
+        {
+          "start": 23.434208,
+          "end": 23.934208,
+          "text": "place, "
+        },
+        {
+          "start": 24.263166,
+          "end": 24.434206999999997,
+          "text": "with "
+        },
+        {
+          "start": 24.447375,
+          "end": 24.973708000000002,
+          "text": "irregular "
+        },
+        {
+          "start": 24.986833,
+          "end": 25.486833,
+          "text": "streets, "
+        },
+        {
+          "start": 25.710541,
+          "end": 26.118416,
+          "text": "planted "
+        },
+        {
+          "start": 26.131583,
+          "end": 26.605249,
+          "text": "courts, "
+        },
+        {
+          "start": 26.828958,
+          "end": 27.013166000000002,
+          "text": "and "
+        },
+        {
+          "start": 27.026333,
+          "end": 27.526333,
+          "text": "buildings "
+        },
+        {
+          "start": 27.539458,
+          "end": 27.671041,
+          "text": "that "
+        },
+        {
+          "start": 27.684208,
+          "end": 28.157874000000003,
+          "text": "respond "
+        },
+        {
+          "start": 28.171041,
+          "end": 28.236832,
+          "text": "to "
+        },
+        {
+          "start": 28.25,
+          "end": 28.434208,
+          "text": "their "
+        },
+        {
+          "start": 28.447375,
+          "end": 29.0395,
+          "text": "terrain."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 695232
+    },
+    {
+      "id": "D06",
+      "start": 41.0,
+      "end": 76.0,
+      "duration_seconds": 26.376,
+      "cached": true,
+      "request_hash": "af73a1b3a0c3a8b95db6a08b1fd901c051e220e7ac0e26a495fa578a763d7df5",
+      "request": {
+        "text": "The northern harbor quarter adds ten buildings on the landward side of the coast. Its streets bend between small households, shops, workshops, and cafes. Frontages turn toward their own access streets, while side gaps and rear courts keep the blocks from becoming a rigid grid. Notice how the different roof heights and narrow passages give the settlement a more gradual, believable edge.",
+        "voice": "en-US-AriaNeural",
+        "rate": "-5%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\af73a1b3a0c3a8b95db6a08b1fd901c051e220e7ac0e26a495fa578a763d7df5.mp3",
+        "bytes": 158256,
+        "sha256": "2b27eb411dca00bf74d2e2dd60e79e7337a0d2f951dfbeb5cd984556d05c5daa"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\af73a1b3a0c3a8b95db6a08b1fd901c051e220e7ac0e26a495fa578a763d7df5.words.json",
+        "bytes": 5831,
+        "sha256": "f22c6127061aee3ef71f25ec4abce7985047ce3279d7d7b28235476329af95ed"
+      },
+      "words": [
+        {
+          "start": 41.052625,
+          "end": 41.236833,
+          "text": "The "
+        },
+        {
+          "start": 41.25,
+          "end": 41.631583,
+          "text": "northern "
+        },
+        {
+          "start": 41.64475,
+          "end": 42.026333,
+          "text": "harbor "
+        },
+        {
+          "start": 42.039458,
+          "end": 42.473666,
+          "text": "quarter "
+        },
+        {
+          "start": 42.486833,
+          "end": 42.802623999999994,
+          "text": "adds "
+        },
+        {
+          "start": 42.815791,
+          "end": 43.092124,
+          "text": "ten "
+        },
+        {
+          "start": 43.10525,
+          "end": 43.578916,
+          "text": "buildings "
+        },
+        {
+          "start": 43.592125,
+          "end": 43.684250000000006,
+          "text": "on "
+        },
+        {
+          "start": 43.697375,
+          "end": 43.789500000000004,
+          "text": "the "
+        },
+        {
+          "start": 43.802625,
+          "end": 44.263166,
+          "text": "landward "
+        },
+        {
+          "start": 44.276333,
+          "end": 44.565791000000004,
+          "text": "side "
+        },
+        {
+          "start": 44.578958,
+          "end": 44.657916,
+          "text": "of "
+        },
+        {
+          "start": 44.671041,
+          "end": 44.763166000000005,
+          "text": "the "
+        },
+        {
+          "start": 44.776333,
+          "end": 45.368458000000004,
+          "text": "coast. "
+        },
+        {
+          "start": 46.276333,
+          "end": 46.539499,
+          "text": "Its "
+        },
+        {
+          "start": 46.552625,
+          "end": 46.934208,
+          "text": "streets "
+        },
+        {
+          "start": 46.947375,
+          "end": 47.289500000000004,
+          "text": "bend "
+        },
+        {
+          "start": 47.302625,
+          "end": 47.710499999999996,
+          "text": "between "
+        },
+        {
+          "start": 47.723666,
+          "end": 48.078916,
+          "text": "small "
+        },
+        {
+          "start": 48.092125,
+          "end": 48.763166000000005,
+          "text": "households, "
+        },
+        {
+          "start": 48.947375,
+          "end": 49.513166,
+          "text": "shops, "
+        },
+        {
+          "start": 49.64475,
+          "end": 50.368416,
+          "text": "workshops, "
+        },
+        {
+          "start": 50.5,
+          "end": 50.684208,
+          "text": "and "
+        },
+        {
+          "start": 50.697375,
+          "end": 51.486833000000004,
+          "text": "cafes. "
+        },
+        {
+          "start": 52.407875000000004,
+          "end": 53.092083,
+          "text": "Frontages "
+        },
+        {
+          "start": 53.10525,
+          "end": 53.381583,
+          "text": "turn "
+        },
+        {
+          "start": 53.39475,
+          "end": 53.684208000000005,
+          "text": "toward "
+        },
+        {
+          "start": 53.697375,
+          "end": 53.89475,
+          "text": "their "
+        },
+        {
+          "start": 53.907875000000004,
+          "end": 54.105250000000005,
+          "text": "own "
+        },
+        {
+          "start": 54.118415999999996,
+          "end": 54.565791,
+          "text": "access "
+        },
+        {
+          "start": 54.578958,
+          "end": 55.065791,
+          "text": "streets, "
+        },
+        {
+          "start": 55.35525,
+          "end": 55.539457999999996,
+          "text": "while "
+        },
+        {
+          "start": 55.552625,
+          "end": 55.868415999999996,
+          "text": "side "
+        },
+        {
+          "start": 55.881583,
+          "end": 56.263166,
+          "text": "gaps "
+        },
+        {
+          "start": 56.276333,
+          "end": 56.447374,
+          "text": "and "
+        },
+        {
+          "start": 56.460541,
+          "end": 56.697373999999996,
+          "text": "rear "
+        },
+        {
+          "start": 56.710541,
+          "end": 57.131582,
+          "text": "courts "
+        },
+        {
+          "start": 57.14475,
+          "end": 57.381583,
+          "text": "keep "
+        },
+        {
+          "start": 57.39475,
+          "end": 57.5,
+          "text": "the "
+        },
+        {
+          "start": 57.513166,
+          "end": 57.973707,
+          "text": "blocks "
+        },
+        {
+          "start": 57.986833000000004,
+          "end": 58.118416,
+          "text": "from "
+        },
+        {
+          "start": 58.131583,
+          "end": 58.618415999999996,
+          "text": "becoming "
+        },
+        {
+          "start": 58.631583,
+          "end": 58.697373999999996,
+          "text": "a "
+        },
+        {
+          "start": 58.710541,
+          "end": 59.039499,
+          "text": "rigid "
+        },
+        {
+          "start": 59.052625,
+          "end": 59.513166,
+          "text": "grid. "
+        },
+        {
+          "start": 60.421041,
+          "end": 60.907874,
+          "text": "Notice "
+        },
+        {
+          "start": 60.921041,
+          "end": 61.065791000000004,
+          "text": "how "
+        },
+        {
+          "start": 61.078958,
+          "end": 61.210541,
+          "text": "the "
+        },
+        {
+          "start": 61.223666,
+          "end": 61.605249,
+          "text": "different "
+        },
+        {
+          "start": 61.618415999999996,
+          "end": 61.828956999999996,
+          "text": "roof "
+        },
+        {
+          "start": 61.842124999999996,
+          "end": 62.197374999999994,
+          "text": "heights "
+        },
+        {
+          "start": 62.210541,
+          "end": 62.315791,
+          "text": "and "
+        },
+        {
+          "start": 62.328958,
+          "end": 62.657916,
+          "text": "narrow "
+        },
+        {
+          "start": 62.671041,
+          "end": 63.328916,
+          "text": "passages "
+        },
+        {
+          "start": 63.342124999999996,
+          "end": 63.5395,
+          "text": "give "
+        },
+        {
+          "start": 63.552625,
+          "end": 63.657875,
+          "text": "the "
+        },
+        {
+          "start": 63.671041,
+          "end": 64.197374,
+          "text": "settlement "
+        },
+        {
+          "start": 64.210541,
+          "end": 64.26316600000001,
+          "text": "a "
+        },
+        {
+          "start": 64.276333,
+          "end": 64.49999899999999,
+          "text": "more "
+        },
+        {
+          "start": 64.513166,
+          "end": 65.157916,
+          "text": "gradual, "
+        },
+        {
+          "start": 65.35525,
+          "end": 65.9605,
+          "text": "believable "
+        },
+        {
+          "start": 65.97366600000001,
+          "end": 66.46049900000001,
+          "text": "edge."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 633024
+    },
+    {
+      "id": "D07",
+      "start": 81.0,
+      "end": 116.0,
+      "duration_seconds": 29.544,
+      "cached": true,
+      "request_hash": "b301e64679bbc14b3683ee84c9b9aadb20c513efd9f3759c46acb767892d777e",
+      "request": {
+        "text": "The western market quarter contains seventeen new buildings. A bent market street and smaller workyard lane organize the neighborhood. Shop rooms, repair spaces, dwellings, and planted courts form a mixed setting rather than isolated repeated boxes. The emphasis is on useful relationships: a clear entrance from the street, service space behind the public rooms, and furniture arranged around the activities inside each building.",
+        "voice": "en-US-AriaNeural",
+        "rate": "-5%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\b301e64679bbc14b3683ee84c9b9aadb20c513efd9f3759c46acb767892d777e.mp3",
+        "bytes": 177264,
+        "sha256": "b997bd2cd3626620890836afa157907fcb6addd8c59a134d114c07a392f35c10"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\b301e64679bbc14b3683ee84c9b9aadb20c513efd9f3759c46acb767892d777e.words.json",
+        "bytes": 5963,
+        "sha256": "4b9b8fd38192ac1cf8363d38a8d05dc3f82ba8e81d4fb2a66a17146c86b662fd"
+      },
+      "words": [
+        {
+          "start": 81.052625,
+          "end": 81.236833,
+          "text": "The "
+        },
+        {
+          "start": 81.25,
+          "end": 81.671041,
+          "text": "western "
+        },
+        {
+          "start": 81.684208,
+          "end": 82.078958,
+          "text": "market "
+        },
+        {
+          "start": 82.092125,
+          "end": 82.46054099999999,
+          "text": "quarter "
+        },
+        {
+          "start": 82.473666,
+          "end": 82.98683199999999,
+          "text": "contains "
+        },
+        {
+          "start": 83.0,
+          "end": 83.578958,
+          "text": "seventeen "
+        },
+        {
+          "start": 83.592125,
+          "end": 83.75,
+          "text": "new "
+        },
+        {
+          "start": 83.763166,
+          "end": 84.447374,
+          "text": "buildings. "
+        },
+        {
+          "start": 85.35525,
+          "end": 85.5,
+          "text": "A "
+        },
+        {
+          "start": 85.513166,
+          "end": 85.776332,
+          "text": "bent "
+        },
+        {
+          "start": 85.789458,
+          "end": 86.171041,
+          "text": "market "
+        },
+        {
+          "start": 86.184208,
+          "end": 86.526333,
+          "text": "street "
+        },
+        {
+          "start": 86.539458,
+          "end": 86.671041,
+          "text": "and "
+        },
+        {
+          "start": 86.684208,
+          "end": 87.118416,
+          "text": "smaller "
+        },
+        {
+          "start": 87.131583,
+          "end": 87.605249,
+          "text": "workyard "
+        },
+        {
+          "start": 87.618416,
+          "end": 87.973666,
+          "text": "lane "
+        },
+        {
+          "start": 87.986833,
+          "end": 88.55262400000001,
+          "text": "organize "
+        },
+        {
+          "start": 88.565791,
+          "end": 88.644749,
+          "text": "the "
+        },
+        {
+          "start": 88.657875,
+          "end": 89.381541,
+          "text": "neighborhood. "
+        },
+        {
+          "start": 90.289458,
+          "end": 90.684208,
+          "text": "Shop "
+        },
+        {
+          "start": 90.697375,
+          "end": 91.118416,
+          "text": "rooms, "
+        },
+        {
+          "start": 91.276333,
+          "end": 91.64474899999999,
+          "text": "repair "
+        },
+        {
+          "start": 91.657875,
+          "end": 92.276291,
+          "text": "spaces, "
+        },
+        {
+          "start": 92.513166,
+          "end": 93.118416,
+          "text": "dwellings, "
+        },
+        {
+          "start": 93.263166,
+          "end": 93.434207,
+          "text": "and "
+        },
+        {
+          "start": 93.447375,
+          "end": 93.89474999999999,
+          "text": "planted "
+        },
+        {
+          "start": 93.907875,
+          "end": 94.328916,
+          "text": "courts "
+        },
+        {
+          "start": 94.342125,
+          "end": 94.64475,
+          "text": "form "
+        },
+        {
+          "start": 94.657875,
+          "end": 94.71050000000001,
+          "text": "a "
+        },
+        {
+          "start": 94.723666,
+          "end": 95.09208199999999,
+          "text": "mixed "
+        },
+        {
+          "start": 95.10525,
+          "end": 95.513125,
+          "text": "setting "
+        },
+        {
+          "start": 95.526333,
+          "end": 95.842124,
+          "text": "rather "
+        },
+        {
+          "start": 95.85525,
+          "end": 96.092083,
+          "text": "than "
+        },
+        {
+          "start": 96.10525,
+          "end": 96.697375,
+          "text": "isolated "
+        },
+        {
+          "start": 96.710541,
+          "end": 97.184207,
+          "text": "repeated "
+        },
+        {
+          "start": 97.197375,
+          "end": 97.88158299999999,
+          "text": "boxes. "
+        },
+        {
+          "start": 98.802625,
+          "end": 98.97366600000001,
+          "text": "The "
+        },
+        {
+          "start": 98.986833,
+          "end": 99.61841600000001,
+          "text": "emphasis "
+        },
+        {
+          "start": 99.631583,
+          "end": 99.76316600000001,
+          "text": "is "
+        },
+        {
+          "start": 99.776333,
+          "end": 99.96054099999999,
+          "text": "on "
+        },
+        {
+          "start": 99.97366600000001,
+          "end": 100.421041,
+          "text": "useful "
+        },
+        {
+          "start": 100.434208,
+          "end": 101.315791,
+          "text": "relationships: "
+        },
+        {
+          "start": 101.631583,
+          "end": 101.710541,
+          "text": "a "
+        },
+        {
+          "start": 101.72366600000001,
+          "end": 102.092082,
+          "text": "clear "
+        },
+        {
+          "start": 102.10525,
+          "end": 102.539458,
+          "text": "entrance "
+        },
+        {
+          "start": 102.552625,
+          "end": 102.71050000000001,
+          "text": "from "
+        },
+        {
+          "start": 102.72366600000001,
+          "end": 102.815791,
+          "text": "the "
+        },
+        {
+          "start": 102.828958,
+          "end": 103.223708,
+          "text": "street, "
+        },
+        {
+          "start": 103.539458,
+          "end": 103.921041,
+          "text": "service "
+        },
+        {
+          "start": 103.934208,
+          "end": 104.302624,
+          "text": "space "
+        },
+        {
+          "start": 104.315791,
+          "end": 104.69737400000001,
+          "text": "behind "
+        },
+        {
+          "start": 104.710541,
+          "end": 104.789499,
+          "text": "the "
+        },
+        {
+          "start": 104.802625,
+          "end": 105.157875,
+          "text": "public "
+        },
+        {
+          "start": 105.171041,
+          "end": 105.644707,
+          "text": "rooms, "
+        },
+        {
+          "start": 105.934208,
+          "end": 106.118416,
+          "text": "and "
+        },
+        {
+          "start": 106.131583,
+          "end": 106.69737400000001,
+          "text": "furniture "
+        },
+        {
+          "start": 106.710541,
+          "end": 107.184207,
+          "text": "arranged "
+        },
+        {
+          "start": 107.197375,
+          "end": 107.526333,
+          "text": "around "
+        },
+        {
+          "start": 107.539458,
+          "end": 107.605249,
+          "text": "the "
+        },
+        {
+          "start": 107.618416,
+          "end": 108.276291,
+          "text": "activities "
+        },
+        {
+          "start": 108.289458,
+          "end": 108.82891599999999,
+          "text": "inside "
+        },
+        {
+          "start": 108.842125,
+          "end": 109.092125,
+          "text": "each "
+        },
+        {
+          "start": 109.10525,
+          "end": 109.60525,
+          "text": "building."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 709056
+    },
+    {
+      "id": "D08",
+      "start": 121.0,
+      "end": 156.0,
+      "duration_seconds": 28.464,
+      "cached": true,
+      "request_hash": "6a5021a9860e594c31519dafcb19f8bad0199b80db08d67aef40591817e13120",
+      "request": {
+        "text": "Here the hillside district adds twenty three buildings along contour streets. The terrain stays uneven beyond the graded road and foundation pads. Stone plinths support the houses where the slope falls away, and the street follows a controlled elevation profile. These are authored fictional earthworks rather than a surveyed site, but their heights are shared by the planning data, the visible ground, and the generated building foundations.",
+        "voice": "en-US-AriaNeural",
+        "rate": "-5%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\6a5021a9860e594c31519dafcb19f8bad0199b80db08d67aef40591817e13120.mp3",
+        "bytes": 170784,
+        "sha256": "ea380c7ebd3ca010e6b7271dc9f8a47b2508bcb310b9b9a5cb5dd44184280140"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\6a5021a9860e594c31519dafcb19f8bad0199b80db08d67aef40591817e13120.words.json",
+        "bytes": 6326,
+        "sha256": "844a6bffc680cd129b6e1ed389637c2eb926b27a859211b9e88e7e2e8fce3dc5"
+      },
+      "words": [
+        {
+          "start": 121.052625,
+          "end": 121.302625,
+          "text": "Here "
+        },
+        {
+          "start": 121.315791,
+          "end": 121.394749,
+          "text": "the "
+        },
+        {
+          "start": 121.407875,
+          "end": 121.934208,
+          "text": "hillside "
+        },
+        {
+          "start": 121.947375,
+          "end": 122.447375,
+          "text": "district "
+        },
+        {
+          "start": 122.460541,
+          "end": 122.77633200000001,
+          "text": "adds "
+        },
+        {
+          "start": 122.789458,
+          "end": 123.144708,
+          "text": "twenty "
+        },
+        {
+          "start": 123.157875,
+          "end": 123.421041,
+          "text": "three "
+        },
+        {
+          "start": 123.434208,
+          "end": 123.934208,
+          "text": "buildings "
+        },
+        {
+          "start": 123.947375,
+          "end": 124.276333,
+          "text": "along "
+        },
+        {
+          "start": 124.289458,
+          "end": 124.710499,
+          "text": "contour "
+        },
+        {
+          "start": 124.723666,
+          "end": 125.302624,
+          "text": "streets. "
+        },
+        {
+          "start": 126.210541,
+          "end": 126.36841600000001,
+          "text": "The "
+        },
+        {
+          "start": 126.381583,
+          "end": 126.86841600000001,
+          "text": "terrain "
+        },
+        {
+          "start": 126.881583,
+          "end": 127.26316600000001,
+          "text": "stays "
+        },
+        {
+          "start": 127.276333,
+          "end": 127.763166,
+          "text": "uneven "
+        },
+        {
+          "start": 127.776333,
+          "end": 128.17108299999998,
+          "text": "beyond "
+        },
+        {
+          "start": 128.184208,
+          "end": 128.263166,
+          "text": "the "
+        },
+        {
+          "start": 128.276333,
+          "end": 128.644749,
+          "text": "graded "
+        },
+        {
+          "start": 128.657875,
+          "end": 129.0,
+          "text": "road "
+        },
+        {
+          "start": 129.013166,
+          "end": 129.11841600000002,
+          "text": "and "
+        },
+        {
+          "start": 129.131583,
+          "end": 129.776333,
+          "text": "foundation "
+        },
+        {
+          "start": 129.789458,
+          "end": 130.368416,
+          "text": "pads. "
+        },
+        {
+          "start": 131.276333,
+          "end": 131.749999,
+          "text": "Stone "
+        },
+        {
+          "start": 131.763166,
+          "end": 132.18420700000001,
+          "text": "plinths "
+        },
+        {
+          "start": 132.197375,
+          "end": 132.60524999999998,
+          "text": "support "
+        },
+        {
+          "start": 132.618416,
+          "end": 132.697374,
+          "text": "the "
+        },
+        {
+          "start": 132.710541,
+          "end": 133.171082,
+          "text": "houses "
+        },
+        {
+          "start": 133.184208,
+          "end": 133.328958,
+          "text": "where "
+        },
+        {
+          "start": 133.342125,
+          "end": 133.44737500000002,
+          "text": "the "
+        },
+        {
+          "start": 133.460541,
+          "end": 133.81579100000002,
+          "text": "slope "
+        },
+        {
+          "start": 133.828958,
+          "end": 134.157916,
+          "text": "falls "
+        },
+        {
+          "start": 134.171041,
+          "end": 134.565791,
+          "text": "away, "
+        },
+        {
+          "start": 134.921041,
+          "end": 135.065791,
+          "text": "and "
+        },
+        {
+          "start": 135.078958,
+          "end": 135.171083,
+          "text": "the "
+        },
+        {
+          "start": 135.184208,
+          "end": 135.552624,
+          "text": "street "
+        },
+        {
+          "start": 135.565791,
+          "end": 135.986832,
+          "text": "follows "
+        },
+        {
+          "start": 136.0,
+          "end": 136.052625,
+          "text": "a "
+        },
+        {
+          "start": 136.065791,
+          "end": 136.565791,
+          "text": "controlled "
+        },
+        {
+          "start": 136.578958,
+          "end": 137.144749,
+          "text": "elevation "
+        },
+        {
+          "start": 137.157875,
+          "end": 137.89470799999998,
+          "text": "profile. "
+        },
+        {
+          "start": 138.802625,
+          "end": 139.14475000000002,
+          "text": "These "
+        },
+        {
+          "start": 139.157875,
+          "end": 139.342083,
+          "text": "are "
+        },
+        {
+          "start": 139.35525,
+          "end": 139.723666,
+          "text": "authored "
+        },
+        {
+          "start": 139.736833,
+          "end": 140.22366599999998,
+          "text": "fictional "
+        },
+        {
+          "start": 140.236833,
+          "end": 140.88158299999998,
+          "text": "earthworks "
+        },
+        {
+          "start": 140.89475,
+          "end": 141.236875,
+          "text": "rather "
+        },
+        {
+          "start": 141.25,
+          "end": 141.368416,
+          "text": "than "
+        },
+        {
+          "start": 141.381583,
+          "end": 141.434208,
+          "text": "a "
+        },
+        {
+          "start": 141.447375,
+          "end": 141.921041,
+          "text": "surveyed "
+        },
+        {
+          "start": 141.934208,
+          "end": 142.27633300000002,
+          "text": "site, "
+        },
+        {
+          "start": 142.657875,
+          "end": 142.789458,
+          "text": "but "
+        },
+        {
+          "start": 142.802625,
+          "end": 142.947375,
+          "text": "their "
+        },
+        {
+          "start": 142.960541,
+          "end": 143.30266600000002,
+          "text": "heights "
+        },
+        {
+          "start": 143.315791,
+          "end": 143.421041,
+          "text": "are "
+        },
+        {
+          "start": 143.434208,
+          "end": 143.77633300000002,
+          "text": "shared "
+        },
+        {
+          "start": 143.789458,
+          "end": 143.921041,
+          "text": "by "
+        },
+        {
+          "start": 143.934208,
+          "end": 144.03945800000002,
+          "text": "the "
+        },
+        {
+          "start": 144.052625,
+          "end": 144.447375,
+          "text": "planning "
+        },
+        {
+          "start": 144.460541,
+          "end": 144.81579100000002,
+          "text": "data, "
+        },
+        {
+          "start": 145.118416,
+          "end": 145.223666,
+          "text": "the "
+        },
+        {
+          "start": 145.236833,
+          "end": 145.64470799999998,
+          "text": "visible "
+        },
+        {
+          "start": 145.657875,
+          "end": 146.118416,
+          "text": "ground, "
+        },
+        {
+          "start": 146.35525,
+          "end": 146.5,
+          "text": "and "
+        },
+        {
+          "start": 146.513166,
+          "end": 146.60529100000002,
+          "text": "the "
+        },
+        {
+          "start": 146.618416,
+          "end": 147.223666,
+          "text": "generated "
+        },
+        {
+          "start": 147.236833,
+          "end": 147.605249,
+          "text": "building "
+        },
+        {
+          "start": 147.618416,
+          "end": 148.552624,
+          "text": "foundations."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 683136
+    },
+    {
+      "id": "D09",
+      "start": 161.0,
+      "end": 196.0,
+      "duration_seconds": 30.744,
+      "cached": true,
+      "request_hash": "1611847eeab7bf4600aa89fb0164500541e3ee9de881e2b102cfd11b91079fd8",
+      "request": {
+        "text": "The orchard edge includes eighteen new buildings around a quieter lane. Garden houses, small shops, and working buildings create a transition between the denser town and the surrounding reserve. Rear planting, flower pots, and occasional trees break up the building fronts. The district is intended to suggest horticultural life and seasonal variation, while keeping entrances, street corridors, and the underlying terrain legible in the exported geometry.",
+        "voice": "en-US-AriaNeural",
+        "rate": "-5%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\1611847eeab7bf4600aa89fb0164500541e3ee9de881e2b102cfd11b91079fd8.mp3",
+        "bytes": 184464,
+        "sha256": "54740e2d212f0e37cfffda491d6173b8dbf7225cbe74e9d68f2bc65c9b5e913d"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\1611847eeab7bf4600aa89fb0164500541e3ee9de881e2b102cfd11b91079fd8.words.json",
+        "bytes": 6249,
+        "sha256": "b035494b0a384d0ac38e33760b56d3ef931edd40d09f9dd67a6846d656b33733"
+      },
+      "words": [
+        {
+          "start": 161.052625,
+          "end": 161.23683300000002,
+          "text": "The "
+        },
+        {
+          "start": 161.25,
+          "end": 161.697375,
+          "text": "orchard "
+        },
+        {
+          "start": 161.710541,
+          "end": 162.039499,
+          "text": "edge "
+        },
+        {
+          "start": 162.052625,
+          "end": 162.618416,
+          "text": "includes "
+        },
+        {
+          "start": 162.631583,
+          "end": 163.092124,
+          "text": "eighteen "
+        },
+        {
+          "start": 163.10525,
+          "end": 163.27629100000001,
+          "text": "new "
+        },
+        {
+          "start": 163.289458,
+          "end": 163.763124,
+          "text": "buildings "
+        },
+        {
+          "start": 163.776333,
+          "end": 164.09212399999998,
+          "text": "around "
+        },
+        {
+          "start": 164.10525,
+          "end": 164.15787500000002,
+          "text": "a "
+        },
+        {
+          "start": 164.171041,
+          "end": 164.644707,
+          "text": "quieter "
+        },
+        {
+          "start": 164.657875,
+          "end": 165.06574999999998,
+          "text": "lane. "
+        },
+        {
+          "start": 165.973666,
+          "end": 166.394707,
+          "text": "Garden "
+        },
+        {
+          "start": 166.407875,
+          "end": 166.947333,
+          "text": "houses, "
+        },
+        {
+          "start": 167.184208,
+          "end": 167.513166,
+          "text": "small "
+        },
+        {
+          "start": 167.526333,
+          "end": 167.986874,
+          "text": "shops, "
+        },
+        {
+          "start": 168.197375,
+          "end": 168.381583,
+          "text": "and "
+        },
+        {
+          "start": 168.39475,
+          "end": 168.76316599999998,
+          "text": "working "
+        },
+        {
+          "start": 168.776333,
+          "end": 169.276333,
+          "text": "buildings "
+        },
+        {
+          "start": 169.289458,
+          "end": 169.605249,
+          "text": "create "
+        },
+        {
+          "start": 169.618416,
+          "end": 169.671041,
+          "text": "a "
+        },
+        {
+          "start": 169.684208,
+          "end": 170.421041,
+          "text": "transition "
+        },
+        {
+          "start": 170.434208,
+          "end": 170.77633300000002,
+          "text": "between "
+        },
+        {
+          "start": 170.789458,
+          "end": 170.894708,
+          "text": "the "
+        },
+        {
+          "start": 170.907875,
+          "end": 171.289458,
+          "text": "denser "
+        },
+        {
+          "start": 171.302625,
+          "end": 171.723666,
+          "text": "town "
+        },
+        {
+          "start": 171.736833,
+          "end": 171.842083,
+          "text": "and "
+        },
+        {
+          "start": 171.85525,
+          "end": 171.94737500000002,
+          "text": "the "
+        },
+        {
+          "start": 171.960541,
+          "end": 172.513166,
+          "text": "surrounding "
+        },
+        {
+          "start": 172.526333,
+          "end": 173.144749,
+          "text": "reserve. "
+        },
+        {
+          "start": 174.065791,
+          "end": 174.407916,
+          "text": "Rear "
+        },
+        {
+          "start": 174.421041,
+          "end": 174.973666,
+          "text": "planting, "
+        },
+        {
+          "start": 175.157875,
+          "end": 175.56574999999998,
+          "text": "flower "
+        },
+        {
+          "start": 175.578958,
+          "end": 175.999999,
+          "text": "pots, "
+        },
+        {
+          "start": 176.157875,
+          "end": 176.328916,
+          "text": "and "
+        },
+        {
+          "start": 176.342125,
+          "end": 176.907916,
+          "text": "occasional "
+        },
+        {
+          "start": 176.921041,
+          "end": 177.35524900000001,
+          "text": "trees "
+        },
+        {
+          "start": 177.368416,
+          "end": 177.671041,
+          "text": "break "
+        },
+        {
+          "start": 177.684208,
+          "end": 177.842083,
+          "text": "up "
+        },
+        {
+          "start": 177.85525,
+          "end": 177.96050000000002,
+          "text": "the "
+        },
+        {
+          "start": 177.973666,
+          "end": 178.342082,
+          "text": "building "
+        },
+        {
+          "start": 178.35525,
+          "end": 178.921041,
+          "text": "fronts. "
+        },
+        {
+          "start": 179.842125,
+          "end": 180.02633300000002,
+          "text": "The "
+        },
+        {
+          "start": 180.039458,
+          "end": 180.539458,
+          "text": "district "
+        },
+        {
+          "start": 180.552625,
+          "end": 180.64475000000002,
+          "text": "is "
+        },
+        {
+          "start": 180.657875,
+          "end": 181.157875,
+          "text": "intended "
+        },
+        {
+          "start": 181.171041,
+          "end": 181.236832,
+          "text": "to "
+        },
+        {
+          "start": 181.25,
+          "end": 181.802625,
+          "text": "suggest "
+        },
+        {
+          "start": 181.815791,
+          "end": 182.59212399999998,
+          "text": "horticultural "
+        },
+        {
+          "start": 182.60525,
+          "end": 182.90787500000002,
+          "text": "life "
+        },
+        {
+          "start": 182.921041,
+          "end": 183.052624,
+          "text": "and "
+        },
+        {
+          "start": 183.065791,
+          "end": 183.526332,
+          "text": "seasonal "
+        },
+        {
+          "start": 183.539458,
+          "end": 184.263124,
+          "text": "variation, "
+        },
+        {
+          "start": 184.631583,
+          "end": 184.81579100000002,
+          "text": "while "
+        },
+        {
+          "start": 184.828958,
+          "end": 185.197374,
+          "text": "keeping "
+        },
+        {
+          "start": 185.210541,
+          "end": 185.868416,
+          "text": "entrances, "
+        },
+        {
+          "start": 186.131583,
+          "end": 186.434208,
+          "text": "street "
+        },
+        {
+          "start": 186.447375,
+          "end": 187.157916,
+          "text": "corridors, "
+        },
+        {
+          "start": 187.39475,
+          "end": 187.53949999999998,
+          "text": "and "
+        },
+        {
+          "start": 187.552625,
+          "end": 187.65787500000002,
+          "text": "the "
+        },
+        {
+          "start": 187.671041,
+          "end": 188.328916,
+          "text": "underlying "
+        },
+        {
+          "start": 188.342125,
+          "end": 188.75,
+          "text": "terrain "
+        },
+        {
+          "start": 188.763166,
+          "end": 189.22370700000002,
+          "text": "legible "
+        },
+        {
+          "start": 189.236833,
+          "end": 189.368416,
+          "text": "in "
+        },
+        {
+          "start": 189.381583,
+          "end": 189.447374,
+          "text": "the "
+        },
+        {
+          "start": 189.460541,
+          "end": 190.039499,
+          "text": "exported "
+        },
+        {
+          "start": 190.052625,
+          "end": 190.81579100000002,
+          "text": "geometry."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 737856
+    },
+    {
+      "id": "D10",
+      "start": 201.0,
+      "end": 236.0,
+      "duration_seconds": 32.928,
+      "cached": true,
+      "request_hash": "8892a71c2ee85455d7285a638bceebf23f7b27227cb08120f2f788351b8ae803",
+      "request": {
+        "text": "The forest trailhead village adds thirteen buildings beside the retained reserve. Cottages, service rooms, shops, and cycling cafes give this edge a different rhythm from the harbor. Conflicting original vegetation and surface obstacles are cleared around the new development, while the larger woodland remains. One separately generated Infinigen plant prototype is reused in selected courtyards; this is a bounded upstream asset contribution, not an upstream whole town generation run.",
+        "voice": "en-US-AriaNeural",
+        "rate": "-5%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\8892a71c2ee85455d7285a638bceebf23f7b27227cb08120f2f788351b8ae803.mp3",
+        "bytes": 197568,
+        "sha256": "ec554fd28ffacdcfac0c6bdf07bee5855941d832fa1f77ac41e2aba78c9fea56"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\8892a71c2ee85455d7285a638bceebf23f7b27227cb08120f2f788351b8ae803.words.json",
+        "bytes": 6548,
+        "sha256": "9c81f77e695cd46deac6c912cb3b2ea38fe183a4b04be3c99fdc96f955ff85c5"
+      },
+      "words": [
+        {
+          "start": 201.052625,
+          "end": 201.23683300000002,
+          "text": "The "
+        },
+        {
+          "start": 201.25,
+          "end": 201.684208,
+          "text": "forest "
+        },
+        {
+          "start": 201.697375,
+          "end": 202.223708,
+          "text": "trailhead "
+        },
+        {
+          "start": 202.236833,
+          "end": 202.63158299999998,
+          "text": "village "
+        },
+        {
+          "start": 202.64475,
+          "end": 203.0,
+          "text": "adds "
+        },
+        {
+          "start": 203.013166,
+          "end": 203.552624,
+          "text": "thirteen "
+        },
+        {
+          "start": 203.565791,
+          "end": 204.065791,
+          "text": "buildings "
+        },
+        {
+          "start": 204.078958,
+          "end": 204.526333,
+          "text": "beside "
+        },
+        {
+          "start": 204.539458,
+          "end": 204.605249,
+          "text": "the "
+        },
+        {
+          "start": 204.618416,
+          "end": 205.026291,
+          "text": "retained "
+        },
+        {
+          "start": 205.039458,
+          "end": 205.644708,
+          "text": "reserve. "
+        },
+        {
+          "start": 206.552625,
+          "end": 207.2105,
+          "text": "Cottages, "
+        },
+        {
+          "start": 207.434208,
+          "end": 207.85524900000001,
+          "text": "service "
+        },
+        {
+          "start": 207.868416,
+          "end": 208.302624,
+          "text": "rooms, "
+        },
+        {
+          "start": 208.486833,
+          "end": 208.97366599999998,
+          "text": "shops, "
+        },
+        {
+          "start": 209.14475,
+          "end": 209.328958,
+          "text": "and "
+        },
+        {
+          "start": 209.342125,
+          "end": 209.828958,
+          "text": "cycling "
+        },
+        {
+          "start": 209.842125,
+          "end": 210.47370800000002,
+          "text": "cafes "
+        },
+        {
+          "start": 210.486833,
+          "end": 210.68420799999998,
+          "text": "give "
+        },
+        {
+          "start": 210.697375,
+          "end": 210.89475,
+          "text": "this "
+        },
+        {
+          "start": 210.907875,
+          "end": 211.171041,
+          "text": "edge "
+        },
+        {
+          "start": 211.184208,
+          "end": 211.27633300000002,
+          "text": "a "
+        },
+        {
+          "start": 211.289458,
+          "end": 211.671041,
+          "text": "different "
+        },
+        {
+          "start": 211.684208,
+          "end": 212.013166,
+          "text": "rhythm "
+        },
+        {
+          "start": 212.026333,
+          "end": 212.18420799999998,
+          "text": "from "
+        },
+        {
+          "start": 212.197375,
+          "end": 212.26316599999998,
+          "text": "the "
+        },
+        {
+          "start": 212.276333,
+          "end": 212.815791,
+          "text": "harbor. "
+        },
+        {
+          "start": 213.723666,
+          "end": 214.381541,
+          "text": "Conflicting "
+        },
+        {
+          "start": 214.39475,
+          "end": 214.855291,
+          "text": "original "
+        },
+        {
+          "start": 214.868416,
+          "end": 215.605249,
+          "text": "vegetation "
+        },
+        {
+          "start": 215.618416,
+          "end": 215.749999,
+          "text": "and "
+        },
+        {
+          "start": 215.763166,
+          "end": 216.19737400000002,
+          "text": "surface "
+        },
+        {
+          "start": 216.210541,
+          "end": 216.855291,
+          "text": "obstacles "
+        },
+        {
+          "start": 216.868416,
+          "end": 217.105249,
+          "text": "are "
+        },
+        {
+          "start": 217.118416,
+          "end": 217.460541,
+          "text": "cleared "
+        },
+        {
+          "start": 217.473666,
+          "end": 217.82891600000002,
+          "text": "around "
+        },
+        {
+          "start": 217.842125,
+          "end": 217.921083,
+          "text": "the "
+        },
+        {
+          "start": 217.934208,
+          "end": 218.10524900000001,
+          "text": "new "
+        },
+        {
+          "start": 218.118416,
+          "end": 218.749999,
+          "text": "development, "
+        },
+        {
+          "start": 219.118416,
+          "end": 219.26316599999998,
+          "text": "while "
+        },
+        {
+          "start": 219.276333,
+          "end": 219.394749,
+          "text": "the "
+        },
+        {
+          "start": 219.407875,
+          "end": 219.842083,
+          "text": "larger "
+        },
+        {
+          "start": 219.85525,
+          "end": 220.25,
+          "text": "woodland "
+        },
+        {
+          "start": 220.263166,
+          "end": 220.960541,
+          "text": "remains. "
+        },
+        {
+          "start": 221.881583,
+          "end": 222.249999,
+          "text": "One "
+        },
+        {
+          "start": 222.263166,
+          "end": 222.81579100000002,
+          "text": "separately "
+        },
+        {
+          "start": 222.828958,
+          "end": 223.407916,
+          "text": "generated "
+        },
+        {
+          "start": 223.421041,
+          "end": 224.052624,
+          "text": "Infinigen "
+        },
+        {
+          "start": 224.065791,
+          "end": 224.38158199999998,
+          "text": "plant "
+        },
+        {
+          "start": 224.39475,
+          "end": 225.026333,
+          "text": "prototype "
+        },
+        {
+          "start": 225.039458,
+          "end": 225.223666,
+          "text": "is "
+        },
+        {
+          "start": 225.236833,
+          "end": 225.76316599999998,
+          "text": "reused "
+        },
+        {
+          "start": 225.776333,
+          "end": 225.907916,
+          "text": "in "
+        },
+        {
+          "start": 225.921041,
+          "end": 226.407874,
+          "text": "selected "
+        },
+        {
+          "start": 226.421041,
+          "end": 227.131582,
+          "text": "courtyards; "
+        },
+        {
+          "start": 227.473666,
+          "end": 227.68420700000001,
+          "text": "this "
+        },
+        {
+          "start": 227.697375,
+          "end": 227.802625,
+          "text": "is "
+        },
+        {
+          "start": 227.815791,
+          "end": 227.894749,
+          "text": "a "
+        },
+        {
+          "start": 227.907875,
+          "end": 228.35524999999998,
+          "text": "bounded "
+        },
+        {
+          "start": 228.368416,
+          "end": 228.881582,
+          "text": "upstream "
+        },
+        {
+          "start": 228.89475,
+          "end": 229.34212499999998,
+          "text": "asset "
+        },
+        {
+          "start": 229.35525,
+          "end": 230.15787500000002,
+          "text": "contribution, "
+        },
+        {
+          "start": 230.526333,
+          "end": 230.723708,
+          "text": "not "
+        },
+        {
+          "start": 230.736833,
+          "end": 230.855249,
+          "text": "an "
+        },
+        {
+          "start": 230.868416,
+          "end": 231.381582,
+          "text": "upstream "
+        },
+        {
+          "start": 231.39475,
+          "end": 231.63158299999998,
+          "text": "whole "
+        },
+        {
+          "start": 231.64475,
+          "end": 231.947375,
+          "text": "town "
+        },
+        {
+          "start": 231.960541,
+          "end": 232.605291,
+          "text": "generation "
+        },
+        {
+          "start": 232.618416,
+          "end": 232.999999,
+          "text": "run."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 790272
+    },
+    {
+      "id": "street_materials",
+      "start": 241.0,
+      "end": 276.0,
+      "duration_seconds": 34.752,
+      "cached": true,
+      "request_hash": "45e32d522fb3123fd4b9fcd2cd0ac343c05bd3e65c62645275174898273d7fd0",
+      "request": {
+        "text": "At street level, pale plaster, slate, stone, oak, and painted joinery establish the material language. The plaster uses source bound, permissively licensed scanned color, roughness, and normal maps, with restrained weathering baked into a portable color texture. Real window apertures, roof courses, gutters, chimneys, and door surrounds add readable scale. The same conventional material channels travel in the exported glTF assets, rather than depending on Blender procedural shaders.",
+        "voice": "en-US-AriaNeural",
+        "rate": "-5%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\45e32d522fb3123fd4b9fcd2cd0ac343c05bd3e65c62645275174898273d7fd0.mp3",
+        "bytes": 208512,
+        "sha256": "86286a80e050e8aa82ebf69a9ba784dc10fcb8d84153d7a397f48c0c3f6cfa00"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\45e32d522fb3123fd4b9fcd2cd0ac343c05bd3e65c62645275174898273d7fd0.words.json",
+        "bytes": 6368,
+        "sha256": "4c00e8f58a5dec4294d250e7caaa672a936d77994c9281bc7819937916c39a17"
+      },
+      "words": [
+        {
+          "start": 241.052625,
+          "end": 241.64475000000002,
+          "text": "At street "
+        },
+        {
+          "start": 241.657875,
+          "end": 242.05262499999998,
+          "text": "level, "
+        },
+        {
+          "start": 242.171041,
+          "end": 242.473666,
+          "text": "pale "
+        },
+        {
+          "start": 242.486833,
+          "end": 243.078958,
+          "text": "plaster, "
+        },
+        {
+          "start": 243.236833,
+          "end": 243.64470799999998,
+          "text": "slate, "
+        },
+        {
+          "start": 243.85525,
+          "end": 244.302625,
+          "text": "stone, "
+        },
+        {
+          "start": 244.473666,
+          "end": 244.73683200000002,
+          "text": "oak, "
+        },
+        {
+          "start": 244.921041,
+          "end": 245.052624,
+          "text": "and "
+        },
+        {
+          "start": 245.065791,
+          "end": 245.486832,
+          "text": "painted "
+        },
+        {
+          "start": 245.5,
+          "end": 245.960541,
+          "text": "joinery "
+        },
+        {
+          "start": 245.973666,
+          "end": 246.592082,
+          "text": "establish "
+        },
+        {
+          "start": 246.60525,
+          "end": 246.684208,
+          "text": "the "
+        },
+        {
+          "start": 246.697375,
+          "end": 247.25,
+          "text": "material "
+        },
+        {
+          "start": 247.263166,
+          "end": 247.94737400000002,
+          "text": "language. "
+        },
+        {
+          "start": 248.85525,
+          "end": 249.02629100000001,
+          "text": "The "
+        },
+        {
+          "start": 249.039458,
+          "end": 249.513124,
+          "text": "plaster "
+        },
+        {
+          "start": 249.526333,
+          "end": 249.92108299999998,
+          "text": "uses "
+        },
+        {
+          "start": 249.934208,
+          "end": 250.23683300000002,
+          "text": "source "
+        },
+        {
+          "start": 250.25,
+          "end": 250.684208,
+          "text": "bound, "
+        },
+        {
+          "start": 250.907875,
+          "end": 251.526291,
+          "text": "permissively "
+        },
+        {
+          "start": 251.539458,
+          "end": 252.092083,
+          "text": "licensed "
+        },
+        {
+          "start": 252.10525,
+          "end": 252.5,
+          "text": "scanned "
+        },
+        {
+          "start": 252.513166,
+          "end": 252.86841600000002,
+          "text": "color, "
+        },
+        {
+          "start": 253.10525,
+          "end": 253.644708,
+          "text": "roughness, "
+        },
+        {
+          "start": 253.828958,
+          "end": 253.999999,
+          "text": "and "
+        },
+        {
+          "start": 254.013166,
+          "end": 254.35529100000002,
+          "text": "normal "
+        },
+        {
+          "start": 254.368416,
+          "end": 254.802624,
+          "text": "maps, "
+        },
+        {
+          "start": 255.065791,
+          "end": 255.236832,
+          "text": "with "
+        },
+        {
+          "start": 255.25,
+          "end": 255.802625,
+          "text": "restrained "
+        },
+        {
+          "start": 255.815791,
+          "end": 256.249999,
+          "text": "weathering "
+        },
+        {
+          "start": 256.263166,
+          "end": 256.605291,
+          "text": "baked "
+        },
+        {
+          "start": 256.618416,
+          "end": 256.842082,
+          "text": "into "
+        },
+        {
+          "start": 256.85525,
+          "end": 256.947375,
+          "text": "a "
+        },
+        {
+          "start": 256.960541,
+          "end": 257.44737399999997,
+          "text": "portable "
+        },
+        {
+          "start": 257.460541,
+          "end": 257.77633199999997,
+          "text": "color "
+        },
+        {
+          "start": 257.789458,
+          "end": 258.460499,
+          "text": "texture. "
+        },
+        {
+          "start": 259.368416,
+          "end": 259.763166,
+          "text": "Real "
+        },
+        {
+          "start": 259.776333,
+          "end": 260.11845800000003,
+          "text": "window "
+        },
+        {
+          "start": 260.131583,
+          "end": 260.802624,
+          "text": "apertures, "
+        },
+        {
+          "start": 261.026333,
+          "end": 261.249999,
+          "text": "roof "
+        },
+        {
+          "start": 261.263166,
+          "end": 261.855291,
+          "text": "courses, "
+        },
+        {
+          "start": 262.092125,
+          "end": 262.526333,
+          "text": "gutters, "
+        },
+        {
+          "start": 262.723666,
+          "end": 263.36841599999997,
+          "text": "chimneys, "
+        },
+        {
+          "start": 263.539458,
+          "end": 263.73683300000005,
+          "text": "and "
+        },
+        {
+          "start": 263.75,
+          "end": 264.052625,
+          "text": "door "
+        },
+        {
+          "start": 264.065791,
+          "end": 264.631582,
+          "text": "surrounds "
+        },
+        {
+          "start": 264.64475,
+          "end": 264.842125,
+          "text": "add "
+        },
+        {
+          "start": 264.85525,
+          "end": 265.236833,
+          "text": "readable "
+        },
+        {
+          "start": 265.25,
+          "end": 265.736833,
+          "text": "scale. "
+        },
+        {
+          "start": 266.64475,
+          "end": 266.842125,
+          "text": "The "
+        },
+        {
+          "start": 266.85525,
+          "end": 267.171041,
+          "text": "same "
+        },
+        {
+          "start": 267.184208,
+          "end": 267.815791,
+          "text": "conventional "
+        },
+        {
+          "start": 267.828958,
+          "end": 268.394749,
+          "text": "material "
+        },
+        {
+          "start": 268.407875,
+          "end": 268.842083,
+          "text": "channels "
+        },
+        {
+          "start": 268.85525,
+          "end": 269.276291,
+          "text": "travel "
+        },
+        {
+          "start": 269.289458,
+          "end": 269.40787400000005,
+          "text": "in "
+        },
+        {
+          "start": 269.421041,
+          "end": 269.486832,
+          "text": "the "
+        },
+        {
+          "start": 269.5,
+          "end": 270.14475,
+          "text": "exported "
+        },
+        {
+          "start": 270.157875,
+          "end": 270.85525,
+          "text": "glTF "
+        },
+        {
+          "start": 270.868416,
+          "end": 271.48683200000005,
+          "text": "assets, "
+        },
+        {
+          "start": 271.89475,
+          "end": 272.236875,
+          "text": "rather "
+        },
+        {
+          "start": 272.25,
+          "end": 272.39475,
+          "text": "than "
+        },
+        {
+          "start": 272.407875,
+          "end": 272.947333,
+          "text": "depending "
+        },
+        {
+          "start": 272.960541,
+          "end": 273.10529099999997,
+          "text": "on "
+        },
+        {
+          "start": 273.118416,
+          "end": 273.539457,
+          "text": "Blender "
+        },
+        {
+          "start": 273.552625,
+          "end": 274.157875,
+          "text": "procedural "
+        },
+        {
+          "start": 274.171041,
+          "end": 274.815791,
+          "text": "shaders."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 834048
+    },
+    {
+      "id": "furnished_interior",
+      "start": 281.0,
+      "end": 316.0,
+      "duration_seconds": 32.28,
+      "cached": true,
+      "request_hash": "61d17afb9ccd477a707a297fd3b938cfd4a8948f09d346538f3459b22a82fd46",
+      "request": {
+        "text": "The extension contains one hundred and fifty three furnished floors and nine hundred and twenty nine room zones. Public rooms, preparation spaces, private rooms, stairs, and landings serve different uses. Compact cafes retain required tables and service counters, with an open stair lobby where needed. Furniture backs, usable fronts, privacy, and pedestrian routes are checked before export; selected focus pieces receive detailed bespoke geometry.",
+        "voice": "en-US-AriaNeural",
+        "rate": "-5%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\61d17afb9ccd477a707a297fd3b938cfd4a8948f09d346538f3459b22a82fd46.mp3",
+        "bytes": 193680,
+        "sha256": "78488bac4fe0d921ab0be29e9d1b2802ad8d21f8f1a6795714490d146a69c141"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\61d17afb9ccd477a707a297fd3b938cfd4a8948f09d346538f3459b22a82fd46.words.json",
+        "bytes": 6069,
+        "sha256": "64f97acd3cfcb94d0de087d63cf2a893fb99dbf9afb7e8a9924282733a61f9ff"
+      },
+      "words": [
+        {
+          "start": 281.052625,
+          "end": 281.19737499999997,
+          "text": "The "
+        },
+        {
+          "start": 281.210541,
+          "end": 281.85529099999997,
+          "text": "extension "
+        },
+        {
+          "start": 281.868416,
+          "end": 282.355249,
+          "text": "contains "
+        },
+        {
+          "start": 282.368416,
+          "end": 282.592082,
+          "text": "one "
+        },
+        {
+          "start": 282.60525,
+          "end": 282.934208,
+          "text": "hundred "
+        },
+        {
+          "start": 282.947375,
+          "end": 283.03950000000003,
+          "text": "and "
+        },
+        {
+          "start": 283.052625,
+          "end": 283.39475,
+          "text": "fifty "
+        },
+        {
+          "start": 283.407875,
+          "end": 283.684208,
+          "text": "three "
+        },
+        {
+          "start": 283.697375,
+          "end": 284.157916,
+          "text": "furnished "
+        },
+        {
+          "start": 284.171041,
+          "end": 284.671041,
+          "text": "floors "
+        },
+        {
+          "start": 284.684208,
+          "end": 284.96054100000003,
+          "text": "and "
+        },
+        {
+          "start": 284.973666,
+          "end": 285.223666,
+          "text": "nine "
+        },
+        {
+          "start": 285.236833,
+          "end": 285.552624,
+          "text": "hundred "
+        },
+        {
+          "start": 285.565791,
+          "end": 285.644749,
+          "text": "and "
+        },
+        {
+          "start": 285.657875,
+          "end": 286.0,
+          "text": "twenty "
+        },
+        {
+          "start": 286.013166,
+          "end": 286.315791,
+          "text": "nine "
+        },
+        {
+          "start": 286.328958,
+          "end": 286.552624,
+          "text": "room "
+        },
+        {
+          "start": 286.565791,
+          "end": 287.19737399999997,
+          "text": "zones. "
+        },
+        {
+          "start": 288.118416,
+          "end": 288.539457,
+          "text": "Public "
+        },
+        {
+          "start": 288.552625,
+          "end": 289.052625,
+          "text": "rooms, "
+        },
+        {
+          "start": 289.223666,
+          "end": 289.94733199999996,
+          "text": "preparation "
+        },
+        {
+          "start": 289.960541,
+          "end": 290.552666,
+          "text": "spaces, "
+        },
+        {
+          "start": 290.75,
+          "end": 291.157875,
+          "text": "private "
+        },
+        {
+          "start": 291.171041,
+          "end": 291.578916,
+          "text": "rooms, "
+        },
+        {
+          "start": 291.789458,
+          "end": 292.40787400000005,
+          "text": "stairs, "
+        },
+        {
+          "start": 292.592125,
+          "end": 292.802666,
+          "text": "and "
+        },
+        {
+          "start": 292.815791,
+          "end": 293.342124,
+          "text": "landings "
+        },
+        {
+          "start": 293.35525,
+          "end": 293.64470800000004,
+          "text": "serve "
+        },
+        {
+          "start": 293.657875,
+          "end": 294.013125,
+          "text": "different "
+        },
+        {
+          "start": 294.026333,
+          "end": 294.64474900000005,
+          "text": "uses. "
+        },
+        {
+          "start": 295.552625,
+          "end": 296.18420799999996,
+          "text": "Compact "
+        },
+        {
+          "start": 296.197375,
+          "end": 296.78950000000003,
+          "text": "cafes "
+        },
+        {
+          "start": 296.802625,
+          "end": 297.223666,
+          "text": "retain "
+        },
+        {
+          "start": 297.236833,
+          "end": 297.763166,
+          "text": "required "
+        },
+        {
+          "start": 297.776333,
+          "end": 298.22370800000004,
+          "text": "tables "
+        },
+        {
+          "start": 298.236833,
+          "end": 298.36841599999997,
+          "text": "and "
+        },
+        {
+          "start": 298.381583,
+          "end": 298.76316599999996,
+          "text": "service "
+        },
+        {
+          "start": 298.776333,
+          "end": 299.355291,
+          "text": "counters, "
+        },
+        {
+          "start": 299.64475,
+          "end": 299.802625,
+          "text": "with "
+        },
+        {
+          "start": 299.815791,
+          "end": 299.960541,
+          "text": "an "
+        },
+        {
+          "start": 299.973666,
+          "end": 300.302624,
+          "text": "open "
+        },
+        {
+          "start": 300.315791,
+          "end": 300.631582,
+          "text": "stair "
+        },
+        {
+          "start": 300.64475,
+          "end": 301.0395,
+          "text": "lobby "
+        },
+        {
+          "start": 301.052625,
+          "end": 301.21049999999997,
+          "text": "where "
+        },
+        {
+          "start": 301.223666,
+          "end": 301.723666,
+          "text": "needed. "
+        },
+        {
+          "start": 302.631583,
+          "end": 303.210541,
+          "text": "Furniture "
+        },
+        {
+          "start": 303.223666,
+          "end": 303.644707,
+          "text": "backs, "
+        },
+        {
+          "start": 303.789458,
+          "end": 304.22366600000004,
+          "text": "usable "
+        },
+        {
+          "start": 304.236833,
+          "end": 304.736833,
+          "text": "fronts, "
+        },
+        {
+          "start": 304.921041,
+          "end": 305.618416,
+          "text": "privacy, "
+        },
+        {
+          "start": 305.789458,
+          "end": 305.960499,
+          "text": "and "
+        },
+        {
+          "start": 305.973666,
+          "end": 306.657874,
+          "text": "pedestrian "
+        },
+        {
+          "start": 306.671041,
+          "end": 307.039457,
+          "text": "routes "
+        },
+        {
+          "start": 307.052625,
+          "end": 307.18420799999996,
+          "text": "are "
+        },
+        {
+          "start": 307.197375,
+          "end": 307.53950000000003,
+          "text": "checked "
+        },
+        {
+          "start": 307.552625,
+          "end": 307.907875,
+          "text": "before "
+        },
+        {
+          "start": 307.921041,
+          "end": 308.447374,
+          "text": "export; "
+        },
+        {
+          "start": 308.710541,
+          "end": 309.223707,
+          "text": "selected "
+        },
+        {
+          "start": 309.236833,
+          "end": 309.657874,
+          "text": "focus "
+        },
+        {
+          "start": 309.671041,
+          "end": 310.144707,
+          "text": "pieces "
+        },
+        {
+          "start": 310.157875,
+          "end": 310.56575,
+          "text": "receive "
+        },
+        {
+          "start": 310.578958,
+          "end": 311.131583,
+          "text": "detailed "
+        },
+        {
+          "start": 311.14475,
+          "end": 311.578958,
+          "text": "bespoke "
+        },
+        {
+          "start": 311.592125,
+          "end": 312.355291,
+          "text": "geometry."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 774720
+    },
+    {
+      "id": "terrain_and_reserve",
+      "start": 321.0,
+      "end": 356.0,
+      "duration_seconds": 34.224,
+      "cached": true,
+      "request_hash": "50940b583ae764a131095293680dc60dfac7badc6744aaa1e42c7933f311a51d",
+      "request": {
+        "text": "The final view returns to terrain, buildings, and woodland. Roads and pads share one height authority, while the coast and reserve remain. The package includes portable glTF chunks, packed Blender source, semantic identifiers, and collision planning metadata. This Godot capture checks imported visuals and camera presentation. It does not establish playable navigation, physics integration, accessibility, or real time performance; those remain separate consumer tasks.",
+        "voice": "en-US-AriaNeural",
+        "rate": "-5%",
+        "boundary": "WordBoundary",
+        "endpoint": "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1",
+        "edge_tts_version": "7.2.8"
+      },
+      "mp3": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\50940b583ae764a131095293680dc60dfac7badc6744aaa1e42c7933f311a51d.mp3",
+        "bytes": 205344,
+        "sha256": "62c3207b8d70c9160ca6415c14f08c8d63e4729fe3d2d5805c9e5c5358677336"
+      },
+      "word_boundaries": {
+        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\voice_cache\\50940b583ae764a131095293680dc60dfac7badc6744aaa1e42c7933f311a51d.words.json",
+        "bytes": 6089,
+        "sha256": "69af0bf85a148b83dcf3335f3ae85e3b04c56c48b3d5a1f650192544194d442a"
+      },
+      "words": [
+        {
+          "start": 321.052625,
+          "end": 321.236833,
+          "text": "The "
+        },
+        {
+          "start": 321.25,
+          "end": 321.631583,
+          "text": "final "
+        },
+        {
+          "start": 321.64475,
+          "end": 321.89475,
+          "text": "view "
+        },
+        {
+          "start": 321.907875,
+          "end": 322.407875,
+          "text": "returns "
+        },
+        {
+          "start": 322.421041,
+          "end": 322.526291,
+          "text": "to "
+        },
+        {
+          "start": 322.539458,
+          "end": 323.05262400000004,
+          "text": "terrain, "
+        },
+        {
+          "start": 323.342125,
+          "end": 323.89475,
+          "text": "buildings, "
+        },
+        {
+          "start": 324.052625,
+          "end": 324.25,
+          "text": "and "
+        },
+        {
+          "start": 324.263166,
+          "end": 324.855291,
+          "text": "woodland. "
+        },
+        {
+          "start": 325.763166,
+          "end": 326.21054100000003,
+          "text": "Roads "
+        },
+        {
+          "start": 326.223666,
+          "end": 326.328916,
+          "text": "and "
+        },
+        {
+          "start": 326.342125,
+          "end": 326.802666,
+          "text": "pads "
+        },
+        {
+          "start": 326.815791,
+          "end": 327.144749,
+          "text": "share "
+        },
+        {
+          "start": 327.157875,
+          "end": 327.35525,
+          "text": "one "
+        },
+        {
+          "start": 327.368416,
+          "end": 327.605249,
+          "text": "height "
+        },
+        {
+          "start": 327.618416,
+          "end": 328.13158200000004,
+          "text": "authority, "
+        },
+        {
+          "start": 328.473666,
+          "end": 328.644707,
+          "text": "while "
+        },
+        {
+          "start": 328.657875,
+          "end": 328.763125,
+          "text": "the "
+        },
+        {
+          "start": 328.776333,
+          "end": 329.21054100000003,
+          "text": "coast "
+        },
+        {
+          "start": 329.223666,
+          "end": 329.315791,
+          "text": "and "
+        },
+        {
+          "start": 329.328958,
+          "end": 329.723708,
+          "text": "reserve "
+        },
+        {
+          "start": 329.736833,
+          "end": 330.28945799999997,
+          "text": "remain. "
+        },
+        {
+          "start": 331.197375,
+          "end": 331.38158300000003,
+          "text": "The "
+        },
+        {
+          "start": 331.39475,
+          "end": 331.86841599999997,
+          "text": "package "
+        },
+        {
+          "start": 331.881583,
+          "end": 332.34212399999996,
+          "text": "includes "
+        },
+        {
+          "start": 332.35525,
+          "end": 332.868416,
+          "text": "portable "
+        },
+        {
+          "start": 332.881583,
+          "end": 333.565791,
+          "text": "glTF "
+        },
+        {
+          "start": 333.578958,
+          "end": 334.052624,
+          "text": "chunks, "
+        },
+        {
+          "start": 334.315791,
+          "end": 334.657916,
+          "text": "packed "
+        },
+        {
+          "start": 334.671041,
+          "end": 335.078916,
+          "text": "Blender "
+        },
+        {
+          "start": 335.092125,
+          "end": 335.53950000000003,
+          "text": "source, "
+        },
+        {
+          "start": 335.842125,
+          "end": 336.342125,
+          "text": "semantic "
+        },
+        {
+          "start": 336.35525,
+          "end": 337.263125,
+          "text": "identifiers, "
+        },
+        {
+          "start": 337.473666,
+          "end": 337.644707,
+          "text": "and "
+        },
+        {
+          "start": 337.657875,
+          "end": 338.171041,
+          "text": "collision "
+        },
+        {
+          "start": 338.184208,
+          "end": 338.592083,
+          "text": "planning "
+        },
+        {
+          "start": 338.60525,
+          "end": 339.289458,
+          "text": "metadata. "
+        },
+        {
+          "start": 340.197375,
+          "end": 340.48683300000005,
+          "text": "This "
+        },
+        {
+          "start": 340.5,
+          "end": 340.802625,
+          "text": "Godot "
+        },
+        {
+          "start": 340.815791,
+          "end": 341.28945699999997,
+          "text": "capture "
+        },
+        {
+          "start": 341.302625,
+          "end": 341.671041,
+          "text": "checks "
+        },
+        {
+          "start": 341.684208,
+          "end": 342.197374,
+          "text": "imported "
+        },
+        {
+          "start": 342.210541,
+          "end": 342.736874,
+          "text": "visuals "
+        },
+        {
+          "start": 342.75,
+          "end": 342.921041,
+          "text": "and "
+        },
+        {
+          "start": 342.934208,
+          "end": 343.342083,
+          "text": "camera "
+        },
+        {
+          "start": 343.35525,
+          "end": 344.25,
+          "text": "presentation. "
+        },
+        {
+          "start": 345.157875,
+          "end": 345.328916,
+          "text": "It "
+        },
+        {
+          "start": 345.342125,
+          "end": 345.513166,
+          "text": "does "
+        },
+        {
+          "start": 345.526333,
+          "end": 345.749999,
+          "text": "not "
+        },
+        {
+          "start": 345.763166,
+          "end": 346.355291,
+          "text": "establish "
+        },
+        {
+          "start": 346.368416,
+          "end": 346.789457,
+          "text": "playable "
+        },
+        {
+          "start": 346.802625,
+          "end": 347.578958,
+          "text": "navigation, "
+        },
+        {
+          "start": 347.842125,
+          "end": 348.25,
+          "text": "physics "
+        },
+        {
+          "start": 348.263166,
+          "end": 348.96054100000003,
+          "text": "integration, "
+        },
+        {
+          "start": 349.131583,
+          "end": 350.01316599999996,
+          "text": "accessibility, "
+        },
+        {
+          "start": 350.210541,
+          "end": 350.44737399999997,
+          "text": "or "
+        },
+        {
+          "start": 350.460541,
+          "end": 350.69737399999997,
+          "text": "real "
+        },
+        {
+          "start": 350.710541,
+          "end": 350.986874,
+          "text": "time "
+        },
+        {
+          "start": 351.0,
+          "end": 351.723666,
+          "text": "performance; "
+        },
+        {
+          "start": 352.013166,
+          "end": 352.249999,
+          "text": "those "
+        },
+        {
+          "start": 352.263166,
+          "end": 352.657916,
+          "text": "remain "
+        },
+        {
+          "start": 352.671041,
+          "end": 353.105249,
+          "text": "separate "
+        },
+        {
+          "start": 353.118416,
+          "end": 353.63158200000004,
+          "text": "consumer "
+        },
+        {
+          "start": 353.64475,
+          "end": 354.302625,
+          "text": "tasks."
+        }
+      ],
+      "attempts": [],
+      "decoded_samples": 821376
+    }
+  ],
+  "caption_count": 67,
+  "audio_stats": {
+    "samples": 8640000,
+    "duration_seconds": 360.0,
+    "sample_rate": 24000,
+    "peak_amplitude": 25919,
+    "peak_dbfs": -2.036633865454504,
+    "rms_dbfs": -22.657020005098985,
+    "nonzero_samples": 5920377,
+    "full_scale_peak": false
+  },
+  "assets": {
+    "narration.wav": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\narration.wav",
+      "bytes": 17280044,
+      "sha256": "ac2fe71e3f6a166986433100f231deb0658600e3354338fffc47c6bf58938589"
+    },
+    "narration.ass": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\narration.ass",
+      "bytes": 8108,
+      "sha256": "e343ede41d790810ce9b73193d131bddd08b54311e9e300911de657300fa81a2"
+    },
+    "narration.srt": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\narration.srt",
+      "bytes": 6617,
+      "sha256": "21792f04c309b2bdabd1858847c0b5c419eb2f21f3981c0eecee6554d28c8d8b"
+    },
+    "captions.json": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_generation\\territory_v6_media\\captions.json",
+      "bytes": 14312,
+      "sha256": "fb5e1479b70bfe853200958df77528fef97abf718d8371d8e5d23aa0e68c68bf"
+    }
+  },
+  "human_listening_status": "PENDING; measured timing and PCM checks do not establish listening acceptance"
+}

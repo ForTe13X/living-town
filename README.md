@@ -16,6 +16,10 @@
 [十分钟配音导览与下载](docs/town_walkthrough/README.md) · [运行与空间契约](docs/town_bridge/README.md)。
 3D 模型通过校验和验证的 Release 下载，未放入普通 Git 历史。Windows 使用 `./tools/run-town3d.ps1`；原像素地图使用 `./tools/run-town3d.ps1 -Legacy`。
 
+[![复合城镇扩展：五个街区、室内与地形](docs/media/territory-expansion-tour.gif)](https://github.com/ForTe13X/living-town/releases/download/town-territory-2026-10-20/expanded_town_architectural_tour.mp4)
+
+新增六分钟资产导览：实际 Godot 导入画面、Edge TTS 配音与字幕；GIF 为 20 秒节选。此扩展是 Blender / glTF 资产版本，现有居民玩法仍使用原滨海街区。
+
 ## 最近更新
 
 - 新增可实际生成的复合城镇扩展：五个相连街区、81 栋新建筑、153 层与 929 个带家具的房间分区；结合地形道路、细叶植被、CC0 PBR 与实际运行的 Infinigen 花盆工厂，输出 Blender 和分区 GLB。[规划、模型、导览与验证](docs/TERRITORY_EXPANSION.md)。
