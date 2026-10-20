@@ -1,0 +1,589 @@
+{
+  "schema": "living_town.scanned_export_verification.v1",
+  "status": "PASS",
+  "hero_manifest_sha256": "e9f1e0cc6db859fdae56125c1c4984ec4631ca105b143e5aa8bfaaa438956309",
+  "verifier_source_sha256": "c4f511437b45949af7ea030e15c25f6da64d09a92ee454e93a24257f7c576ee3",
+  "recorded_hero_source_modules": {
+    "tools\\asset_refinement\\hero_scene.py": "0b94cf1e0bbedce815cd65a245fa20d4272a7c48a7b5de718d8f9f625eb32c70",
+    "tools\\asset_refinement\\hero_furniture.py": "48af2b5ebe48b13ae9cc820874e5f4a7722964b710cf52bf8031ec75e6b77dd6",
+    "tools\\asset_refinement\\hero_foliage.py": "e1bc3999cdfca90b863395ffc12f0e1dd91524b151e35cf1783ecc09811f9b58",
+    "tools\\asset_refinement\\hero_surfaces.py": "2aba550aecd58ccdbc64b6ad3e2112221f75d72bbfcf9a04db5cf79888ba503e",
+    "tools\\asset_refinement\\materials.py": "c98ca7441773df6d9db0e85bf814c9da3539aa00b48226026b699bc9e212df48",
+    "tools\\asset_refinement\\hero_pbr.py": "6c957c31f9542b5928a415e213496b40205ef5e5dabed92769eed30aa4204125"
+  },
+  "current_hero_source_freshness_checked": false,
+  "scope": "Actual embedded scanned image pixels, ORM green, physical UV transform with Blender V-flip, PBR factors and vertex tangent coverage; independent from artistic approval and current-source acceptance.",
+  "exports": {
+    "cafe_hero.glb": {
+      "sha256": "cf4eb396f060086327738395f9d6626f1a3444820bbf64ad7c88c4ea7128fdaa",
+      "materials": [
+        {
+          "status": "PASS",
+          "material": "Hero_CabinetOak_Scan",
+          "physical_mapping_scale": [
+            1.0928961492338718,
+            1.0928961492338718
+          ],
+          "texcoord": 0,
+          "base_color_factor": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "roughness_factor": 0.8199999928474426,
+          "normal_strength": 1,
+          "matched_primitives": 156,
+          "matched_vertices": 56318,
+          "images": {
+            "basecolor": {
+              "image_index": 11,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "6064b628e227bd124e87e303d52ad8856799aa20da5e587c768df094cf7da87d",
+              "source_file_sha256": "6064b628e227bd124e87e303d52ad8856799aa20da5e587c768df094cf7da87d",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "RGB",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "8b7a61f330d0d81ca6863ed29beb808e257fbe02ad9a5a86668ed527bdf1344a",
+                "embedded_pixel_sha256": "8b7a61f330d0d81ca6863ed29beb808e257fbe02ad9a5a86668ed527bdf1344a"
+              }
+            },
+            "roughness": {
+              "image_index": 12,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "049d64085aeafd3341a60811cc94ceb0e74ae16ffe61da6774e0e5dca66f3cc5",
+              "source_file_sha256": "fc155b78bfa5775d60cbf8a291e8d21447a94d88cd1ddb81f695efb2caf5c9be",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "ORM green vs source L",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "0163229d74dd50f19f67fd9de26934606d3376472c655e14073cc9d01c170633",
+                "embedded_pixel_sha256": "0163229d74dd50f19f67fd9de26934606d3376472c655e14073cc9d01c170633"
+              }
+            },
+            "normal": {
+              "image_index": 10,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "5fb488f60f005cb34c23c9c493a37e685bbc54a1aa3c95345f77146b7d24c5ba",
+              "source_file_sha256": "5fb488f60f005cb34c23c9c493a37e685bbc54a1aa3c95345f77146b7d24c5ba",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "RGB",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "87fd68b827548f5024b6ddc2fee243d83b747ca9964922b84acc475d24a9c8d5",
+                "embedded_pixel_sha256": "87fd68b827548f5024b6ddc2fee243d83b747ca9964922b84acc475d24a9c8d5"
+              }
+            }
+          }
+        },
+        {
+          "status": "PASS",
+          "material": "Hero_HonedGranite_CC0",
+          "physical_mapping_scale": [
+            4.0,
+            4.0
+          ],
+          "texcoord": 0,
+          "base_color_factor": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "roughness_factor": 0.800000011920929,
+          "normal_strength": 0.3499999940395355,
+          "matched_primitives": 5,
+          "matched_vertices": 2382,
+          "images": {
+            "basecolor": {
+              "image_index": 1,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "e4aba6eceb81d3b24c6ebbe0c06fafbd93bc4ba22d8294dcd6c2a7bfe0f338bb",
+              "source_file_sha256": "e4aba6eceb81d3b24c6ebbe0c06fafbd93bc4ba22d8294dcd6c2a7bfe0f338bb",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "RGB",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "ec9035043318abbe55b1b96fd5be1f41b376bdda856b8d43058f42ece097608f",
+                "embedded_pixel_sha256": "ec9035043318abbe55b1b96fd5be1f41b376bdda856b8d43058f42ece097608f"
+              }
+            },
+            "roughness": {
+              "image_index": 9,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "55a0976eecd757c0a09370ad9285502f8bfc7df6b0315cfed15853132d3c8839",
+              "source_file_sha256": "fdb3baf01218eacb42a814fedc3f2ed0451109d35ef47155841a6b224efc9e08",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "ORM green vs source L",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "d7d6ef332e73f16a30b5b25a16ba504c8fbf640755d6176c831c863843d62c9d",
+                "embedded_pixel_sha256": "d7d6ef332e73f16a30b5b25a16ba504c8fbf640755d6176c831c863843d62c9d"
+              }
+            },
+            "normal": {
+              "image_index": 0,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "db1329fb40d0b24a1fd32ab73345e32cb60683965bdac54f8898fcc8919f22c6",
+              "source_file_sha256": "db1329fb40d0b24a1fd32ab73345e32cb60683965bdac54f8898fcc8919f22c6",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "RGB",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "daf43d7f9903d1db6a05a26ae8c2ea5456cb3ff8736225663a4bd798e55eaba5",
+                "embedded_pixel_sha256": "daf43d7f9903d1db6a05a26ae8c2ea5456cb3ff8736225663a4bd798e55eaba5"
+              }
+            }
+          }
+        },
+        {
+          "status": "PASS",
+          "material": "Hero_Limewash_Scan",
+          "physical_mapping_scale": [
+            2.0,
+            2.0
+          ],
+          "texcoord": 0,
+          "base_color_factor": [
+            0.9800000190734863,
+            0.9800000190734863,
+            0.9800000190734863,
+            1
+          ],
+          "roughness_factor": 1,
+          "normal_strength": 0.5,
+          "matched_primitives": 4,
+          "matched_vertices": 1584,
+          "images": {
+            "basecolor": {
+              "image_index": 7,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "dc6999674fa0a34708c6c4c076c150b5df1bb1392d54dcdc4f93056090f4b081",
+              "source_file_sha256": "dc6999674fa0a34708c6c4c076c150b5df1bb1392d54dcdc4f93056090f4b081",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "RGB",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "c8012fe8c19189e199f7f30196905a36bc06928a4642e68584660d9b7f84a884",
+                "embedded_pixel_sha256": "c8012fe8c19189e199f7f30196905a36bc06928a4642e68584660d9b7f84a884"
+              }
+            },
+            "roughness": {
+              "image_index": 8,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "72a4d31be21e44613762255ff91b5f217d858f94dcdc5db96cc74f4a6ecd34c9",
+              "source_file_sha256": "5a1f122e5ae0f238954b784c1bdaa0c6603544d3fe1733cd35d6f8fe5a38b38a",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "ORM green vs source L",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "9e2a914b0388324d0ea003a81bb4ea63ae0b27afbde0f06cc20ac1b9dc7f1fa4",
+                "embedded_pixel_sha256": "9e2a914b0388324d0ea003a81bb4ea63ae0b27afbde0f06cc20ac1b9dc7f1fa4"
+              }
+            },
+            "normal": {
+              "image_index": 6,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "47bc555fa18b55e437c2b5d72da0a2a5b4e88e82b05377de465ad64635c5bdcc",
+              "source_file_sha256": "47bc555fa18b55e437c2b5d72da0a2a5b4e88e82b05377de465ad64635c5bdcc",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "RGB",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "925c24df94000a90f899fb7f44923b162eb72c06779dbadba2619aa6ce3f1328",
+                "embedded_pixel_sha256": "925c24df94000a90f899fb7f44923b162eb72c06779dbadba2619aa6ce3f1328"
+              }
+            }
+          }
+        },
+        {
+          "status": "PASS",
+          "material": "Hero_CutGranite_CC0",
+          "physical_mapping_scale": [
+            4.0,
+            4.0
+          ],
+          "texcoord": 0,
+          "base_color_factor": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "roughness_factor": 1,
+          "normal_strength": 0.25,
+          "matched_primitives": 4,
+          "matched_vertices": 2064,
+          "images": {
+            "basecolor": {
+              "image_index": 1,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "e4aba6eceb81d3b24c6ebbe0c06fafbd93bc4ba22d8294dcd6c2a7bfe0f338bb",
+              "source_file_sha256": "e4aba6eceb81d3b24c6ebbe0c06fafbd93bc4ba22d8294dcd6c2a7bfe0f338bb",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "RGB",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "ec9035043318abbe55b1b96fd5be1f41b376bdda856b8d43058f42ece097608f",
+                "embedded_pixel_sha256": "ec9035043318abbe55b1b96fd5be1f41b376bdda856b8d43058f42ece097608f"
+              }
+            },
+            "roughness": {
+              "image_index": 2,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "a6634ac75d8dc45a260f3f014f4fb3eb26c1cf657d21c73b1f3c5036e5cbbab9",
+              "source_file_sha256": "4c0b7a62c387da4265a5fe3ee3ff30b4b1720a2c5fc0154694c499eb43177e08",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "ORM green vs source L",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "8cc1edb50da960ccfea6603628ee070012b3af6216bd9fc904efe34ef58118fd",
+                "embedded_pixel_sha256": "8cc1edb50da960ccfea6603628ee070012b3af6216bd9fc904efe34ef58118fd"
+              }
+            },
+            "normal": {
+              "image_index": 0,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "db1329fb40d0b24a1fd32ab73345e32cb60683965bdac54f8898fcc8919f22c6",
+              "source_file_sha256": "db1329fb40d0b24a1fd32ab73345e32cb60683965bdac54f8898fcc8919f22c6",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "RGB",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "daf43d7f9903d1db6a05a26ae8c2ea5456cb3ff8736225663a4bd798e55eaba5",
+                "embedded_pixel_sha256": "daf43d7f9903d1db6a05a26ae8c2ea5456cb3ff8736225663a4bd798e55eaba5"
+              }
+            }
+          }
+        },
+        {
+          "status": "PASS",
+          "material": "Hero_InteriorFloor_Scan",
+          "physical_mapping_scale": [
+            1.0,
+            1.0
+          ],
+          "texcoord": 0,
+          "base_color_factor": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "roughness_factor": 1,
+          "normal_strength": 1,
+          "matched_primitives": 1,
+          "matched_vertices": 24,
+          "images": {
+            "basecolor": {
+              "image_index": 4,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "bf1db414fdf3498067af124add8b6417bb48291152e7ce8793291e5c5101297d",
+              "source_file_sha256": "bf1db414fdf3498067af124add8b6417bb48291152e7ce8793291e5c5101297d",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "RGB",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "ef9fbb045656888337adc646df15da4f267f5dfa07516cc10b133a0a139a98b5",
+                "embedded_pixel_sha256": "ef9fbb045656888337adc646df15da4f267f5dfa07516cc10b133a0a139a98b5"
+              }
+            },
+            "roughness": {
+              "image_index": 5,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "c9253224c2f7dbd02255e615e995b72685fd79157c78a4e729b721e9bda63034",
+              "source_file_sha256": "e539202add3c0ab0e1a9d1473f47453d82e404940e87ffd22fb90de09629b1ee",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "ORM green vs source L",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "bce3a13ed121716e7f496d6419a2677163ebfcd6651c8ffbe12445b78c9cac50",
+                "embedded_pixel_sha256": "bce3a13ed121716e7f496d6419a2677163ebfcd6651c8ffbe12445b78c9cac50"
+              }
+            },
+            "normal": {
+              "image_index": 3,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "91eada77f4c409f37062cb1c50777d88a2b77011a958fa9e5f96cb9c6e55c894",
+              "source_file_sha256": "91eada77f4c409f37062cb1c50777d88a2b77011a958fa9e5f96cb9c6e55c894",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "RGB",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "4701ce819cc89b6e72f0282b930d5dad740b24fdff76e81e83a5f0d8a35601bc",
+                "embedded_pixel_sha256": "4701ce819cc89b6e72f0282b930d5dad740b24fdff76e81e83a5f0d8a35601bc"
+              }
+            }
+          }
+        }
+      ],
+      "extensions_required": [
+        "KHR_texture_transform"
+      ],
+      "extensions_used": [
+        "KHR_materials_transmission",
+        "KHR_materials_ior",
+        "KHR_texture_transform"
+      ]
+    },
+    "input/counter.glb": {
+      "sha256": "15d6c0973fd06695368a65fdd69ed988a134aa246dc61046131d4bb4b4114fde",
+      "materials": [
+        {
+          "status": "PASS",
+          "material": "Hero_CabinetOak_Scan",
+          "physical_mapping_scale": [
+            1.0928961492338718,
+            1.0928961492338718
+          ],
+          "texcoord": 0,
+          "base_color_factor": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "roughness_factor": 0.8199999928474426,
+          "normal_strength": 1,
+          "matched_primitives": 54,
+          "matched_vertices": 28960,
+          "images": {
+            "basecolor": {
+              "image_index": 1,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "6064b628e227bd124e87e303d52ad8856799aa20da5e587c768df094cf7da87d",
+              "source_file_sha256": "6064b628e227bd124e87e303d52ad8856799aa20da5e587c768df094cf7da87d",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "RGB",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "8b7a61f330d0d81ca6863ed29beb808e257fbe02ad9a5a86668ed527bdf1344a",
+                "embedded_pixel_sha256": "8b7a61f330d0d81ca6863ed29beb808e257fbe02ad9a5a86668ed527bdf1344a"
+              }
+            },
+            "roughness": {
+              "image_index": 2,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "049d64085aeafd3341a60811cc94ceb0e74ae16ffe61da6774e0e5dca66f3cc5",
+              "source_file_sha256": "fc155b78bfa5775d60cbf8a291e8d21447a94d88cd1ddb81f695efb2caf5c9be",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "ORM green vs source L",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "0163229d74dd50f19f67fd9de26934606d3376472c655e14073cc9d01c170633",
+                "embedded_pixel_sha256": "0163229d74dd50f19f67fd9de26934606d3376472c655e14073cc9d01c170633"
+              }
+            },
+            "normal": {
+              "image_index": 0,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "5fb488f60f005cb34c23c9c493a37e685bbc54a1aa3c95345f77146b7d24c5ba",
+              "source_file_sha256": "5fb488f60f005cb34c23c9c493a37e685bbc54a1aa3c95345f77146b7d24c5ba",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "RGB",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "87fd68b827548f5024b6ddc2fee243d83b747ca9964922b84acc475d24a9c8d5",
+                "embedded_pixel_sha256": "87fd68b827548f5024b6ddc2fee243d83b747ca9964922b84acc475d24a9c8d5"
+              }
+            }
+          }
+        },
+        {
+          "status": "PASS",
+          "material": "Hero_HonedGranite_CC0",
+          "physical_mapping_scale": [
+            4.0,
+            4.0
+          ],
+          "texcoord": 0,
+          "base_color_factor": [
+            1,
+            1,
+            1,
+            1
+          ],
+          "roughness_factor": 0.800000011920929,
+          "normal_strength": 0.3499999940395355,
+          "matched_primitives": 1,
+          "matched_vertices": 534,
+          "images": {
+            "basecolor": {
+              "image_index": 4,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "e4aba6eceb81d3b24c6ebbe0c06fafbd93bc4ba22d8294dcd6c2a7bfe0f338bb",
+              "source_file_sha256": "e4aba6eceb81d3b24c6ebbe0c06fafbd93bc4ba22d8294dcd6c2a7bfe0f338bb",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "RGB",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "ec9035043318abbe55b1b96fd5be1f41b376bdda856b8d43058f42ece097608f",
+                "embedded_pixel_sha256": "ec9035043318abbe55b1b96fd5be1f41b376bdda856b8d43058f42ece097608f"
+              }
+            },
+            "roughness": {
+              "image_index": 5,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "55a0976eecd757c0a09370ad9285502f8bfc7df6b0315cfed15853132d3c8839",
+              "source_file_sha256": "fdb3baf01218eacb42a814fedc3f2ed0451109d35ef47155841a6b224efc9e08",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "ORM green vs source L",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "d7d6ef332e73f16a30b5b25a16ba504c8fbf640755d6176c831c863843d62c9d",
+                "embedded_pixel_sha256": "d7d6ef332e73f16a30b5b25a16ba504c8fbf640755d6176c831c863843d62c9d"
+              }
+            },
+            "normal": {
+              "image_index": 3,
+              "mime_type": "image/png",
+              "embedded_image_sha256": "db1329fb40d0b24a1fd32ab73345e32cb60683965bdac54f8898fcc8919f22c6",
+              "source_file_sha256": "db1329fb40d0b24a1fd32ab73345e32cb60683965bdac54f8898fcc8919f22c6",
+              "pixel_comparison": {
+                "status": "PASS",
+                "dimensions": [
+                  2048,
+                  2048
+                ],
+                "compared_channels": "RGB",
+                "maximum_absolute_channel_difference": 0,
+                "acceptance_tolerance": 1,
+                "exact_pixels": true,
+                "source_pixel_sha256": "daf43d7f9903d1db6a05a26ae8c2ea5456cb3ff8736225663a4bd798e55eaba5",
+                "embedded_pixel_sha256": "daf43d7f9903d1db6a05a26ae8c2ea5456cb3ff8736225663a4bd798e55eaba5"
+              }
+            }
+          }
+        }
+      ],
+      "extensions_required": [
+        "KHR_texture_transform"
+      ],
+      "extensions_used": [
+        "KHR_texture_transform"
+      ]
+    }
+  },
+  "engine_executed": false
+}

@@ -1,0 +1,281 @@
+{
+  "schema": "living-town.asset-refinement-workflows.v1",
+  "status": "OFFLINE_LAYOUTS_READY_INFERENCE_NOT_RUN",
+  "default_workflow": "multiview_owned_views.json",
+  "execution": {
+    "permitted": false,
+    "performed": false,
+    "installs": false,
+    "downloads_models": false,
+    "queues_comfyui": false,
+    "runtime_tested": false,
+    "reason": "Static source customization only; model/dependency license and backend gates remain."
+  },
+  "source_files": [
+    {
+      "path": "PixelArtistry-UltraTex/LICENSE",
+      "source_url": "https://raw.githubusercontent.com/pixelartistry/PixelArtistry-UltraTex/64eb9ad10454a51be1c88a7a879b839ced0475c9/LICENSE",
+      "repository": "https://github.com/pixelartistry/PixelArtistry-UltraTex",
+      "commit": "64eb9ad10454a51be1c88a7a879b839ced0475c9",
+      "sha256": "c5a8cf1fecea4a01a03802831f529b1474c7b72bde15c01356395ccf17ec73d8",
+      "bytes": 1377,
+      "license": "MIT",
+      "scope": "Workflow repository source only; dependencies and model weights have separate licenses."
+    },
+    {
+      "path": "PixelArtistry-UltraTex/workflows/UltraTex - 1 Standard 6 views PBR.json",
+      "source_url": "https://raw.githubusercontent.com/pixelartistry/PixelArtistry-UltraTex/64eb9ad10454a51be1c88a7a879b839ced0475c9/workflows/UltraTex%20-%201%20Standard%206%20views%20PBR.json",
+      "repository": "https://github.com/pixelartistry/PixelArtistry-UltraTex",
+      "commit": "64eb9ad10454a51be1c88a7a879b839ced0475c9",
+      "sha256": "bdc592e8804e502ae4e8db584bb3b1f2e8804f43d2ef13aef3b106604303133c",
+      "bytes": 25724,
+      "license": "MIT",
+      "scope": "Workflow repository source only; dependencies and model weights have separate licenses."
+    },
+    {
+      "path": "PixelArtistry-Pixal3D-MultiView/LICENSE",
+      "source_url": "https://raw.githubusercontent.com/pixelartistry/PixelArtistry-Pixal3D-MultiView/7cbc1269705d8ba508f6e7a44ffdee44d0ab8f0c/LICENSE",
+      "repository": "https://github.com/pixelartistry/PixelArtistry-Pixal3D-MultiView",
+      "commit": "7cbc1269705d8ba508f6e7a44ffdee44d0ab8f0c",
+      "sha256": "95bdac4f86eb398017eb69ee75488ddf54200edb0569f960bf7bffbe54d02c29",
+      "bytes": 1070,
+      "license": "MIT",
+      "scope": "Workflow repository source only; dependencies and model weights have separate licenses."
+    },
+    {
+      "path": "PixelArtistry-Pixal3D-MultiView/workflows/PixelArtistry_Qwen2.1_Turnaround_to_Pixal3D_Multiview.json",
+      "source_url": "https://raw.githubusercontent.com/pixelartistry/PixelArtistry-Pixal3D-MultiView/7cbc1269705d8ba508f6e7a44ffdee44d0ab8f0c/workflows/PixelArtistry_Qwen2.1_Turnaround_to_Pixal3D_Multiview.json",
+      "repository": "https://github.com/pixelartistry/PixelArtistry-Pixal3D-MultiView",
+      "commit": "7cbc1269705d8ba508f6e7a44ffdee44d0ab8f0c",
+      "sha256": "d22cdfccfe1ca72c69bc27ce4664ac2ade1e718b0f18c0d3c81a2a1362a294f6",
+      "bytes": 277375,
+      "license": "MIT",
+      "scope": "Workflow repository source only; dependencies and model weights have separate licenses."
+    }
+  ],
+  "inputs": {
+    "mesh": {
+      "path": "../prepared_v9/counter.glb",
+      "sha256": "15d6c0973fd06695368a65fdd69ed988a134aa246dc61046131d4bb4b4114fde",
+      "bytes": 33167720
+    },
+    "reference": {
+      "path": "../prepared_v9/front.png",
+      "sha256": "5a5d9b51c36dad5de9bf4a2aaca7acc832113e420b0d883a1013b63056fe8e9e",
+      "bytes": 362009
+    },
+    "sheet": {
+      "path": "../prepared_v9/turnaround_sheet.png",
+      "sha256": "6e79a0e345ac08ddf47b9f551b41b6e8213242af10e1525ce05f3192ccf14e18",
+      "bytes": 914658
+    },
+    "view_front": {
+      "path": "../prepared_v9/front.png",
+      "sha256": "5a5d9b51c36dad5de9bf4a2aaca7acc832113e420b0d883a1013b63056fe8e9e",
+      "bytes": 362009
+    },
+    "view_left": {
+      "path": "../prepared_v9/left.png",
+      "sha256": "655399a06b6e51df5f70408ac1917688f7123544b26c417448099f83c0d170cd",
+      "bytes": 106333
+    },
+    "view_back": {
+      "path": "../prepared_v9/back.png",
+      "sha256": "97f3da37911a6ff8bb36744fc0843f738aaaa820ad48bcb4909e379f3195670f",
+      "bytes": 325366
+    },
+    "view_right": {
+      "path": "../prepared_v9/right.png",
+      "sha256": "3af4001c1d23051168fc4e8673d31d79866a3bb4283b101cf45114e70e968ee9",
+      "bytes": 116180
+    }
+  },
+  "image_contract": {
+    "reference": {
+      "width": 1024,
+      "height": 1024,
+      "color_type": 6,
+      "bit_depth": 8,
+      "validation": "PNG IHDR only; visual review is separate"
+    },
+    "sheet": {
+      "width": 4096,
+      "height": 1024,
+      "color_type": 6,
+      "bit_depth": 8,
+      "validation": "PNG IHDR only; visual review is separate"
+    },
+    "owned_views": [
+      "front",
+      "left",
+      "back",
+      "right"
+    ],
+    "panel_size": [
+      1024,
+      1024
+    ],
+    "panel_rectangles": [
+      {
+        "view": "front",
+        "x": 0,
+        "y": 0,
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "view": "left",
+        "x": 1024,
+        "y": 0,
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "view": "back",
+        "x": 2048,
+        "y": 0,
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "view": "right",
+        "x": 3072,
+        "y": 0,
+        "width": 1024,
+        "height": 1024
+      }
+    ],
+    "views_match_sheet_pixels_verified": false,
+    "note": "Source-bound dimensions only; owned Blender render/camera and visual checks establish correspondence."
+  },
+  "manual_input_staging": {
+    "performed": false,
+    "destination_root": "ComfyUI/input",
+    "files": [
+      {
+        "input_role": "mesh",
+        "destination": "living_town_refinement/counter.glb"
+      },
+      {
+        "input_role": "reference",
+        "destination": "living_town_refinement/reference.png"
+      },
+      {
+        "input_role": "view_front",
+        "destination": "living_town_refinement/front.png"
+      },
+      {
+        "input_role": "view_left",
+        "destination": "living_town_refinement/left.png"
+      },
+      {
+        "input_role": "view_back",
+        "destination": "living_town_refinement/back.png"
+      },
+      {
+        "input_role": "view_right",
+        "destination": "living_town_refinement/right.png"
+      }
+    ],
+    "note": "Future approved runtime must explicitly stage these files. No host files are copied by this adapter."
+  },
+  "uv": {
+    "atlas_validated_by_caller": false,
+    "ultratex_mode": "comfy_gpu",
+    "audit_performed_by_adapter": false,
+    "required_contract": "Unique non-overlapping 0..1 UV atlas on the exact input mesh; metric/repeating UVs are ineligible."
+  },
+  "parameters": {
+    "ultratex": {
+      "views": 6,
+      "sampler_resolution": 1024,
+      "sampler_steps": 25,
+      "paired_albedo_mr_seed": 12345,
+      "bake_texture_size": 2048,
+      "text_prompt": "",
+      "model_variant": "9B-specific; blocked"
+    },
+    "multiview": {
+      "view_order": [
+        "front",
+        "left",
+        "back",
+        "right"
+      ],
+      "conditioning_fov": 20,
+      "research_edit_resolution": [
+        4096,
+        1024
+      ],
+      "research_edit_steps": 25,
+      "research_prompt_enhancement": false,
+      "owned_view_alpha": "Files retain RGBA; ComfyUI LoadImage exposes RGB IMAGE and inverse-alpha MASK separately. Default conditioning receives IMAGE; no inference validation is claimed."
+    }
+  },
+  "gates": {
+    "workflow_source": {
+      "status": "MIT",
+      "scope": "Only the four vendored source files; preserve both license notices."
+    },
+    "ultratex_9b": {
+      "status": "BLOCKED_NONCOMMERCIAL",
+      "model": "FLUX.2 Klein base 9B",
+      "note": "Separate base-weight terms; matching UltraTex LoRA is 9B-specific. No 4B compatibility claim."
+    },
+    "qwen_research": {
+      "status": "BLOCKED_RESEARCH_LICENSE",
+      "model": "Qwen-Image 2.1"
+    },
+    "owned_multiview": {
+      "status": "MANUAL_REVIEW_REQUIRED",
+      "pixal3d_weight_license": "MIT; does not clear the whole pipeline",
+      "pending": [
+        "DINOv3 weight license eligibility",
+        "Every required node and dependency license",
+        "AMD 8060S backend compatibility and resource test",
+        "Generated mesh and PBR quality review"
+      ],
+      "avoided": [
+        "Qwen generation weights",
+        "Prompt enhancer weights",
+        "Background removal weights"
+      ],
+      "note": "No inference or performance claim; owned RGBA views go directly to the original conditioning node."
+    }
+  },
+  "workflows": {
+    "multiview_owned_views.json": {
+      "sha256": "cd260d4933866f5ba890b2c174c01f92bfccf7124ecbacd48302644141dc5412",
+      "bytes": 223615,
+      "integrity": {
+        "status": "PASS",
+        "scopes": 3,
+        "nodes": 109,
+        "links": 199,
+        "runtime_execution_tested": false
+      }
+    },
+    "multiview_qwen_research_BLOCKED.json": {
+      "sha256": "2837b6b0b54c322926c06943af003e2bc059e5aec8c53bc0e772f38b2bdfd4e8",
+      "bytes": 221586,
+      "integrity": {
+        "status": "PASS",
+        "scopes": 3,
+        "nodes": 106,
+        "links": 199,
+        "runtime_execution_tested": false
+      }
+    },
+    "ultratex_standard_9b_BLOCKED.json": {
+      "sha256": "8fd6ab12a17ba6cc8de2705d7a97f87f38f9f748a68a1e994af9c7f433401ea1",
+      "bytes": 31451,
+      "integrity": {
+        "status": "PASS",
+        "scopes": 1,
+        "nodes": 26,
+        "links": 25,
+        "runtime_execution_tested": false
+      }
+    }
+  }
+}

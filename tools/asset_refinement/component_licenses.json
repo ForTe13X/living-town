@@ -1,0 +1,736 @@
+{
+  "schema_version": 1,
+  "checked_date": "2026-10-20",
+  "review_scope": "Published licenses and model cards at pinned revisions. Subsequent standalone full-precision weights were downloaded and SHA-verified; Vulkan inference was interrupted by a host reboot and produced no usable image. No upstream installer or ComfyUI inference was run.",
+  "license_free_interpretation": "Royalty-free commercial-capable authoring components, with applicable attribution, notice, redistribution and other license conditions. Not public domain.",
+  "default_adoption": {
+    "allowed": [
+      "pixel_ultratex_authored_files",
+      "pixel_pixal3d_authored_files",
+      "original_blender_views_and_alpha"
+    ],
+    "excluded": [
+      "flux_klein_base_9b",
+      "ultratex_released_checkpoints",
+      "qwen_image_21",
+      "bria_rmbg_20"
+    ],
+    "optional_backend": "Pixal3D only after exact dependency provenance and licenses are reviewed; local inference and AMD compatibility are unverified.",
+    "allowed_model_experiments": [
+      "flux2_klein4b_standalone_stack"
+    ],
+    "eligible_later_model_candidates": [
+      "qwen_image_edit_2511",
+      "qwen_image_edit_2509",
+      "qwen_image_2512"
+    ]
+  },
+  "output_boundary": "Model/tool permissions do not grant rights in reference images, establish output originality, or automatically license all generated assets under the tool license.",
+  "components": [
+    {
+      "id": "pixel_ultratex_authored_files",
+      "name": "PixelArtistry UltraTex installer, workflow layouts and notes",
+      "pins": {
+        "github_main": "64eb9ad10454a51be1c88a7a879b839ced0475c9"
+      },
+      "published_license": "MIT",
+      "adoption": "allowed",
+      "reason": "MIT applies to authored repository files, not third-party nodes or models. Retain copyright and license notices.",
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/pixelartistry/PixelArtistry-UltraTex/64eb9ad10454a51be1c88a7a879b839ced0475c9/LICENSE",
+          "document_kind": "license",
+          "sha256": "c5a8cf1fecea4a01a03802831f529b1474c7b72bde15c01356395ccf17ec73d8"
+        }
+      ]
+    },
+    {
+      "id": "pixel_pixal3d_authored_files",
+      "name": "PixelArtistry Pixal3D Multiview workflow and scripts",
+      "pins": {
+        "github_main": "7cbc1269705d8ba508f6e7a44ffdee44d0ab8f0c"
+      },
+      "published_license": "MIT",
+      "adoption": "allowed",
+      "reason": "Adapt graph layout and exact-view preparation with notices. This decision excludes the original Qwen 2.1 and all unreviewed model execution.",
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/pixelartistry/PixelArtistry-Pixal3D-Multiview/7cbc1269705d8ba508f6e7a44ffdee44d0ab8f0c/LICENSE",
+          "document_kind": "license",
+          "sha256": "95bdac4f86eb398017eb69ee75488ddf54200edb0569f960bf7bffbe54d02c29"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/pixelartistry/PixelArtistry-Pixal3D-Multiview/7cbc1269705d8ba508f6e7a44ffdee44d0ab8f0c/README.md",
+          "document_kind": "method-and-dependencies",
+          "sha256": null
+        }
+      ]
+    },
+    {
+      "id": "original_blender_views_and_alpha",
+      "name": "Original Living Town Blender orthographic views and alpha masks",
+      "pins": {},
+      "published_license": "Project-owned source assets; existing asset license records remain authoritative",
+      "adoption": "allowed",
+      "reason": "Use original renders and masks instead of unapproved image-generation or segmentation weights. This is a workflow decision, not a grant of rights over outside reference images.",
+      "sources": []
+    },
+    {
+      "id": "ultratex_code",
+      "name": "Official UltraTex code",
+      "pins": {
+        "github_main": "a726678f3f3631fe2c5e3d1fb4597114784c7a8b"
+      },
+      "published_license": "MIT; vendored sparse-attention files identified upstream as Apache-2.0",
+      "adoption": "eligible-code-only",
+      "reason": "Keep included files and notices under their own terms. The MIT code license does not approve the released model checkpoint license.",
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/yiboz2001/UltraTex/a726678f3f3631fe2c5e3d1fb4597114784c7a8b/LICENSE",
+          "document_kind": "license",
+          "sha256": "1d0ddbb9d271e32eee95c487afb53e2d336bce67c2c0e601cda263ed13a1f419"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/yiboz2001/UltraTex/a726678f3f3631fe2c5e3d1fb4597114784c7a8b/README.md",
+          "document_kind": "checkpoint-compatibility-and-vendored-code",
+          "sha256": null
+        }
+      ]
+    },
+    {
+      "id": "visualbruno_ultratex_nodes",
+      "name": "visualbruno ComfyUI UltraTex nodes",
+      "pins": {
+        "github_main": "8137da52ed8352305cb7825b39c36a250bf2507a"
+      },
+      "published_license": "MIT",
+      "adoption": "eligible-code-only",
+      "reason": "Adaptation requires MIT notices; model use remains separately excluded.",
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/visualbruno/ComfyUI-UltraTex/8137da52ed8352305cb7825b39c36a250bf2507a/LICENSE",
+          "document_kind": "license",
+          "sha256": "1d0ddbb9d271e32eee95c487afb53e2d336bce67c2c0e601cda263ed13a1f419"
+        }
+      ]
+    },
+    {
+      "id": "flux_klein_base_9b",
+      "name": "FLUX.2 Klein base 9B and fp8/GGUF derivatives",
+      "pins": {
+        "huggingface_base": "32773329fbe7e81a90ef971740e8ba4b0364ecf3",
+        "huggingface_fp8": "9ecf2143d71542449960c5584340269c6d401449"
+      },
+      "published_license": "FLUX Non-Commercial License v2.1",
+      "adoption": "excluded",
+      "reason": "Noncommercial model operation only absent a separate commercial license. The separate commercial-output permission does not make production model operation unrestricted. fp8 access is auto-gated.",
+      "sources": [
+        {
+          "url": "https://huggingface.co/black-forest-labs/FLUX.2-klein-base-9B/blob/32773329fbe7e81a90ef971740e8ba4b0364ecf3/LICENSE.md",
+          "document_kind": "license",
+          "sha256": null,
+          "note": "Actual license read in public HTML; raw unauthenticated file request returned 401, so no raw-byte document hash is asserted."
+        }
+      ],
+      "model_operation_commercial_capable": false,
+      "output_terms": "License section 2(d) permits commercial outputs subject to its terms and prohibits output use to train, fine-tune or distill a competing FLUX model."
+    },
+    {
+      "id": "ultratex_released_checkpoints",
+      "name": "UltraTex released albedo/MR LoRAs and foreground-aware decoder",
+      "pins": {
+        "modelscope_revision": null
+      },
+      "published_license": "Standalone checkpoint license not verified; requires separately licensed 9B backbone",
+      "adoption": "excluded",
+      "reason": "Accessible ModelScope page did not yield verifiable checkpoint license/revision. Code MIT is insufficient. Released 9B LoRAs do not fit the Apache 4B backbone.",
+      "sources": [
+        {
+          "url": "https://www.modelscope.ai/models/Yibo-Zhang/UltraTex",
+          "document_kind": "unverified-checkpoint-host",
+          "sha256": null
+        },
+        {
+          "url": "https://raw.githubusercontent.com/yiboz2001/UltraTex/a726678f3f3631fe2c5e3d1fb4597114784c7a8b/README.md",
+          "document_kind": "released-checkpoints-and-4b-incompatibility",
+          "sha256": null
+        }
+      ],
+      "checkpoint_revision_verified": false
+    },
+    {
+      "id": "flux_klein_base_4b",
+      "name": "FLUX.2 Klein base 4B",
+      "pins": {
+        "huggingface": "a3b4f4849157f664bdbc776fd7453c2783562f4d"
+      },
+      "published_license": "Apache-2.0",
+      "adoption": "allowed-model-experiment",
+      "reason": "Actual model LICENSE is Apache-2.0. Eligible standalone image model with separately cleared Qwen3-4B and FLUX.2 autoencoder. This is not UltraTex: its released 9B LoRAs remain incompatible with 4B (4096 vs 3072 hidden width). Local quality unverified.",
+      "sources": [
+        {
+          "url": "https://huggingface.co/black-forest-labs/FLUX.2-klein-base-4B/raw/a3b4f4849157f664bdbc776fd7453c2783562f4d/LICENSE.md",
+          "document_kind": "license",
+          "sha256": "ca02bc51900ab07789d1b70283329e7137f5af98f5161c23a1c81fc38a4af1fe"
+        },
+        {
+          "url": "https://huggingface.co/black-forest-labs/FLUX.2-klein-base-4B/raw/a3b4f4849157f664bdbc776fd7453c2783562f4d/README.md",
+          "document_kind": "model-card",
+          "sha256": "728ef6804ff3f38528c24ab9e3d168d579e77d57342c30ea01310eaa70e95016"
+        }
+      ]
+    },
+    {
+      "id": "qwen_image_21",
+      "name": "Qwen-Image 2.1 and its Comfy-Org workflow bundle",
+      "pins": {
+        "huggingface_original": "d26bb61231c349cf6b7896fa83353113880e1ba3",
+        "huggingface_repackage": "a8342359c61979b06a8dafb1a47991fe1f30e994"
+      },
+      "published_license": "Qwen RESEARCH LICENSE AGREEMENT, 2026-09-20",
+      "adoption": "excluded",
+      "reason": "Research/evaluation only. Commercial model use requires a separate license. Do not infer Apache terms from other Qwen families. Bundled encoder/VAE and optional enhancers are not independently approved.",
+      "sources": [
+        {
+          "url": "https://huggingface.co/Qwen/Qwen-Image-2.1/raw/d26bb61231c349cf6b7896fa83353113880e1ba3/LICENSE",
+          "document_kind": "license",
+          "sha256": "8dc973f024ff95966bea25866efa443fd16776dcb1001e681e3d467ea572b28d"
+        },
+        {
+          "url": "https://huggingface.co/Comfy-Org/Qwen-Image-2.1/raw/a8342359c61979b06a8dafb1a47991fe1f30e994/README.md",
+          "document_kind": "model-card",
+          "sha256": "d2b94f91c9424a5758aef64838a967a7bce6e94deda1468aba60d75b5d4c468c"
+        }
+      ],
+      "model_operation_commercial_capable": false
+    },
+    {
+      "id": "pixal3d",
+      "name": "Tencent Pixal3D code and model weights; Comfy-Org repackage",
+      "pins": {
+        "github_master": "f7cf38429b0bd264f1995f0f8743a88b1c728b94",
+        "huggingface_original": "b0cb2e1b794cab9aa0ac38a95d794a4d9337437f",
+        "huggingface_repackage": "f37641be376725d324c56626007cc477f1249a69"
+      },
+      "published_license": "MIT for Tencent released code, parameters, weights and documentation; third parties retain their own terms",
+      "adoption": "conditional-backend",
+      "reason": "Eligible only after exact model dependencies are reviewed. No AMD backend or inference quality claim. NOTICE names DINOv2 Apache but actual pipeline and Comfy file use separately licensed DINOv3.",
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/TencentARC/Pixal3D/f7cf38429b0bd264f1995f0f8743a88b1c728b94/LICENSE",
+          "document_kind": "code-license",
+          "sha256": "8e28d8efae5a9ac269c3b7c5df67a5ea4b5f1ae02543d6407dc35ea4b8346ab7"
+        },
+        {
+          "url": "https://huggingface.co/TencentARC/Pixal3D/raw/b0cb2e1b794cab9aa0ac38a95d794a4d9337437f/LICENSE",
+          "document_kind": "license",
+          "sha256": "31d37e9c4fee1e0cd2196bccd592e8a2c30bfa17ea177d70ad25f977ba6bd9c0"
+        },
+        {
+          "url": "https://huggingface.co/TencentARC/Pixal3D/raw/b0cb2e1b794cab9aa0ac38a95d794a4d9337437f/NOTICE",
+          "document_kind": "third-party-notice",
+          "sha256": "2d9c4437b2c3264dcea406c6af5066c0b21c7a7b34384c567dc6551b9129f815"
+        },
+        {
+          "url": "https://huggingface.co/Comfy-Org/Pixal3D/raw/f37641be376725d324c56626007cc477f1249a69/README.md",
+          "document_kind": "model-card",
+          "sha256": "5c4b3d1cdbc1ccffa51a05214336594f487131d0442c4042d00eaebac79587c7"
+        },
+        {
+          "url": "https://huggingface.co/TencentARC/Pixal3D/raw/b0cb2e1b794cab9aa0ac38a95d794a4d9337437f/pipeline.json",
+          "document_kind": "actual-default-dependencies",
+          "sha256": "1647217de06e32477702d14895e826fea73497d94537b809a53637f13482a237"
+        }
+      ],
+      "dependency_ids": [
+        "trellis2_vaes",
+        "dinov3",
+        "birefnet"
+      ],
+      "excluded_default_dependency": "bria_rmbg_20",
+      "published_lfs_files": [
+        {
+          "path": "diffusion_models/pixal3d_multiview_int8_convrot.safetensors",
+          "bytes": 5584555824,
+          "sha256": "6b1eb3328930d921d3b57508d9c46cceec1c174dcedeebc14f176ab67d49f477"
+        },
+        {
+          "path": "clip_vision/dino_v3_L_naf_fp32.safetensors",
+          "bytes": 1215214176,
+          "sha256": "4ad2ec4e0879a5b5b04cd97325cc37da954a7b6edca5170b86510f17f2b2290f"
+        }
+      ],
+      "lfs_hash_provenance": "Hugging Face tree API metadata at pinned repackage revision, not locally downloaded weights."
+    },
+    {
+      "id": "trellis2_vaes",
+      "name": "TRELLIS.2 shape/texture VAEs",
+      "pins": {
+        "huggingface_microsoft_model": "af44b45f2e35a493886929c6d786e563ec68364d",
+        "huggingface_comfy_repackage": "f37641be376725d324c56626007cc477f1249a69"
+      },
+      "published_license": "MIT stated by original Microsoft model card and Tencent NOTICE",
+      "adoption": "eligible-candidate",
+      "reason": "Retain original notices; separate DINO and background-remover terms still apply.",
+      "sources": [
+        {
+          "url": "https://huggingface.co/microsoft/TRELLIS.2-4B/blob/af44b45f2e35a493886929c6d786e563ec68364d/README.md",
+          "document_kind": "model-card-license-statement",
+          "sha256": null
+        },
+        {
+          "url": "https://huggingface.co/TencentARC/Pixal3D/raw/b0cb2e1b794cab9aa0ac38a95d794a4d9337437f/NOTICE",
+          "document_kind": "third-party-notice",
+          "sha256": "2d9c4437b2c3264dcea406c6af5066c0b21c7a7b34384c567dc6551b9129f815"
+        }
+      ],
+      "published_lfs_files": [
+        {
+          "path": "vae/trellis_2_shape_vae_bf16.safetensors",
+          "bytes": 1095844024,
+          "sha256": "de0cb4949a76c59ee5c091a995a69bcc8c51d5aeda939f0c641a50d2a72341f4"
+        },
+        {
+          "path": "vae/trellis_2_texture_vae_bf16.safetensors",
+          "bytes": 948461364,
+          "sha256": "714e5ebf094a610e12a8e3b5175c18a62f37f6ea4218acb6073644456b73ab0e"
+        }
+      ],
+      "lfs_hash_provenance": "Hugging Face tree API metadata at pinned Comfy-Org/Pixal3D revision, not locally downloaded weights."
+    },
+    {
+      "id": "dinov3",
+      "name": "DINOv3 ViT-L image encoder",
+      "pins": {
+        "huggingface_original": "ea8dc2863c51be0a264bab82070e3e8836b02d51",
+        "huggingface_comfy_bundle": "f37641be376725d324c56626007cc477f1249a69"
+      },
+      "published_license": "DINOv3 custom royalty-free limited license, model file updated 2025-08-19",
+      "adoption": "conditional-dependency",
+      "reason": "Not MIT/Apache, and not an NC-only grant. Original download manually gated. Exact Comfy encoder provenance and applicable agreement must be retained and reviewed. Actual model file differs from the Meta website dated 2025-08-14; do not silently substitute one license text for the other.",
+      "sources": [
+        {
+          "url": "https://huggingface.co/facebook/dinov3-vitl16-pretrain-lvd1689m/blob/ea8dc2863c51be0a264bab82070e3e8836b02d51/LICENSE.md",
+          "document_kind": "license",
+          "sha256": null,
+          "note": "Actual pinned LICENSE read in public HTML; raw-byte file hash not asserted."
+        },
+        {
+          "url": "https://ai.meta.com/resources/models-and-libraries/dinov3-license/",
+          "document_kind": "unversioned-license-website",
+          "sha256": null,
+          "note": "Website dated 2025-08-14 includes Built with DINOv3 redistribution attribution; pinned model LICENSE updated 2025-08-19 omits that phrase."
+        }
+      ],
+      "gated": "manual",
+      "model_operation_commercial_capable": "Conditional on published custom agreement; not an unconditional open-source approval."
+    },
+    {
+      "id": "birefnet",
+      "name": "BiRefNet original/MIT background remover and Comfy repackage",
+      "pins": {
+        "github_main": "97e4f35d74043427b0e9ba935ca10991853a36bc",
+        "huggingface_original": "e2bf8e4460fc8fa32bba5ea4d94b3233d367b0e4",
+        "huggingface_repackage": "25511f8787e51912e1480706b4e47b8f467fbf72"
+      },
+      "published_license": "Actual code LICENSE MIT; original and repackaged model cards declare MIT",
+      "adoption": "eligible-candidate",
+      "reason": "Use these separately identified weights or original Blender alpha. A class called BiRefNet loading BRIA weights is not this component.",
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/ZhengPeng7/BiRefNet/97e4f35d74043427b0e9ba935ca10991853a36bc/LICENSE",
+          "document_kind": "license",
+          "sha256": "92a7089e0915fc32bc40067560b398f1e6a7a5958abd7d04eda393629a5acefb"
+        },
+        {
+          "url": "https://huggingface.co/ZhengPeng7/BiRefNet/raw/e2bf8e4460fc8fa32bba5ea4d94b3233d367b0e4/README.md",
+          "document_kind": "model-card",
+          "sha256": "ceac4a1bb69b807eac5510bff80ff5599f606ef7458bee3b54b68d866e868532"
+        },
+        {
+          "url": "https://huggingface.co/Comfy-Org/BiRefNet/raw/25511f8787e51912e1480706b4e47b8f467fbf72/README.md",
+          "document_kind": "model-card",
+          "sha256": "6e3e2be7510e3e8d458a5570ab6ea71ec0a598bea44ef5dee2403f0a80ff0231"
+        }
+      ]
+    },
+    {
+      "id": "bria_rmbg_20",
+      "name": "BRIA RMBG-2.0 default upstream Pixal3D segmentation weights",
+      "pins": {
+        "huggingface": "5df4c9c76d8170882c34f6986e848ee07fd0ba43"
+      },
+      "published_license": "CC-BY-NC-4.0/noncommercial model weights per model card",
+      "adoption": "excluded",
+      "reason": "Avoid in commercial-capable path; use original alpha or reviewed BiRefNet. Upstream pipeline names briaai/RMBG-2.0 under a class named BiRefNet.",
+      "sources": [
+        {
+          "url": "https://huggingface.co/briaai/RMBG-2.0/blob/5df4c9c76d8170882c34f6986e848ee07fd0ba43/README.md",
+          "document_kind": "model-card",
+          "sha256": null
+        },
+        {
+          "url": "https://huggingface.co/TencentARC/Pixal3D/raw/b0cb2e1b794cab9aa0ac38a95d794a4d9337437f/pipeline.json",
+          "document_kind": "actual-default-dependencies",
+          "sha256": "1647217de06e32477702d14895e826fea73497d94537b809a53637f13482a237"
+        }
+      ],
+      "model_operation_commercial_capable": false,
+      "gated": "auto"
+    },
+    {
+      "id": "comfyui",
+      "name": "ComfyUI authoring application",
+      "pins": {
+        "github_master": "b1a247c9cf9dbfda4b2c0a0c1d50950667eeaa0c"
+      },
+      "published_license": "GPL-3.0",
+      "adoption": "eligible-separate-authoring-tool",
+      "reason": "Commercial use is permitted. Distribution of covered software has GPL source/license obligations. Section 2 does not automatically apply GPL to ordinary output assets. This code decision does not approve any model weights.",
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/Comfy-Org/ComfyUI/b1a247c9cf9dbfda4b2c0a0c1d50950667eeaa0c/LICENSE",
+          "document_kind": "license",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+        }
+      ]
+    },
+    {
+      "id": "low_vram_ultratex_nodes",
+      "name": "Mstafa-awad low-VRAM UltraTex nodes",
+      "pins": {
+        "github_main": "8d434a2104be520ea699a9baac2327d124387111"
+      },
+      "published_license": "GPL-3.0",
+      "adoption": "eligible-code-only",
+      "reason": "GPL commercial use is distinct from NC. Distribution obligations remain; the required UltraTex 9B model route stays excluded.",
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/Mstafa-awad/UltraTex-ComfyUI-nodes/8d434a2104be520ea699a9baac2327d124387111/LICENSE",
+          "document_kind": "license",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+        }
+      ]
+    },
+    {
+      "id": "comfyui_gguf",
+      "name": "city96 ComfyUI-GGUF nodes",
+      "pins": {
+        "github_main": "6ea2651e7df66d7585f6ffee804b20e92fb38b8a"
+      },
+      "published_license": "Apache-2.0",
+      "adoption": "eligible-code-only",
+      "reason": "License does not change any loaded GGUF model terms.",
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/city96/ComfyUI-GGUF/6ea2651e7df66d7585f6ffee804b20e92fb38b8a/LICENSE",
+          "document_kind": "license",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        }
+      ]
+    },
+    {
+      "id": "qwen3_4b_text_encoder",
+      "name": "Qwen3-4B text encoder for standalone Klein 4B",
+      "pins": {
+        "huggingface_original": "1cfa9a7208912126459214e8b04321603b3df60c",
+        "huggingface_selected_repackage": "5f526678002e43af5551dadb73ce2e8c91b43afe"
+      },
+      "published_license": "Apache-2.0 actual original LICENSE; selected Comfy repackage declares Apache-2.0",
+      "adoption": "allowed-model-experiment",
+      "reason": "This is Qwen3-4B text encoding, not Qwen-Image 2.1 research weights. The full single-file encoder is selected; exact downloaded bytes and dtype require the experiment receipt.",
+      "sources": [
+        {
+          "url": "https://huggingface.co/Qwen/Qwen3-4B/raw/1cfa9a7208912126459214e8b04321603b3df60c/LICENSE",
+          "document_kind": "license",
+          "sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e"
+        },
+        {
+          "url": "https://huggingface.co/Comfy-Org/flux2-klein-4B/raw/5f526678002e43af5551dadb73ce2e8c91b43afe/README.md",
+          "document_kind": "model-card",
+          "sha256": "5d3685a8898db9326951779e2aeef8c65705dd80cf4d92d097a8530aff4b26b2"
+        }
+      ],
+      "selected_file": {
+        "repo": "Comfy-Org/flux2-klein-4B",
+        "revision": "5f526678002e43af5551dadb73ce2e8c91b43afe",
+        "path": "split_files/text_encoders/qwen_3_4b.safetensors",
+        "bytes": 8044982048,
+        "published_sha256": "6c671498573ac2f7a5501502ccce8d2b08ea6ca2f661c458e708f36b36edfc5a",
+        "hash_source": "Hugging Face LFS metadata; not a local download hash"
+      }
+    },
+    {
+      "id": "flux2_autoencoder",
+      "name": "FLUX.2 shared autoencoder/VAE",
+      "pins": {
+        "github_official_license_statement": "50fe5162777813d869182b139e83b10743caef15",
+        "huggingface_original_mixed_repository": "26afe3a78bb242c0a8bb181dcc8937bb16e5c66c",
+        "huggingface_selected_repackage": "5f526678002e43af5551dadb73ce2e8c91b43afe"
+      },
+      "published_license": "Apache-2.0, explicitly separately licensed by BFL official autoencoder section",
+      "adoption": "allowed-model-experiment",
+      "reason": "BFL expressly applies Apache to the autoencoder and links FLUX.2-dev/ae.safetensors. Do not infer NC solely from its mixed hosting repository or approve the dev diffusion model via this VAE exception. Use the separately Apache-declared 4B bundle for download.",
+      "sources": [
+        {
+          "url": "https://raw.githubusercontent.com/black-forest-labs/flux2/50fe5162777813d869182b139e83b10743caef15/README.md",
+          "document_kind": "explicit-autoencoder-license-statement",
+          "sha256": "435753749320bbb395c15983e63e3dc73936c03f0f1870c628e7bf922c55eef7"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/black-forest-labs/flux2/50fe5162777813d869182b139e83b10743caef15/LICENSE.md",
+          "document_kind": "license",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        },
+        {
+          "url": "https://huggingface.co/Comfy-Org/flux2-klein-4B/raw/5f526678002e43af5551dadb73ce2e8c91b43afe/README.md",
+          "document_kind": "model-card",
+          "sha256": "5d3685a8898db9326951779e2aeef8c65705dd80cf4d92d097a8530aff4b26b2"
+        }
+      ],
+      "selected_file": {
+        "repo": "Comfy-Org/flux2-klein-4B",
+        "revision": "5f526678002e43af5551dadb73ce2e8c91b43afe",
+        "path": "split_files/vae/flux2-vae.safetensors",
+        "bytes": 336211292,
+        "published_sha256": "868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3",
+        "hash_source": "Hugging Face LFS metadata; not a local download hash"
+      },
+      "original_weight_link": "https://huggingface.co/black-forest-labs/FLUX.2-dev/blob/26afe3a78bb242c0a8bb181dcc8937bb16e5c66c/ae.safetensors"
+    },
+    {
+      "id": "flux2_klein4b_standalone_stack",
+      "name": "Standalone unquantized Klein base 4B image experiment",
+      "pins": {
+        "huggingface_selected_bundle": "5f526678002e43af5551dadb73ce2e8c91b43afe",
+        "runtime_selected": "95b3090664d019fcf8fa032a44d1d4793ba244b8"
+      },
+      "published_license": "Model, Qwen3-4B encoder and VAE: Apache-2.0; selected runtime source: MIT",
+      "adoption": "allowed-model-experiment",
+      "reason": "Whole selected model stack has primary license evidence. This approves an experiment, not artistic quality, calibrated PBR outputs, seamlessness, multiview consistency, timing or all transitive distribution obligations.",
+      "sources": [
+        {
+          "url": "https://huggingface.co/Comfy-Org/flux2-klein-4B/raw/5f526678002e43af5551dadb73ce2e8c91b43afe/README.md",
+          "document_kind": "selected-bundle-card",
+          "sha256": "5d3685a8898db9326951779e2aeef8c65705dd80cf4d92d097a8530aff4b26b2"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/leejet/stable-diffusion.cpp/95b3090664d019fcf8fa032a44d1d4793ba244b8/LICENSE",
+          "document_kind": "license",
+          "sha256": "b53fa08f515cb5a6fff7b9fd8fcd0961a4b80df29d74372d25e1f9171aa042ee"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/leejet/stable-diffusion.cpp/b13a48219d5cdf408edcb93da6cd69b612ed03d3/docs/flux2.md",
+          "document_kind": "runtime-reference-not-a-local-run",
+          "sha256": "ae1dc0005164b89feda2bf3cd872776535f7a1283d3eb37c120738cd8af0b30d"
+        }
+      ],
+      "dependency_ids": [
+        "flux_klein_base_4b",
+        "qwen3_4b_text_encoder",
+        "flux2_autoencoder"
+      ],
+      "selected_file": {
+        "repo": "Comfy-Org/flux2-klein-4B",
+        "revision": "5f526678002e43af5551dadb73ce2e8c91b43afe",
+        "path": "split_files/diffusion_models/flux-2-klein-base-4b.safetensors",
+        "bytes": 7751105712,
+        "published_sha256": "9c5fed22b76baea749d88fc2abe3ad53245e7b21a0d353a762665eea00043b92",
+        "also_matches_original": "black-forest-labs/FLUX.2-klein-base-4B@a3b4f4849157f664bdbc776fd7453c2783562f4d/flux-2-klein-base-4b.safetensors",
+        "hash_source": "Hugging Face LFS metadata; not a local download hash"
+      },
+      "precision_intent": "Full unquantized selected safetensors, no FP4/GGUF selection; actual tensor dtypes require local header/runtime inspection.",
+      "reference_settings": {
+        "runtime_example_steps": 20,
+        "runtime_example_cfg": 4.0,
+        "bfl_reference_steps": 50,
+        "bfl_reference_guidance": 4.0,
+        "note": "Different settings are not proof of equivalent output quality."
+      },
+      "model_weights_downloaded_by_this_review": false,
+      "inference_performed_by_this_review": false,
+      "amd_vulkan_verified_by_this_review": false
+    },
+    {
+      "id": "qwen_image_edit_2511",
+      "name": "Qwen-Image-Edit-2511 reference-guided challenger",
+      "pins": {
+        "huggingface_original": "6f3ccc0b56e431dc6a0c2b2039706d7d26f22cb9",
+        "github_code": "6b5e1f5cec987d404be5ac6657db3b9aacb56a89"
+      },
+      "published_license": "Official model card explicitly states Apache-2.0 License Agreement; upstream Apache text available",
+      "adoption": "eligible-model-candidate",
+      "reason": "Different family from Qwen-Image 2.1 research model. Official demonstrations report better consistency, industrial design and new-view edits, but no local cafe texture comparison exists. Exact Qwen2.5-VL7B encoder/VAE bundle and backend need separate binding.",
+      "sources": [
+        {
+          "url": "https://huggingface.co/Qwen/Qwen-Image-Edit-2511/raw/6f3ccc0b56e431dc6a0c2b2039706d7d26f22cb9/README.md",
+          "document_kind": "explicit-model-license-agreement",
+          "sha256": "9724c194bef2a6d821090f0cd65774962e8f77e3acbfb2a7cbbdd58c92049902"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/QwenLM/Qwen-Image/6b5e1f5cec987d404be5ac6657db3b9aacb56a89/LICENSE",
+          "document_kind": "upstream-apache-license-text",
+          "sha256": "b907c8234b565e5ecefff8232dbb6f1d603fbf9a47a3176db734dcae27175d08"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/leejet/stable-diffusion.cpp/b13a48219d5cdf408edcb93da6cd69b612ed03d3/docs/qwen_image_edit.md",
+          "document_kind": "runtime-reference",
+          "sha256": "f91a9b99e5c4b0c37f878879cc0ea7251d1cf01f77c7fc657110d739b7d4a50f"
+        }
+      ],
+      "runtime_quality_parameter": "sd.cpp documents --model-args qwen_image_zero_cond_t=true for 2511; omitting it degrades editing behavior.",
+      "whole_dependency_bundle_cleared": false,
+      "local_quality_verified": false
+    },
+    {
+      "id": "qwen_image_edit_2509",
+      "name": "Qwen-Image-Edit-2509 earlier editing challenger",
+      "pins": {
+        "huggingface_original": "d3968ef930e841f4c73640fb8afa3b306a78167e"
+      },
+      "published_license": "Official model card explicitly states Apache-2.0 License Agreement",
+      "adoption": "eligible-model-candidate",
+      "reason": "Published multi-image editing and geometry/depth conditioning; not a texture/PBR model. Separate encoder/VAE/runtime binding and local quality comparison remain.",
+      "sources": [
+        {
+          "url": "https://huggingface.co/Qwen/Qwen-Image-Edit-2509/raw/d3968ef930e841f4c73640fb8afa3b306a78167e/README.md",
+          "document_kind": "explicit-model-license-agreement",
+          "sha256": "43794458d2fafed26f7910459eb716589b4ae2020bf1ac37c7f37510d2ca8c0e"
+        },
+        {
+          "url": "https://raw.githubusercontent.com/QwenLM/Qwen-Image/6b5e1f5cec987d404be5ac6657db3b9aacb56a89/LICENSE",
+          "document_kind": "upstream-apache-license-text",
+          "sha256": "b907c8234b565e5ecefff8232dbb6f1d603fbf9a47a3176db734dcae27175d08"
+        }
+      ],
+      "whole_dependency_bundle_cleared": false,
+      "local_quality_verified": false
+    },
+    {
+      "id": "qwen_image_2512",
+      "name": "Qwen-Image-2512 text-to-image challenger",
+      "pins": {
+        "huggingface_original": "25468b98e3276ca6700de15c6628e51b7de54a26",
+        "github_code": "6b5e1f5cec987d404be5ac6657db3b9aacb56a89"
+      },
+      "published_license": "Official model card declares Apache-2.0; upstream Apache license text available; snapshot contains no separate LICENSE file",
+      "adoption": "eligible-model-candidate",
+      "reason": "Publisher reports finer natural detail, realism and text layout. This is text-to-image, not an editing or PBR model. Quality for the town, exact encoder/VAE bundle and runtime remain unverified.",
+      "sources": [
+        {
+          "url": "https://huggingface.co/Qwen/Qwen-Image-2512/raw/25468b98e3276ca6700de15c6628e51b7de54a26/README.md",
+          "document_kind": "model-card-license-declaration",
+          "sha256": "db371596007403d9588e0d78d9798ecafa59bf7772fbdc12952e581b1562920b",
+          "git_blob_sha1": "fd3b726ae83e1c439561323a560c18437cafe6ff",
+          "bytes": 19306,
+          "git_tree_blob_verified": true
+        },
+        {
+          "url": "https://raw.githubusercontent.com/QwenLM/Qwen-Image/6b5e1f5cec987d404be5ac6657db3b9aacb56a89/LICENSE",
+          "document_kind": "upstream-apache-license-text",
+          "sha256": "b907c8234b565e5ecefff8232dbb6f1d603fbf9a47a3176db734dcae27175d08"
+        }
+      ],
+      "whole_dependency_bundle_cleared": false,
+      "local_quality_verified": false
+    },
+    {
+      "id": "hunyuan3d_21_texture_candidate",
+      "name": "Hunyuan3D-2.1 / PaintPBR texture-specific alternative",
+      "pins": {
+        "huggingface_original": "0b94677654c57bb9a6b6845cd7b704ccf551d327"
+      },
+      "published_license": "Tencent Hunyuan 3D 2.1 Community License; limited royalty-free commercial-capable terms, not blanket NC",
+      "adoption": "excluded-default-global-assets",
+      "reason": "Territory excludes EU, UK and South Korea, including restrictions on output use outside the Territory. More than 1 million MAU at the stated release-date condition requires a separate grant. Additional notice and usage terms apply. Not suitable default for unrestricted worldwide assets.",
+      "sources": [
+        {
+          "url": "https://huggingface.co/tencent/Hunyuan3D-2.1/raw/0b94677654c57bb9a6b6845cd7b704ccf551d327/LICENSE",
+          "document_kind": "license",
+          "sha256": "5bd08f93b2d280bb26ff3eed5d3996fe47a9698b5f7785163928668d7fd578c6"
+        }
+      ],
+      "local_quality_verified": false,
+      "amd_backend_verified_by_this_review": false
+    }
+  ],
+  "asset_replacement_policy": {
+    "authorized": true,
+    "scope": "Original reconstruction/replacement of geometry, materials, furniture, vegetation and composition is permitted; old meshes/placements need not be preserved.",
+    "replacement_evidence": [
+      "new asset version and provenance",
+      "dimensions and functional circulation/room-use metrics",
+      "engine-agnostic export and visual review",
+      "stable game identifier or explicit identifier migration where relevant"
+    ],
+    "previous_release": "Recoverable comparison only, not a mandatory geometry baseline."
+  },
+  "quality_acceptance": {
+    "status": "CC0_TEXTURE_REVISION_FOR_REVIEW_MODEL_QUALITY_UNVERIFIED",
+    "reason": "The user rejected the smooth v6 materials. The revised pilot uses source-bound CC0 PBR at authored physical scale; acceptance is a visual review, not an inference/import success claim.",
+    "current_model_experiment": "Standalone FLUX.2 Klein base 4B, Qwen3-4B text encoder and FLUX.2 VAE; separate from UltraTex.",
+    "runtime_revision_selected": "95b3090664d019fcf8fa032a44d1d4793ba244b8",
+    "run_receipt": "art/living_town/refinement_pilot/model_slate_v1/interruption_receipt.json",
+    "local_inference_quality_verified_by_this_review": false
+  },
+  "runtime_research_sources": [
+    {
+      "url": "https://rocm.blogs.amd.com/artificial-intelligence/comfyui-windows/README.html",
+      "kind": "AMD official Windows Radeon 8060S ComfyUI demonstration, 2026-07-14",
+      "scope": "Shows a native ROCm/PyTorch route for the GPU family; does not verify this machine, candidate stack, performance or texture quality."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/leejet/stable-diffusion.cpp/b13a48219d5cdf408edcb93da6cd69b612ed03d3/docs/build.md",
+      "sha256": "0d4c8b8f8f46dc4398f9926cd64cf384ad6052aaa59f77a3dc897eae652892af",
+      "kind": "CPU/HIP/Vulkan build reference; not selected binary execution evidence"
+    }
+  ],
+  "runtime_experiment_outcome": {
+    "status": "INTERRUPTED_BY_HOST_REBOOT",
+    "receipt": "art/living_town/refinement_pilot/model_slate_v1/interruption_receipt.json",
+    "last_progress": "7/50",
+    "usable_image": false,
+    "quality_equivalence_verified": false,
+    "cause_established": false,
+    "gpu_configuration_quarantined": true,
+    "cpu_default_executed": false
+  },
+  "local_weight_verification": {
+    "license": "Apache-2.0 separately reviewed per component",
+    "models": [
+      {
+        "name": "flux-2-klein-base-4b.safetensors",
+        "repo": "black-forest-labs/FLUX.2-klein-base-4B",
+        "pin": "a3b4f4849157f664bdbc776fd7453c2783562f4d",
+        "path": "flux-2-klein-base-4b.safetensors",
+        "bytes": 7751105712,
+        "sha256": "9c5fed22b76baea749d88fc2abe3ad53245e7b21a0d353a762665eea00043b92",
+        "local_path": "D:\\Dev\\2026-10-07\\LivingTown_ModelCache\\flux-2-klein-base-4b.safetensors",
+        "verified": true,
+        "seconds": 1442.91
+      },
+      {
+        "name": "qwen_3_4b.safetensors",
+        "repo": "Comfy-Org/flux2-klein-4B",
+        "pin": "5f526678002e43af5551dadb73ce2e8c91b43afe",
+        "path": "split_files/text_encoders/qwen_3_4b.safetensors",
+        "bytes": 8044982048,
+        "sha256": "6c671498573ac2f7a5501502ccce8d2b08ea6ca2f661c458e708f36b36edfc5a",
+        "local_path": "D:\\Dev\\2026-10-07\\LivingTown_ModelCache\\qwen_3_4b.safetensors",
+        "verified": true,
+        "seconds": 387.33
+      },
+      {
+        "name": "flux2-vae.safetensors",
+        "repo": "Comfy-Org/flux2-klein-4B",
+        "pin": "5f526678002e43af5551dadb73ce2e8c91b43afe",
+        "path": "split_files/vae/flux2-vae.safetensors",
+        "bytes": 336211292,
+        "sha256": "868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3",
+        "local_path": "D:\\Dev\\2026-10-07\\LivingTown_ModelCache\\flux2-vae.safetensors",
+        "verified": true,
+        "seconds": 37.47
+      }
+    ]
+  }
+}

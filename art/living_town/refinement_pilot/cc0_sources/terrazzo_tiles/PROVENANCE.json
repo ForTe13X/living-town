@@ -1,0 +1,117 @@
+{
+  "schema": "living_town.cc0_pbr_source.v1",
+  "status": "PASS",
+  "asset_id": "terrazzo_tiles",
+  "display_name": "Terrazzo Tiles",
+  "source": "Poly Haven",
+  "asset_url": "https://polyhaven.com/a/terrazzo_tiles",
+  "license": "CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "legalcode_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode",
+  "retrieved_utc": "2026-10-20T07:55:41.204206+00:00",
+  "authors": {
+    "Amal Kumar": "All"
+  },
+  "physical_dimensions_mm": [
+    2000,
+    2000
+  ],
+  "physical_dimensions_metres": [
+    2.0,
+    2.0
+  ],
+  "normal_convention": "OpenGL tangent-space +Y",
+  "maps": {
+    "Diffuse": {
+      "file": "terrazzo_tiles_diff_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/terrazzo_tiles/terrazzo_tiles_diff_2k.png",
+      "format": "PNG",
+      "resolution_label": "2k",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "png_bit_depth": 16,
+      "bytes": 27115185,
+      "sha256": "80cb813199412195523caf0e9e41bf96cf7e8cdf9a9ae91307bb8633c823b9e3",
+      "md5": "a29bc9995b08b35f9db004ccac5d16a9",
+      "upstream_size": 27115185,
+      "upstream_md5_as_provided": "a29bc9995b08b35f9db004ccac5d16a9",
+      "upstream_md5_normalized_32_hex": "a29bc9995b08b35f9db004ccac5d16a9",
+      "upstream_size_verified": true,
+      "upstream_md5_verified": true,
+      "color_space": "sRGB",
+      "original_unmodified": true
+    },
+    "Rough": {
+      "file": "terrazzo_tiles_rough_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/terrazzo_tiles/terrazzo_tiles_rough_2k.png",
+      "format": "PNG",
+      "resolution_label": "2k",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "png_bit_depth": 16,
+      "bytes": 6962525,
+      "sha256": "3928d7e6d0c0ce98ac53d80192830dedc04a80f4d9a30eb804d75d23e38ffda4",
+      "md5": "47928be054a9f047db418115d28188d1",
+      "upstream_size": 6962525,
+      "upstream_md5_as_provided": "47928be054a9f047db418115d28188d1",
+      "upstream_md5_normalized_32_hex": "47928be054a9f047db418115d28188d1",
+      "upstream_size_verified": true,
+      "upstream_md5_verified": true,
+      "color_space": "Non-Color",
+      "original_unmodified": true
+    },
+    "nor_gl": {
+      "file": "terrazzo_tiles_nor_gl_2k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/terrazzo_tiles/terrazzo_tiles_nor_gl_2k.png",
+      "format": "PNG",
+      "resolution_label": "2k",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "png_bit_depth": 16,
+      "bytes": 16550494,
+      "sha256": "04a415bbf52c0cd293608fc40eed6bacb2cf6e3003f8ed28a94518a900fb834e",
+      "md5": "ff081b8a9ad4ea9ea1425d1f8449cb34",
+      "upstream_size": 16550494,
+      "upstream_md5_as_provided": "ff081b8a9ad4ea9ea1425d1f8449cb34",
+      "upstream_md5_normalized_32_hex": "ff081b8a9ad4ea9ea1425d1f8449cb34",
+      "upstream_size_verified": true,
+      "upstream_md5_verified": true,
+      "color_space": "Non-Color",
+      "original_unmodified": true
+    }
+  },
+  "original_images_unmodified": true,
+  "ai_inference": false,
+  "metadata": {
+    "info": {
+      "file": "api_info.json",
+      "url": "https://api.polyhaven.com/info/terrazzo_tiles",
+      "sha256": "21b571da0bad41761f668a7f1d229b64afcec15cb4fc8a312a64ab6e72c6b39d"
+    },
+    "files": {
+      "file": "api_files.json",
+      "url": "https://api.polyhaven.com/files/terrazzo_tiles",
+      "sha256": "e3d74f2f49b2a5985f220d6d9d8906cf0968ae2a88fc87ab603aef6792fcb3ad"
+    }
+  },
+  "license_evidence": {
+    "file": "LICENSE_SOURCE.txt",
+    "sha256": "1e17e1571a481c7f09426099a6cf6519869622b75ae09be0710e5925f4c6f8f0"
+  },
+  "legalcode_file": {
+    "file": "CC0-1.0-LEGALCODE.txt",
+    "source_url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+    "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+  },
+  "visual_source_review": {
+    "kind": "agent_actual_decoded_library_thumbnail",
+    "observations": "Warm brown continuous fine aggregate with discreet square tile grid; suitable indoor cafe floor. Specular preview is polished; retain measured roughness initially and judge in neutral render. Not a counter material.",
+    "preview_saved_or_distributed": false
+  }
+}
