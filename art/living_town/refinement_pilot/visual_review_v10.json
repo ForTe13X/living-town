@@ -1,0 +1,50 @@
+{
+  "schema": "living_town.concept_texture_visual_review.v1",
+  "status": "REVIEWED_COMPARISON_NOT_USER_ART_APPROVAL",
+  "hero_manifest_sha256": "0a2c10b6ffda9aa4d1b5275cbd62088335735990cd9ce396ac16e6cbf89f943d",
+  "images_reviewed": {
+    "hero_v10/renders/01_cafe_street.png": "c042a97d2a37ac99a438ddee20c08d20b4e5fea2b878a5af2b1a9f964541d04a",
+    "hero_v10/renders/02_cafe_interior.png": "f2217325037776dc46371c9219110f9412359f5c38e4d49f1f3f33aa4e8dc451",
+    "hero_v10/renders/03_counter_detail.png": "ffc917320a14a85bacb8a863cdb056ac9e4d3c93739141419058aa6d1c100944",
+    "hero_v10/renders/04_facade_detail.png": "3889a6ca6460201da5ba5df4d494a1191cbca6097befa8c9e6f1b53be422639c",
+    "prepared_v10/turnaround_sheet.png": "6e79a0e345ac08ddf47b9f551b41b6e8213242af10e1525ce05f3192ccf14e18",
+    "godot_v10.png": "6ef7073ecb29ef6f72f8dc7e9e1f0966532bc6fe1fdfaf591a496800cfdf8dc3",
+    "hero_v9/renders/01_cafe_street.png": "662c53d7c701c9faafe7aee5f047d85e3bfa3cb0082da43c1db83bbb8853d5ab",
+    "wall_comparison_v10.png": "1ae38dfc9d0cf698e0b2bfcfcfb09133d395068fb2abec0a6482030e08a0a965"
+  },
+  "evidence": {
+    "verification_v10.json": "72d722a0c31241869460329bc5c7f87cb0024940e5358db08ea3db42e6d6da1d",
+    "native_reopen_v10.json": "0aae16e64c8cbee6f926b00611d751cbecb82fdce1b8be9ec8fe7a8637d44bd0",
+    "scanned_export_v10.json": "59d21cee3101757cf326193b1d4dcbbbd313ec439c50c801a793106f9ba0fb59",
+    "wall_export_v10.json": "819f96059dd4aba53e2aecb9f9677da558f0585f4e6e9de3dfba1cefd5e0214b",
+    "godot_v10.json": "f1a38e2212ae75f5cdfdcd1db92a8f50058a7ba9637cc4fa8e9e27706a61cd12",
+    "scanned_pbr_v3/library_manifest.json": "bb367d05a1cb15df5bf9238f642dfd91cbc0ab58b6723fc4d1154c6b6ecf0f70"
+  },
+  "observations": [
+    "Matched V9/V10 1800px street cameras use identical lens, position, lighting and exposure. Limewash now has visible broad mineral variation; the neighbor walls no longer resolve as uniform plain colors.",
+    "The facade close-up retains fine photographed plaster grain, with broader warm/cool replastering and restrained sill runoff. Four-kilopixel main and two-kilopixel neighbor bakes preserve a true 1m fine scan repeat.",
+    "Three shared-vertex skins carry authored 0.7-4mm relief with genuine rectangular apertures; native reopening and actual GLB geometry inspection verify retained UVs and openings.",
+    "Oak grain and separate honed/cut stone finishes remain coherent in the counter and interior views; owned cardinal counter views remain source-bound.",
+    "Actual Godot import/capture retains baked wall images, UV scales/offsets and shading data. The overview visibly carries facade variation under separate engine lighting."
+  ],
+  "comparison_crop": {
+    "source_camera": "hero_v9 and hero_v10/renders/01_cafe_street.png",
+    "pixel_rectangle_xyxy": [
+      400,
+      300,
+      1800,
+      735
+    ],
+    "processing": "Unchanged RGB crops plus labels; no exposure, grading, sharpening or selective adjustments."
+  },
+  "limitations": [
+    "Only the cafe and two adjoining street frontages are revised. This is not a whole-town migration or rebuilt playable game.",
+    "Neighbor sides, shutters/canvas and other context remain simplified. Upstairs/back-of-house/service interiors, physics/navigation and performance validation remain outside this pilot.",
+    "The normal contains full authored relief in addition to coarse mesh relief; normal strength .7 is a restrained compromise, not a residual-normal bake. Height scale is artist-authored, not measured.",
+    "Small roof/shadow aliasing remains in the GL Compatibility overview. Blender AgX and Godot use different lighting/tone responses; renderer/art parity is not established.",
+    "The earlier full-precision model experiment was interrupted by an unexpected host reboot at7/50steps. No generated model texture is used and the Vulkan setup remains quarantined.",
+    "User aesthetic acceptance remains open; file, geometry and engine checks do not establish concept-image parity."
+  ],
+  "model_interruption_sha256": "79812fc820b533a4b17ab82f7967421077dada06fd448ce3a6c9cb217534dfe3",
+  "original_town_native_sha256": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191"
+}

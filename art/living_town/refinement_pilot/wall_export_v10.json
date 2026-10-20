@@ -1,0 +1,157 @@
+{
+  "schema": "living_town.wall_export_verification.v1",
+  "status": "PASS",
+  "hero_manifest_sha256": "0a2c10b6ffda9aa4d1b5275cbd62088335735990cd9ce396ac16e6cbf89f943d",
+  "glb_sha256": "14c0dc1fe0b99d4479b32f9bba8fbaa35c687bd7f53fb9e6720ac5df98dfa564",
+  "verifier_source_sha256": "5a6b56977dea3458952163309cbc0e6b75a42c63a41bd9132f842922bb7be8f1",
+  "walls": [
+    {
+      "object": "WallSkin_cafe",
+      "status": "PASS",
+      "center_x_m": 0.0,
+      "center_authority": "Exact authored WallSkin name contract; source report has no center field",
+      "geometry": {
+        "vertices": 7000,
+        "triangles": 13140,
+        "actual_displacement_range_m": [
+          0.0007259231805801375,
+          0.003923302590847014
+        ],
+        "authoring_all_grid_vertex_displacement_range_m": [
+          0.0007259212448261637,
+          0.003923304361104968
+        ],
+        "displacement_comparison": "Exported triangle-used vertex range must be contained in the authoring range over all grid vertices, including unused aperture vertices; equality is not required.",
+        "maximum_metric_uv_error": 2.1457672083613488e-07,
+        "apertures_checked": 6,
+        "triangle_winding": "outward +Z",
+        "zero_uv_area_triangles": 0,
+        "aperture_crossing_triangles": 0
+      },
+      "material": {
+        "name": "Hero_WallSkin_cafe_BakedLimewash",
+        "normal_strength": 0.699999988079071,
+        "pbr_roles": [
+          "basecolor",
+          "roughness",
+          "normal"
+        ],
+        "physical_mapping_scale": [
+          0.23255813953488372,
+          0.3076923076923077
+        ],
+        "embedded_pixels_checked": false
+      },
+      "source": {
+        "wall_manifest_sha256": "a59783b1d6cb62cced21b4ed95128a425cb3864e04fbfa241846faae3343167a",
+        "height_sha256": "cc67501f579ce23e86e84369eb9bc858b8f45b785d27790bbf640e65dbf2dc34",
+        "generator_sha256": "a48c9e0485ff69eaae2f460449ab10ab31b066e26a3318f2587f7d21ac322e75",
+        "height_range_m": [
+          0.0007,
+          0.004
+        ],
+        "height_authority": "ARTIST_AUTHORED_NOT_MEASURED"
+      }
+    },
+    {
+      "object": "WallSkin_left",
+      "status": "PASS",
+      "center_x_m": -7.2,
+      "center_authority": "Exact authored WallSkin name contract; source report has no center field",
+      "geometry": {
+        "vertices": 4377,
+        "triangles": 8208,
+        "actual_displacement_range_m": [
+          0.0007314622402191107,
+          0.003975392878055567
+        ],
+        "authoring_all_grid_vertex_displacement_range_m": [
+          0.0007314623980782947,
+          0.003998811960220339
+        ],
+        "displacement_comparison": "Exported triangle-used vertex range must be contained in the authoring range over all grid vertices, including unused aperture vertices; equality is not required.",
+        "maximum_metric_uv_error": 1.9669532758115338e-07,
+        "apertures_checked": 4,
+        "triangle_winding": "outward +Z",
+        "zero_uv_area_triangles": 0,
+        "aperture_crossing_triangles": 0
+      },
+      "material": {
+        "name": "Hero_WallSkin_left_BakedLimewash",
+        "normal_strength": 0.699999988079071,
+        "pbr_roles": [
+          "basecolor",
+          "roughness",
+          "normal"
+        ],
+        "physical_mapping_scale": [
+          0.37037037037037035,
+          0.3278688524590164
+        ],
+        "embedded_pixels_checked": false
+      },
+      "source": {
+        "wall_manifest_sha256": "9410646bf5b909b295ebfaa1931f2efc0d8ff47293280b67dbfd25ed059c7971",
+        "height_sha256": "1fda5375136f0c207170a3c19b54791a2b4385abde334e612e3499373015eec7",
+        "generator_sha256": "a48c9e0485ff69eaae2f460449ab10ab31b066e26a3318f2587f7d21ac322e75",
+        "height_range_m": [
+          0.0007,
+          0.004
+        ],
+        "height_authority": "ARTIST_AUTHORED_NOT_MEASURED"
+      }
+    },
+    {
+      "object": "WallSkin_right",
+      "status": "PASS",
+      "center_x_m": 7.2,
+      "center_authority": "Exact authored WallSkin name contract; source report has no center field",
+      "geometry": {
+        "vertices": 4377,
+        "triangles": 8208,
+        "actual_displacement_range_m": [
+          0.0007630750536918585,
+          0.003991657495498652
+        ],
+        "authoring_all_grid_vertex_displacement_range_m": [
+          0.0007630727909505308,
+          0.003991660511493689
+        ],
+        "displacement_comparison": "Exported triangle-used vertex range must be contained in the authoring range over all grid vertices, including unused aperture vertices; equality is not required.",
+        "maximum_metric_uv_error": 2.384185791015625e-07,
+        "apertures_checked": 4,
+        "triangle_winding": "outward +Z",
+        "zero_uv_area_triangles": 0,
+        "aperture_crossing_triangles": 0
+      },
+      "material": {
+        "name": "Hero_WallSkin_right_BakedLimewash",
+        "normal_strength": 0.699999988079071,
+        "pbr_roles": [
+          "basecolor",
+          "roughness",
+          "normal"
+        ],
+        "physical_mapping_scale": [
+          0.37037037037037035,
+          0.3278688524590164
+        ],
+        "embedded_pixels_checked": false
+      },
+      "source": {
+        "wall_manifest_sha256": "362bd366521efb445a80e3533ac8b6bf944dded5597bc13816cb151fef9c5ec9",
+        "height_sha256": "a05432ebfb63bf91f622174aaffafb6d160b5ce37f97def34d17c88f9dc017d7",
+        "generator_sha256": "a48c9e0485ff69eaae2f460449ab10ab31b066e26a3318f2587f7d21ac322e75",
+        "height_range_m": [
+          0.0007,
+          0.004
+        ],
+        "height_authority": "ARTIST_AUTHORED_NOT_MEASURED"
+      }
+    }
+  ],
+  "scope": "Actual world-space wall arrays, outward normals/winding, MetricUV orientation, nonzero UV area, grid span, true aperture intersection, source-bound uint16 height maps, current bake generator and three embedded PBR materials.",
+  "limits": "No engine or visual acceptance; embedded PBR pixel parity is covered by verify_scanned_exports. Exported triangle-used displacement range must be contained in the authoring all-grid range, which can include unused aperture vertices. Does not reproduce Blender height resampling point by point or audit the rest of the town.",
+  "engine_executed": false,
+  "ai_inference_executed": false
+}

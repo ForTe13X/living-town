@@ -1,10 +1,10 @@
 {
   "status": "PASS",
-  "archive": "art\\concept_cafe_delivery\\LivingTown_ConceptCafe_Pilot.zip",
-  "bytes": 659149805,
-  "sha256": "c9ee2d2de91b6aa5dd416aef693178e1dc5183823f3f291a5ca7319ca0183393",
-  "member_count": 141,
+  "archive": "art\\concept_cafe_delivery\\LivingTown_ConceptCafe_Pilot_v10.zip",
+  "bytes": 925730787,
+  "sha256": "d3c8966138c7277b39fd9cc93085514687ef6f5273efd0e190e1ab3fb231fb29",
+  "member_count": 163,
   "all_members_readback_verified": true,
-  "manifest_sha256": "3aa48d6a9557638dc08dc3b0998ddd89a87091687af54342d5bb016c0e181b94",
-  "scope": "Reviewable reconstructed cafe texture pilot; not whole-town migration or validated model-generated material"
+  "manifest_sha256": "dd6a6328e41e46d0640bac009b040795f4266c0af59790d4fb715f18f999d3f9",
+  "scope": "Three-frontage limewash revision and reconstructed cafe pilot; not whole-town migration or validated model-generated material"
 }

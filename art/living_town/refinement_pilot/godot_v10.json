@@ -1,0 +1,3442 @@
+{
+	"asset": {
+		"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\hero_v10\\cafe_hero.glb",
+		"sha256": "14c0dc1fe0b99d4479b32f9bba8fbaa35c687bd7f53fb9e6720ac5df98dfa564"
+	},
+	"bounds_metres": {
+		"max": [
+			12.5,
+			9.64500045776367,
+			6.79000043869019
+		],
+		"min": [
+			-12.5,
+			-0.270000010728836,
+			-6.78200006484985
+		],
+		"size": [
+			25.0,
+			9.91500091552734,
+			13.57200050354
+		]
+	},
+	"capture": {
+		"path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\godot_v10.png",
+		"sha256": "6ef7073ecb29ef6f72f8dc7e9e1f0966532bc6fe1fdfaf591a496800cfdf8dc3"
+	},
+	"checks": [
+		{
+			"detail": null,
+			"name": "absolute_cli_paths",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "real_display_driver",
+			"passed": true
+		},
+		{
+			"detail": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\art\\living_town\\refinement_pilot\\hero_v10\\cafe_hero.glb",
+			"name": "asset_exists",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "glb_2_document",
+			"passed": true
+		},
+		{
+			"detail": {
+				"images": 27
+			},
+			"name": "embedded_resources",
+			"passed": true
+		},
+		{
+			"detail": [
+				"KHR_texture_transform"
+			],
+			"name": "required_gltf_extensions_supported",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "runtime_gltf_append",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "runtime_scene_generated",
+			"passed": true
+		},
+		{
+			"detail": {
+				"actual": 803,
+				"source": 803
+			},
+			"name": "all_mesh_instances_imported",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "finite_nonzero_bounds_metres",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_CanvasCream",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_CanvasCream",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_CanvasCream",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_CanvasCream",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_CanvasCream",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_CanvasCream",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Architecture_Hero_CutGranite_CC0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_CutGranite_CC0:albedo",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_CutGranite_CC0:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_CutGranite_CC0:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_CutGranite_CC0:normal",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_CutGranite_CC0:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_CutGranite_CC0:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_CutGranite_CC0:roughness",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_CutGranite_CC0:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_CutGranite_CC0:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_CutGranite_CC0",
+			"passed": true
+		},
+		{
+			"detail": {
+				"godot_offset": [
+					0.0,
+					-3.0,
+					0.0
+				],
+				"godot_scale": [
+					4.0,
+					4.0,
+					1.0
+				],
+				"source_offset": [
+					0.0,
+					-3.0
+				],
+				"source_scale": [
+					4.0,
+					4.0
+				]
+			},
+			"name": "physical_texture_transform_retained_Hero_CutGranite_CC0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_CutGranite_CC0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_CutGranite_CC0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_CutGranite_CC0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_CutGranite_CC0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_CutGranite_CC0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_FadedNavy",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_FadedNavy",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_FadedNavy",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_FadedNavy",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_FadedNavy",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_FadedNavy",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Architecture_Hero_InteriorFloor_Scan_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_InteriorFloor_Scan:albedo",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_InteriorFloor_Scan:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_InteriorFloor_Scan:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_InteriorFloor_Scan:normal",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_InteriorFloor_Scan:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_InteriorFloor_Scan:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_InteriorFloor_Scan:roughness",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_InteriorFloor_Scan:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_InteriorFloor_Scan:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_InteriorFloor_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_InteriorFloor_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_InteriorFloor_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_InteriorFloor_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_InteriorFloor_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_InteriorFloor_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Architecture_Hero_Limewash_Scan_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_Limewash_Scan:albedo",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_Limewash_Scan:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_Limewash_Scan:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_Limewash_Scan:normal",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_Limewash_Scan:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_Limewash_Scan:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_Limewash_Scan:roughness",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_Limewash_Scan:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_Limewash_Scan:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_Limewash_Scan",
+			"passed": true
+		},
+		{
+			"detail": {
+				"godot_offset": [
+					0.0,
+					-1.0,
+					0.0
+				],
+				"godot_scale": [
+					2.0,
+					2.0,
+					1.0
+				],
+				"source_offset": [
+					0.0,
+					-1.0
+				],
+				"source_scale": [
+					2.0,
+					2.0
+				]
+			},
+			"name": "physical_texture_transform_retained_Hero_Limewash_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_Limewash_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_Limewash_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_Limewash_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_Limewash_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_Limewash_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_Neighbour1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_Neighbour1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_Neighbour1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_Neighbour1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_Neighbour1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_Neighbour1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_Neighbour-1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_Neighbour-1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_Neighbour-1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_Neighbour-1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_Neighbour-1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_Neighbour-1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_FrontCover_Hero_CutGranite_CC0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_Glass",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_Glass",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_Glass",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_Glass",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_Glass",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_Glass",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_Iron",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_Iron",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_Iron",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_Iron",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_Iron",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_Iron",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_FrontCover_Hero_Limewash_Scan_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_SageShutter",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_SageShutter",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_SageShutter",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_SageShutter",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_SageShutter",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_SageShutter",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_WeatheredZinc",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_WeatheredZinc",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_WeatheredZinc",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_WeatheredZinc",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_WeatheredZinc",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_WeatheredZinc",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_continuous_honed_round_tabletop_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_HonedGranite_CC0:roughness",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_HonedGranite_CC0:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_HonedGranite_CC0:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_HonedGranite_CC0",
+			"passed": true
+		},
+		{
+			"detail": {
+				"godot_offset": [
+					0.0,
+					-3.0,
+					0.0
+				],
+				"godot_scale": [
+					4.0,
+					4.0,
+					1.0
+				],
+				"source_offset": [
+					0.0,
+					-3.0
+				],
+				"source_scale": [
+					4.0,
+					4.0
+				]
+			},
+			"name": "physical_texture_transform_retained_Hero_HonedGranite_CC0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_HonedGranite_CC0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_HonedGranite_CC0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_HonedGranite_CC0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_HonedGranite_CC0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_HonedGranite_CC0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_north_chair_back_post_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_CabinetOak_Scan:albedo",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_CabinetOak_Scan:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_CabinetOak_Scan:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_CabinetOak_Scan:normal",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_CabinetOak_Scan:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_CabinetOak_Scan:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_CabinetOak_Scan:roughness",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_CabinetOak_Scan:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_CabinetOak_Scan:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_CabinetOak_Scan",
+			"passed": true
+		},
+		{
+			"detail": {
+				"godot_offset": [
+					0.0,
+					-0.0928961038589478,
+					0.0
+				],
+				"godot_scale": [
+					1.09289610385895,
+					1.09289610385895,
+					1.0
+				],
+				"source_offset": [
+					0.0,
+					-0.0928961038589478
+				],
+				"source_scale": [
+					1.09289610385895,
+					1.09289610385895
+				]
+			},
+			"name": "physical_texture_transform_retained_Hero_CabinetOak_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_CabinetOak_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_CabinetOak_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_CabinetOak_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_CabinetOak_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_CabinetOak_Scan",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_north_chair_back_post_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_north_chair_bent_leg_1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_north_chair_bent_leg_1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_north_chair_bent_leg_-1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_north_chair_bent_leg_-1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_north_chair_bentwood_lower_stretcher_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_north_chair_continuous_bent_back_hoop_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_north_chair_open_back_spindle_0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_north_chair_open_back_spindle_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_north_chair_open_back_spindle_2_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_Cane",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_Cane",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_Cane",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_Cane",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_Cane",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_Cane",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_north_chair_steam_bent_seat_ring_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_south_chair_back_post_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_south_chair_back_post_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_south_chair_bent_leg_1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_south_chair_bent_leg_1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_south_chair_bent_leg_-1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_south_chair_bent_leg_-1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_south_chair_bentwood_lower_stretcher_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_south_chair_continuous_bent_back_hoop_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_south_chair_open_back_spindle_0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_south_chair_open_back_spindle_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_south_chair_open_back_spindle_2_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_south_chair_steam_bent_seat_ring_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_HeroFurniture_coffee",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_HeroFurniture_coffee",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_HeroFurniture_coffee",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_HeroFurniture_coffee",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_HeroFurniture_coffee",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_HeroFurniture_coffee",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_Ceramic",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_Ceramic",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_Ceramic",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_Ceramic",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_Ceramic",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_Ceramic",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_continuous_honed_round_tabletop_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_north_chair_back_post_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_north_chair_back_post_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_north_chair_bent_leg_1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_north_chair_bent_leg_1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_north_chair_bent_leg_-1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_north_chair_bent_leg_-1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_north_chair_bentwood_lower_stretcher_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_north_chair_continuous_bent_back_hoop_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_north_chair_open_back_spindle_0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_north_chair_open_back_spindle_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_north_chair_open_back_spindle_2_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_north_chair_steam_bent_seat_ring_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_south_chair_back_post_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_south_chair_back_post_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_south_chair_bent_leg_1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_south_chair_bent_leg_1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_south_chair_bent_leg_-1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_south_chair_bent_leg_-1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_south_chair_bentwood_lower_stretcher_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_south_chair_continuous_bent_back_hoop_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_south_chair_open_back_spindle_0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_south_chair_open_back_spindle_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_south_chair_open_back_spindle_2_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_001_south_chair_steam_bent_seat_ring_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_continuous_honed_round_tabletop_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_north_chair_back_post_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_north_chair_back_post_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_north_chair_bent_leg_1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_north_chair_bent_leg_1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_north_chair_bent_leg_-1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_north_chair_bent_leg_-1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_north_chair_bentwood_lower_stretcher_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_north_chair_continuous_bent_back_hoop_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_north_chair_open_back_spindle_0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_north_chair_open_back_spindle_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_north_chair_open_back_spindle_2_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_north_chair_steam_bent_seat_ring_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_south_chair_back_post_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_south_chair_back_post_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_south_chair_bent_leg_1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_south_chair_bent_leg_1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_south_chair_bent_leg_-1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_south_chair_bent_leg_-1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_south_chair_bentwood_lower_stretcher_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_south_chair_continuous_bent_back_hoop_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_south_chair_open_back_spindle_0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_south_chair_open_back_spindle_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_south_chair_open_back_spindle_2_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_002_south_chair_steam_bent_seat_ring_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_continuous_honed_round_tabletop_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_north_chair_back_post_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_north_chair_back_post_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_north_chair_bent_leg_1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_north_chair_bent_leg_1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_north_chair_bent_leg_-1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_north_chair_bent_leg_-1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_north_chair_bentwood_lower_stretcher_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_north_chair_continuous_bent_back_hoop_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_north_chair_open_back_spindle_0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_north_chair_open_back_spindle_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_north_chair_open_back_spindle_2_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_north_chair_steam_bent_seat_ring_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_south_chair_back_post_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_south_chair_back_post_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_south_chair_bent_leg_1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_south_chair_bent_leg_1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_south_chair_bent_leg_-1_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_south_chair_bent_leg_-1_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_south_chair_bentwood_lower_stretcher_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_south_chair_continuous_bent_back_hoop_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_south_chair_open_back_spindle_0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_south_chair_open_back_spindle_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_south_chair_open_back_spindle_2_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Bistro_Set_003_south_chair_steam_bent_seat_ring_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Backbar_shelf_0_oak_board_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Backbar_shelf_1_oak_board_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_HeroFurniture_bottle_green",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_HeroFurniture_bottle_green",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_HeroFurniture_bottle_green",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_HeroFurniture_bottle_green",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_HeroFurniture_bottle_green",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_HeroFurniture_bottle_green",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Backbar_001_shelf_0_oak_board_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Backbar_001_shelf_1_oak_board_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_carcass_bottom_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_carcass_end_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_carcass_end_-1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_carcass_top_rail_support_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_continuous_honed_stone_worktop_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_Brass",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_Brass",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_Brass",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_Brass",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_Brass",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_Brass",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_end_1_frame_rail_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_end_1_frame_rail_001_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_end_1_frame_stile_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_end_1_frame_stile_001_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_end_1_inset_panel_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_end_-1_frame_rail_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_end_-1_frame_rail_001_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_end_-1_frame_stile_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_end_-1_frame_stile_001_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_end_-1_inset_panel_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_continuous_rail_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_continuous_rail_001_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_frame_stile_0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_frame_stile_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_frame_stile_2_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_frame_stile_3_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_frame_stile_4_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_panel_0_inner_bead_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_panel_0_inner_bead_001_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_panel_1_inner_bead_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_panel_1_inner_bead_001_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_panel_2_inner_bead_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_panel_2_inner_bead_001_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_panel_3_inner_bead_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_panel_3_inner_bead_001_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_recessed_panel_0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_recessed_panel_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_recessed_panel_2_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_front_recessed_panel_3_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_pastry_case_oak_plinth_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_small_oak_payment_tray_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_continuous_rail_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_continuous_rail_001_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_frame_stile_0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_frame_stile_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_frame_stile_2_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_frame_stile_3_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_frame_stile_4_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_panel_0_inner_bead_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_panel_0_inner_bead_001_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_panel_1_inner_bead_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_panel_1_inner_bead_001_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_panel_2_inner_bead_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_panel_2_inner_bead_001_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_panel_3_inner_bead_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_panel_3_inner_bead_001_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_recessed_panel_0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_recessed_panel_1_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_recessed_panel_2_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Hero_Cafe_Counter_staff_recessed_panel_3_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_Pastry",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_Pastry",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_Pastry",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_Pastry",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_Pastry",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_Pastry",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_HeroFoliage_bark",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_HeroFoliage_bark",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_HeroFoliage_bark",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_HeroFoliage_bark",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_HeroFoliage_bark",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_HeroFoliage_bark",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_HeroFoliage_leaf_dark",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_HeroFoliage_leaf_dark",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_HeroFoliage_leaf_dark",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_HeroFoliage_leaf_dark",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_HeroFoliage_leaf_dark",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_HeroFoliage_leaf_dark",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_HeroFoliage_leaf_mid",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_HeroFoliage_leaf_mid",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_HeroFoliage_leaf_mid",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_HeroFoliage_leaf_mid",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_HeroFoliage_leaf_mid",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_HeroFoliage_leaf_mid",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_HeroFoliage_leaf_light",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_HeroFoliage_leaf_light",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_HeroFoliage_leaf_light",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_HeroFoliage_leaf_light",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_HeroFoliage_leaf_light",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_HeroFoliage_leaf_light",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_HeroFoliage_bloom_blue",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_HeroFoliage_bloom_blue",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_HeroFoliage_bloom_blue",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_HeroFoliage_bloom_blue",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_HeroFoliage_bloom_blue",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_HeroFoliage_bloom_blue",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_HeroFoliage_bloom_cream",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_HeroFoliage_bloom_cream",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_HeroFoliage_bloom_cream",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_HeroFoliage_bloom_cream",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_HeroFoliage_bloom_cream",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_HeroFoliage_bloom_cream",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Interior_Hero_Limewash_Scan_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_Terracotta",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_Terracotta",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_Terracotta",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_Terracotta",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_Terracotta",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_Terracotta",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Roof_Hero_CabinetOak_Scan_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Roof_Hero_CutGranite_CC0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Roof_Hero_Limewash_Scan_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_Slate0:albedo",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_Slate0:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_Slate0:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_Slate0:roughness",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_Slate0:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_Slate0:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_Slate0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_Slate0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_Slate0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_Slate0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_Slate0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_Slate0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_Slate1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_Slate1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_Slate1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_Slate1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_Slate1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_Slate1",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_Slate2",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_Slate2",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_Slate2",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_Slate2",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_Slate2",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_Slate2",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Street_Hero_CabinetOak_Scan_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_Chalkboard",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_Chalkboard",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_Chalkboard",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_Chalkboard",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_Chalkboard",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_Chalkboard",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Street_Hero_CutGranite_CC0_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_Street_Hero_Paving_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_Paving:albedo",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_Paving:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_Paving:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_Paving:normal",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_Paving:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_Paving:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_Paving:roughness",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_Paving:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_Paving:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_Paving",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_Paving",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_Paving",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_Paving",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_Paving",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_Paving",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_WallSkin_cafe_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_WallSkin_cafe_BakedLimewash:albedo",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_WallSkin_cafe_BakedLimewash:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_WallSkin_cafe_BakedLimewash:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_WallSkin_cafe_BakedLimewash:normal",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_WallSkin_cafe_BakedLimewash:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_WallSkin_cafe_BakedLimewash:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_WallSkin_cafe_BakedLimewash:roughness",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_WallSkin_cafe_BakedLimewash:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_WallSkin_cafe_BakedLimewash:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_WallSkin_cafe_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": {
+				"godot_offset": [
+					0.0,
+					0.692307710647583,
+					0.0
+				],
+				"godot_scale": [
+					0.232558146119118,
+					0.307692319154739,
+					1.0
+				],
+				"source_offset": [
+					0.0,
+					0.692307680845261
+				],
+				"source_scale": [
+					0.232558146119118,
+					0.307692319154739
+				]
+			},
+			"name": "physical_texture_transform_retained_Hero_WallSkin_cafe_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_WallSkin_cafe_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_WallSkin_cafe_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_WallSkin_cafe_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_WallSkin_cafe_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_WallSkin_cafe_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_WallSkin_left_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_WallSkin_left_BakedLimewash:albedo",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_WallSkin_left_BakedLimewash:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_WallSkin_left_BakedLimewash:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_WallSkin_left_BakedLimewash:normal",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_WallSkin_left_BakedLimewash:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_WallSkin_left_BakedLimewash:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_WallSkin_left_BakedLimewash:roughness",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_WallSkin_left_BakedLimewash:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_WallSkin_left_BakedLimewash:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_WallSkin_left_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": {
+				"godot_offset": [
+					0.0,
+					0.672131180763245,
+					0.0
+				],
+				"godot_scale": [
+					0.370370358228683,
+					0.327868849039078,
+					1.0
+				],
+				"source_offset": [
+					0.0,
+					0.672131150960922
+				],
+				"source_scale": [
+					0.370370358228683,
+					0.327868849039078
+				]
+			},
+			"name": "physical_texture_transform_retained_Hero_WallSkin_left_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_WallSkin_left_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_WallSkin_left_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_WallSkin_left_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_WallSkin_left_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_WallSkin_left_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_surface_vectors_WallSkin_right_0",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_WallSkin_right_BakedLimewash:albedo",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_WallSkin_right_BakedLimewash:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_WallSkin_right_BakedLimewash:albedo",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_WallSkin_right_BakedLimewash:normal",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_WallSkin_right_BakedLimewash:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_WallSkin_right_BakedLimewash:normal",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_decoded_Hero_WallSkin_right_BakedLimewash:roughness",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "texture_mip_generation_Hero_WallSkin_right_BakedLimewash:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "texture_mips_uploaded_Hero_WallSkin_right_BakedLimewash:roughness",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "material_source_identity_Hero_WallSkin_right_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": {
+				"godot_offset": [
+					0.0,
+					0.672131180763245,
+					0.0
+				],
+				"godot_scale": [
+					0.370370358228683,
+					0.327868849039078,
+					1.0
+				],
+				"source_offset": [
+					0.0,
+					0.672131150960922
+				],
+				"source_scale": [
+					0.370370358228683,
+					0.327868849039078
+				]
+			},
+			"name": "physical_texture_transform_retained_Hero_WallSkin_right_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "pbr_metallic_roughness_source_Hero_WallSkin_right_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "albedo_texture_retained_Hero_WallSkin_right_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "normal_texture_retained_Hero_WallSkin_right_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "roughness_texture_retained_Hero_WallSkin_right_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "alpha_mode_retained_Hero_WallSkin_right_BakedLimewash",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "at_least_one_pbr_material",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "real_framebuffer",
+			"passed": true
+		},
+		{
+			"detail": [
+				1440,
+				1000
+			],
+			"name": "capture_dimensions",
+			"passed": true
+		},
+		{
+			"detail": 0,
+			"name": "png_saved",
+			"passed": true
+		},
+		{
+			"detail": null,
+			"name": "source_glb_unchanged_after_preview",
+			"passed": true
+		}
+	],
+	"display_server": "Windows",
+	"engine_version": {
+		"build": "official",
+		"hash": "71f334935c000924d403448e698df4441130df18",
+		"hex": 263682,
+		"major": 4,
+		"minor": 6,
+		"patch": 2,
+		"status": "stable",
+		"string": "4.6.2-stable (official)",
+		"timestamp": 0
+	},
+	"failure_count": 0,
+	"material_adapter": {
+		"cached_texture_variants": 27,
+		"presentation_limit": "Runtime sampling adaptation only; no matching-Blender presentation claim.",
+		"rules": [
+			"COLOR_0 multiplies albedo",
+			"Source BLEND alpha explicitly retained",
+			"Generate missing decoded-image mipmaps; renormalize normal-map mip vectors",
+			"Cache uploaded textures per source texture instance and normal/color role",
+			"Use LINEAR_WITH_MIPMAPS_ANISOTROPIC sampling"
+		],
+		"source_glb_and_png_files_modified": false,
+		"texture_filter": "LINEAR_WITH_MIPMAPS_ANISOTROPIC",
+		"texture_mipmap_records": [
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836719354353,
+				"uses": [
+					"Hero_CutGranite_CC0:albedo",
+					"Hero_HonedGranite_CC0:albedo"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": true,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836769686003,
+				"uses": [
+					"Hero_CutGranite_CC0:normal",
+					"Hero_HonedGranite_CC0:normal"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836669022703,
+				"uses": [
+					"Hero_CutGranite_CC0:roughness",
+					"Hero_CutGranite_CC0:metallic"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836568359403,
+				"uses": [
+					"Hero_InteriorFloor_Scan:albedo"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": true,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836618691053,
+				"uses": [
+					"Hero_InteriorFloor_Scan:normal"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836518027753,
+				"uses": [
+					"Hero_InteriorFloor_Scan:roughness",
+					"Hero_InteriorFloor_Scan:metallic"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836417364453,
+				"uses": [
+					"Hero_Limewash_Scan:albedo"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": true,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836467696103,
+				"uses": [
+					"Hero_Limewash_Scan:normal"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836367032803,
+				"uses": [
+					"Hero_Limewash_Scan:roughness",
+					"Hero_Limewash_Scan:metallic"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836316701153,
+				"uses": [
+					"Hero_HonedGranite_CC0:roughness",
+					"Hero_HonedGranite_CC0:metallic"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836216037853,
+				"uses": [
+					"Hero_CabinetOak_Scan:albedo"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": true,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836266369503,
+				"uses": [
+					"Hero_CabinetOak_Scan:normal"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836165706203,
+				"uses": [
+					"Hero_CabinetOak_Scan:roughness",
+					"Hero_CabinetOak_Scan:metallic"
+				]
+			},
+			{
+				"actual_mipmap_count": 10,
+				"dimensions": [
+					1024,
+					1024
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836115374553,
+				"uses": [
+					"Hero_Slate0:albedo",
+					"Hero_Slate1:albedo",
+					"Hero_Slate2:albedo"
+				]
+			},
+			{
+				"actual_mipmap_count": 10,
+				"dimensions": [
+					1024,
+					1024
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836065042903,
+				"uses": [
+					"Hero_Slate0:roughness",
+					"Hero_Slate0:metallic",
+					"Hero_Slate1:roughness",
+					"Hero_Slate1:metallic",
+					"Hero_Slate2:roughness",
+					"Hero_Slate2:metallic"
+				]
+			},
+			{
+				"actual_mipmap_count": 10,
+				"dimensions": [
+					1024,
+					1024
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371835964379603,
+				"uses": [
+					"Hero_Paving:albedo"
+				]
+			},
+			{
+				"actual_mipmap_count": 9,
+				"dimensions": [
+					512,
+					512
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": true,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371836014711253,
+				"uses": [
+					"Hero_Paving:normal"
+				]
+			},
+			{
+				"actual_mipmap_count": 9,
+				"dimensions": [
+					512,
+					512
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371835914047953,
+				"uses": [
+					"Hero_Paving:roughness",
+					"Hero_Paving:metallic"
+				]
+			},
+			{
+				"actual_mipmap_count": 12,
+				"dimensions": [
+					4096,
+					4096
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371835813384653,
+				"uses": [
+					"Hero_WallSkin_cafe_BakedLimewash:albedo"
+				]
+			},
+			{
+				"actual_mipmap_count": 12,
+				"dimensions": [
+					4096,
+					4096
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": true,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371835863716303,
+				"uses": [
+					"Hero_WallSkin_cafe_BakedLimewash:normal"
+				]
+			},
+			{
+				"actual_mipmap_count": 12,
+				"dimensions": [
+					4096,
+					4096
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371835763053003,
+				"uses": [
+					"Hero_WallSkin_cafe_BakedLimewash:roughness",
+					"Hero_WallSkin_cafe_BakedLimewash:metallic"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371835662389703,
+				"uses": [
+					"Hero_WallSkin_left_BakedLimewash:albedo"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": true,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371835712721353,
+				"uses": [
+					"Hero_WallSkin_left_BakedLimewash:normal"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371835612058053,
+				"uses": [
+					"Hero_WallSkin_left_BakedLimewash:roughness",
+					"Hero_WallSkin_left_BakedLimewash:metallic"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371835511394753,
+				"uses": [
+					"Hero_WallSkin_right_BakedLimewash:albedo"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": true,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371835561726403,
+				"uses": [
+					"Hero_WallSkin_right_BakedLimewash:normal"
+				]
+			},
+			{
+				"actual_mipmap_count": 11,
+				"dimensions": [
+					2048,
+					2048
+				],
+				"generated_missing_mipmaps": true,
+				"normal_vectors_renormalized": false,
+				"replacement_texture_class": "ImageTexture",
+				"source_mipmap_count": 0,
+				"source_texture_class": "ImageTexture",
+				"source_texture_instance_id": -9223371835461063103,
+				"uses": [
+					"Hero_WallSkin_right_BakedLimewash:roughness",
+					"Hero_WallSkin_right_BakedLimewash:metallic"
+				]
+			}
+		],
+		"vertex_color_surfaces": 0
+	},
+	"materials": [
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_CanvasCream",
+			"normal_texture": false,
+			"roughness": 0.879999995231628,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": true,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_CutGranite_CC0",
+			"normal_texture": true,
+			"roughness": 1.0,
+			"roughness_texture": true,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_FadedNavy",
+			"normal_texture": false,
+			"roughness": 0.779999971389771,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": true,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_InteriorFloor_Scan",
+			"normal_texture": true,
+			"roughness": 1.0,
+			"roughness_texture": true,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": true,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_Limewash_Scan",
+			"normal_texture": true,
+			"roughness": 1.0,
+			"roughness_texture": true,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_Neighbour1",
+			"normal_texture": false,
+			"roughness": 0.899999976158142,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_Neighbour-1",
+			"normal_texture": false,
+			"roughness": 0.899999976158142,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 1,
+			"metallic": 0.0,
+			"name": "Hero_Glass",
+			"normal_texture": false,
+			"roughness": 0.0900000035762787,
+			"roughness_texture": false,
+			"source_alpha_mode": "BLEND"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.649999976158142,
+			"name": "Hero_Iron",
+			"normal_texture": false,
+			"roughness": 0.449999988079071,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_SageShutter",
+			"normal_texture": false,
+			"roughness": 0.759999990463257,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.400000005960464,
+			"name": "Hero_WeatheredZinc",
+			"normal_texture": false,
+			"roughness": 0.529999971389771,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": true,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_HonedGranite_CC0",
+			"normal_texture": true,
+			"roughness": 0.800000011920929,
+			"roughness_texture": true,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": true,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_CabinetOak_Scan",
+			"normal_texture": true,
+			"roughness": 0.819999992847443,
+			"roughness_texture": true,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_Cane",
+			"normal_texture": false,
+			"roughness": 0.740000009536743,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "HeroFurniture_coffee",
+			"normal_texture": false,
+			"roughness": 0.239999994635582,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_Ceramic",
+			"normal_texture": false,
+			"roughness": 0.25,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "HeroFurniture_bottle_green",
+			"normal_texture": false,
+			"roughness": 0.189999997615814,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.699999988079071,
+			"name": "Hero_Brass",
+			"normal_texture": false,
+			"roughness": 0.400000005960464,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_Pastry",
+			"normal_texture": false,
+			"roughness": 0.680000007152557,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "HeroFoliage_bark",
+			"normal_texture": false,
+			"roughness": 0.870000004768372,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "HeroFoliage_leaf_dark",
+			"normal_texture": false,
+			"roughness": 0.670000016689301,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "HeroFoliage_leaf_mid",
+			"normal_texture": false,
+			"roughness": 0.610000014305115,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "HeroFoliage_leaf_light",
+			"normal_texture": false,
+			"roughness": 0.639999985694885,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "HeroFoliage_bloom_blue",
+			"normal_texture": false,
+			"roughness": 0.709999978542328,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "HeroFoliage_bloom_cream",
+			"normal_texture": false,
+			"roughness": 0.759999990463257,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_Terracotta",
+			"normal_texture": false,
+			"roughness": 0.860000014305115,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": true,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_Slate0",
+			"normal_texture": false,
+			"roughness": 1.0,
+			"roughness_texture": true,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": true,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_Slate1",
+			"normal_texture": false,
+			"roughness": 1.0,
+			"roughness_texture": true,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": true,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_Slate2",
+			"normal_texture": false,
+			"roughness": 1.0,
+			"roughness_texture": true,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": false,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_Chalkboard",
+			"normal_texture": false,
+			"roughness": 0.959999978542328,
+			"roughness_texture": false,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": true,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_Paving",
+			"normal_texture": true,
+			"roughness": 1.0,
+			"roughness_texture": true,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": true,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_WallSkin_cafe_BakedLimewash",
+			"normal_texture": true,
+			"roughness": 1.0,
+			"roughness_texture": true,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": true,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_WallSkin_left_BakedLimewash",
+			"normal_texture": true,
+			"roughness": 1.0,
+			"roughness_texture": true,
+			"source_alpha_mode": "OPAQUE"
+		},
+		{
+			"albedo_texture": true,
+			"godot_transparency": 0,
+			"metallic": 0.0,
+			"name": "Hero_WallSkin_right_BakedLimewash",
+			"normal_texture": true,
+			"roughness": 1.0,
+			"roughness_texture": true,
+			"source_alpha_mode": "OPAQUE"
+		}
+	],
+	"presentation": {
+		"ambient_sky_energy": 0.2,
+		"camera_position_metres": [
+			47.3390426635742,
+			39.115894317627,
+			68.8607864379883
+		],
+		"camera_projection": "orthographic",
+		"camera_target_metres": [
+			0.0,
+			4.68750047683716,
+			0.00400018692016602
+		],
+		"camera_vertical_span_metres": 22.199779510498,
+		"directional_shadow_mode": "ORTHOGONAL",
+		"msaa_3d": "4x",
+		"sky": "Original procedural daylight sky",
+		"sun_energy": 0.55,
+		"sun_rotation_degrees": [
+			-48,
+			-35,
+			0
+		],
+		"tone_mapper_requested": "LINEAR",
+		"tone_mapping_limit": "This GL Compatibility consumer does not validate Filmic response or Blender AgX parity; lighting is independently exposed for the actual captured frame.",
+		"view": "Three-quarter front; Blender front -Y exports to Godot +Z",
+		"viewport": [
+			1440,
+			1000
+		]
+	},
+	"project": {
+		"path": "res://project.godot",
+		"sha256": "c26e12b4d2c49321468f97236ac43cf5dc5b03a802691c789a1b4498412c78fd"
+	},
+	"render_wait_frames": 10,
+	"schema": "living_town.asset_refinement_preview.v1",
+	"scope": "Runtime GLB visual import and framebuffer capture only; no physics, navigation or performance claim.",
+	"script": {
+		"path": "res://main.gd",
+		"sha256": "df5126a66188481f2bd9235f236a97471f70d883bdc7413a19b7d21070043288"
+	},
+	"status": "PASS",
+	"video_adapter": "AMD Radeon(TM) 8060S Graphics"
+}
