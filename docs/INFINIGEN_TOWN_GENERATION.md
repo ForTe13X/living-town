@@ -42,7 +42,7 @@ flowchart LR
 
 1. **Terrain and urban structure.** Use the existing height authority for roads, pads, foundations, ponds and vegetation contacts. Rework the layout where useful: irregular blocks, narrow passages, service access, courtyards, coast-facing public space and terrain-following streets. Upstream room generators do not supply this town-planning layer.
 2. **Rooms and relationships.** Retain the current room purposes, doors, stairs, service/storage spaces and circulation keepouts. Fit detailed furniture through its returned mesh bounds, then rerun clearance and facing checks. The newer counter is deeper than its old proxy, so replacing it by name alone is insufficient.
-3. **Geometry and materials.** Parameterize architecture by each building's dimensions and actual opening layout. Preserve the finer cabinet joinery, bentwood seating and botanical geometry from the caf茅 pilot. Wall bakes must derive runoff from the target sills and eaves. Use proper residual normals when mesh displacement already represents coarse relief, avoiding duplicate slope strength.
+3. **Geometry and materials.** Parameterize architecture by each building's dimensions and actual opening layout. Preserve the finer cabinet joinery, bentwood seating and botanical geometry from the café pilot. Wall bakes must derive runoff from the target sills and eaves. Use proper residual normals when mesh displacement already represents coarse relief, avoiding duplicate slope strength.
 4. **Reserve and planting.** Replace simplified nearby crowns with a small family of detailed botanical prototypes. Vary species, age, crown shape and patch composition. Preserve the terrain-connected jogging loop, mountain passages, stairs and bridges, as well as furnished trailers and visitor services. Distance tiers reduce display cost; they do not remove required interiors.
 5. **Export and review.** Preserve shared meshes and transform manifests in chunks. Deliver packed Blender source and conventional GLB/PBR assets, with collision, navigation and LOD checks recorded separately. Inspect matched street, room, canopy and terrain-contact views in Blender and an actual consumer before scaling the accepted factories across town.
 
@@ -64,9 +64,9 @@ Urban floor levels use the recorded pad base plus the interior's local floor off
 
 ## First integration block
 
-Start with the actual adjacent buildings `Main_cafe`, `Main_shop` and `lot_05_creperie`, then a reserve-edge slice containing planting and a furnished visitor facility. The caf茅 is 10 脳 9 m; the adjoining shops are 6 脳 9 m. All three face west, with thresholds at X=7 m and individual recorded terrain levels.
+Start with the actual adjacent buildings `Main_cafe`, `Main_shop` and `lot_05_creperie`, then a reserve-edge slice containing planting and a furnished visitor facility. The café is 10 × 9 m; the adjoining shops are 6 × 9 m. All three face west, with thresholds at X=7 m and individual recorded terrain levels.
 
-The isolated V10 hero is a different 8.6 脳 6.4 m building at Z=0. Reuse its factories and finishes through adapters; derive the new shells, apertures, weather masks and room fits from the target recipes. Compare the first block against the concept and current street images before expanding to all 70 buildings. Numeric checks complement that visual comparison.
+The isolated V10 hero is a different 8.6 × 6.4 m building at Z=0. Reuse its factories and finishes through adapters; derive the new shells, apertures, weather masks and room fits from the target recipes. Compare the first block against the concept and current street images before expanding to all 70 buildings. Numeric checks complement that visual comparison.
 
 ## Upstream version and component boundaries
 
