@@ -1,0 +1,103 @@
+{
+  "schema": "living_town.recipe_compile_evidence.v1",
+  "status": "PASS_RECIPE_COMPILATION_ONLY",
+  "recipe_status": "COMPILED_NOT_GENERATED",
+  "recipe_sha256": "028afcf1b684f47447d96f47b7e66a87025d611b8a73e97013623d7e4c395bd6",
+  "compiler_sha256": "92993498dc7faa28ec887e03e39888d98bd923681545a4926e5f67073dd0a248",
+  "profile_sha256": "22a78c2a0363611f9840790becc14d6b60045c5ab1b901ff903170323f95c01a",
+  "input_sha256": {
+    "masterplan": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
+    "interiors": "665519089421f82d0869ff62f189f364426a064ece67912979f9709d752e5409",
+    "landscape": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1",
+    "terrain": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349",
+    "reserve": "6841fdb5121e78372e9ccc80a990cb93b5acd7700db3f2661df2718b7e2980f7"
+  },
+  "source_module_sha256": {
+    "art/living_town/tools/build_living_town.py": "41a59245afb3fc02789f1dfd2482c68c1b3282b029cd1087f177b8c3c699894d",
+    "art/living_town/tools/build_reserve.py": "bf4490ecd0e58ac13d1323085ca0460107b95abde66bb0012b570521a6147c8c",
+    "art/living_town/tools/interior_design.py": "045228f452b1ace0c8363a13c56742758426d8b816bb1b00245d88d985f8dfe4",
+    "art/living_town/tools/terrain_profile.py": "6f722d04566f11cc58b3dd93cace5b781d8b2092bb7e70169f1f08279febc3b8",
+    "art/living_town/tools/reserve_plan.py": "178ce182db1e41820263462e873f1903e5488dbcf3deae0c81263f8cf3056e8a",
+    "tools/asset_refinement/hero_furniture.py": "48af2b5ebe48b13ae9cc820874e5f4a7722964b710cf52bf8031ec75e6b77dd6",
+    "tools/asset_refinement/hero_foliage.py": "e1bc3999cdfca90b863395ffc12f0e1dd91524b151e35cf1783ecc09811f9b58",
+    "tools/asset_refinement/hero_walls.py": "a48c9e0485ff69eaae2f460449ab10ab31b066e26a3318f2587f7d21ac322e75",
+    "tools/asset_refinement/hero_pbr.py": "6c957c31f9542b5928a415e213496b40205ef5e5dabed92769eed30aa4204125"
+  },
+  "counts": {
+    "town_buildings": 49,
+    "reserve_buildings": 21,
+    "town_floors": 89,
+    "town_rooms": 561,
+    "town_furnishings": 757
+  },
+  "first_integration_slice": [
+    {
+      "id": "Main_cafe",
+      "center_xy_m": [
+        11.5,
+        0
+      ],
+      "yaw_degrees": -90,
+      "front_outward_xy": [
+        -1.0,
+        -6.123233995736766e-17
+      ],
+      "pad_base_z_m": 0.355028092457153,
+      "threshold_xy_m": [
+        7.0,
+        -2.755455298081545e-16
+      ]
+    },
+    {
+      "id": "Main_shop",
+      "center_xy_m": [
+        11.5,
+        8
+      ],
+      "yaw_degrees": -90,
+      "front_outward_xy": [
+        -1.0,
+        -6.123233995736766e-17
+      ],
+      "pad_base_z_m": 0.35844910209293407,
+      "threshold_xy_m": [
+        7.0,
+        8.0
+      ]
+    },
+    {
+      "id": "lot_05_creperie",
+      "center_xy_m": [
+        11.5,
+        -8
+      ],
+      "yaw_degrees": -90,
+      "front_outward_xy": [
+        -1.0,
+        -6.123233995736766e-17
+      ],
+      "pad_base_z_m": 0.35311637272022045,
+      "threshold_xy_m": [
+        7.0,
+        -8.0
+      ]
+    }
+  ],
+  "missing_integration": [
+    "Parameterized full-town architecture/material/furniture/foliage adapters",
+    "Explicit output-root/seed APIs; existing reserve builder writes fixed authoring paths",
+    "Topography-aware replanning and concept-matched first slice",
+    "Chunked instance-preserving export, LOD/collision/navigation and performance proof"
+  ],
+  "blender_executed": false,
+  "infinigen_executed": false,
+  "inference_executed": false,
+  "tests": {
+    "recipe_contract_tests": 15,
+    "scope": "Pure-Python fixtures and real input compilation; no mesh/render/quality acceptance implied."
+  },
+  "native_sources_unchanged": {
+    "original_town": "99fca62005524b1c2a331cbe81316b43b8d9622d92a408db6703fe3cf4760191",
+    "v10_pilot": "ff19e877204f2cd26113e9c54a52fc443eec0f6c4e0d655f327dfb551c0e1fb9"
+  }
+}

@@ -28,10 +28,14 @@ Checkout and artifact-upload failures also remain red.
 
 ## Rolling hosted raster policy
 
-`hosted_visual_runtime_policy.json` records the image, Godot archive and
-binary, Python/Pillow, six apt packages, and Mesa GLX identity from reviewed
-run `39399019945` (previous refresh `38254349222`; original promotion `37122904593`). The final checker requires every listed receipt line
-exactly once. If GitHub updates the image or a package, CI fails with a
+`hosted_visual_runtime_policy.json` records complete reviewed runtime profiles:
+image, Godot archive and binary, Python/Pillow, six apt packages, and Mesa GLX
+identity. Schema v2 currently contains exactly two profiles reviewed from runs
+`39399019945` and `39402759057` (previous refresh `38254349222`; original
+promotion `37122904593`). The final checker requires every listed receipt line
+exactly once, with the whole receipt matching one complete profile. It does
+not combine accepted values from different profiles. If GitHub supplies an
+unreviewed image or package combination, CI fails with a
 distinct `runtime:` reason. A reviewer must compare a fresh complete
 positive/negative artifact and visual sample on the changed runtime before
 updating this file. Do not relabel runtime drift as a product regression or
@@ -92,6 +96,44 @@ This requalifies the hosted raster runtime for the existing 2D game canary.
 It does not establish 3D cafe asset quality or replace the separate Blender,
 GLB and Godot pilot evidence. This reviewed run failed only its stale runtime
 pins; a fresh successful workflow is required after the refresh.
+
+## October 20 overlapping runner qualification
+
+The next [PR #87 run 39402759057](https://github.com/ForTe13X/living-town/actions/runs/39402759057)
+used runner image `20261012.334.1` while the preceding reviewed run used
+`20261018.339.1`. This is evidence of overlapping hosted image rollout, rather
+than a visual product regression: the other twelve required runtime identities
+match, including Xvfb `2:21.1.12-1ubuntu1.9`. Replacing one exact runner pin
+with the other would reject the already reviewed profile on the next assignment.
+
+The new review binds branch head `43baf8e524f4794447b2398d0b48b57e1ba59be4`,
+actual merge-event checkout `b9b495264da1dff762803da56e1eea9b07941041`, and
+artifact `12255388370`, archive SHA-256
+`cea58c67d02a8dd60f93745e772ceb955d0cb17150172254663d0681c712e97b`.
+All 98 recorded artifact hashes match (88 positive and 10 negative). The
+positive receipt again passes with 75 PNGs and zero scanned runtime errors;
+the day/night negative again catches exactly A1+A2, and the inline floor
+negative retains its B-only failure. All 77 positive/negative PNG files are
+byte-identical to the prior reviewed artifact. Actual day, night, winter-night
+and cafe-floor images were also inspected from the new artifact. The
+[profile review receipt](hosted-runtime-profile-review-2026-10-20.json)
+records the two source runs, archive identities, hash checks and PNG comparison.
+
+Schema v2 retains both complete, explicitly named thirteen-line profiles, each
+with its own run, PR head, event checkout and artifact provenance. The checker
+still supports historical schema v1 single-profile policies. There are no
+wildcards, version ranges, fallback runtime maps or per-field allowlists.
+The same thirteen mandatory identity prefixes must appear in each v2 profile.
+Duplicate runtime identities, duplicate profiles or JSON keys, missing review
+metadata, unreviewed combinations and malformed positive/negative receipts
+remain failures. All fifteen hosted-policy tests pass, including a synthetic
+cross-profile mixture that must be rejected. Replaying both complete real
+artifacts passes with v2; changing the negative control to `a2=0` still fails.
+
+This qualifies only these two exact hosted raster profiles. It changes no
+visual goldens, detector thresholds, runtime packages, workflow failure policy
+or branch protection. A fresh successful workflow after this policy change is
+still required for the current PR; these earlier red runs are not final CI proof.
 
 ## Promotion boundary
 

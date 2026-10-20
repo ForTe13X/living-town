@@ -1,0 +1,41 @@
+{
+  "schema": "living_town.generation_profile.v1",
+  "seed": 71126,
+  "style": "Refined stylized realism; inhabited Breton summer; pale mineral plaster, slate, restrained blue/sage joinery and varied horticulture",
+  "focus_buildings": ["Main_cafe", "Main_shop", "lot_05_creperie"],
+  "inputs": {
+    "masterplan": "art/living_town/masterplan.json",
+    "interiors": "art/living_town/interior_plan.json",
+    "landscape": "art/living_town/landscape_plan.json",
+    "terrain": "art/living_town/terrain_plan.json",
+    "reserve": "art/living_town/reserve_plan.json"
+  },
+  "source_modules": [
+    "art/living_town/tools/build_living_town.py",
+    "art/living_town/tools/build_reserve.py",
+    "art/living_town/tools/interior_design.py",
+    "art/living_town/tools/terrain_profile.py",
+    "art/living_town/tools/reserve_plan.py",
+    "tools/asset_refinement/hero_furniture.py",
+    "tools/asset_refinement/hero_foliage.py",
+    "tools/asset_refinement/hero_walls.py",
+    "tools/asset_refinement/hero_pbr.py"
+  ],
+  "runtime": {"engine_jobs_at_once": 1, "blender_threads": 6, "render_device": "CPU"},
+  "proposed_quality": {
+    "focus_facade_bake_pixels": 4096,
+    "other_facade_bake_pixels": 2048,
+    "fine_plaster_repeat_metres": 1,
+    "frontage_context": "Derive window/sill/eave/base weathering from each target facade; retain fine physical-scale scan",
+    "interiors": "Every enterable building and furnished trailer retains room segmentation, service rooms, storage and decoration; distance tiers affect display detail, not whether rooms exist",
+    "furniture": "Semantic groups, coupled dimensions, facing/support relations and clear working fronts; reject door/stair/route overlap",
+    "landscape": "Terrain-conditioned canopy, understory, flowers and garden planting with deliberate clearings; preserve coast, graded pond banks and reserve paths/bridges/stairs",
+    "export": "Packed native source, shared-mesh GLB kits and chunk placement manifests; baked PBR, explicit UV scale, collision/navigation as separately verified products"
+  },
+  "upstream_references": {
+    "infinigen_main": "224598d4a2ff95b4fc928e72c222598b7122c698",
+    "infinigen_indoors": "b11700ebac77695d8f53538705cfdc0cd890c54d",
+    "infinigen_nature": "f5bcba8de47623da9b715348cf95822445e0e9a7",
+    "integration": "Design insights only; no upstream code copied, installed or executed by this compiler"
+  }
+}
