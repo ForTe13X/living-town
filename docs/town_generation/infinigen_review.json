@@ -1,0 +1,113 @@
+{
+  "schema": "living_town.infinigen_source_research.v1",
+  "date_utc": "2026-10-20",
+  "status": "READ_ONLY_RESEARCH_NOT_RUNTIME_VALIDATION",
+  "pins": {
+    "main_v2": "224598d4a2ff95b4fc928e72c222598b7122c698",
+    "indoors_stable": "b11700ebac77695d8f53538705cfdc0cd890c54d",
+    "nature_stable": "f5bcba8de47623da9b715348cf95822445e0e9a7",
+    "main_gpl_submodule": "10c1d76f5c35003e919be7265185c9c355e3b70c"
+  },
+  "primary_snapshots": "docs/town_generation/infinigen_sources.json",
+  "version_findings": [
+    {
+      "finding": "Main V2 is preview (docs pin2.0.0a3), with limited indoor assets/materials and simple room arrangements; not a ready whole-town generator.",
+      "source": "https://github.com/princeton-vl/infinigen/blob/224598d4a2ff95b4fc928e72c222598b7122c698/docs/source/Infinigen2.md"
+    },
+    {
+      "finding": "Main pyproject requires Python==3.11.*, bpy==4.2.0, procfunc>=0.37,<0.38 and NumPy<2; terrain and simulator exporters remain legacy v1 extras.",
+      "source": "https://github.com/princeton-vl/infinigen/blob/224598d4a2ff95b4fc928e72c222598b7122c698/pyproject.toml"
+    },
+    {
+      "finding": "Documented native Windows support is experimental for minimal assets, unsupported for legacy CPU terrain; WSL2 terrain is experimental.",
+      "source": "https://github.com/princeton-vl/infinigen/blob/224598d4a2ff95b4fc928e72c222598b7122c698/docs/source/Installation.md"
+    }
+  ],
+  "cherry_pick_matrix": [
+    {
+      "mechanism": "Stable seeded asset factories and coarse placeholders",
+      "source": "https://github.com/princeton-vl/infinigen/blob/b11700ebac77695d8f53538705cfdc0cd890c54d/infinigen/core/placement/factory.py",
+      "adaptation": "Give each town object a stable ID and derived sub-seed; solve envelopes first, then replace with detailed existing cafe/reserve asset factories. Preserve transform and material contracts."
+    },
+    {
+      "mechanism": "Semantics and functional spatial constraints",
+      "source": "https://github.com/princeton-vl/infinigen/blob/b11700ebac77695d8f53538705cfdc0cd890c54d/infinigen_examples/constraints/home.py",
+      "adaptation": "Separate hard room/portal/walkway/collision constraints from soft composition. Add own Breton cafe, bathhouse, shop, trailer and town-program rules; do not assume generic home constraints encode commercial circulation."
+    },
+    {
+      "mechanism": "Parent-relative furniture arrangements",
+      "source": "https://github.com/princeton-vl/infinigen/blob/224598d4a2ff95b4fc928e72c222598b7122c698/src/infinigen2/scenes/room/dining_table_setup.py",
+      "adaptation": "Use inward-facing chairs with dimension-aware spacing and tucking; propagate table rotation; reject colliding arrangements with bounded retries. Add explicit player navigation clearance beyond intersection tests."
+    },
+    {
+      "mechanism": "Camera-distance surface detail",
+      "source": "https://github.com/princeton-vl/infinigen/blob/b11700ebac77695d8f53538705cfdc0cd890c54d/infinigen/core/placement/detail.py",
+      "adaptation": "Allocate mesh/texel density from projected size and importance, using the union of walkable areas and walkthrough routes; never permanently cull playable off-camera content."
+    },
+    {
+      "mechanism": "Masked instanced vegetation",
+      "source": "https://github.com/princeton-vl/infinigen/blob/b11700ebac77695d8f53538705cfdc0cd890c54d/infinigen/core/placement/instance_scatter.py",
+      "adaptation": "Scatter linked plant prototypes by ecological zones, slope, moisture and exclusions, preserving clearings and trails; record instance transforms separately for engine import."
+    },
+    {
+      "mechanism": "Height/slope/noise selection",
+      "source": "https://github.com/princeton-vl/infinigen/blob/b11700ebac77695d8f53538705cfdc0cd890c54d/infinigen/assets/scatters/utils/selection.py",
+      "adaptation": "Use height and upward-normal masks plus patch noise; keep town-specific road/structure/water-bank exclusions and horticultural beds authoritative."
+    },
+    {
+      "mechanism": "Layered material composition with physical displacement",
+      "source": "https://github.com/princeton-vl/infinigen/blob/224598d4a2ff95b4fc928e72c222598b7122c698/src/infinigen2/shaders/composites/paint_overlay.py",
+      "adaptation": "Keep the fine CC0 source scan, add context-specific paint/wear masks at physical scales, and bake conventional PBR channels. Retain maintained pale limewash rather than random cracked surfaces."
+    },
+    {
+      "mechanism": "Procedural-to-portable baking/export",
+      "source": "https://github.com/princeton-vl/infinigen/blob/224598d4a2ff95b4fc928e72c222598b7122c698/docs/source/ExportingToExternalFileFormats.md",
+      "adaptation": "Keep own chunked GLB exporter and source-bound PBR verification. Upstream exporter warns procedural baking is lossy and large realized instance exports can exceed memory; full-scene support is USDC in that exporter, not a claim that glTF cannot instance."
+    }
+  ],
+  "licensing": [
+    {
+      "component": "Infinigen root and inspected candidate factory/placement/shader files",
+      "license": "BSD-3-Clause",
+      "source": "https://github.com/princeton-vl/infinigen/blob/224598d4a2ff95b4fc928e72c222598b7122c698/LICENSE",
+      "action": "Retain copyright, conditions, disclaimer and modification provenance for actual code adaptation."
+    },
+    {
+      "component": "src/infinigen/infinigen_gpl submodule",
+      "license": "GPL-3.0 text",
+      "source": "https://github.com/princeton-vl/infinigen_gpl/blob/10c1d76f5c35003e919be7265185c9c355e3b70c/LICENSE",
+      "action": "Separate from permissive code path; review if redistributing authoring code."
+    },
+    {
+      "component": "V2 ant_landscape BSD wrapper dependency",
+      "license": "Underlying A.N.T.Landscape extension GPL-2.0-or-later",
+      "source": "https://extensions.blender.org/add-ons/antlandscape/",
+      "wrapper_source": "https://github.com/princeton-vl/infinigen/blob/224598d4a2ff95b4fc928e72c222598b7122c698/src/infinigen2/objects/ant_landscape.py",
+      "action": "Wrapper calls require_blender_addon(...allow_online=True). Pin extension and notices before using; do not allow silent downloads or call entire dependency chain BSD."
+    },
+    {
+      "component": "mesh_to_sdf",
+      "license": "MIT",
+      "source": "https://github.com/princeton-vl/infinigen/blob/224598d4a2ff95b4fc928e72c222598b7122c698/src/infinigen/terrain/mesh_to_sdf/LICENSE",
+      "action": "Keep its separate notice if adopted."
+    },
+    {
+      "component": "StaticAssets tutorial external example models",
+      "license": "CC-BY-SA4.0 shelf; CC-BY4.0 couch/table",
+      "source": "https://github.com/princeton-vl/infinigen/blob/224598d4a2ff95b4fc928e72c222598b7122c698/docs/source/StaticAssets.md",
+      "action": "Examples are not CC0 or automatically covered by root BSD. Prefer existing owned/CC0 assets; do not fetch these just to run a tutorial."
+    }
+  ],
+  "recommended_one_command_design": "One command executes a resumable deterministic DAG: brief/style/seed -> terrain/water -> street/parcel graph -> room/portal graph -> coarse placement checks -> detailed assets -> physical PBR bakes -> instanced chunks/LODs -> matched review views -> native/GLB and isolated consumers. One command is orchestration, not one unchecked random pass.",
+  "compatibility_boundary": "Reuse ideas in native Blender5.2 code first. Any actual Infinigen generation should be an optional pinned isolated Python3.11/bpy4.2 worker, preferably Linux/WSL for terrain; pass static meshes/maps through disk. No demonstrated compatibility or output quality on this AMDWindows host.",
+  "not_executed": [
+    "installation",
+    "dependency/submodule initialization",
+    "Blender/Infinigen generation",
+    "GPU model inference",
+    "whole-town generation",
+    "concept-parity acceptance"
+  ],
+  "upstream_code_copied": false,
+  "infinigen_installed_or_executed": false
+}

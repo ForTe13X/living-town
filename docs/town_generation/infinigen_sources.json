@@ -1,0 +1,145 @@
+{
+  "scope": "Read-only primary-source snapshot; no execution/install/vendor adaptation",
+  "sources": [
+    {
+      "pin": "224598d4a2ff95b4fc928e72c222598b7122c698",
+      "path": "LICENSE",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/224598d4a2ff95b4fc928e72c222598b7122c698/LICENSE",
+      "bytes": 1506,
+      "sha256": "e610a367a4cb695282366ffc5b669ed28e8b728ceac45e98f77aa77a7498559a"
+    },
+    {
+      "pin": "224598d4a2ff95b4fc928e72c222598b7122c698",
+      "path": "pyproject.toml",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/224598d4a2ff95b4fc928e72c222598b7122c698/pyproject.toml",
+      "bytes": 5324,
+      "sha256": "dadd82f91fe6b8f0c66b509ac69999e6ec816c65f0f4d8cdfa7abb5b3bb97d8a"
+    },
+    {
+      "pin": "224598d4a2ff95b4fc928e72c222598b7122c698",
+      "path": ".gitmodules",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/224598d4a2ff95b4fc928e72c222598b7122c698/.gitmodules",
+      "bytes": 1405,
+      "sha256": "8efb08e25173ce990faf052721fdd9643d752a9f7152ffc2161d664fddb63d79"
+    },
+    {
+      "pin": "224598d4a2ff95b4fc928e72c222598b7122c698",
+      "path": "docs/source/Infinigen2.md",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/224598d4a2ff95b4fc928e72c222598b7122c698/docs/source/Infinigen2.md",
+      "bytes": 6197,
+      "sha256": "08519b27585f22e483df50c51b32a86e225c2230da2bf184a2aae05fb1bc43e6"
+    },
+    {
+      "pin": "224598d4a2ff95b4fc928e72c222598b7122c698",
+      "path": "docs/source/Installation.md",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/224598d4a2ff95b4fc928e72c222598b7122c698/docs/source/Installation.md",
+      "bytes": 7322,
+      "sha256": "79791c7b4d6d874921ded39fe005c2864cd5b831b751249599c55a4d6d1def74"
+    },
+    {
+      "pin": "224598d4a2ff95b4fc928e72c222598b7122c698",
+      "path": "docs/source/ExportingToExternalFileFormats.md",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/224598d4a2ff95b4fc928e72c222598b7122c698/docs/source/ExportingToExternalFileFormats.md",
+      "bytes": 5152,
+      "sha256": "ec8686f5eceeef94573c7c4e623dbd94efb2c54a13170f27c0c5959962dcbe82"
+    },
+    {
+      "pin": "224598d4a2ff95b4fc928e72c222598b7122c698",
+      "path": "docs/source/StaticAssets.md",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/224598d4a2ff95b4fc928e72c222598b7122c698/docs/source/StaticAssets.md",
+      "bytes": 14818,
+      "sha256": "df31aeb73d8454dfab4647fa6b42bc810147f6d3f48ef9170a7bdbc11ee032ae"
+    },
+    {
+      "pin": "224598d4a2ff95b4fc928e72c222598b7122c698",
+      "path": "src/infinigen2/scenes/room/dining_table_setup.py",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/224598d4a2ff95b4fc928e72c222598b7122c698/src/infinigen2/scenes/room/dining_table_setup.py",
+      "bytes": 17810,
+      "sha256": "62e4211a9d638afab7f02487a4977e17f144030e132169a77345f92151d4b74a"
+    },
+    {
+      "pin": "224598d4a2ff95b4fc928e72c222598b7122c698",
+      "path": "src/infinigen2/scenes/placement/collision.py",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/224598d4a2ff95b4fc928e72c222598b7122c698/src/infinigen2/scenes/placement/collision.py",
+      "bytes": 9903,
+      "sha256": "ad28bd3d8929a0ed9a89a065877677c7d9907e64bf3d341773069e0f28a046a5"
+    },
+    {
+      "pin": "224598d4a2ff95b4fc928e72c222598b7122c698",
+      "path": "src/infinigen2/scenes/placement/retry.py",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/224598d4a2ff95b4fc928e72c222598b7122c698/src/infinigen2/scenes/placement/retry.py",
+      "bytes": 901,
+      "sha256": "8830d377da04c22f71278f73caf9f05e06bebc39638ea7dbb3efa45b00b18232"
+    },
+    {
+      "pin": "224598d4a2ff95b4fc928e72c222598b7122c698",
+      "path": "src/infinigen2/shaders/composites/wall.py",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/224598d4a2ff95b4fc928e72c222598b7122c698/src/infinigen2/shaders/composites/wall.py",
+      "bytes": 3552,
+      "sha256": "15b470d94a82b67f47dfcb62dfa12fdd4f07aab62275050000fd73a7d4fd53d5"
+    },
+    {
+      "pin": "224598d4a2ff95b4fc928e72c222598b7122c698",
+      "path": "src/infinigen2/shaders/composites/paint_overlay.py",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/224598d4a2ff95b4fc928e72c222598b7122c698/src/infinigen2/shaders/composites/paint_overlay.py",
+      "bytes": 3693,
+      "sha256": "e099270a12f7756cef893492fcdc134f40bf37a9cef6a84ddece0b2c930b09f2"
+    },
+    {
+      "pin": "224598d4a2ff95b4fc928e72c222598b7122c698",
+      "path": "src/infinigen2/objects/ant_landscape.py",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/224598d4a2ff95b4fc928e72c222598b7122c698/src/infinigen2/objects/ant_landscape.py",
+      "bytes": 15734,
+      "sha256": "2b93e1af833dc99470ad0d6d1ba7835a0c0f9a1e2cce815a26c0c1e0844343cc"
+    },
+    {
+      "pin": "b11700ebac77695d8f53538705cfdc0cd890c54d",
+      "path": "pyproject.toml",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/b11700ebac77695d8f53538705cfdc0cd890c54d/pyproject.toml",
+      "bytes": 4614,
+      "sha256": "a89046b8853254d360052e963992bb17931a93f32dabb64681c691c77eb13bfd"
+    },
+    {
+      "pin": "b11700ebac77695d8f53538705cfdc0cd890c54d",
+      "path": "docs/HelloRoom.md",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/b11700ebac77695d8f53538705cfdc0cd890c54d/docs/HelloRoom.md",
+      "bytes": 10084,
+      "sha256": "4f30ac367438d2375479e81feeb09544efe27b1ac2fb6fad9d7a2baf160bff8d"
+    },
+    {
+      "pin": "b11700ebac77695d8f53538705cfdc0cd890c54d",
+      "path": "infinigen/core/placement/factory.py",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/b11700ebac77695d8f53538705cfdc0cd890c54d/infinigen/core/placement/factory.py",
+      "bytes": 6527,
+      "sha256": "170529a0c1c17914523eaf174753260596724e944e68a29df769a8c401d59ea0"
+    },
+    {
+      "pin": "b11700ebac77695d8f53538705cfdc0cd890c54d",
+      "path": "infinigen/core/placement/detail.py",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/b11700ebac77695d8f53538705cfdc0cd890c54d/infinigen/core/placement/detail.py",
+      "bytes": 7343,
+      "sha256": "c688d6745d22116a752a29c87ff05c924853a3762abb7fd2ffddad951c07592b"
+    },
+    {
+      "pin": "b11700ebac77695d8f53538705cfdc0cd890c54d",
+      "path": "infinigen/core/placement/instance_scatter.py",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/b11700ebac77695d8f53538705cfdc0cd890c54d/infinigen/core/placement/instance_scatter.py",
+      "bytes": 11679,
+      "sha256": "d0ad4c75d456dd4b79f37960989de6321d58c879f8bc83936b1a20114f8c2c83"
+    },
+    {
+      "pin": "b11700ebac77695d8f53538705cfdc0cd890c54d",
+      "path": "infinigen/assets/scatters/utils/selection.py",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/b11700ebac77695d8f53538705cfdc0cd890c54d/infinigen/assets/scatters/utils/selection.py",
+      "bytes": 1336,
+      "sha256": "9700a9f2663129f7341cdc1e55c27fd030db61571ceee6bcaa402fc347c7e9e2"
+    },
+    {
+      "pin": "b11700ebac77695d8f53538705cfdc0cd890c54d",
+      "path": "infinigen_examples/constraints/home.py",
+      "url": "https://raw.githubusercontent.com/princeton-vl/infinigen/b11700ebac77695d8f53538705cfdc0cd890c54d/infinigen_examples/constraints/home.py",
+      "bytes": 51932,
+      "sha256": "8ae069a899f10ca3fd8ba85a9ecb92b673ff99f9d8910c1a7cc5cb4ed22d0040"
+    }
+  ]
+}
