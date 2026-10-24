@@ -1,0 +1,46 @@
+{
+  "schema": "living_town.asset_toolbox.recipe.v1",
+  "name": "Optional research: prepare owned multiview inputs and pinned workflow JSON only",
+  "required_runtimes": [
+    "python"
+  ],
+  "required_inputs": [
+    "hero"
+  ],
+  "source_paths": [
+    "${repo}/tools/asset_refinement",
+    "${repo}/third_party/pixelartistry"
+  ],
+  "stages": [
+    {
+      "id": "prepare-proposals",
+      "kind": "command",
+      "phase": "research_only",
+      "depends_on": [],
+      "inputs": [],
+      "argv": [
+        "${runtime.python}",
+        "${repo}/tools/asset_refinement/prepare_inputs.py",
+        "--hero",
+        "${input.hero}",
+        "--output",
+        "${iteration}/prepared",
+        "--workflows",
+        "${iteration}/workflow_proposals"
+      ],
+      "outputs": [
+        "${iteration}/prepared",
+        "${iteration}/workflow_proposals"
+      ],
+      "checks": [
+        {
+          "file": "${iteration}/prepared/preparation_manifest.json",
+          "pointer": "/ai_inference_executed",
+          "equals": false
+        }
+      ],
+      "effects": [],
+      "timeout_seconds": 3600
+    }
+  ]
+}

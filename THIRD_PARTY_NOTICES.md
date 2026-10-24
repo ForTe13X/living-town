@@ -45,6 +45,17 @@
 - **Kloofendal 48d Partly Cloudy (Pure Sky)** — Poly Haven, Greg Zaal / Jarod Guest，CC0 1.0。未修改的 2K HDRI 打包在 Blender 环境中；GLB 材质独立于该环境。来源与文件校验和见 `art/living_town/external_assets/polyhaven/PROVENANCE.json`。
 - **Adobe Source Serif 4 Regular** — 未修改，SIL Open Font License 1.1，用于模型内招牌文字。字体 SHA-256：`e5a4ee6a3d87bb9024796be390c6771e2a0eb1883dae25effaf57ca01668e24b`；来源与许可见 `art/living_town/external_assets/fonts/PROVENANCE.json` 和同目录 `LICENSE.md`，发行包内保留副本。
 
+## 全镇精修素材
+
+- **Poly Haven 植物与地表素材** — CC0-1.0；实际选用的树、草、蕨、花与地表扫描见 [素材清单](docs/town_bridge/licenses/REFINED_ASSETS.md)。[植物来源及逐文件 SHA-256](docs/town_bridge/licenses/REFINED_BOTANICAL_SOURCES.json) 和 [地表来源及逐文件 SHA-256](docs/town_bridge/licenses/REFINED_TERRAIN_SOURCES.json) 保留原始 URL、尺寸和哈希。用于共享 LOD、带透明遮罩的叶片、草丛及经过混合与调色的夏季地表。
+- **Poly Haven / ambientCG 建筑与室内扫描** — `white_plaster_02`、`oak_veneer_01`、`terrazzo_tiles`、`Granite002A`，CC0-1.0；用于石灰墙、木饰面、地面和石台面。[原始来源及准备后纹理 SHA-256](docs/town_bridge/licenses/REFINED_PBR_SOURCES.json)。
+- **MakeHuman Community 人体与系统素材** — 选定的人体、年龄/体型数据、权重、衣物、鞋、皮肤、头发和面部资产均采用 CC0 素材；不是 MakeHuman 应用程序。用于经过项目适配、重配色、围裙设计和动画绑定的居民。[系统素材原始成员、下载 URL 和 SHA-256](docs/town_bridge/licenses/REFINED_CHARACTER_SOURCES.json)；[人体来源](tools/town_upgrade/characters/vendor/makehuman/provenance.json) 与 [CC0 全文](docs/town_bridge/licenses/CC0_1.0.txt)。
+- **Infinigen 有界花盆工厂** — 选定的固定版本工厂及其 BSD-3-Clause 声明见 [原始通知](docs/town_bridge/licenses/INFINIGEN_NOTICES.txt)。全镇规划、地形和建筑由项目生成器完成；不将整个上游依赖树标为 CC0。
+
+- **Rough Linen 围裙布料** — Poly Haven；colormass 摄影、Rico Cilliers 处理，CC0-1.0；原始蓝色布料经角色配色适配，采用约 27.07 × 27.13 cm 的真实重复尺度。[原始 diffuse / OpenGL normal / ARM 及 SHA-256](docs/town_bridge/licenses/REFINED_LINEN_SOURCES.json)。
+
+所有准备、缩放、调色和 LOD 衍生记录与原始文件哈希分开保存；不随包分发 PixelArtistry / ComfyUI 模型权重。完整来源与改动说明见 [精修素材记录](docs/town_bridge/licenses/REFINED_ASSETS.md)。
+
 ## 历史遗留（已清除）
 
 - ~~`game/assets/fonts/cjk.ttf`（SimHei，取自本机 Windows 字体）~~ —— **无可再发行证明，已于 R0-1 移除**，由上述得意黑（OFL-1.1）替换。

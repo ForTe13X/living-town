@@ -1,11 +1,11 @@
 {
   "schema": "living_town.walkthrough.narration.v1",
-  "status": "SCRIPT_READY_RECORDING_PENDING",
+  "status": "SCRIPT_READY_MEASURED_AUDIO_AND_ACTUAL_RECORDING_REQUIRED",
   "language": "en-US",
   "voice": "en-US-AriaNeural",
   "rate": "+0%",
-  "planned_duration_seconds": 600,
-  "planned_capture_fps": 24,
+  "planned_duration_seconds": 840,
+  "planned_capture_fps": 18,
   "timing_policy": "These windows are editorial targets, not measured audio durations. An initial normal-rate Aria take measured 21.768 seconds against a 19-second window, so this revision uses a smaller word budget. Generate and measure every current paragraph; fail on an overrun and revise that take. Derive subtitles from actual word boundaries. Never accelerate or invent gameplay to match narration.",
   "recording_policy": "Record the actual Main/LifeMode 3D bridge. Camera-only observer tours must carry an INSPECTION label and must not change resident simulation coordinates. Narration describes social attempts without presupposing acceptance. Record save/load results before treating the demonstration as complete.",
   "subtitle_layout": {
@@ -27,206 +27,224 @@
   "segments": [
     {
       "id": "01a",
-      "start": 2,
-      "end": 21,
+      "start": 2.0,
+      "end": 21.0,
       "chapter": 1,
-      "title": "A town you can enter",
-      "text": "Welcome to Living Town. This is the running game, connecting the coastal model to the existing life simulation. Forty-nine buildings contain eighty-nine floors, linked by streets, courts, homes, workshops, and a small harbor.",
-      "notes": "Paused observer opening. Show the actual imported town in Main, not an offline Blender still. Avoid implying every building already has bespoke gameplay."
+      "title": "Town, woodland and coast",
+      "text": "Welcome to the running Living Town. The original coastal center, eighty-one new buildings, and a wooded natural reserve share one playable world. This opening is a labelled camera inspection of the actual game.",
+      "notes": "Show the actual Main viewport with upgraded baseline and all expansion chunks."
     },
     {
       "id": "01b",
-      "start": 23,
-      "end": 43,
+      "start": 23.0,
+      "end": 43.0,
       "chapter": 1,
-      "title": "A town you can enter",
-      "text": "We will play as one resident, then inspect the architecture. Pale walls, dark roofs, stone paving, and planted edges give this town its coastal character. Camera-only inspection will be labelled clearly, separate from the resident's actual movement.",
-      "notes": "Slow observer camera only; simulation paused. Establish inspection/gameplay distinction before the first transition."
+      "title": "Town, woodland and coast",
+      "text": "Streets follow changing ground. Buildings turn with their frontages, and planted courts break up the blocks. Beyond the town, paths lead into woodland, mountain slopes, and visitor facilities. We will walk between these places as Aria.",
+      "notes": "Pan across the real woodland, relief and coast with CAMERA INSPECTION label."
     },
     {
       "id": "02a",
-      "start": 50,
-      "end": 73,
+      "start": 50.0,
+      "end": 73.0,
       "chapter": 2,
-      "title": "Meet Aria and read the HUD",
-      "text": "We choose Aria through the existing life mode. Her upper-floor rooms sit above the café, with a real route downstairs. The portrait, name, job, money, wishes, and needs belong to the same resident as before. Her identity and rules are retained.",
-      "notes": "The selector appears at 45 seconds and public start_life('aria') runs at 50 seconds. Begin this paragraph at that genuine selection transition. Owner apartment above café; no direct agent-state edits."
+      "title": "Meet Aria in her upper home",
+      "text": "We choose the existing resident Aria. Her upper home remains above the cafe. Her name, job, money, needs, and saved identity belong to the same life simulation. The refined character is a real articulated three-dimensional model.",
+      "notes": "Show the normal resident selector and choose original Aria through LifeMode.start_life."
     },
     {
       "id": "02b",
-      "start": 74,
-      "end": 98,
+      "start": 74.0,
+      "end": 98.0,
       "chapter": 2,
-      "title": "Meet Aria and read the HUD",
-      "text": "The bars track hunger, energy, social contact, fun, and hygiene. Watch them beside the clock. Actions take time. Use the keyboard or a ground click to walk, and E to interact nearby. Zoom changes the view without changing Aria's state.",
-      "notes": "Keep existing LifeMode HUD readable. Show needs, time, and an available prompt. Camera changes are view-only; no claim that camera motion advances time."
+      "title": "Meet Aria in her upper home",
+      "text": "Her five needs stay visible in the compact resident card. Time and speed controls remain at the top. We can expand the activity history and daily wishes when needed, then close them to keep the town in view.",
+      "notes": "Inspect her original upper home, then use real viewport clicks to expand and collapse both HUD panels while paused. Preserve her canonical address."
     },
     {
       "id": "03a",
-      "start": 102,
-      "end": 126,
+      "start": 102.0,
+      "end": 126.0,
       "chapter": 3,
-      "title": "Walk the rooms and take the stairs",
-      "text": "Walls, furnishings, and stair openings define where Aria can stand. The interior grid is finer than the outdoor grid, allowing reachable approaches beside beds and counters. A click through a wall cannot create a shortcut. Movement must find a legal route around it.",
-      "notes": "Record real input and visible multi-frame walking. Indoor cells are 0.25m; outdoor cells 0.5m. Do not claim continuous physics navigation or a navmesh."
+      "title": "Rooms, stairs and needs",
+      "text": "Aria takes the actual stairs downstairs. Walls and furnishings constrain her route. Door openings and clear landings matter. Each floor has its own spatial address, so an upstairs resident cannot interact through a ceiling.",
+      "notes": "Use actual mouse/key input on the original owner stair portal."
     },
     {
       "id": "03b",
-      "start": 129,
-      "end": 153,
+      "start": 129.0,
+      "end": 153.0,
       "chapter": 3,
-      "title": "Walk the rooms and take the stairs",
-      "text": "The stair transition has brought Aria downstairs through a legal opening. Private stairs are not available to every resident. At the café table, a meal uses the existing action system. We watch for actual completion and its effect on her needs.",
-      "notes": "Past-tense recap of the actual stair transition just seen. The full route now shows the table meal; record its actual completion and need effect. Do not infer completion from a preview that skips this dwell."
+      "title": "Rooms, stairs and needs",
+      "text": "At the cafe table, we open the real action menu and choose a meal. Aria approaches the furnishing and uses it. The recording checks an actual completion event and a measurable need change, rather than mistaking a closed menu for success.",
+      "notes": "Use the physical cafe table, record its legal action menu and real need effect."
     },
     {
       "id": "04a",
-      "start": 157,
-      "end": 183,
+      "start": 157.0,
+      "end": 183.0,
       "chapter": 4,
-      "title": "Use a real café fixture",
-      "text": "We click the visible café counter. The furnishing resolves to an existing functional object and a reachable approach beside it. Its menu offers permitted actions. Aria walks into place and takes time to act. The simulation records the result in her state and history.",
-      "notes": "Capture actual counter mesh pick, legal menu, walking approach, and completion. Counter aliases can share the physical fixture; do not insist on one alias label if another legal menu resolves."
+      "title": "The actual cafe and street",
+      "text": "The counter also offers the existing permitted actions. We observe the result, then leave through the cafe entrance. Interior cutaways expose the active floor while neighboring roofs stay in place. The original access rules continue to apply.",
+      "notes": "Use the actual cafe counter, then exit through the existing cafe doorway."
     },
     {
       "id": "04b",
-      "start": 186,
-      "end": 213,
+      "start": 186.0,
+      "end": 213.0,
       "chapter": 4,
-      "title": "Use a real café fixture",
-      "text": "The town has seven hundred and fifty-three furnishing assemblies. Only mapped functional objects offer game actions. Decorative shelves and pots do not automatically offer actions. Social attempts retain the existing access checks and the other resident's response. Jobs and wages retain their existing engine rules.",
-      "notes": "Do not claim all 753 assemblies are interactive. Functional mapping count belongs to the current compiled profile; the compiler may add mapped civic fixtures, so this paragraph deliberately avoids an obsolete total. Social footage must be an actual attempt and acceptance is not guaranteed."
+      "title": "The actual cafe and street",
+      "text": "Outside, Aria keeps normal depth against buildings and vegetation. When geometry blocks the controlled resident, an amber mesh silhouette preserves her location. The main character stays shaded by the scene, and ordinary residents keep their own depth.",
+      "notes": "Keep roof/tree occlusion and resident-follow camera active."
     },
     {
       "id": "05a",
-      "start": 217,
-      "end": 241,
+      "start": 217.545,
+      "end": 248.091,
       "chapter": 5,
-      "title": "Step outside and keep the resident visible",
-      "text": "Aria leaves through the real café doorway. Her original directional character sheets now appear inside a three-dimensional world. The body keeps normal depth, so roofs and trees can pass in front of it. Ground markers and interaction prompts remain attached to her actual position.",
-      "notes": "Use genuine exterior portal. Retain buildings and trees. Do not describe sprite art as new 3D character meshes."
+      "title": "Walk into the expanded town",
+      "text": "Now we walk from the original center into a new district. A screen click requests the actual entrance. The camera returns to Aria so the journey remains visible. Every step comes from the existing movement system.",
+      "notes": "Find the nearest new Expansion building with a compiled legal ground-floor fixture."
     },
     {
       "id": "05b",
-      "start": 244,
-      "end": 268,
+      "start": 251.909,
+      "end": 282.455,
       "chapter": 5,
-      "title": "Step outside and keep the resident visible",
-      "text": "When geometry blocks the controlled resident, a gold silhouette keeps Aria readable. It appears only during that obstruction. The normal sprite still obeys depth, and the silhouette disappears in clear views. The awning and roof remain in place as we walk toward the plaza.",
-      "notes": "Show real blocked line of sight under the café awning and a clear view if available. The controlled-only ghost is model-geometry tested at 5 Hz; do not claim all NPCs become visible through buildings."
+      "title": "Walk into the expanded town",
+      "text": "This is a connected extension of the running town. Roads, approaches, building pads, and entrances share an authored terrain profile. The new building has actual rooms and furniture, with reachable interaction positions beside its fixtures.",
+      "notes": "Pan to its actual entrance, click the portal, immediately restore resident-follow camera."
     },
     {
       "id": "06a",
-      "start": 272,
-      "end": 298,
+      "start": 287.333,
+      "end": 317.667,
       "chapter": 6,
-      "title": "Inspection: rooms and furnishing",
-      "text": "This is architectural inspection: camera movement, not Aria's travel. The town has five hundred and sixty-one logical zones, including circulation. Two hundred and twenty-three are activity rooms. Halls, landings, and stairs connect those rooms, giving each interior a usable layout. Each group is named and inspectable.",
-      "notes": "Display INSPECTION — CAMERA ONLY throughout 270–330 seconds. Camera/probe and local cover changes only; preserve resident positions. Counts are final 561 zones / 223 activity rooms, superseding the earlier 549-zone plan."
+      "title": "Use a new venue and its upper floor",
+      "text": "Inside the new venue, we use a physical furnishing through the same action menu. The recorded outcome comes from the simulation. Selected new fixtures reuse compatible existing actions, while shelves, flowers, and decorative objects remain visual detail.",
+      "notes": "Use the new actual fixture through the same Main/LifeMode menu."
     },
     {
       "id": "06b",
-      "start": 301,
-      "end": 328,
+      "start": 321.167,
+      "end": 352.667,
       "chapter": 6,
-      "title": "Inspection: rooms and furnishing",
-      "text": "Look for beds and storage, library shelves and tables, and enclosed bathrooms in hotel suites, with bedroom privacy preserved. Kitchens have sinks, hobs, and distinct refrigerators. Room and floor groups let a cutaway expose one interior while neighboring roofs remain intact. These authored dimensions do not establish building-code approval.",
-      "notes": "Inspect planned library/home/hotel cameras using actual imported geometry. Some asset detail may be small in the game view; do not replace this with offline stills without labeling them. Widths are nominal authored dimensions."
+      "title": "Use a new venue and its upper floor",
+      "text": "Where this venue has another floor, we take its genuine stairs and return. The model exposes the selected level. Floor slabs and door gaps agree with the authored spatial profile, preserving room boundaries and usable circulation.",
+      "notes": "If the selected venue has an upper floor, traverse its genuine stairs and return."
     },
     {
       "id": "07a",
-      "start": 332,
-      "end": 358,
+      "start": 358.333,
+      "end": 401.667,
       "chapter": 7,
-      "title": "Inspection: streets, elevations, and harbor",
-      "text": "We remain in inspection mode. Residential rows turn, streets bend, and passages lead into courts. The town has actual surface elevations and gently graded paths rather than a flat board. Roads, plazas, and building pads meet entrance thresholds. The harbor sits at the coastal edge of the same site.",
-      "notes": "Display INSPECTION — CAMERA ONLY. Show irregular layout and actual surface elevation. No claim of resident traversal along every camera movement."
+      "title": "Walk to the reserve bathhouse",
+      "text": "Our next journey reaches the reserve visitor facilities. Woodland surrounds the town rather than ending at a flat edge. The route follows connected paths and terraces, with building thresholds attached to the same graded landscape.",
+      "notes": "Walk the authored connected paths into Reserve_Bathhouse."
     },
     {
       "id": "07b",
-      "start": 361,
-      "end": 388,
+      "start": 406.667,
+      "end": 451.667,
       "chapter": 7,
-      "title": "Inspection: streets, elevations, and harbor",
-      "text": "This is a fictional engineered site, not a surveyed coast or hydraulic study. Terrain heights ground residents, while authored blockers exclude building footprints and water. The movement contract uses the game's spatial grid. Another engine would still need its own decisions about physics, collision, and navigation.",
-      "notes": "Do not imply certified drainage, shoreline physics, imported GLB collisions, or a generated navmesh. Current bridge movement uses the canonical grid/profile."
+      "title": "Walk to the reserve bathhouse",
+      "text": "At the public bathhouse, we enter through the actual door and use a hygiene fixture. Shower, basin, and toilet areas have separate compartments and clear approaches. The service applies the existing need rules and produces a real completion.",
+      "notes": "Use an actual shower, basin or toilet with existing hygiene action definitions."
     },
     {
       "id": "08a",
-      "start": 392,
-      "end": 418,
+      "start": 458.333,
+      "end": 501.667,
       "chapter": 8,
-      "title": "Inspection: pond and planted routes",
-      "text": "The park pond cuts into the terrain, with level water above a lower bed and graded banks. A continuous shore, reeds, benches, and a connected loop make the edge readable. This is an authored ornamental pond. Movement rules keep residents on accessible ground beside the water, with planted edges.",
-      "notes": "Display INSPECTION — CAMERA ONLY. Pond water Z is -0.12 m and bed Z is -0.92 m, with a real basin and banks. Avoid unsupported natural hydrology, swimming, or wildlife claims."
+      "title": "Visit a detailed camping trailer",
+      "text": "The camping area contains furnished trailers. Aria walks to one and enters through its actual doorway. Compact circulation, storage, kitchen fittings, sleeping space, and the bathroom make this a small interior rather than an empty exterior shell.",
+      "notes": "Walk into a detailed Reserve_Trailer building through its actual offset entrance."
     },
     {
       "id": "08b",
-      "start": 421,
-      "end": 448,
+      "start": 506.667,
+      "end": 551.667,
       "chapter": 8,
-      "title": "Inspection: pond and planted routes",
-      "text": "Fifty-two planned landscape trees shape streets, courts, and the park. Broad crowns and willows frame the pond. Flower beds, garden islands, low planting, and coastal grasses add smaller detail. Openings preserve doors, paths, and views. The aim is shade and garden enclosure along useful walking routes. Background woodland adds distant enclosure.",
-      "notes": "The count of 52 refers to planned local landscape trees, not every background forest tree. Show actual connected canopy and horticulture; do not equate projected crown envelopes with measured opaque shade."
+      "title": "Visit a detailed camping trailer",
+      "text": "We use a real trailer fixture through the normal menu, then return outside. These close views show furniture grouping, material scale, and the character pose. Detailed models support the activity; they do not grant movement through a wall.",
+      "notes": "Use a real bed, basin or toilet through an existing legal action."
     },
     {
       "id": "09a",
-      "start": 452,
-      "end": 476,
+      "start": 558,
+      "end": 585,
       "chapter": 9,
-      "title": "Return to life and enable autonomy",
-      "text": "We return to Aria for a social attempt. A visible neighbor must also be reachable. Walls, floors, and access rules matter even when both people appear on screen. Acceptance or refusal belongs to the running game. Read the event and need changes to see the outcome.",
-      "notes": "End INSPECTION label and restore normal resident view. Actual social attempt is at 450–473 seconds, before autonomy. Do not force another agent's state or promise success. If unavailable, record the real access/availability reason."
+      "title": "Walk back from the reserve to town",
+      "text": "The return to town uses the same real walking controls. Aria leaves the camping area and follows the connected paths back through the expanded districts. Her position changes one legal step at a time; the camera follows the resident throughout.",
+      "notes": "Show the actual continuous return journey; no camera-only cut or resident relocation."
     },
     {
       "id": "09b",
-      "start": 479,
-      "end": 503,
+      "start": 615,
+      "end": 642,
       "chapter": 9,
-      "title": "Return to life and enable autonomy",
-      "text": "Now we enable autonomy. The existing decision system chooses available actions according to needs, jobs, access, and circumstances. The view follows the movement and activity; it does not create a second simulation. This logic backend runs locally without a downloaded language model or required generated dialogue.",
-      "notes": "Actual autonomy begins at about 473 seconds, after the social attempt. Enable it through existing LifeMode input/public API. No direct writes to resident position, needs, money, or the clock."
+      "title": "Walk back from the reserve to town",
+      "text": "The cafe is our original point of departure. Reaching its door again closes a complete trip from the old center to the new town and reserve, and back. Doorways, room changes, and furnishing actions all use the existing life simulation.",
+      "notes": "Show the real cafe approach and entrance. The runtime receipt verifies actual core return before inspection."
     },
     {
       "id": "10a",
-      "start": 507,
-      "end": 531,
+      "start": 667.545,
+      "end": 698.091,
       "chapter": 10,
-      "title": "Save, continue, and load",
-      "text": "We save with F five, let the game continue, and load with F eight. Loading rebuilds the view from the saved simulation and resident state. The three-dimensional profile uses a separate quicksave. Incompatible spatial data is rejected instead of loading into a different layout.",
-      "notes": "Capture real F5/F8 event dispatch and loaded-state evidence. Narration assumes this recorded step succeeds; if it fails, fix/re-record or revise truthfully. Separate user://town3d_quicksave.dat from the legacy save."
+      "title": "Inspection: forest, bridges and horticulture",
+      "text": "We now pause for labelled architectural inspection. These camera cuts show the ravine bridge, the mountain stone stairs, and their surrounding vegetation. They do not imply that Aria has crossed every structure shown by the camera.",
+      "notes": "Label camera-only inspection throughout; pause through normal input."
     },
     {
       "id": "10b",
-      "start": 534,
-      "end": 558,
+      "start": 714,
+      "end": 734.5,
       "chapter": 10,
-      "title": "Save, continue, and load",
-      "text": "The art remains portable. Blender sources and engine-neutral exports keep named buildings, floors, rooms, materials, and furnishing groups. This bridge binds them to its spatial profile. Frozen file hashes, license credits, and test evidence record the delivered versions, leaving the town usable by other consumers.",
-      "notes": "Camera can slowly widen while the saved/loaded game remains visible. Engine-agnostic GLB exports are a separate art delivery; avoid implying the runtime loads the high-detail 642 MB GLB. Original maps plus the CC0 HDRI and OFL font are credited in accompanying docs."
+      "title": "Inspection: forest, bridges and horticulture",
+      "text": "The pond has graded banks and planted edges. Trees, understory, flowers, and horticultural groupings create different scales of enclosure. Shared botanical meshes are batched by area in the running game, while stable identities remain in the asset catalog.",
+      "notes": "Inspect the ravine bridge and woodland, mountain stone stairs, and pond horticulture."
     },
     {
       "id": "11a",
-      "start": 562,
-      "end": 579,
+      "start": 737.545,
+      "end": 768.091,
       "chapter": 11,
-      "title": "What the delivery proves",
-      "text": "The editable runtime passed thirty-six logical checks and twenty-eight visual checks. Legacy regression scenes also passed. The Windows package separately passed normal launch and screen-render checks, rather than the full interaction suite.",
-      "notes": "Slow whole-town closing view. Distinguish source-runtime gameplay evidence from exported native boot/render proof; do not claim 28 exported interaction checks."
+      "title": "Save, resume and resident agency",
+      "text": "We return to actual resident life, save with F five, continue, and load with F eight. The recording verifies the saved tick and spatial address. A changed or incompatible town profile is rejected instead of silently moving the resident.",
+      "notes": "Pause and press F5 through actual viewport input."
     },
     {
       "id": "11b",
-      "start": 582,
-      "end": 599,
+      "start": 771.909,
+      "end": 802.455,
       "chapter": 11,
-      "title": "What the delivery proves",
-      "text": "This bridge connects places, retained residents, and observable consequences. It does not establish finished balance or broad hardware performance. The full town loads together. Inspect movement, actions, and saved life.",
-      "notes": "No LOD, streaming, imported collision authority, or performance guarantee. End on the actual game view, not the concept image. Let the last spoken word finish before 600 seconds."
+      "title": "Save, resume and resident agency",
+      "text": "After loading, we enable existing free will. Needs, jobs, access, and circumstances guide the next decisions. The renderer follows those decisions. It does not create another simulation, and the recording does not force a desired social response.",
+      "notes": "Continue the game, pause and press F8; verify the original saved tick and resident address."
+    },
+    {
+      "id": "12a",
+      "start": 806.75,
+      "end": 821.625,
+      "chapter": 12,
+      "title": "Complete town and scope",
+      "text": "We have followed real walking, rooms, services, stairs, and saved life. Separate building reports cover the wider town and distinguish camera inspections.",
+      "notes": "Pause through normal input and show a final camera-only whole-town view."
+    },
+    {
+      "id": "12b",
+      "start": 824.25,
+      "end": 839.125,
+      "chapter": 12,
+      "title": "Complete town and scope",
+      "text": "Editable Blender sources, portable models, the playable town, and recorded evidence travel together. This final overview still shows the running game.",
+      "notes": "End at exactly840seconds and15120tourframes, excluding measured boot prefix."
     }
   ],
-  "spoken_word_count": 945,
+  "spoken_word_count": 855,
   "word_count_method": "English word tokens; internal apostrophes and hyphens count as one word.",
-  "chapter_count": 11,
-  "segment_count": 22,
-  "target_speech_window_seconds": 524
+  "chapter_count": 12,
+  "segment_count": 24,
+  "target_speech_window_seconds": 692.528
 }

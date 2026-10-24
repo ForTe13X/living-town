@@ -15,12 +15,19 @@ import struct
 import time
 import uuid
 import zipfile
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from town_runtime_assets import (is_v2, validate_upgrade_evidence, runtime_records,
+                                UPGRADE_CAPTURE, UPGRADE_LOGICAL, UPGRADE_REVIEW, RELEASE)
 
 CHUNK = 1024 * 1024
 TOP = "LivingTown_Interactive_Source"
 TOOLS = ("tools/fetch_town_assets.py", "tools/run-town3d.ps1", "tools/prepare-godot-optional.ps1",
          "tools/build_town_profile.py", "tools/stage_town_assets.py",
-         "tools/package_town_bridge.py")
+         "tools/package_town_bridge.py", "tools/town_runtime_assets.py",
+         "tools/town_upgrade/compile_playable_town.py", "tools/town_upgrade/verify_windows_export.py", "tools/town_upgrade/PLAYABLE_INTEGRATION.md",
+         "tools/town_upgrade/build_static_render_cache.gd", "tools/build-town-render-cache.ps1")
 EXTRA = ("LICENSE", "THIRD_PARTY_NOTICES.md", "docs/09-美术资产与版权.md",
          "docs/town_walkthrough/ASSET_RELEASE.md",
          "art/living_town/external_assets/fonts/LICENSE.md",
@@ -67,10 +74,14 @@ def safe_relative(name):
 def choose_files(root):
     files = {}
     excluded = {}
-    visual_report = root/'docs/town_bridge/visual_test_report.json'
-    current_captures = {Path(c['file']).name for c in read(visual_report).get('screenshots',[])} if visual_report.exists() else set()
+    upgraded = is_v2(root)
+    visual_report = root/UPGRADE_CAPTURE if upgraded else root/'docs/town_bridge/visual_test_report.json'
+    current_captures = {Path(c['file']).name for c in read(visual_report).get('captures' if upgraded else 'screenshots',[])} if visual_report.exists() else set()
+    stage_files = {"game/assets/town3d/"+item['file'] for item in read(root/'game/assets/town3d/stage_manifest.json').get('files',[])} if upgraded else set()
+    stage_files.update(('game/assets/town3d/stage_manifest.json', RELEASE))
+    if upgraded: stage_files.update(runtime_records(root))
     native_report = root/'docs/town_bridge/windows_export_verification.json'
-    if native_report.exists():
+    if native_report.exists() and not upgraded:
         current_captures.update(Path(c['file']).name for c in read(native_report).get('screenshots',[]))
     for folder in ("game", "docs/town_bridge"):
         for current, dirs, names in os.walk(root / folder, followlinks=False):
@@ -92,6 +103,12 @@ def choose_files(root):
                 reason = None
                 if p.suffix.lower() in SKIP_SUFFIXES or name == ".gdignore":
                     reason = "generated import/cache/local marker"
+                elif upgraded and rel.startswith('game/assets/town3d/') and rel not in stage_files:
+                    reason = 'unused historical single-GLB staging or generated texture duplicate'
+                elif upgraded and rel.startswith('game/assets/characters3d/') and p.suffix.lower() == '.png':
+                    reason = 'Godot-extracted duplicate texture from self-contained character GLB'
+                elif upgraded and rel.startswith('docs/town_bridge/') and p.suffix.lower() == '.json' and not rel.startswith('docs/town_bridge/licenses/'):
+                    reason = 'historical v1 bridge evidence; current upgraded logical/walkthrough evidence is included separately'
                 elif rel.startswith("game/assets/town3d/living_town_game_") and p.suffix.lower() == ".png":
                     reason = "Godot-extracted duplicate of an image embedded in the GLB"
                 elif rel.startswith('docs/town_bridge/') and p.suffix.lower() == '.png' and not (
@@ -107,6 +124,12 @@ def choose_files(root):
         if not p.is_file():
             raise ValueError("Required package source missing: " + rel)
         files[rel] = p
+    if upgraded:
+        for rel in (UPGRADE_CAPTURE,UPGRADE_REVIEW,'docs/town_walkthrough/final/walkthrough_cues.json','docs/town_walkthrough/route_plan.json','docs/town_walkthrough/narration.json'):
+            path=root/rel
+            if path.is_file():files[rel]=contained(path,root)
+        for rel in ('tools/town_upgrade/characters/vendor/makehuman/LICENSE.md','tools/town_upgrade/characters/vendor/makehuman/LICENSE.ASSETS.md','tools/town_upgrade/characters/vendor/makehuman/LICENSE.CODE.md','tools/town_upgrade/characters/vendor/makehuman/provenance.json'):
+            files[rel]=contained(root/rel,root)
     return dict(sorted(files.items())), excluded
 
 
@@ -125,6 +148,8 @@ def glb_embedded(path):
 
 def validate_sources(root, hashes):
     """Bind already-produced proof to included bytes; never re-run the engine."""
+    if is_v2(root):
+        return validate_upgrade_evidence(root, hashes)
     def match(rel,expected):
         if not expected or hashes.get(rel) != expected:
             raise ValueError("Current packaged bytes do not match validated evidence: " + rel)
@@ -180,8 +205,8 @@ def validate_sources(root, hashes):
             'captures':captures,'native_boot_report_included':native is not None}
 
 
-def readme():
-    return """# Living Town: interactive 3D source package
+def readme(upgraded=False):
+    text = """# Living Town: interactive 3D source package
 
 This is the existing Living Town simulation, LifeMode UI and characters bridged
 to the completed town model. The supplied spatial profile is already compiled.
@@ -230,11 +255,14 @@ implied by the packaging check; gameplay evidence is included separately.
 
 See [LICENSE](LICENSE), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and
 [ASSET_CREDITS.md](ASSET_CREDITS.md) for asset and font notices.
-""".encode('utf-8')
+"""
+    if upgraded:
+        text += "\nThis upgraded package contains151playable buildings, the reserve and expansion,\nall25mesh characters, and the exact verified visual chunk set. Matching local\nassets run without downloads: add `-Local` to the launcher. Current actual\nMain/LifeMode walkthrough and image review are under docs/town_walkthrough/final.\n"
+    return text.encode('utf-8')
 
 
-def credits():
-    return """# Packaged asset credits
+def credits(upgraded=False):
+    text = """# Packaged asset credits
 
 Game code: MIT, Copyright (c) 2026 Yang Peng; full text in LICENSE.
 
@@ -258,7 +286,10 @@ not needed for this runtime package and are not included.
 Godot is installed separately for this source package; no engine binary is
 redistributed here. NobodyWho native libraries and model weights are optional
 separate installations and are not included.
-""".encode('utf-8')
+"""
+    if upgraded:
+        text += "\nRefined3Dresidents use the CC0 MakeHuman anatomical base and weights with\noriginal fitted garments, hair, PBR textures and rig adaptation. Source licenses\nand provenance are included in tools/town_upgrade/characters/vendor/makehuman.\nPhotographed botanical and surface inputs are CC0; exact credits and retained\nsource notices are recorded in THIRD_PARTY_NOTICES.md and the native delivery.\n"
+    return text.encode('utf-8')
 
 
 def archive_info(name):
@@ -278,8 +309,10 @@ def publish(root,files,excluded,freeze_id):
         raise ValueError('A prior unfinished archive exists; inspect it before retrying: '+str(temporary))
     hashes={rel:sha(p) for rel,p in files.items()}
     proof=validate_sources(root,hashes)
-    embedded=glb_embedded(files['game/assets/town3d/living_town_game.glb'])
-    generated={'README.md':readme(),'ASSET_CREDITS.md':credits(),
+    glb_files=[rel for rel in files if rel.endswith('.glb') and (rel.startswith('game/assets/town3d/') or rel.startswith('game/assets/characters3d/'))]
+    embedded_inventory={rel:glb_embedded(files[rel]) for rel in glb_files}
+    embedded=embedded_inventory if is_v2(root) else embedded_inventory['game/assets/town3d/living_town_game.glb']
+    generated={'README.md':readme(is_v2(root)),'ASSET_CREDITS.md':credits(is_v2(root)),
                'PORTABLE_EVIDENCE_INDEX.json':encoded(proof)}
     payload=[{'path':rel,'bytes':p.stat().st_size,'sha256':hashes[rel]} for rel,p in files.items()]
     payload += [{'path':rel,'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()} for rel,data in generated.items()]
@@ -333,7 +366,7 @@ def publish(root,files,excluded,freeze_id):
     extracted_root=extract/TOP
     extracted_hashes={entry['path']:entry['sha256'] for entry in payload}
     validate_sources(extracted_root,extracted_hashes)
-    if glb_embedded(extracted_root/'game/assets/town3d/living_town_game.glb')!=embedded:
+    if {rel:glb_embedded(extracted_root/rel) for rel in glb_files}!=embedded_inventory:
         raise ValueError('Extracted model dependency inventory changed')
     # Atomic publication occurs only after exact-list/CRC/hash/extracted static
     # validation succeeds. A prior published archive is untouched on failure.

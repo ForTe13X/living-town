@@ -11,8 +11,8 @@
       "type": "码头",
       "area": "dock",
       "pos": [
-        257,
-        29
+        662,
+        456
       ],
       "advertises": [
         {
@@ -34,8 +34,8 @@
       "type": "码头",
       "area": "dock",
       "pos": [
-        257,
-        19
+        662,
+        451
       ],
       "advertises": [
         {
@@ -59,8 +59,8 @@
       "node": "port_dock",
       "type": "货船",
       "berth": [
-        266,
-        30
+        665,
+        457
       ],
       "facing": "west",
       "_why": "P1-c 纯 View carrier 声明。WorldView 只在同 route/node 存在 ready manifest 时画一艘有界泊位船；多单 backlog 用计数徽记，不复制 cargo 状态、不写 spawn/despawn 事件、不进 world.objects/nav/save/chain。删 carriers 只关闭可见投影，不改变 CargoManifest 权威逻辑。"
@@ -70,8 +70,8 @@
       "node": "port_dock2",
       "type": "货船",
       "berth": [
-        266,
-        20
+        665,
+        452
       ],
       "facing": "west",
       "_why": "docs/199 第二泊位的纯 View 货船（大他者供养船）。"

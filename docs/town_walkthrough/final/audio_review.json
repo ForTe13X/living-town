@@ -1,0 +1,32 @@
+{
+  "schema": "living_town.encoded_audio_review.v1",
+  "status": "PASS",
+  "reviewer_kind": "Codex technical audio/source-timing review",
+  "review_method": "Read actual complete decoded PCM statistics, encoded AAC presence/duration, all24measuredcachedEdgeTTStakes and measuredcaptiontimeline; review active-caption timing samples.",
+  "review_scope": "Signal completeness, non-silence, no fullscale clipping and exact source/timing provenance. Perceptual listening was not performed.",
+  "movie_sha256": "9c72fa15426706d76307fd1eebaec77404de3cbabb67c80e9928d83ecbf4e252",
+  "verification_report_sha256": "e3abee4f3dbd10deb61af89932160cc28f253235b6f348639ac16171196a7215",
+  "technical_coverage": {
+    "samples": 20160512,
+    "duration_seconds": 840.0213333333334,
+    "sample_rate": 24000,
+    "peak_amplitude": 27844,
+    "peak_dbfs": -1.4143661974193422,
+    "rms_dbfs": -20.415379155124857,
+    "nonzero_samples": 20119695,
+    "full_scale_peak": false
+  },
+  "voice_report": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_report.json",
+    "sha256": "17b83a15b01239307bcafb86f3c765a8e41472c5b0eb6c02f9719f77017d76be",
+    "bytes": 133169
+  },
+  "caption_report": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\captions.json",
+    "sha256": "20c84fc3c132c3a559edcc73a5b29e1b4e6f9f08c5500ffd43fddb2b553c5cd0",
+    "bytes": 19020
+  },
+  "listened_to_by_human": false,
+  "subjective_coverage": "NOT_RECORDED",
+  "utc": "2026-10-24T05:54:13.862245+00:00"
+}

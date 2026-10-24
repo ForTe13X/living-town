@@ -1,68 +1,214 @@
 {
-  "schema": "living_town.game_stage.v1",
+  "schema": "living_town.game_stage.v2",
   "status": "PASS",
-  "source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
-  "source_export_manifest_sha256": "ef251073f8547b8b34a56f10fc19d23d4e5d8db0b52f03d85960ac7c9d710d6e",
-  "source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
-  "source_bindings": {
-    "source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
-    "source_manifest_sha256": "09e1a479de52cbfc5636f257a7383562215d30761fbd20c878fadbe4b8c67e85",
-    "source_masterplan_sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
-    "source_terrain_plan_sha256": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349",
-    "source_interior_plan_sha256": "a857d40e536ce84b3ed468a5815c54311f92f46ebbb1e1f7541ce76a498d08b4",
-    "source_interior_module_sha256": "a467e4dc23bd2388e7e924a04a1b478bf0d0b7fc4deeb0616184de69b8c49025",
-    "source_landscape_plan_sha256": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1",
-    "source_landscape_details_sha256": "284459e0383e5d4adf0e3c9ddc637bc29cf375152c8724856546d0596e25e5d8"
+  "source_blend_sha256": "3162c204689cdb7888a5e0d21bb5dde9be04a89ac6253ba03a88d7f5ddd86274",
+  "source_glb_sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a",
+  "source_asset_set_sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a",
+  "source_upgrade_manifest_sha256": "007a2b506f3e3456a589c87b139cb48a3b85de432f6e616603620aa43cbb2e9d",
+  "building_count": 151,
+  "inventory": {
+    "floor_count": 263,
+    "room_count": 1582,
+    "furnishing_count": 2089
   },
-  "files": [
+  "assets": [
     {
-      "file": "living_town_game.glb",
-      "bytes": 203666604,
-      "sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c"
+      "file": "town_00_D06.glb",
+      "sha256": "b319da8610f3eb459788fa550eb6520fb70762a9585745a1cdc174194f85bdf6",
+      "catalog": "town_00_D06.catalog.json",
+      "catalog_sha256": "8d0d60f89d3dda4975cf968535e7c301b7b0e5085ee9f27df3c9054d772db9d7",
+      "baseline": false
     },
     {
-      "file": "export_manifest.json",
-      "bytes": 174567,
-      "sha256": "ef251073f8547b8b34a56f10fc19d23d4e5d8db0b52f03d85960ac7c9d710d6e"
+      "file": "town_01_D07.glb",
+      "sha256": "1d3c6efddd046d5e176a79bf40eaef59a989e740944e1e754816f08f70622222",
+      "catalog": "town_01_D07.catalog.json",
+      "catalog_sha256": "cb407b51f436e1981c84bc5d7c005d7404a8ff204dc01ca06a2a1eb8b86f10e9",
+      "baseline": false
     },
     {
-      "file": "masterplan.json",
-      "bytes": 109408,
-      "sha256": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f"
+      "file": "town_02_D08.glb",
+      "sha256": "ff172230eb0ded3ab0ba3b4287ec4f2dd70819c7572dbcd0cf6b5d3793dcdd4f",
+      "catalog": "town_02_D08.catalog.json",
+      "catalog_sha256": "4be2306cc97a87578c8225e9d105311c9e90110cd2bebc9de9279f9160baad85",
+      "baseline": false
     },
     {
-      "file": "terrain_plan.json",
-      "bytes": 230180,
-      "sha256": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349"
+      "file": "town_03_D09.glb",
+      "sha256": "b11bc28b08ce991dac79cd4661bbb26ed0f6ce174a994b3ecf0440f699a4ca22",
+      "catalog": "town_03_D09.catalog.json",
+      "catalog_sha256": "14bc5f49e8a991d25dac0528e3536bf3107ce7fbb98d4fa0c6bbf8968120b027",
+      "baseline": false
     },
     {
-      "file": "interior_plan.json",
-      "bytes": 1308290,
-      "sha256": "a857d40e536ce84b3ed468a5815c54311f92f46ebbb1e1f7541ce76a498d08b4"
+      "file": "town_04_D10.glb",
+      "sha256": "1afa21bcb377490c31b73ae95e2571ab5081c5eb6dc2418021cd0cbba271b2f2",
+      "catalog": "town_04_D10.catalog.json",
+      "catalog_sha256": "5e0ae7c6e0ea0fad5f75cc8e2ee1e9c14502fe0721b6002a7dcbbac0d47dfa85",
+      "baseline": false
     },
     {
-      "file": "landscape_plan.json",
-      "bytes": 53903,
-      "sha256": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1"
+      "file": "town_05_botanical_inland.glb",
+      "sha256": "78bfb108d9fb73587a0c417c8f3a8a1ff3a778b6f70b85f8a26176a63519f912",
+      "catalog": "town_05_botanical_inland.catalog.json",
+      "catalog_sha256": "c0c9292a577719f5a0c44d8f41b893db32b283c177e2a3fbc4b760a179bef88e",
+      "baseline": false
     },
     {
-      "file": "node_catalog.json",
-      "bytes": 3589919,
-      "sha256": "30661387598b49aa9dc0a199d8878cdbef463e5cd58ceb68c95f6e38bc291309"
+      "file": "town_06_botanical_town.glb",
+      "sha256": "66fabf0cf3052c00e9a39ebebeafa5a279112bf862a641c7d4842651d785bbae",
+      "catalog": "town_06_botanical_town.catalog.json",
+      "catalog_sha256": "60165463a3e5a7525441977e164db08f89ac4527a2fe965681cdd3dc19724387",
+      "baseline": false
+    },
+    {
+      "file": "town_07_botanical_west.glb",
+      "sha256": "90cc62c8fe4bd459a804aa7efb4ef0981345b7006df0916178ca000a55a395e6",
+      "catalog": "town_07_botanical_west.catalog.json",
+      "catalog_sha256": "48b7f625354006c3bb6114ddc7b94c7baaeff61f06dd0eb014572ff2f9789a39",
+      "baseline": false
+    },
+    {
+      "file": "town_08_reserve_amenities.glb",
+      "sha256": "d657beeb434774970e8bddbe529b3e6bff4985b1b31692ef95426902dd412c82",
+      "catalog": "town_08_reserve_amenities.catalog.json",
+      "catalog_sha256": "4e6174cdd0095ba48b35197943aa84a20d36cb3d6d1938de69dff00439515dc2",
+      "baseline": false
+    },
+    {
+      "file": "town_09_territory_landscape.glb",
+      "sha256": "bab68b48ffda8c4ef6e9d734af8fb1d78ca6fd08e0bfae51b66efbc3bae8fe3f",
+      "catalog": "town_09_territory_landscape.catalog.json",
+      "catalog_sha256": "55c539a25c425907ec371c5201241b4a05b156cc32e55612d17723f517c30a63",
+      "baseline": false
+    },
+    {
+      "file": "town_10_urban_core.glb",
+      "sha256": "d7140ad87b69f945ccf84a6110f6dfb6ae9fbf073c24028b17533040ff1c2b76",
+      "catalog": "town_10_urban_core.catalog.json",
+      "catalog_sha256": "223c820b6b0d03da0f53fa01e7d84634d3a83d22c2bbd7fc0a43432b3a60bb44",
+      "baseline": false
     }
   ],
-  "node_count": 9062,
-  "front_door_specs": 48,
-  "inventory": {
-    "floor_count": 89,
-    "room_count": 561,
-    "furnishing_count": 753
+  "files": [
+    {
+      "file": "town_00_D06.glb",
+      "bytes": 98449304,
+      "sha256": "b319da8610f3eb459788fa550eb6520fb70762a9585745a1cdc174194f85bdf6"
+    },
+    {
+      "file": "town_00_D06.catalog.json",
+      "bytes": 2192213,
+      "sha256": "8d0d60f89d3dda4975cf968535e7c301b7b0e5085ee9f27df3c9054d772db9d7"
+    },
+    {
+      "file": "town_01_D07.glb",
+      "bytes": 105887796,
+      "sha256": "1d3c6efddd046d5e176a79bf40eaef59a989e740944e1e754816f08f70622222"
+    },
+    {
+      "file": "town_01_D07.catalog.json",
+      "bytes": 3759412,
+      "sha256": "cb407b51f436e1981c84bc5d7c005d7404a8ff204dc01ca06a2a1eb8b86f10e9"
+    },
+    {
+      "file": "town_02_D08.glb",
+      "bytes": 114311008,
+      "sha256": "ff172230eb0ded3ab0ba3b4287ec4f2dd70819c7572dbcd0cf6b5d3793dcdd4f"
+    },
+    {
+      "file": "town_02_D08.catalog.json",
+      "bytes": 4779236,
+      "sha256": "4be2306cc97a87578c8225e9d105311c9e90110cd2bebc9de9279f9160baad85"
+    },
+    {
+      "file": "town_03_D09.glb",
+      "bytes": 101355768,
+      "sha256": "b11bc28b08ce991dac79cd4661bbb26ed0f6ce174a994b3ecf0440f699a4ca22"
+    },
+    {
+      "file": "town_03_D09.catalog.json",
+      "bytes": 3376781,
+      "sha256": "14bc5f49e8a991d25dac0528e3536bf3107ce7fbb98d4fa0c6bbf8968120b027"
+    },
+    {
+      "file": "town_04_D10.glb",
+      "bytes": 107867632,
+      "sha256": "1afa21bcb377490c31b73ae95e2571ab5081c5eb6dc2418021cd0cbba271b2f2"
+    },
+    {
+      "file": "town_04_D10.catalog.json",
+      "bytes": 2916780,
+      "sha256": "5e0ae7c6e0ea0fad5f75cc8e2ee1e9c14502fe0721b6002a7dcbbac0d47dfa85"
+    },
+    {
+      "file": "town_05_botanical_inland.glb",
+      "bytes": 102793728,
+      "sha256": "78bfb108d9fb73587a0c417c8f3a8a1ff3a778b6f70b85f8a26176a63519f912"
+    },
+    {
+      "file": "town_05_botanical_inland.catalog.json",
+      "bytes": 2355828,
+      "sha256": "c0c9292a577719f5a0c44d8f41b893db32b283c177e2a3fbc4b760a179bef88e"
+    },
+    {
+      "file": "town_06_botanical_town.glb",
+      "bytes": 106750576,
+      "sha256": "66fabf0cf3052c00e9a39ebebeafa5a279112bf862a641c7d4842651d785bbae"
+    },
+    {
+      "file": "town_06_botanical_town.catalog.json",
+      "bytes": 6396370,
+      "sha256": "60165463a3e5a7525441977e164db08f89ac4527a2fe965681cdd3dc19724387"
+    },
+    {
+      "file": "town_07_botanical_west.glb",
+      "bytes": 103046772,
+      "sha256": "90cc62c8fe4bd459a804aa7efb4ef0981345b7006df0916178ca000a55a395e6"
+    },
+    {
+      "file": "town_07_botanical_west.catalog.json",
+      "bytes": 9748238,
+      "sha256": "48b7f625354006c3bb6114ddc7b94c7baaeff61f06dd0eb014572ff2f9789a39"
+    },
+    {
+      "file": "town_08_reserve_amenities.glb",
+      "bytes": 93049404,
+      "sha256": "d657beeb434774970e8bddbe529b3e6bff4985b1b31692ef95426902dd412c82"
+    },
+    {
+      "file": "town_08_reserve_amenities.catalog.json",
+      "bytes": 1953320,
+      "sha256": "4e6174cdd0095ba48b35197943aa84a20d36cb3d6d1938de69dff00439515dc2"
+    },
+    {
+      "file": "town_09_territory_landscape.glb",
+      "bytes": 479547904,
+      "sha256": "bab68b48ffda8c4ef6e9d734af8fb1d78ca6fd08e0bfae51b66efbc3bae8fe3f"
+    },
+    {
+      "file": "town_09_territory_landscape.catalog.json",
+      "bytes": 910684,
+      "sha256": "55c539a25c425907ec371c5201241b4a05b156cc32e55612d17723f517c30a63"
+    },
+    {
+      "file": "town_10_urban_core.glb",
+      "bytes": 165264616,
+      "sha256": "d7140ad87b69f945ccf84a6110f6dfb6ae9fbf073c24028b17533040ff1c2b76"
+    },
+    {
+      "file": "town_10_urban_core.catalog.json",
+      "bytes": 8376025,
+      "sha256": "223c820b6b0d03da0f53fa01e7d84634d3a83d22c2bbd7fc0a43432b3a60bb44"
+    }
+  ],
+  "removed_baseline_object_names": [],
+  "structural_floor_indexing": {
+    "schema": "living_town.structural_floor_indexing.v1",
+    "indexed_meshes": 2969,
+    "transformed_bounds_verified": 2969,
+    "stair_association": "departure_floor"
   },
-  "elapsed_seconds": 0.828,
-  "notes": [
-    "One optimized whole-town GLB; no duplicate high-detail scene or 49 prefabs",
-    "Frozen delivery unchanged; all staged bytes SHA256-verified and fsynced",
-    "Runtime visual geometry is not simulation, collision, or navigation authority",
-    "Metadata retains original Blender-local XY bounds; transform once at the adapter boundary"
-  ]
+  "open_stairwell_geometry_bindings": 448,
+  "navigation_authority": "Sim authored grid and portals; GLB visual geometry cannot grant movement"
 }

@@ -16,6 +16,12 @@ import re
 import uuid
 import zipfile
 import zlib
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from town_runtime_assets import (is_v2, validate_upgrade_evidence, runtime_records, sha as runtime_sha,
+                                STAGE, CHARACTERS, PROFILE, PROJECTION,
+                                UPGRADE_LOGICAL, UPGRADE_CAPTURE, UPGRADE_REVIEW)
 
 CHUNK = 1024 * 1024
 TOP = "LivingTown_Interactive_Windows"
@@ -38,6 +44,14 @@ REQUIRED_NOTICES = (
     "game/assets/art/library/puny-emotes/LICENSE.txt",
     "art/living_town/external_assets/fonts/LICENSE.md",
     "art/living_town/external_assets/fonts/PROVENANCE.json",
+    "docs/town_bridge/licenses/REFINED_ASSETS.md",
+    "docs/town_bridge/licenses/REFINED_BOTANICAL_SOURCES.json",
+    "docs/town_bridge/licenses/REFINED_TERRAIN_SOURCES.json",
+    "docs/town_bridge/licenses/REFINED_PBR_SOURCES.json",
+    "docs/town_bridge/licenses/REFINED_CHARACTER_SOURCES.json",
+    "docs/town_bridge/licenses/REFINED_LINEN_SOURCES.json",
+    "docs/town_bridge/licenses/CC0_1.0.txt",
+    "docs/town_bridge/licenses/INFINIGEN_NOTICES.txt",
 )
 SOURCE_PROOF = (
     "docs/town_bridge/README.md",
@@ -105,6 +119,9 @@ def capture_path(root: Path, record: dict) -> tuple[str, Path]:
     # archived portable path is always explicit and inside the capture folder.
     raw = str(record.get("file", ""))
     source = Path(raw)
+    portable = root / "docs/town_bridge/captures" / source.name
+    if portable.is_file():
+        source = portable
     if not source.is_absolute():
         source = root / raw
     source = regular_file(source, root)
@@ -115,7 +132,7 @@ def capture_path(root: Path, record: dict) -> tuple[str, Path]:
 
 def choose_files(root: Path) -> tuple[dict[str, Path], dict]:
     report = read(regular_file(root / EXPORT_REPORT, root))
-    if report.get("schema") != "living_town.bridge.windows_export.v1":
+    if report.get("schema") not in {"living_town.bridge.windows_export.v1", "living_town.upgrade.windows_export.v1"}:
         raise ValueError("Unsupported Windows export evidence schema")
     passed(report, "Windows export")
     boot = report.get("boot", {})
@@ -126,20 +143,25 @@ def choose_files(root: Path) -> tuple[dict[str, Path], dict]:
     if len(report.get("binaries", [])) != 2 or set(binaries) != {"LivingTown.exe", "LivingTown.pck"}:
         raise ValueError("Export evidence must bind exactly LivingTown.exe and LivingTown.pck")
     files = {name: regular_file(root / EXPORT / name, root) for name in binaries}
-    for rel in REQUIRED_NOTICES + SOURCE_PROOF + (EXPORT_REPORT,):
+    upgraded=is_v2(root)
+    source_proof=("docs/town_bridge/README.md","docs/town_walkthrough/ASSET_RELEASE.md",UPGRADE_LOGICAL,UPGRADE_CAPTURE,UPGRADE_REVIEW,STAGE,CHARACTERS,PROFILE,PROJECTION,"game/scripts/town_walkthrough.gd") if upgraded else SOURCE_PROOF
+    for rel in REQUIRED_NOTICES + source_proof + (EXPORT_REPORT,):
         safe_relative(rel)
         files[rel] = regular_file(root / rel, root)
     captures = list(report.get("screenshots", []))
     if not captures:
         raise ValueError("Normal-entry export evidence has no actual screenshot")
-    visual = read(root / "docs/town_bridge/visual_test_report.json")
-    captures.extend(visual.get("screenshots", []))
+    visual = read(root / UPGRADE_CAPTURE) if upgraded else read(root / "docs/town_bridge/visual_test_report.json")
+    captures.extend(visual.get("captures" if upgraded else "screenshots", []))
+    if upgraded:
+        for rel in ('tools/town_upgrade/characters/vendor/makehuman/LICENSE.md','tools/town_upgrade/characters/vendor/makehuman/LICENSE.ASSETS.md','tools/town_upgrade/characters/vendor/makehuman/LICENSE.CODE.md','tools/town_upgrade/characters/vendor/makehuman/provenance.json'):
+            files[rel]=regular_file(root/rel,root)
     for record in captures:
         rel, source = capture_path(root, record)
         if rel in files and files[rel] != source:
             raise ValueError(f"Capture basename collision: {rel}")
         files[rel] = source
-    names = list(files) + ["README.md", "ASSET_CREDITS.md", "Play_Offline.cmd", MANIFEST_NAME]
+    names = list(files) + ["README.md", "ASSET_CREDITS.md", "Play_Offline.cmd", "Play_Compatibility.cmd", MANIFEST_NAME]
     if len({name.casefold() for name in names}) != len(names):
         raise ValueError("Archive names collide on a case-insensitive Windows filesystem")
     return dict(sorted(files.items())), report
@@ -156,6 +178,8 @@ def validate_sources(root: Path, files: dict[str, Path], hashes: dict[str, str],
     with files["LivingTown.pck"].open("rb") as stream:
         if stream.read(4) != b"GDPC":
             raise ValueError("LivingTown.pck has no separate Godot pack header")
+    if is_v2(root):
+        return validate_sources_v2(root,files,hashes,report)
     logical_rel = "docs/town_bridge/logical_test_report.json"
     visual_rel = "docs/town_bridge/visual_test_report.json"
     legacy_rel = "docs/town_bridge/regression_test_report.json"
@@ -215,6 +239,37 @@ def validate_sources(root: Path, files: dict[str, Path], hashes: dict[str, str],
     }
 
 
+def validate_sources_v2(root,files,hashes,report):
+    # The source package carries raw chunks. The binary package carries their
+    # imported PCK plus metadata/evidence, avoiding another duplicate asset set.
+    source_hashes={rel:runtime_sha(root/rel) for rel in runtime_records(root)}
+    profile=read(root/PROFILE)
+    for filename in profile['file_hashes']:
+        rel='game/data/town3d/'+safe_relative(filename).as_posix()
+        source_hashes[rel]=runtime_sha(root/rel)
+    for rel in profile.get('presentation_source_hashes',{}):
+        source_hashes[safe_relative(rel).as_posix()]=runtime_sha(root/rel)
+    for rel in (PROFILE,PROJECTION,UPGRADE_LOGICAL,UPGRADE_CAPTURE,UPGRADE_REVIEW,'game/scripts/town_walkthrough.gd'):
+        source_hashes[rel]=runtime_sha(root/rel)
+    source_hashes.update(hashes)
+    proof=validate_upgrade_evidence(root,source_hashes)
+    for field in ('profile_sha256','projection_sha256','source_asset_set_sha256','characters_manifest_sha256'):
+        if report.get(field)!=proof[field]:raise ValueError('Windows export proof belongs to another upgraded runtime: '+field)
+    if report.get('stage_manifest_sha256')!=hashes[STAGE]:raise ValueError('Windows export proof belongs to another staged chunk set')
+    source=report.get('source_runtime_evidence',{})
+    if source.get('logical_report_sha256')!=hashes[UPGRADE_LOGICAL] or source.get('visual_report_sha256')!=hashes[UPGRADE_CAPTURE]:
+        raise ValueError('Windows proof does not bind the completed new logical and actual input reports')
+    portable=[]
+    for origin,rows in (('native_normal_entry',report.get('screenshots',[])),('actual_Main_walkthrough',read(root/UPGRADE_CAPTURE).get('captures',[]))):
+        for capture in rows:
+            rel,path=capture_path(root,capture)
+            if hashes.get(rel)!=capture.get('sha256'):raise ValueError('Packaged actual screenshot differs: '+rel)
+            portable.append({'package_file':rel,'sha256':hashes[rel],'proof_scope':origin})
+    return {**proof,'native_boot_report_included':True,'native_normal_entry':{'checks':len(report['checks']),'boot':report['boot'],'source_verification':report.get('source_verification','')},
+        'separate_source_runtime_evidence':{'logical_checks':proof['logical_check_count'],'visual_checks':proof['visual_check_count'],'legacy_regressions':source.get('legacy_regressions',0)},
+        'captures':portable,'limits':report.get('limitations',[]),'packaging_does_not_rerun_game':True}
+
+
 def readme(proof: dict) -> bytes:
     source = proof["separate_source_runtime_evidence"]
     return f"""# Living Town / 小镇有灵 — Windows interactive 3D game
@@ -228,6 +283,11 @@ This is a Windows x86_64 game binary. Godot, Blender, Python, a model download,
 an account and the separate source archive are not needed to play. The existing
 logic backend works offline. Play_Offline.cmd explicitly selects that backend
 and the resident-selection screen if you want a fixed offline launch.
+
+The desktop default requests Godot's Mobile renderer for direct LivingTown.exe
+launch and editor play (F5/F6). Older GPUs can use Play_Compatibility.cmd, which
+selects OpenGL Compatibility with the same offline 3D resident-selection mode.
+Automatic OpenGL fallback is also enabled when RenderingDevice is unavailable.
 
 ## Controls
 
@@ -274,8 +334,8 @@ included; the fonts and art used by the game are packed in LivingTown.pck.
 """.encode("utf-8")
 
 
-def credits() -> bytes:
-    return """# Packaged asset credits
+def credits(upgraded=False) -> bytes:
+    text = """# Packaged asset credits
 
 Game code: MIT, Copyright (c) 2026 Yang Peng; see LICENSE.
 
@@ -299,12 +359,21 @@ binary, HDRI, Blender sources and reference movies are not bundled or needed.
 The package includes no NobodyWho native addon or model weights. Optional
 backend installations and their licenses are separate from this binary build.
 Historical documentation links may refer to the separate complete repository.
-""".encode("utf-8")
+"""
+    if upgraded:
+        text += "\nRefined mesh residents use the CC0 MakeHuman anatomical base and weights,\nwith original fitted clothes, hair, textures and rig adaptation. Full source\nlicenses/provenance are included under tools/town_upgrade/characters/vendor/makehuman.\nBotanical and photographed surface inputs are CC0; source receipts and exact\ncredits remain in THIRD_PARTY_NOTICES.md and the editable native art delivery.\n"
+    return text.encode("utf-8")
 
 
 def offline_launcher() -> bytes:
     return ("@echo off\r\nsetlocal\r\npushd \"%~dp0\"\r\n"
             "\"LivingTown.exe\" -- --town3d --backend logic --life\r\n"
+            "set \"town_exit=%errorlevel%\"\r\npopd\r\nexit /b %town_exit%\r\n").encode("ascii")
+
+
+def compatibility_launcher() -> bytes:
+    return ("@echo off\r\nsetlocal\r\npushd \"%~dp0\"\r\n"
+            "\"LivingTown.exe\" --rendering-method gl_compatibility --rendering-driver opengl3 -- --town3d --backend logic --life\r\n"
             "set \"town_exit=%errorlevel%\"\r\npopd\r\nexit /b %town_exit%\r\n").encode("ascii")
 
 
@@ -333,7 +402,8 @@ def publish(root: Path, files: dict[str, Path], report: dict, freeze_id: str) ->
     if read(files[EXPORT_REPORT]) != report:
         raise ValueError("Export report changed after the packaging inventory was selected")
     proof = validate_sources(root, files, hashes, report)
-    generated = {"README.md": readme(proof), "ASSET_CREDITS.md": credits(), "Play_Offline.cmd": offline_launcher()}
+    generated = {"README.md": readme(proof), "ASSET_CREDITS.md": credits(is_v2(root)),
+                 "Play_Offline.cmd": offline_launcher(), "Play_Compatibility.cmd": compatibility_launcher()}
     entries = {rel: {"bytes": path.stat().st_size, "sha256": hashes[rel]} for rel, path in files.items()}
     for rel, data in generated.items():
         entries[rel] = {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}

@@ -1,45 +1,40 @@
-# Walkthrough chapter and capture contract
+# Expanded-town walkthrough contract
 
-**Delivered duration:** 10:00 exactly, 24 FPS, 14,400 decoded frames. The completed route passed 32 live checks and 13 encoded-media checks. All 22 Edge TTS takes fit their windows; eleven chapter frames and three active-caption frames passed separate visual inspection. [Final movie and evidence](README.md) bind the exact source and output. Human audio listening is not recorded.
+**Current target: 14:00, 18 FPS, 15,120 actual tour frames, MovieWriter AVI at 44,100 Hz.** There are 12 chapters and 24 Edge TTS paragraphs. The new full gameplay capture, composed MP4 and encoded-media review are pending. Current voice measurements fit; the final two paragraphs measure 11.064 and 10.224 seconds in 14.875-second windows. This is voice evidence only.
 
-The chapter windows below match the capture agent’s proposed route. Chapters 6–8 are explicitly labelled architectural inspection. Those shots may change the probe, camera, and local model covers, but never set resident coordinates. Gameplay chapters use the public Main/LifeMode interaction path.
+[route_plan.json](route_plan.json) defines the windows below; [narration.json](narration.json) defines the speech. [RECORDING.md](RECORDING.md) gives the reproducible commands and evidence gates. The director instantiates actual `Main`/`LifeMode`, while `Sim` owns movement, access, needs, actions and saved state. It loads the complete staged town, including the expansion and reserve, rather than a separate asset viewer.
 
-Before the defined tour begins, the harness establishes morning light through public LifeMode selection, speed-key input, and an actual wait for at least 90 simulation ticks. It pauses and calls begin_select() again; no clock or resident-address assignment is used. This setup belongs to the captured boot prefix and is trimmed before the 00:00 chapter, so it does not shift narration or chapter windows.
+Before 00:00, public LifeMode selection and real speed-key input establish morning through live waiting. The harness pauses and restores the selector. This setup is captured in the measured boot prefix and trimmed from the tour; it does not assign the clock or relocate Aria.
 
-| Time | Chapter | Mode | Required visible action |
+| Time | Chapter | Mode | Required evidence |
 |---|---|---|---|
-| 00:00–00:45 | 01. A town you can enter | Paused observer | Slow whole-town flyover in actual Main. Pause simulation; establish the town and the inspection/gameplay distinction. |
-| 00:45–01:40 | 02. Meet Aria and read the HUD | Controlled Aria | Show original selector at 45 seconds; public start_life("aria") at 50 seconds; show upper café apartment, resident identity, job/money, clock, needs, wishes, and input hints. |
-| 01:40–02:35 | 03. Walk the rooms and take the stairs | Controlled Aria | Actual multi-frame walking and legal owner stair transition to the café floor; retain art and ground height. |
-| 02:35–03:35 | 04. Use a real café fixture | Controlled Aria | Click actual counter mesh; open existing legal menu; use fixture through reachable approach and capture completion/state/event. Show social opportunity or real attempt. |
-| 03:35–04:30 | 05. Step outside and keep the resident visible | Controlled Aria | Use real exterior door, walk toward plaza, show normal sprite depth and gold ghost only at actual geometry occlusion. |
-| 04:30–05:30 | 06. Inspection: rooms and furnishing | INSPECTION — CAMERA ONLY | Inspect library, home, and hotel rooms by camera/probe and local cutaway controls only; no actor teleport or Sim coordinate mutation. |
-| 05:30–06:30 | 07. Inspection: streets, elevations, and harbor | INSPECTION — CAMERA ONLY | Trace irregular streets, passages, courts, real surface elevations, thresholds, and harbor; preserve resident state. |
-| 06:30–07:30 | 08. Inspection: pond and planted routes | INSPECTION — CAMERA ONLY | Show recessed pond and level water, continuous graded shore, loop, benches, reeds, willows, flowers, and access gaps. |
-| 07:30–08:25 | 09. Return to life and enable autonomy | Controlled Aria | Return camera to Aria; record the actual social attempt at 450–473 seconds and its truthful response, then enable autonomy through LifeMode at about 473 seconds. |
-| 08:25–09:20 | 10. Save, continue, and load | Controlled Aria | Dispatch real F5 save, continue, and real F8 load. Record save/load state proof; gently widen view for portability/provenance explanation. |
-| 09:20–10:00 | 11. What the delivery proves | Observer close | Slow actual whole-town view; state verified test boundaries and practical limits. Let narration finish before final frame. |
+| 00:00–00:45 | 01. Town, woodland and coast | Camera inspection | Real Main overview; complete v2 chunk set and all 151 buildings loaded; at least 12 actual mesh residents. Keep the inspection label visible. |
+| 00:45–01:40 | 02. Meet Aria in her upper home | Actual gameplay and home camera study | Choose original Aria through public LifeMode selection; retain her cafe upper-floor address, identity, needs and money. Use actual viewport clicks to open and close activity history and wishes while paused. |
+| 01:40–02:35 | 03. Rooms, stairs and needs | Actual gameplay | Walk to the genuine owner stair portal, descend, and use the physical cafe table through the existing legal menu. Record actual completion and need effect. |
+| 02:35–03:35 | 04. The actual cafe and street | Actual gameplay | Use the real cafe counter, then traverse its exterior door. Preserve resident-follow camera and geometry-based occlusion visibility. |
+| 03:35–04:45 | 05. Walk into the expanded town | Actual gameplay | Click a real expansion entrance and show the continuous stepwise journey from the original core. No resident relocation or camera-only substitution. |
+| 04:45–05:55 | 06. Use a new venue and its upper floor | Actual gameplay | Complete a new venue's legal fixture action; traverse its genuine upper stairs when present, return and exit. |
+| 05:55–07:35 | 07. Walk to the reserve bathhouse | Actual gameplay | Follow connected authored paths into the actual bathhouse, complete a legal hygiene action and exit through its visitor door. |
+| 07:35–09:15 | 08. Visit a detailed camping trailer | Actual gameplay | Walk to a detailed trailer and its actual offset entrance; use a legal bed, basin or toilet fixture and exit. |
+| 09:15–11:05 | 09. Walk back from the reserve to town | Actual gameplay | Show the resident-follow return across reserve/expansion routes; enter the original cafe and return to the core street. This closes the physical outward-and-return trip. |
+| 11:05–12:15 | 10. Inspection: forest, bridges and horticulture | Camera inspection | Inspect the ravine bridge/woodland, stone stair topography and pond planting. These camera cuts do not claim resident traversal of those inspected structures. |
+| 12:15–13:25 | 11. Save, resume and resident agency | Actual gameplay | Dispatch actual F5, continue, then F8; verify the saved tick/address. Enable existing free will and observe live core decisions. |
+| 13:25–14:00 | 12. Complete town and scope | Camera inspection | Final actual whole-town overview; finish narration and exactly 15,120 tour frames. Keep verification limits explicit. |
 
-## Timing and narrator contract
+## Timing and source freeze
 
-- Use [narration.json](narration.json): 22 segments, 945 spoken words, normal-rate `en-US-AriaNeural`. Every segment supplies `start`, `end`, `chapter`, `title`, `text`, and `notes`.
-- Paragraph speech windows total 524 seconds; planned gaps total 76 seconds. Paragraph target rates are approximately 102–115 words per minute. The first longer take exceeded its window at 21.768 seconds; this shorter revision targets that measured cadence. Generate and measure every revised take before locking audio.
-- Subtitles come from actual voice word boundaries, not guessed chapter timestamps. Preserve at least a short pause between paragraphs when takes fit.
-- Prefer a 96-pixel caption matte below the complete 1280 × 768 game image. Suggested ASS settings and audio notes are in [narration_script.md](narration_script.md).
-- Keep any chapter/inspection label clear of resident menus, the top status strip, and the bottom HUD. Put the inspection label in the added matte when practical.
+The current 24 normal-rate `en-US-AriaNeural` segments contain 857 spoken word tokens. Editorial speech windows total 692.528 seconds; these are allowed windows, not measured audio duration. Each actual take must fit its own window. Subtitles use measured WordBoundary data. The MovieWriter capture rate is 44,100 Hz / 18 FPS = 2,450 samples per frame; the composed narration WAV is separately 24 kHz.
 
-## Truthful recording gates
+Freeze the native chunks, character manifest/models, profile, projection, director, route and media inputs before acceptance. Compile the final profile after freezing `Main`, `TownModel3D`, `WorldView3D`, `TownWorldProfile`, `TownCharacter3D`, `LifeMode`, `Sim` and every script under `game/scripts/ui`. Their hashes belong to that profile. A runtime change requires recompilation and fresh matching verification/capture. A historical source or media PASS cannot be carried across the freeze.
 
-1. Capture actual Main/LifeMode frames. Blender stills, a GLB viewer, and camera-only inspection do not establish resident travel or fixture completion.
-2. Do not mutate simulation coordinates, needs, money, social results, or the clock to stage a claim. Legitimate portal transitions and existing input/public APIs are allowed.
-3. Show the counter menu, a reachable approach, and actual completion. A physical counter may expose either of its preserved functional aliases.
-4. Treat a social refusal or unavailable target as a real outcome. Log it; do not silently replace it with narrated success.
-5. Bind real save/load calls to recorded state evidence. If a save/load step fails, fix and recapture or revise the narration rather than keeping a success sentence.
-6. Final proof must bind route/action log, captured frames/video, TTS takes, measured word boundaries, and output hashes. The current 36 logical and 28 visual source-runtime checks remain separate from Windows boot proof. The fresh hosted report records 35 passing legacy scenes; retain the old 11-scene subset as historical evidence.
-7. Inspect the encoded beginning, stair transition, counter interaction, doorway occlusion, all inspection sections, autonomy/social result, save/load, and ending. Check subtitle readability and HUD visibility as well as audio clipping and sync.
+The current full route receives generous walking/action time, including the return journey. Its 90-second preview compresses/skips long trips and cannot certify them. Camera inspections are labelled and modify presentation only. Genuine input, public selection and legal portal transitions are allowed; direct resident-address, need, money, action-result or clock writes by the director are prohibited.
 
-## Claims to retain
+## Acceptance boundaries
 
-49 buildings; 89 floors; 561 logical zones, including circulation; 223 activity rooms; 753 furnishing assemblies; explicitly mapped functional objects counted in the current compiled profile; 52 planned local landscape trees. Original resident identities and 2D directional sprites are retained in the 3D view. Terrain, pond banks, planting, entrances, stairs, private access, and scene cutaways are authored and checked, with their stated limits.
+Require the completed exact-source logical report and actual Main/LifeMode report, including all route checks, 840 seconds, 18 FPS, 15,120 frames, `preview: false`, `route_complete: true`, zero failures and `direct_agent_writes: false`. Keep actual screenshots, action completions, source hashes and F5/F8 restoration receipts. MovieWriter AVI must contain the boot prefix plus every tour frame; missing footage is rejected rather than padded or reconstructed.
 
-The game uses the existing logic backend and simulation authority. No language-model download is needed for this route. Engine-agnostic art export and provenance are delivered separately. No broad performance, finished balance, certified construction, general physics navigation, or all-decoration-is-gameplay claim is made.
+The MP4 must decode with the specified duration/frame count, 12 chapter markers and measured subtitles beneath the preserved HUD. Actual encoded-frame inspection and audio listening remain separate recorded reviews. A release executable's normal Main/GPU boot evidence is also separate and must bind its exact executable and PCK.
+
+This route checks representative places and actions, not every modeled room or decorative assembly. Use the current staged inventory and runtime reports for exact building/interior/vegetation counts and outcomes. It does not certify universal performance, physics navigation, construction, or game balance.
+
+Earlier 10:00, 24 FPS, 14,400-frame OGV/Theora movies, eleven-chapter tables, old sprite/inventory counts and reconstruction receipts are **archival previous-runtime evidence**. They are not the current route or acceptance evidence. Keep the new capture status pending until the new source-bound recording and reviews are complete.

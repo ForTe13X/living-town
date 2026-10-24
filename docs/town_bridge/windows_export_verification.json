@@ -1,9 +1,255 @@
 {
-  "schema": "living_town.bridge.windows_export.v1",
+  "schema": "living_town.upgrade.windows_export.v1",
   "status": "PASS",
   "failure_count": 0,
-  "generated_utc": "2026-10-12T21:24:44.609808+00:00",
-  "engine": "Godot 4.6.2 Windows x86_64 release",
+  "created_utc": "2026-10-24T06:16:38.203143+00:00",
+  "checks": [
+    {
+      "name": "fresh_full_source_gameplay_and_image_review",
+      "passed": true,
+      "details": {
+        "source_blend_sha256": "3162c204689cdb7888a5e0d21bb5dde9be04a89ac6253ba03a88d7f5ddd86274",
+        "source_glb_sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a",
+        "source_asset_set_sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a",
+        "profile_sha256": "8499a7d376739dcb759d5e404c277a707c8443230763dcfd7962fe730b1fcb4e",
+        "projection_sha256": "98146b008f130870d0067a7c1e0940f6ab373b5f255e5ba66ac24ca0ed48b3bc",
+        "characters_manifest_sha256": "00b272523dffef832a1025bba68b347d6a7917023898ba4fd6d4d20e48210970",
+        "runtime_file_count": 51,
+        "town_chunk_count": 11,
+        "building_count": 151,
+        "logical_check_count": 27,
+        "visual_check_count": 64,
+        "captures": [
+          {
+            "package_file": "docs/town_bridge/captures/01_complete_town_and_woodland.png",
+            "sha256": "c8f2f6791b2e8ca28397a3f07f4d393057d3f1ad306ea61f58bf6a0cf9cc7efe",
+            "tick": 90,
+            "chapter": 1
+          },
+          {
+            "package_file": "docs/town_bridge/captures/02_Aria_refined_character_upper_home.png",
+            "sha256": "1fbf7e4a210f60717652ab6544c926070f836bb9a91df87a7c797b89c7198a10",
+            "tick": 90,
+            "chapter": 2
+          },
+          {
+            "package_file": "docs/town_bridge/captures/02b_expandable_activity_and_wishes.png",
+            "sha256": "0f92663b571a58bda537a257bfd20dbc6ec8f92d12fa167f1f9913441bfab829",
+            "tick": 90,
+            "chapter": 2
+          },
+          {
+            "package_file": "docs/town_bridge/captures/03_actual_stair_arrival.png",
+            "sha256": "432f5f0e005f0ec8b8703bd90736d9df290e308204e741ca4932fe9e2d4cc493",
+            "tick": 108,
+            "chapter": 3
+          },
+          {
+            "package_file": "docs/town_bridge/captures/fixture_menu_cafe1f_table.png",
+            "sha256": "39268ff536626ac27eee8d5eac899e12c80d43e24244987bb9c79f52448ff610",
+            "tick": 109,
+            "chapter": 3
+          },
+          {
+            "package_file": "docs/town_bridge/captures/fixture_menu_cafe1f_counter.png",
+            "sha256": "aab253fbb165c92b0d6eb1730706f8e45f3c2ab921b564a2290cf02db84e3771",
+            "tick": 153,
+            "chapter": 4
+          },
+          {
+            "package_file": "docs/town_bridge/captures/04_cafe_action_and_street_threshold.png",
+            "sha256": "52cdeb190f4e1a2731bfa3bdbcac99f64241ab1a865fbea24808e36730b2a58c",
+            "tick": 192,
+            "chapter": 4
+          },
+          {
+            "package_file": "docs/town_bridge/captures/05_actual_expansion_venue_arrival.png",
+            "sha256": "57e050f2c38a9c63e28cfa04c4f34f77a9cbe28ea6dac27a5a35400caaad6841",
+            "tick": 327,
+            "chapter": 5
+          },
+          {
+            "package_file": "docs/town_bridge/captures/fixture_menu_upgrade_Expansion_D09_Orchard_Lane_Loop_R12_L00_Rear_Room_A01_dining_table.png",
+            "sha256": "5b28626100e9f3845007c32ce3d5dd63b4a8064493b2cc7f9c73f86ac131d5ea",
+            "tick": 407,
+            "chapter": 6
+          },
+          {
+            "package_file": "docs/town_bridge/captures/06_actual_expansion_upper_interior.png",
+            "sha256": "c7b656ebf6a840d60bddf6bea22b51d466d4321980aa7f869c0078510943d547",
+            "tick": 458,
+            "chapter": 6
+          },
+          {
+            "package_file": "docs/town_bridge/captures/fixture_menu_upgrade_Reserve_Bathhouse_L00_Wash_West_Washbasin_0.png",
+            "sha256": "8b3735ee7e8b4ae9e96f6f10b5488ff8e8ff11e8abd52cf2712257a6ca27b672",
+            "tick": 557,
+            "chapter": 7
+          },
+          {
+            "package_file": "docs/town_bridge/captures/07_actual_reserve_bathhouse_action.png",
+            "sha256": "a76e1980316c381cd64ac52bea67122d9820cbe68fdf1b1439f309353d9303d8",
+            "tick": 577,
+            "chapter": 7
+          },
+          {
+            "package_file": "docs/town_bridge/captures/fixture_menu_upgrade_Reserve_Trailer_N06_L00_Private_Bathroom_Handwash.png",
+            "sha256": "bab3d9f719f038410a7df063986faceb4c7ecd555e950387e1730e33692e8be8",
+            "tick": 649,
+            "chapter": 8
+          },
+          {
+            "package_file": "docs/town_bridge/captures/08_actual_trailer_interior_and_use.png",
+            "sha256": "6b5b769af506f438191e4bfd9d1677ab7b872ea7fb1e7dc501a79e568ff69a91",
+            "tick": 664,
+            "chapter": 8
+          },
+          {
+            "package_file": "docs/town_bridge/captures/09_actual_return_from_reserve_to_core.png",
+            "sha256": "7982348678e54ffa5e4663bdd09d737abdfb0264d858329a5b71f9cbb7477a90",
+            "tick": 825,
+            "chapter": 9
+          },
+          {
+            "package_file": "docs/town_bridge/captures/10_inspection_ravine_bridge_forest.png",
+            "sha256": "6170b8642a81aa06477986aac8acc9961b83d287219871577a6cf504945710d3",
+            "tick": 912,
+            "chapter": 10
+          },
+          {
+            "package_file": "docs/town_bridge/captures/11_inspection_stone_stair_topography.png",
+            "sha256": "4e83c16663ba030529abf8fbce2daa09a18d213b76f4903c84ade1b9e002d283",
+            "tick": 912,
+            "chapter": 10
+          },
+          {
+            "package_file": "docs/town_bridge/captures/12_inspection_pond_horticulture.png",
+            "sha256": "636c851161d0f88c6f8b1531eb298910da35c3e658289bcdbabbfb568c02ebaa",
+            "tick": 912,
+            "chapter": 10
+          },
+          {
+            "package_file": "docs/town_bridge/captures/13_restored_actual_resident_life.png",
+            "sha256": "e925fb00b540b8ed6943a580840d072d8fa3f2f2f164d9b503a30b4e7d82144e",
+            "tick": 1005,
+            "chapter": 11
+          },
+          {
+            "package_file": "docs/town_bridge/captures/14_complete_upgraded_playable_town.png",
+            "sha256": "2516f99b353059f99297e7c2884493bbe0df4e23081e267b071d2c0fe4d8f17f",
+            "tick": 1015,
+            "chapter": 12
+          }
+        ],
+        "native_boot_report_included": false,
+        "packaging_does_not_rerun_game": true
+      }
+    },
+    {
+      "name": "actual_export_matches_profile_sha256",
+      "passed": true,
+      "details": "8499a7d376739dcb759d5e404c277a707c8443230763dcfd7962fe730b1fcb4e"
+    },
+    {
+      "name": "actual_export_matches_projection_sha256",
+      "passed": true,
+      "details": "98146b008f130870d0067a7c1e0940f6ab373b5f255e5ba66ac24ca0ed48b3bc"
+    },
+    {
+      "name": "actual_export_matches_stage_manifest_sha256",
+      "passed": true,
+      "details": "14841567aa0172536446f1ac95e161b8dda3249d72a5956f83802e6711f429d0"
+    },
+    {
+      "name": "actual_export_matches_characters_manifest_sha256",
+      "passed": true,
+      "details": "00b272523dffef832a1025bba68b347d6a7917023898ba4fd6d4d20e48210970"
+    },
+    {
+      "name": "actual_export_matches_source_asset_set_sha256",
+      "passed": true,
+      "details": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a"
+    },
+    {
+      "name": "actual_export_matches_source_blend_sha256",
+      "passed": true,
+      "details": "3162c204689cdb7888a5e0d21bb5dde9be04a89ac6253ba03a88d7f5ddd86274"
+    },
+    {
+      "name": "all151_buildings_loaded_in_actual_export",
+      "passed": true,
+      "details": 151
+    },
+    {
+      "name": "all_visible_residents_are_refined_mesh_characters",
+      "passed": true,
+      "details": 62
+    },
+    {
+      "name": "actual_framebuffer_was_drawn",
+      "passed": true,
+      "details": 6
+    },
+    {
+      "name": "actual_binary_header_LivingTown.exe",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "runtime_launched_exact_LivingTown.exe",
+      "passed": true,
+      "details": "911cb7f49225cf9ec87342f84b3e64bbd69e31d82fbd9660cb16e402bb5be891"
+    },
+    {
+      "name": "actual_binary_header_LivingTown.pck",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "runtime_launched_exact_LivingTown.pck",
+      "passed": true,
+      "details": "923f1cc915ec706affe279a2ebd0d9ec682a3338cd55fe65fe789cb56afc1bfe"
+    },
+    {
+      "name": "runtime_executable_is_the_portable_export",
+      "passed": true,
+      "details": "F:/Living Town/2026-10-20_Refined_Town/windows_simcache_v16_003/LivingTown.exe"
+    },
+    {
+      "name": "actual_native_framebuffer_hash",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "actual_native_png_framebuffer",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "native_framebuffer_dimensions",
+      "passed": true,
+      "details": [
+        1280,
+        768
+      ]
+    },
+    {
+      "name": "actual_native_screenshot_present",
+      "passed": true,
+      "details": null
+    },
+    {
+      "name": "no_runtime_script_or_fatal_errors",
+      "passed": true,
+      "details": null
+    }
+  ],
+  "profile_sha256": "8499a7d376739dcb759d5e404c277a707c8443230763dcfd7962fe730b1fcb4e",
+  "projection_sha256": "98146b008f130870d0067a7c1e0940f6ab373b5f255e5ba66ac24ca0ed48b3bc",
+  "stage_manifest_sha256": "14841567aa0172536446f1ac95e161b8dda3249d72a5956f83802e6711f429d0",
+  "characters_manifest_sha256": "00b272523dffef832a1025bba68b347d6a7917023898ba4fd6d4d20e48210970",
+  "source_asset_set_sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a",
+  "source_blend_sha256": "3162c204689cdb7888a5e0d21bb5dde9be04a89ac6253ba03a88d7f5ddd86274",
   "binaries": [
     {
       "file": "LivingTown.exe",
@@ -12,333 +258,49 @@
     },
     {
       "file": "LivingTown.pck",
-      "bytes": 93993924,
-      "sha256": "38c52c3383499f4d318caeac56ed2a629f109c15b6ed6e190e1bc20f11685d7e"
+      "bytes": 3902259389,
+      "sha256": "923f1cc915ec706affe279a2ebd0d9ec682a3338cd55fe65fe789cb56afc1bfe"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\windows_simcache_boot_v16_003\\windows_runtime_native.png",
+      "height": 768,
+      "sha256": "bafbd7b0f66ea843e9b1bcb00197a62b2f2a75c8ce044adcf14f9a5e395efc94",
+      "width": 1280
     }
   ],
   "boot": {
-    "schema": "living_town.native_boot.v1",
-    "status": "CAPTURED_PENDING_REVIEW",
-    "started_utc": "2026-10-12T13:31:13.4078594Z",
-    "finished_utc": "2026-10-12T13:31:21.5744714Z",
-    "exit_code": 0,
     "entry_scene": "Main",
     "normal_product_entry": true,
     "actual_gpu": true,
-    "executable": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\native_final\\LivingTown.exe",
-    "arguments": [
-      "--windowed",
-      "--resolution",
-      "1280x768",
-      "--single-threaded-scene",
-      "--max-fps",
-      "30",
-      "--log-file",
-      "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\native_final\\native_boot_engine.log",
-      "--",
-      "--town3d",
-      "--backend",
-      "logic",
-      "--agents",
-      "12",
-      "--life-as",
-      "aria",
-      "--shot",
-      "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\native_final\\06_windows_exported_game.png"
-    ],
-    "pid": 14740,
-    "timed_out": false,
-    "cleanup_verified": true,
-    "source_stable": true,
-    "payload_sha256_before": {
-      "LivingTown.exe": "911cb7f49225cf9ec87342f84b3e64bbd69e31d82fbd9660cb16e402bb5be891",
-      "LivingTown.pck": "38c52c3383499f4d318caeac56ed2a629f109c15b6ed6e190e1bc20f11685d7e"
-    },
-    "payload_sha256_after": {
-      "LivingTown.exe": "911cb7f49225cf9ec87342f84b3e64bbd69e31d82fbd9660cb16e402bb5be891",
-      "LivingTown.pck": "38c52c3383499f4d318caeac56ed2a629f109c15b6ed6e190e1bc20f11685d7e"
-    },
-    "logs": {
-      "stdout": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\native_final\\native_boot_stdout.log",
-      "stderr": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\native_final\\native_boot_stderr.log",
-      "engine": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\native_final\\native_boot_engine.log"
-    },
-    "log_evidence": {
-      "stdout": {
-        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\native_final\\native_boot_stdout.log",
-        "bytes": 214,
-        "sha256": "3dad0d76caa4ec9d9080fdaee6536e0b6970f8fafb05f1f3ab3af032c77cab7f"
-      },
-      "stderr": {
-        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\native_final\\native_boot_stderr.log",
-        "bytes": 0,
-        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-      },
-      "engine": {
-        "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\native_final\\native_boot_engine.log",
-        "bytes": 211,
-        "sha256": "7fc2eb3233c9c8141850ce68b91e99cac11f1139b0ba15864467376656c0f795"
-      }
-    },
-    "capture": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\native_final\\06_windows_exported_game.png",
-    "capture_header_verified": true,
-    "actual_image_opened": false,
-    "root_visual_review_pending": true,
-    "error": null,
-    "isolated_user_directory": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\native_final\\user",
-    "parent_appdata_restored": true,
-    "parent_localappdata_restored": true,
-    "export_receipt": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\native_final\\export_receipts\\20261012T133104426Z_753da8871d064672b7f4ebd8361734ea\\receipt.json",
-    "source_before": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\native_final\\source_before.json",
-    "source_after": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\native_final\\source_after.json"
+    "exit_code": 0,
+    "engine_frames_drawn": 6,
+    "engine_version": {
+      "build": "official",
+      "hash": "71f334935c000924d403448e698df4441130df18",
+      "hex": 263682,
+      "major": 4,
+      "minor": 6,
+      "patch": 2,
+      "status": "stable",
+      "string": "4.6.2-stable (official)",
+      "timestamp": 0
+    }
   },
-  "screenshots": [
-    {
-      "file": "docs/town_bridge/captures/06_windows_exported_game.png",
-      "bytes": 917933,
-      "sha256": "450473fb5a9ad5c108dba5d42a606c0d6ce5830a5eba8845d5b020c6720f9528",
-      "size": [
-        1280,
-        768
-      ],
-      "mean_rgb": [
-        46.166891479492186,
-        49.74173177083333,
-        41.880785115559895
-      ],
-      "stddev_rgb": [
-        35.76843382045295,
-        34.91471351805489,
-        25.758030931748728
-      ],
-      "review": "Opened the actual exported-game PNG. The cafe upper home is a readable cutaway with furnished and segmented rooms, Aria beside the bed and a visible E interaction prompt. Neighboring slate roofs, trees, flowers, and the normal needs HUD are visible. The clock is midnight; this is a bounded native GPU boot image review, not an interactive performance certification.",
-      "actual_image_opened": true
-    }
-  ],
-  "checks": [
-    {
-      "name": "release_export_exit_0",
-      "passed": true
-    },
-    {
-      "name": "normal_product_entry_exit_0",
-      "passed": true
-    },
-    {
-      "name": "real_gpu_framebuffer_1280x768",
-      "passed": true
-    },
-    {
-      "name": "source_profile_and_imported_model_loaded",
-      "passed": true
-    },
-    {
-      "name": "normal_entry_no_engine_or_script_errors",
-      "passed": true
-    },
-    {
-      "name": "exe_and_pck_sha256_bound",
-      "passed": true
-    },
-    {
-      "name": "source_interaction_evidence_distinguished_from_native_boot",
-      "passed": true
-    }
-  ],
-  "source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
-  "source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
-  "profile_sha256": "66c800130175677ec9c82ed44d7a1833dca634c602ffcc604e9aa258386d2c5e",
-  "projection_sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a",
-  "source_verification": "Actual PCK profile/projection/stage/spatial JSON SHA256 matches current source; imported scene bytes match current source import cache. Normal Main GPU entry separately reviewed. Raw GLB SHA verification belongs to source runtime, not a raw-file read inside PCK.",
+  "runtime_proof": {
+    "file": "F:\\Living Town\\2026-10-20_Refined_Town\\windows_simcache_boot_v16_003\\windows_runtime.json",
+    "sha256": "ee5dd45baad54867dc2588776246a05805cd88119457febe3a5d54504b3067d9"
+  },
   "source_runtime_evidence": {
-    "logical_checks": 36,
-    "visual_checks": 28,
-    "legacy_regressions": 35,
-    "logical_report_sha256": "200fae54768f27934698cfd01570b051516794cb99a7b21dac48d86e54c54aca",
-    "visual_report_sha256": "f5782bed4c1bdb82e4a17d9fd7095785dd6b6fa5089dd0624140fd6d39e87163",
-    "legacy_report_sha256": "c0d0830df1cc484c939b4ea8d2b1672142e59c4d815dc17fe212a2ad1bc1501d",
-    "actual_visual_review_sha256": "17ff6fbba71f860dc90797bd76b6e3b0db32336094aac6545a94dbc67b822386"
+    "logical_report_sha256": "62732d5a6d71615960271b5ac823977f7b01a62bf144e4c1d7d32863d436e87b",
+    "visual_report_sha256": "f1d9e3d026f7189da354504e3fbf6f535d14162846e7821df717dce8ae5c1240",
+    "logical_checks": 27,
+    "visual_checks": 64
   },
-  "export_evidence": {
-    "receipt": {
-      "file": "build/town_walkthrough/native_final/export_receipts/20261012T133104426Z_753da8871d064672b7f4ebd8361734ea/receipt.json",
-      "bytes": 3226,
-      "sha256": "821e2bbe305a9f8e772a9dee0a934f8755ca3320c26257e5b5856b39589fa8a4"
-    },
-    "actual_arguments": [
-      "--headless",
-      "--single-threaded-scene",
-      "--max-fps",
-      "30",
-      "--export-release",
-      "Windows Town3D",
-      "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\native_final\\LivingTown.exe"
-    ],
-    "logs": {
-      "stdout": {
-        "file": "build/town_walkthrough/native_final/export_receipts/20261012T133104426Z_753da8871d064672b7f4ebd8361734ea/stdout.log",
-        "bytes": 190909,
-        "sha256": "6387bb19b05869e12c32b7f00955e11a875db9d34dab2d10b24d33535fc0fbb8"
-      },
-      "stderr": {
-        "file": "build/town_walkthrough/native_final/export_receipts/20261012T133104426Z_753da8871d064672b7f4ebd8361734ea/stderr.log",
-        "bytes": 182,
-        "sha256": "cb6b99e1c299b04918d80f6c28890ab3298e07ead4f41f689546e0eeeef70c46"
-      },
-      "godot": {
-        "file": "build/town_walkthrough/native_final/export_receipts/20261012T133104426Z_753da8871d064672b7f4ebd8361734ea/godot.log",
-        "bytes": 151605,
-        "sha256": "86350a36cbe4933195c48f9500d1e8ef573c92513d4d656f0c80051918eee8fa"
-      }
-    },
-    "source_identity": "exact_commit",
-    "source_head": "72749f0cca8f2d0c8b246c2ec255cfa311a2239a",
-    "worktree_fingerprint": "9db7cddf39594086c6d940a9d93ffa3a8bb74ee52ef52a1850c67c0ee3f66575"
-  },
-  "native_boot_evidence": {
-    "result": {
-      "file": "build/town_walkthrough/native_final/native_boot_result.json",
-      "bytes": 3657,
-      "sha256": "a75c284a1c1119a54cb041db93689a329f43520ebe4f3dc3278a07f1ea7d71ec"
-    },
-    "logs": {
-      "stdout": {
-        "file": "build/town_walkthrough/native_final/native_boot_stdout.log",
-        "bytes": 214,
-        "sha256": "3dad0d76caa4ec9d9080fdaee6536e0b6970f8fafb05f1f3ab3af032c77cab7f"
-      },
-      "stderr": {
-        "file": "build/town_walkthrough/native_final/native_boot_stderr.log",
-        "bytes": 0,
-        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-      },
-      "engine": {
-        "file": "build/town_walkthrough/native_final/native_boot_engine.log",
-        "bytes": 211,
-        "sha256": "7fc2eb3233c9c8141850ce68b91e99cac11f1139b0ba15864467376656c0f795"
-      }
-    },
-    "root_review": {
-      "file": "build/town_walkthrough/native_final/native_root_review.json",
-      "bytes": 609,
-      "sha256": "08ca5cb05e6fe40f81c45709bfe34eed22939ed90d2b51ed9e234cf7c4bbce80"
-    }
-  },
-  "source_snapshots": {
-    "before": {
-      "file": "build/town_walkthrough/native_final/source_before.json",
-      "bytes": 3819,
-      "sha256": "4bf32bffe54da91ccee2114f17b2abe2a04b20d6fa9481dfd78cb595ae697705"
-    },
-    "after": {
-      "file": "build/town_walkthrough/native_final/source_after.json",
-      "bytes": 3819,
-      "sha256": "4bf32bffe54da91ccee2114f17b2abe2a04b20d6fa9481dfd78cb595ae697705"
-    }
-  },
-  "pck_payload_proof": {
-    "format_version": 3,
-    "resources": [
-      {
-        "resource": "res://assets/town3d/stage_manifest.json",
-        "bytes": 2830,
-        "sha256": "2787a4895e0f6b5889fdaeb7c83bcccc04ec035544898615c33b5ba1efad2225",
-        "matches_current_source": true
-      },
-      {
-        "resource": "res://data/town3d/agents.json",
-        "bytes": 6137,
-        "sha256": "59791794086aabf1972d710737378325e503a7cb8dba83fcbea52658521fb3f7",
-        "matches_current_source": true
-      },
-      {
-        "resource": "res://data/town3d/buildings.json",
-        "bytes": 145,
-        "sha256": "e6979fbec7bb7088a23b3452353739a4e72246933aeb00457fca33018f1731a2",
-        "matches_current_source": true
-      },
-      {
-        "resource": "res://data/town3d/elections.json",
-        "bytes": 2599,
-        "sha256": "8cd81159d25acdd2a92465cf0907f1b6581c329a7840a268e8f26885a8bcdef5",
-        "matches_current_source": true
-      },
-      {
-        "resource": "res://data/town3d/festivals.json",
-        "bytes": 2985,
-        "sha256": "c2d1439ab158c25ea79a9bc3adb36d95ddbfe9f72cf3eaa587d76a83c47b7a27",
-        "matches_current_source": true
-      },
-      {
-        "resource": "res://data/town3d/housing.json",
-        "bytes": 937,
-        "sha256": "3f8f34445e1d23c85d864e4359143a4557395319719391d3616c934b6c999969",
-        "matches_current_source": true
-      },
-      {
-        "resource": "res://data/town3d/interiors.json",
-        "bytes": 2062022,
-        "sha256": "f5c056363421846648fb77d01a2a893bebdda3f166ff58a3630865551c4b387e",
-        "matches_current_source": true
-      },
-      {
-        "resource": "res://data/town3d/jobs.json",
-        "bytes": 2548,
-        "sha256": "b7c313a69b99851e8aa711b5e54c2fb836edee198b731c6043560b3d42855d07",
-        "matches_current_source": true
-      },
-      {
-        "resource": "res://data/town3d/logistics.json",
-        "bytes": 14337,
-        "sha256": "c36417ed5bd02f240a51b011757c0369a563d1a7f95ecf157551cea04488db23",
-        "matches_current_source": true
-      },
-      {
-        "resource": "res://data/town3d/map.json",
-        "bytes": 983427,
-        "sha256": "330febe815bbe9d1324cbaa644e04b534973175e20ae7f72275ee1ed740fc5fb",
-        "matches_current_source": true
-      },
-      {
-        "resource": "res://data/town3d/production.json",
-        "bytes": 63723,
-        "sha256": "8311bd5eee192751be412a5d17d30ca896f918aa4402a9a714765e075fcf9cb2",
-        "matches_current_source": true
-      },
-      {
-        "resource": "res://data/town3d/profile.json",
-        "bytes": 4268,
-        "sha256": "66c800130175677ec9c82ed44d7a1833dca634c602ffcc604e9aa258386d2c5e",
-        "matches_current_source": true
-      },
-      {
-        "resource": "res://data/town3d/projection.json",
-        "bytes": 1133444,
-        "sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a",
-        "matches_current_source": true
-      },
-      {
-        "resource": "res://data/town3d/spaces.json",
-        "bytes": 59605,
-        "sha256": "192d1e9efca883ec9c7d2ed5b83fc78a1f5d255af2a0e64f0851001f10afdbd7",
-        "matches_current_source": true
-      }
-    ],
-    "imported_scene_resource": "res://.godot/imported/living_town_game.glb-72c5bafcaeceeff37c977952e553499b.scn",
-    "imported_scene_sha256": "a5b6ceb24464a2bb3a19e434e111e63236a7cbfac2d58152e747f27c4283c6a4",
-    "imported_scene_bytes": 64954332,
-    "matches_source_import_cache": true
-  },
-  "license_provenance_preserved": {
-    "file": "docs/town_bridge/licenses/PROVENANCE.json",
-    "bytes": 675,
-    "sha256": "2666c16296b1fc72da2909ef60bd6f5486f03bb909fa4d487c463587e0d71ee7",
-    "retrieved_utc": "2026-10-12T11:39:57.949317+00:00",
-    "modified_by_this_helper": false
-  },
+  "source_verification": "Exact executable/PCK rendered normal Main; complete interactions are independently proven by the bound actual Main/LifeMode walkthrough.",
   "limitations": [
-    "Native proof is normal product launch/render, not the full interaction harness.",
-    "No full-town frame-rate, VRAM, every-backend, or every-interior certification.",
-    "PCK compiled scene bytes are import-cache-bound; raw GLB verification is separate source evidence."
+    "The normal-entry binary smoke run is separate from the full source gameplay interaction recording.",
+    "The supplied process exit code must come from the coordinator's supervised actual executable launch."
   ]
 }

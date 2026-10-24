@@ -1,15 +1,15 @@
 extends Node
 ## A recording director around the actual Main, never a substitute simulation.
-## Use a real renderer with --fixed-fps 24 --write-movie <capture.ogv>.
+## Use a real renderer with --fixed-fps 18 --write-movie <capture.avi>.
 ## User args: --town3d --backend logic --agents 12 --no-player --seed 7
 ##            --walkthrough-dir <absolute> [--walkthrough-preview]
 ## Architectural inspection changes only Probe/visibility/UI presentation.
 const MainScene = preload("res://scenes/Main.tscn")
-const FPS: int = 24
-const FULL_SECONDS: int = 600
-const FULL_STARTS: Array[float] = [0, 45, 100, 155, 215, 270, 330, 390, 450, 505, 560, 600]
-const PREVIEW_STARTS: Array[float] = [0, 6, 13, 26, 43, 58, 66, 73, 80, 84, 88, 90]
-const CHAPTERS: Array[String] = ["Town and coast", "Choose an existing resident", "Stairs, walking and needs", "The actual cafe counter", "Street, thresholds and visibility", "Architectural inspection: rooms", "Architectural inspection: streets", "Architectural inspection: pond", "Resident agency and autonomous life", "Save, resume and restore", "Town, scope and next steps"]
+const FPS: int = 18
+const FULL_SECONDS: int = 840
+const FULL_STARTS: Array[float] = [0, 45, 100, 155, 215, 285, 355, 455, 555, 665, 735, 805, 840]
+const PREVIEW_STARTS: Array[float] = [0, 6, 13, 26, 43, 58, 66, 73, 78, 82, 85, 88, 90]
+const CHAPTERS: Array[String] = ["Town, woodland and coast", "Meet Aria in her upper home", "Rooms, stairs and needs", "The actual cafe and street", "Walk into the expanded town", "Use a new venue and its upper floor", "Walk to the reserve bathhouse", "Visit a detailed camping trailer", "Walk back from the reserve to town", "Inspection: forest, bridges and horticulture", "Save, resume and resident agency", "Complete town and scope"]
 
 var main: Node
 var view: Node
@@ -19,7 +19,7 @@ var probe: Node
 var preview: bool = false
 var output_dir: String = ""
 var frame_no: int = 0
-var total_frames: int = 14400
+var total_frames: int = 15120
 var tour_active: bool = false
 var finishing: bool = false
 var camera_override: bool = false
@@ -74,6 +74,14 @@ func ck(label: String, passed: bool, detail: Variant = null) -> void:
 	print(("PASS " if passed else "FAIL ") + "WALKTHROUGH " + label)
 
 
+func skipped_preview_check(label: String, reason: String) -> void:
+	# Kept separate from passing booleans: an omitted journey proves no action.
+	if not report.has("skipped_checks"):
+		report["skipped_checks"] = []
+	report["skipped_checks"].append({"name": label, "status": "SKIP", "reason": reason, "tour_frame": frame_no, "tour_seconds": seconds()})
+	print("SKIP WALKTHROUGH " + label + ": " + reason)
+
+
 func snapshot(label: String) -> Dictionary:
 	var resident: Dictionary = Sim.get_agent("aria")
 	var state: Dictionary = {"label": label, "tour_frame": frame_no, "tour_seconds": seconds(), "tick": Sim.tick_no, "day": Sim.day,
@@ -88,10 +96,16 @@ func snapshot(label: String) -> Dictionary:
 
 func start_chapter(index: int, architectural: bool = false) -> void:
 	chapter_index = index
-	var record: Dictionary = {"index": index + 1, "title": CHAPTERS[index], "planned_start_seconds": chapter_time(index), "actual_start_seconds": seconds(), "tour_frame": frame_no, "architectural_inspection": architectural}
+	var title: String = CHAPTERS[index]
+	var omitted_preview_journey: bool = preview and index >= 4 and index <= 8
+	if omitted_preview_journey:
+		title = ["Expanded-town walk omitted", "New venue/upper floor omitted", "Reserve bathhouse walk/use omitted", "Trailer visit/use omitted", "Reserve-to-core return omitted"][index - 4]
+	var record: Dictionary = {"index": index + 1, "title": title, "planned_start_seconds": chapter_time(index), "actual_start_seconds": seconds(), "tour_frame": frame_no, "architectural_inspection": architectural}
+	if omitted_preview_journey:
+		record["preview_journey_skipped"] = true
 	report["chapters"].append(record)
-	chapter_card.text = ("CAMERA INSPECTION  |  " if architectural else "ACTUAL GAMEPLAY  |  ") + CHAPTERS[index]
-	snapshot(CHAPTERS[index])
+	chapter_card.text = ("PREVIEW: JOURNEY SKIPPED  |  " if omitted_preview_journey else ("CAMERA INSPECTION  |  " if architectural else "ACTUAL GAMEPLAY  |  ")) + title
+	snapshot(title)
 	print("WALKTHROUGH CHAPTER ", index + 1, " frame=", frame_no, " tick=", Sim.tick_no)
 
 
@@ -209,6 +223,25 @@ func use_fixture(requested: String, preferred_action: String, deadline: float, h
 	if not same_mesh:
 		await close_menu()
 		return false
+	if requested in ["cafe1f_table", "cafe1f_counter"]:
+		# Exercise the visible toolbar through the GUI while a genuine fixture
+		# menu owns input. A disabled clock must neither resume nor dismiss it.
+		var status: RichTextLabel = main.get("_status") as RichTextLabel
+		ck("real_fixture_menu_status_reports_pause", status != null and status.text.contains("已暂停"), status.text if status != null else "missing status label")
+		var town_hud: Node = main.get("_town_hud")
+		var clock_buttons: Array = town_hud.get("buttons") if town_hud != null else []
+		var guarded: Button = clock_buttons[3] as Button if clock_buttons.size() == 4 else null
+		var available: bool = guarded != null and guarded.is_visible_in_tree() and guarded.disabled
+		ck("real_fixture_menu_clock_disabled", available)
+		if not available:
+			return false
+		var menu_tick: int = Sim.tick_no
+		var menu_speed: float = Sim.speed
+		await click(guarded.get_global_rect().get_center())
+		var menu_kept: bool = bool(life.get("_modal_open")) and (life.get("_modal_entry") as Dictionary).get("id") == selected_id
+		ck("disabled_clock_click_preserves_real_menu_and_pause", menu_kept and not Sim.running and Sim.tick_no == menu_tick and is_equal_approx(Sim.speed, menu_speed))
+		if not menu_kept:
+			return false
 	var actions: Array = selected.get("actions", [])
 	var choice: int = -1
 	for index: int in range(mini(9, actions.size())):
@@ -311,6 +344,9 @@ func inspection(on: bool) -> void:
 	# These are presentation nodes/controls only; no actor/clock/address mutation.
 	life.set_process(not on)
 	inspection_active = on
+	# A mid-chapter study must carry the same explicit label as a whole chapter.
+	if chapter_card != null and chapter_index >= 0 and not (preview and chapter_index >= 4 and chapter_index <= 8):
+		chapter_card.text = ("CAMERA INSPECTION  |  " if on else "ACTUAL GAMEPLAY  |  ") + CHAPTERS[chapter_index]
 	var hud: Control = life.get("_hud") as Control
 	if hud != null:
 		hud.visible = not on
@@ -325,6 +361,36 @@ func inspection(on: bool) -> void:
 		toast.hide()
 	if not on:
 		camera_override = false
+		# The compact activity feed is part of the ordinary town HUD. Architectural
+		# inspection hides it; restore it with the resident controls for gameplay.
+		if main.get("_town_hud") != null:
+			for property: String in ["_log_card", "_logbox"]:
+				var item: Control = main.get(property) as Control
+				if item != null:
+					item.show()
+
+
+func demonstrate_compact_hud(deadline: float) -> void:
+	var town_hud: Node = main.get("_town_hud")
+	var history: Button = town_hud.get("activity") as Button if town_hud != null else null
+	var wishes: Button = life.get("_town_wants_toggle") as Button
+	var available: bool = history != null and wishes != null and history.is_visible_in_tree() and wishes.is_visible_in_tree()
+	ck("compact_hud_real_buttons_available", available)
+	if not available:
+		return
+	var original_tick: int = Sim.tick_no
+	if bool(town_hud.get("expanded")):
+		await click(history.get_global_rect().get_center())
+	if bool(life.get("_town_wants_expanded")):
+		await click(wishes.get_global_rect().get_center())
+	await click(history.get_global_rect().get_center())
+	await click(wishes.get_global_rect().get_center())
+	ck("actual_hud_history_and_wishes_expand", bool(town_hud.get("expanded")) and bool(life.get("_town_wants_expanded")))
+	await capture("02b_expandable_activity_and_wishes")
+	await wait_to(deadline)
+	await click(history.get_global_rect().get_center())
+	await click(wishes.get_global_rect().get_center())
+	ck("actual_hud_collapses_without_advancing_paused_clock", not bool(town_hud.get("expanded")) and not bool(life.get("_town_wants_expanded")) and Sim.tick_no == original_tick)
 
 
 func hide_observer_chrome() -> void:
@@ -414,7 +480,7 @@ func _ready() -> void:
 		return
 	model = view.get("town_model_3d")
 	var info: Dictionary = view.get_bridge_info()
-	ck("actual_Main_verified_town_loaded", bool(info.get("model", {}).get("loaded", false)) and int(info.get("model", {}).get("building_count", 0)) == 49, info)
+	ck("actual_Main_verified_town_loaded", bool(info.get("model", {}).get("loaded", false)) and int(info.get("model", {}).get("building_count", 0)) == (view.get("projection_3d").get("building_spaces", {}) as Dictionary).size() and int(info.get("model", {}).get("building_count", 0)) >= 151, info)
 	ck("real_framebuffer_driver", DisplayServer.get_name() != "headless", DisplayServer.get_name())
 	if model == null or checks_failed > 0:
 		finish()
@@ -459,6 +525,9 @@ func _ready() -> void:
 	chapter_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(chapter_card)
 	report["preview"] = preview
+	report["acceptance_scope"] = "PREVIEW_FRAMING_AND_COMPRESSED_CORE_ACTIONS_ONLY" if preview else "FULL_ROUTE_ACTUAL_ACTION_CHECKS_REQUIRED"
+	if preview:
+		report["preview_omissions"] = ["compact HUD expanded-panel input demonstration", "full cafe table meal", "core-to-expanded-town walk", "new venue use and upper-floor traversal", "reserve bathhouse walk and hygiene use", "detailed trailer entry and fixture use", "walked return from reserve to core"]
 	report["fps"] = FPS
 	report["expected_tour_frames"] = total_frames
 	report["expected_tour_seconds"] = float(total_frames) / FPS
@@ -467,6 +536,9 @@ func _ready() -> void:
 	report["source_blend_sha256"] = info["model"].get("source_blend_sha256")
 	report["source_glb_sha256"] = info["model"].get("source_glb_sha256")
 	report["projection_sha256"] = FileAccess.get_sha256("res://data/town3d/projection.json")
+	report["profile_sha256"] = FileAccess.get_sha256("res://data/town3d/profile.json")
+	report["stage_manifest_sha256"] = FileAccess.get_sha256("res://assets/town3d/stage_manifest.json")
+	report["characters_manifest_sha256"] = FileAccess.get_sha256("res://data/town3d/characters.json")
 	report["harness_sha256"] = FileAccess.get_sha256("res://scripts/town_walkthrough.gd")
 	report["route_plan_sha256"] = FileAccess.get_sha256(ProjectSettings.globalize_path("res://").path_join("../docs/town_walkthrough/route_plan.json").simplify_path())
 	report["input_path"] = "Viewport mouse/key events -> existing Main/LifeMode -> authoritative Sim transactions; one public LifeMode.start_life selection. Camera inspection changes presentation only."
@@ -474,153 +546,268 @@ func _ready() -> void:
 	await run_route()
 
 
+func _entrance_for(space_id: String) -> String:
+	for portal: Dictionary in Sim._portals:
+		if str(portal.get("from", {}).get("space", "")) == "town" and str(portal.get("to", {}).get("space", "")) == space_id:
+			return str(portal["id"])
+	return ""
+
+
+func _upgraded_venue(prefix: String, kinds: Array[String]) -> Dictionary:
+	var projection: Dictionary = view.get("projection_3d")
+	var spaces: Dictionary = projection.get("building_spaces", {})
+	var bindings: Dictionary = projection.get("interaction_bindings", {})
+	var choices: Array[Dictionary] = []
+	var actor: Dictionary = Sim.get_agent("aria")
+	var here: Vector3 = view.canonical_to_world(Vector2(actor["pos"]) * 48 + Vector2(24,24), str(actor.get("space", "town")), str(actor.get("floor", "outdoor")))
+	for bid: String in spaces:
+		if not bid.begins_with(prefix):
+			continue
+		var space_id: String = str(spaces[bid])
+		for object_id: String in bindings:
+			var binding: Dictionary = bindings[object_id]
+			if str(binding.get("plane", "")) != space_id + "/1f" or str(binding.get("model_asset_kind", "")) not in kinds or not Sim.world.get("objects", {}).has(object_id):
+				continue
+			var world: Vector3 = view.canonical_to_world(Vector2(float(binding["cell"][0]), float(binding["cell"][1])) * 48 + Vector2(24,24), space_id, "1f")
+			choices.append({"space": space_id, "building_id": bid, "object_id": object_id, "portal_id": _entrance_for(space_id), "distance": here.distance_to(world)})
+	choices.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["distance"]) < float(b["distance"]))
+	return choices[0] if not choices.is_empty() else {}
+
+
+func _travel_portal(ident: String, deadline: float) -> bool:
+	# Pan to a distant legal destination, then issue the SAME screen click as a
+	# player. LifeMode finds the route and moves the resident one real step at a
+	# time. The director never writes an agent address or calls a teleport.
+	var actor: Dictionary = Sim.get_agent("aria")
+	var endpoint: Dictionary = {}
+	for portal: Dictionary in Sim._portals:
+		if str(portal.get("id", "")) != ident:
+			continue
+		for side: String in ["from", "to"]:
+			var candidate: Dictionary = portal[side]
+			if candidate.get("space") == actor.get("space") and candidate.get("floor") == actor.get("floor"):
+				endpoint = candidate
+	if endpoint.is_empty():
+		return false
+	var center: Vector2 = Vector2(float(endpoint["pos"][0]), float(endpoint["pos"][1])) * 48 + Vector2(24,24)
+	set_camera(str(actor.get("space", "town")), str(actor.get("floor", "outdoor")), center, 28)
+	await wait_frames(3)
+	var previous: String = str(actor.get("space")) + "/" + str(actor.get("floor"))
+	await click(view.canonical_to_screen(center))
+	if bool(life.get("_modal_open")):
+		var selected: Dictionary = life.get("_modal_entry")
+		if str(selected.get("id", "")) == ident:
+			await key(KEY_1)
+		else:
+			await close_menu()
+	# Immediately return to the resident-follow camera, so the actual journey is
+	# visible throughout rather than holding a distant destination shot.
+	camera_override = false
+	await wait_walk(deadline)
+	await wait_frames(8)
+	actor = Sim.get_agent("aria")
+	if str(actor.get("space")) + "/" + str(actor.get("floor")) != previous:
+		return true
+	return await click_portal(ident, deadline)
+
+
+func inspect_room_until(space_id: String, floor_id: String, from: Vector2, to: Vector2, size_from: float, size_to: float, end: float, tag: String) -> void:
+	await close_menu()
+	if Sim.running:
+		await key(KEY_0)
+	inspection(true)
+	var before: Dictionary = snapshot(tag + "_inspection_before")
+	await glide(space_id, floor_id, from, to, size_from, size_to, end)
+	# Return to resident-follow while the camera cut still bears its inspection
+	# label and the public clock remains paused; only then restore gameplay UI.
+	camera_override = false
+	life.set_process(true)
+	await wait_frames(12)
+	var after: Dictionary = snapshot(tag + "_inspection_after")
+	var unchanged: bool = not Sim.running and not bool(before["world_running"])
+	for field: String in ["tick", "day", "controlled_id", "resident_plane", "resident_position", "needs", "coin", "option"]:
+		unchanged = unchanged and before[field] == after[field]
+	ck(tag + "_labelled_inspection_preserves_paused_resident_and_clock", unchanged and chapter_card.text.begins_with("CAMERA INSPECTION"), {"before":before,"after":after,"label":chapter_card.text})
+	inspection(false)
+	await key(KEY_1)
+
+
 func run_route() -> void:
 	start_chapter(0, true)
-	set_camera("town", "outdoor", town_point(1, 2), 148)
-	await glide("town", "outdoor", town_point(1, 2), town_point(1, 10), 148, 136, at(36))
-	await capture("01_town_overview")
+	set_camera("town", "outdoor", town_point(-220, 70), 670)
+	await glide("town", "outdoor", town_point(-220, 70), town_point(-65, 25), 670, 295, at(36))
+	await capture("01_complete_town_and_woodland")
+	var bridge: Dictionary = view.get_bridge_info()
+	ck("complete_town_chunks_and_all_buildings_in_actual_Main", int(bridge.get("model", {}).get("building_count", 0)) >= 151 and bool(bridge.get("model", {}).get("chunked_whole_town", false)), bridge)
+	ck("refined_mesh_residents_replace_pixel_billboards", int(bridge.get("mesh_actor_count", 0)) == int(bridge.get("actor_count", 0)) and int(bridge.get("mesh_actor_count", 0)) >= 12, bridge.get("character_visuals", []))
 	await wait_to(chapter_time(1))
 	start_chapter(1)
 	inspection(false)
-	camera_override = false
 	var selection: Control = life.get("_sel") as Control
 	if selection != null:
 		selection.show()
 	await wait_to(at(50))
-	life.start_life("aria") # Same public entry invoked by the resident selection button.
+	life.start_life("aria")
 	await wait_frames(8)
 	ck("existing_Aria_selected_at_real_upper_home", Sim.controlled_id == "aria" and Sim.get_agent("aria").get("space") == "cafe" and Sim.get_agent("aria").get("floor") == "2f")
 	await key(KEY_0)
 	var upper: Vector2 = room_center("cafe", "2f")
-	await glide("cafe", "2f", upper + Vector2(-24, 12), upper + Vector2(24, -12), 14, 12, at(92))
-	await capture("02_owner_upper_home")
+	# The measured 02b voice describes opening the panels at 81.25–85.96s.
+	# Finish the camera study first so the real GUI clicks accompany those words.
+	await glide("cafe", "2f", upper + Vector2(-24,12), upper + Vector2(24,-12), 14, 12, at(92) if preview else at(80.5))
+	await capture("02_Aria_refined_character_upper_home")
+	if not preview:
+		await demonstrate_compact_hud(at(87.5))
 	await wait_to(chapter_time(2))
 	start_chapter(2)
 	camera_override = false
 	await key(KEY_1)
-	await wait_frames(8)
 	var descended: bool = await click_portal("p_cafe_stairs", at(126) if not preview else at(151))
 	ck("actual_input_stair_traversal", descended and Sim.get_agent("aria").get("floor") == "1f")
 	await capture("03_actual_stair_arrival")
 	if descended and not preview:
-		await use_fixture("cafe1f_table", "吃饭", at(151), 4)
-		await key(KEY_0)
+		var cafe_center: Vector2 = room_center("cafe", "1f")
+		await inspect_room_until("cafe", "1f", cafe_center + Vector2(-72,0), cafe_center + Vector2(72,0), 18, 14, at(128), "03_cafe_ground_floor")
+		await use_fixture("cafe1f_table", "吃饭", at(148), 4)
 	await close_menu()
 	await wait_to(chapter_time(3))
 	start_chapter(3)
-	await key(KEY_1)
+	# The measured preview also needs the walked approach before its 24-tick use.
+	# Use the existing public 8x shortcut inside this compressed chapter.
+	await key(KEY_4 if preview else KEY_1)
+	if preview:
+		ck("preview_public_eight_times_clock", Sim.running and is_equal_approx(Sim.speed, 8.0))
 	if descended:
-		await use_fixture("cafe1f_counter", "", at(210), 0.5 if preview else 8.0)
+		await use_fixture("cafe1f_counter", "", at(189), 1.0 if preview else 2.0)
 	await close_menu()
-	await key(KEY_0)
-	await capture("04_counter_action_complete")
+	if preview:
+		await key(KEY_1)
+	var exited: bool = await click_portal("p_cafe_door", at(211))
+	ck("actual_input_exterior_door_traversal", exited and Sim.get_agent("aria").get("space") == "town")
+	await capture("04_cafe_action_and_street_threshold")
 	await wait_to(chapter_time(4))
 	start_chapter(4)
-	await key(KEY_1)
-	var exited: bool = await click_portal("p_cafe_door", at(247))
-	ck("actual_input_exterior_door_traversal", exited and Sim.get_agent("aria").get("space") == "town")
-	await wait_frames(8)
-	await capture("05_exterior_threshold_visibility")
-	report["exterior_controlled_occlusion"] = view.get_bridge_info().get("controlled_occlusion", {})
-	if exited and not preview:
-		# Pick a real reachable dry street cell through the same input path.
-		var resident: Dictionary = Sim.get_agent("aria")
-		var origin: Vector2i = resident["pos"]
-		var chosen: Vector2i = origin
-		for offset: Vector2i in [Vector2i(-6, 0), Vector2i(-4, 2), Vector2i(0, 5)]:
-			var candidate: Vector2i = origin + offset
-			if not Sim._astar_path(Sim._grid_for("town", "outdoor"), origin, candidate).is_empty():
-				chosen = candidate
-				break
-		await click(view.canonical_to_screen(Vector2(chosen) * 48 + Vector2(24, 24)))
-		await close_menu()
-		await wait_walk(at(267))
-		ck("actual_screen_input_street_walk", chosen != origin and Sim.get_agent("aria")["pos"] == chosen, {"start": str(origin), "requested": str(chosen), "end": str(Sim.get_agent("aria")["pos"])})
-	await close_menu()
-	await key(KEY_0)
+	var venue: Dictionary = _upgraded_venue("Expansion_", ["cafe_table_set", "retail_counter", "dining_table"])
+	ck("new_expansion_has_actual_reachable_activity_binding", not venue.is_empty(), venue)
+	var visited: bool = false
+	if exited and not venue.is_empty() and not preview:
+		visited = await _travel_portal(str(venue["portal_id"]), at(279))
+	if preview:
+		skipped_preview_check("actual_screen_input_walks_from_core_to_new_expansion", "90-second preview omits the actual expanded-town journey; current resident remains at the core street.")
+	else:
+		ck("actual_screen_input_walks_from_core_to_new_expansion", (visited and str(Sim.get_agent("aria").get("space")) == str(venue.get("space", ""))), snapshot("expanded_venue_arrival"))
+	await capture("05_preview_core_street_expansion_walk_skipped" if preview else "05_actual_expansion_venue_arrival")
 	await wait_to(chapter_time(5))
-	start_chapter(5, true)
-	inspection(true)
-	var library: Vector2 = room_center("library", "1f")
-	await glide("library", "1f", library + Vector2(-20, 0), library + Vector2(20, 0), 17, 15, at(286))
-	await capture("06_inspection_library")
-	var home: Vector2 = room_center("home", "1f")
-	await glide("home", "1f", home + Vector2(-16, 0), home + Vector2(16, 0), 13, 11, at(307))
-	await capture("07_inspection_home")
-	var hotel: Vector2 = room_center("hotel", "2f")
-	await glide("hotel", "2f", hotel + Vector2(-18, 0), hotel + Vector2(18, 0), 18, 16, at(327))
-	await capture("08_inspection_hotel")
+	start_chapter(5)
+	if visited and not preview:
+		await use_fixture(str(venue["object_id"]), "", at(308), 3)
+		var upstairs: String = ""
+		for portal: Dictionary in Sim._portals:
+			if portal["from"].get("space") == venue["space"] and portal["to"].get("space") == venue["space"] and portal["from"].get("floor") == "1f":
+				upstairs = str(portal["id"])
+				break
+		if not upstairs.is_empty():
+			var ascended: bool = await click_portal(upstairs, at(325))
+			ck("actual_new_building_upper_floor_traversal", ascended, snapshot("new_venue_upper_floor"))
+			await capture("06_actual_expansion_upper_interior")
+			if ascended:
+				var venue_floor: String = str(Sim.get_agent("aria").get("floor", "2f"))
+				var venue_upper: Vector2 = room_center(str(venue["space"]), venue_floor)
+				await inspect_room_until(str(venue["space"]), venue_floor, venue_upper + Vector2(0,-96), venue_upper + Vector2(0,96), 16, 13, at(342), "06_expansion_upper_floor")
+			await click_portal(upstairs, at(351))
+		await click_portal(str(venue["portal_id"]), at(354))
 	await wait_to(chapter_time(6))
-	start_chapter(6, true)
-	await glide("town", "outdoor", town_point(-44, 18), town_point(-22, 18), 42, 36, at(350))
-	await capture("09_irregular_inland_streets")
-	await glide("town", "outdoor", town_point(-22, 18), town_point(8, 15), 36, 38, at(366))
-	await glide("town", "outdoor", town_point(8, 15), town_point(41, 43), 38, 35, at(386))
-	await capture("10_working_harbor")
+	start_chapter(6)
+	var bath: Dictionary = _upgraded_venue("Reserve_Bathhouse", ["shower", "basin", "toilet"])
+	var bathed: bool = false
+	if not bath.is_empty() and not preview:
+		var arrived: bool = await _travel_portal(str(bath["portal_id"]), at(415))
+		ck("actual_reserve_path_and_bathhouse_entrance", arrived and str(Sim.get_agent("aria").get("space")) == str(bath["space"]), snapshot("reserve_bathhouse_arrival"))
+		if arrived:
+			var bath_center: Vector2 = room_center(str(bath["space"]), "1f")
+			await inspect_room_until(str(bath["space"]), "1f", bath_center + Vector2(-96,0), bath_center + Vector2(96,0), 18, 14, at(405), "07_bathhouse_before_use")
+			bathed = await use_fixture(str(bath["object_id"]), "", at(443), 1)
+			await capture("07_actual_reserve_bathhouse_action")
+			await inspect_room_until(str(bath["space"]), "1f", bath_center + Vector2(96,0), bath_center + Vector2(-96,0), 14, 18, at(443), "07_bathhouse_after_use")
+			await click_portal(str(bath["portal_id"]), at(453))
+	if preview:
+		skipped_preview_check("reserve_hygiene_uses_existing_Sim_verbs", "90-second preview omits reserve travel and hygiene fixture use.")
+	else:
+		ck("reserve_hygiene_uses_existing_Sim_verbs", bathed)
 	await wait_to(chapter_time(7))
-	start_chapter(7, true)
-	await glide("town", "outdoor", town_point(30, -34), town_point(26, -42), 32, 23, at(419))
-	await capture("11_pond_and_planting")
-	await glide("town", "outdoor", town_point(26, -42), town_point(15, -31), 23, 35, at(446))
+	start_chapter(7)
+	var trailer: Dictionary = _upgraded_venue("Reserve_Trailer_", ["basin", "toilet"])
+	var trailer_visit: bool = false
+	if not trailer.is_empty() and not preview:
+		trailer_visit = await _travel_portal(str(trailer["portal_id"]), at(495))
+		ck("actual_path_and_detailed_trailer_entry", trailer_visit, snapshot("trailer_arrival"))
+		if trailer_visit:
+			var trailer_center: Vector2 = room_center(str(trailer["space"]), "1f")
+			await inspect_room_until(str(trailer["space"]), "1f", trailer_center + Vector2(0,-144), trailer_center + Vector2(0,144), 11.5, 9.5, at(506), "08_trailer_before_use")
+			await use_fixture(str(trailer["object_id"]), "", at(540), 2)
+			await capture("08_actual_trailer_interior_and_use")
+			await inspect_room_until(str(trailer["space"]), "1f", trailer_center + Vector2(0,144), trailer_center + Vector2(0,-144), 9.5, 11.5, at(540), "08_trailer_after_use")
+			await click_portal(str(trailer["portal_id"]), at(553))
 	await wait_to(chapter_time(8))
 	start_chapter(8)
-	inspection(false)
-	await wait_frames(8)
-	await key(KEY_1)
-	if not preview:
-		await social_attempt(at(473))
-	await close_menu()
-	if not bool(life.get("free_will")):
-		await key(KEY_F)
-	var autonomy_start: Dictionary = snapshot("autonomy_start")
-	await wait_to(at(500))
-	var autonomy_end: Dictionary = snapshot("autonomy_end")
-	ck("existing_free_will_runs_live_core_clock", bool(life.get("free_will")) and int(autonomy_end["tick"]) > int(autonomy_start["tick"]), {"before": autonomy_start, "after": autonomy_end})
-	await capture("12_autonomous_resident")
+	var returned: bool = false
+	if trailer_visit and not preview:
+		returned = await _travel_portal("p_cafe_door", at(640))
+		ck("actual_walk_returns_from_reserve_across_expansion_to_core", returned and Sim.get_agent("aria").get("space") == "cafe", snapshot("core_return_arrival"))
+		await capture("09_actual_return_from_reserve_to_core")
+		if returned:
+			await click_portal("p_cafe_door", at(660))
+	if preview:
+		skipped_preview_check("complete_outward_and_return_walk_is_actual_gameplay", "90-second preview omits the outward and return journeys; expanded_gameplay_scope remains false.")
+	else:
+		ck("complete_outward_and_return_walk_is_actual_gameplay", returned)
 	await wait_to(chapter_time(9))
-	start_chapter(9)
-	if bool(life.get("free_will")):
-		await key(KEY_F)
+	start_chapter(9, true)
+	await key(KEY_0)
+	inspection(true)
+	await glide("town", "outdoor", town_point(-245,45), town_point(-275,65), 78, 56, at(687))
+	await capture("10_inspection_ravine_bridge_forest")
+	await glide("town", "outdoor", town_point(-345,140), town_point(-380,150), 85, 65, at(709))
+	await capture("11_inspection_stone_stair_topography")
+	await glide("town", "outdoor", town_point(26,-42), town_point(15,-31), 24, 37, at(730))
+	await capture("12_inspection_pond_horticulture")
+	await wait_to(chapter_time(10))
+	start_chapter(10)
+	inspection(false)
 	await close_menu()
 	await key(KEY_0)
 	var saved: Dictionary = snapshot("before_F5")
 	await key(KEY_F5)
 	var save_path: String = str(main.call("_quicksave_path"))
-	ck("actual_Main_F5_writes_profile_save", FileAccess.file_exists(save_path), {"file": save_path, "sha256": FileAccess.get_sha256(save_path)})
-	await wait_to(at(520))
+	ck("actual_Main_F5_writes_upgraded_profile_save", FileAccess.file_exists(save_path), {"file":save_path,"sha256":FileAccess.get_sha256(save_path)})
 	await key(KEY_1)
-	await wait_to(at(532))
+	await wait_to(at(753))
 	await key(KEY_0)
-	var reset_start: int = reset_events.size()
+	var resets: int = reset_events.size()
 	await key(KEY_F8)
 	await wait_frames(8)
-	var restored: Dictionary = reset_events[-1] if reset_events.size() > reset_start else {}
-	ck("actual_Main_F8_restores_saved_profile_and_resident", not restored.is_empty() and restored.get("tick") == saved["tick"] and str(restored.get("pos")) == saved["resident_position"] and (restored.get("profile", {}) as Dictionary).get("id") == "town3d", {"saved": saved, "world_reset": restored})
+	var restored: Dictionary = reset_events[-1] if reset_events.size() > resets else {}
+	ck("actual_Main_F8_restores_complete_town_and_resident", not restored.is_empty() and restored.get("tick") == saved["tick"] and str(restored.get("pos")) == saved["resident_position"], {"saved":saved,"restored":restored})
 	await key(KEY_1)
-	await capture("13_save_restored_gameplay")
-	await wait_to(at(557))
+	if not bool(life.get("free_will")):
+		await key(KEY_F)
+	var before: Dictionary = snapshot("autonomy_start")
+	await wait_to(at(800))
+	var after: Dictionary = snapshot("autonomy_end")
+	ck("existing_free_will_advances_live_core", bool(life.get("free_will")) and int(after["tick"]) > int(before["tick"]), {"before":before,"after":after})
+	await capture("13_restored_actual_resident_life")
+	await wait_to(chapter_time(11))
+	start_chapter(11, true)
+	if bool(life.get("free_will")):
+		await key(KEY_F)
 	await key(KEY_0)
-	await wait_to(chapter_time(10))
-	start_chapter(10, true)
 	inspection(true)
-	set_camera("town", "outdoor", town_point(7, -2), 45)
-	if not preview:
-		# Show the real following morning after the social/save chapter, using
-		# normal speed controls. The camera never changes canonical actor state.
-		var morning_tick: int = int(Sim.tick_no / Sim.TICKS_PER_DAY) * Sim.TICKS_PER_DAY + 90
-		if morning_tick <= Sim.tick_no:
-			morning_tick += Sim.TICKS_PER_DAY
-		await key(KEY_4)
-		while Sim.tick_no < morning_tick and seconds() < at(578):
-			await wait_frames(1)
-		await key(KEY_0)
-		report["closing_real_clock_wait"] = {"target_tick": morning_tick, "actual_tick": Sim.tick_no, "public_speed_keys": [4, 0]}
-		ck("closing_morning_reached_through_actual_clock_wait", Sim.tick_no >= morning_tick, report["closing_real_clock_wait"])
-	await glide("town", "outdoor", town_point(7, -2), town_point(1, 4), 45, 148, at(590))
-	await capture("14_final_whole_town")
-	report["director_mutation_policy"] = {"agent_nav_room_and_Sim_assignments": false, "input_commands": report["input_events"].size(), "social_events_observed": social_events.size(), "fixture_completions_observed": action_events.size(), "inspection_changes_actor_address": false}
+	await glide("town", "outdoor", town_point(-100,-65), town_point(-220,70), 120, 670, at(835))
+	await capture("14_complete_upgraded_playable_town")
+	report["expanded_gameplay_scope"] = {"core_stairs":descended,"core_to_expansion_walk":visited,"reserve_bath_action":bathed,"detailed_trailer_visit":trailer_visit,"walked_return_to_core":returned,"inspection_does_not_relocate_actors":true}
+	report["director_mutation_policy"] = {"agent_nav_room_and_Sim_assignments":false,"input_commands":report["input_events"].size(),"fixture_completions_observed":action_events.size(),"inspection_changes_actor_address":false}
 	report["route_complete"] = true
-	await wait_to(float(total_frames) / FPS)
+	await wait_to(float(total_frames)/FPS)
 	finish()
 
 

@@ -32,6 +32,9 @@ EXPECTED_SHA256 = "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c
 RELEASE_URL = f"https://github.com/{REPOSITORY}/releases/download/{RELEASE_TAG}/{ASSET_NAME}"
 CHUNK_BYTES = 1024 * 1024
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "tools"))
+from town_runtime_assets import (is_v2, read_release, release_document, runtime_records,
+                                verify_runtime, safe_relative, RELEASE)
 MANIFEST_PATH = ROOT / "game" / "assets" / "town3d" / "stage_manifest.json"
 
 
@@ -226,13 +229,102 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--url", default=RELEASE_URL, help="HTTP(S) source override, e.g. a local test server. Never changes expected size/hash.")
     parser.add_argument("--replace-mismatched", action="store_true", help="Explicitly replace an existing incorrect asset after a verified download.")
     parser.add_argument("--no-gh-fallback", action="store_true", help="Disable the optional GitHub CLI fallback. URL overrides never invoke it.")
+    parser.add_argument("--root", type=Path, default=ROOT, help="Portable source-package root for the upgraded chunk/character set.")
+    parser.add_argument("--local", action="store_true", help="Verify matching installed assets without any network bootstrap.")
+    parser.add_argument("--local-source", type=Path, help="Install verified missing assets from another complete portable source root or flat release-asset folder.")
+    parser.add_argument("--release-manifest", type=Path, help="New v2 release config; never modifies the frozen v1 release constants.")
+    parser.add_argument("--write-release-manifest", type=Path, help="Snapshot the complete staged v2 runtime into this new release config, without downloading.")
+    parser.add_argument("--release-base-url", help="Published HTTP(S) release base; omit until publication to keep URLs explicitly pending.")
+    parser.add_argument("--prepare-release-assets", type=Path, help="With --write-release-manifest, copy verified bytes to unique release upload filenames in this directory.")
     args = parser.parse_args(argv)
+    if args.prepare_release_assets and not args.write_release_manifest:
+        parser.error("--prepare-release-assets requires --write-release-manifest")
     try:
+        root=args.root.resolve()
+        if is_v2(root):
+            if args.write_release_manifest:
+                if args.release_base_url:validate_url(args.release_base_url)
+                data=release_document(root,args.release_base_url)
+                args.write_release_manifest.parent.mkdir(parents=True,exist_ok=True)
+                temporary=args.write_release_manifest.with_suffix('.json.staging')
+                temporary.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+                os.replace(temporary,args.write_release_manifest)
+                if args.prepare_release_assets:
+                    folder=args.prepare_release_assets.resolve();folder.mkdir(parents=True,exist_ok=True)
+                    for record in data['files']:
+                        source=root/safe_relative(record['path']);target=folder/record['asset_name']
+                        expected=ExpectedAsset(target.name,record['bytes'],record['sha256'])
+                        if target.exists() and not file_matches(target,expected):raise IntegrityError('Existing release upload file differs; preserved: '+str(target))
+                        if not target.exists():
+                            temporary=target.with_suffix(target.suffix+'.staging')
+                            shutil.copyfile(source,temporary);verify_file(temporary,expected);os.replace(temporary,target)
+                print(json.dumps({'status':data['status'],'files':len(data['files']),'manifest':str(args.write_release_manifest)}))
+                return 0
+            retrieve_runtime(root,args.release_manifest,args.local,args.local_source,args.replace_mismatched)
+            return 0
+        if args.write_release_manifest or args.local_source:
+            raise FetchError("Multi-file release configuration requires a v2 stage; the frozen v1 downloader is unchanged.")
+        if args.local:
+            verify_file(args.asset_dir/ASSET_NAME,expected_asset(root/'game/assets/town3d/stage_manifest.json'))
+            print("Verified local legacy town; no network used.")
+            return 0
         retrieve_asset(args.asset_dir, expected_asset(), args.url, args.replace_mismatched, not args.no_gh_fallback)
-    except (FetchError, OSError) as exc:
+    except (FetchError, OSError, ValueError) as exc:
         print(f"Town asset fetch failed: {exc}", file=sys.stderr)
         return 1
     return 0
+
+
+def retrieve_runtime(root: Path, release_path: Path | None = None, local: bool = False,
+                     local_source: Path | None = None, replace_mismatched: bool = False) -> list[Path]:
+    """Verify all v2 chunks and rebaked characters, then retrieve only omissions."""
+    root=root.resolve()
+    # Matching installed files run offline even before public release URLs exist.
+    expected=runtime_records(root)
+    try:
+        verify_runtime(root,expected)
+        print(f"Verified complete local upgraded town: {len(expected)} files; no network used.")
+        return [root/rel for rel in expected]
+    except ValueError:
+        pass
+    config=release_path or root/RELEASE
+    if config.is_file():
+        _,records=read_release(root,config)
+    else:
+        records=expected
+    installed=[]
+    for rel,record in records.items():
+        rel=safe_relative(rel);target=root/rel
+        if not target.resolve().is_relative_to(root):raise IntegrityError('Runtime path escapes the package root: '+rel)
+        wanted=ExpectedAsset(target.name,int(record['bytes']),str(record['sha256']))
+        if file_matches(target,wanted):
+            installed.append(target);continue
+        if target.exists() and not replace_mismatched:
+            raise IntegrityError("Existing mismatched upgraded asset preserved: "+rel+". Use --replace-mismatched explicitly.")
+        if local_source is not None:
+            source_root=local_source.resolve()
+            source=source_root/rel
+            if not source.is_file():source=source_root/record.get('asset_name',rel.replace('/','__'))
+            if not source.is_file():source=source_root/target.name
+            verify_file(source,wanted)
+            target.parent.mkdir(parents=True,exist_ok=True)
+            descriptor,name=tempfile.mkstemp(prefix='.'+target.name+'.',suffix='.local',dir=target.parent)
+            os.close(descriptor);temporary=Path(name)
+            try:
+                shutil.copyfile(source,temporary);verify_file(temporary,wanted)
+                install_verified(temporary,target,wanted,replace_mismatched)
+            finally:temporary.unlink(missing_ok=True)
+        elif local:
+            raise IntegrityError("Local runtime is incomplete; no network attempted: "+rel)
+        else:
+            url=record.get('url')
+            if not url:
+                raise FetchError("Asset is missing and published URLs are pending: "+rel+". Use a complete offline package or --local-source; no download was attempted.")
+            retrieve_asset(target.parent,wanted,url,replace_mismatched,False)
+        installed.append(target)
+    verify_runtime(root,expected)
+    print(f"Verified upgraded runtime and characters: {len(installed)} files.")
+    return installed
 
 
 if __name__ == "__main__":
