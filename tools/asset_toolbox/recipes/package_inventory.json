@@ -1,0 +1,61 @@
+{
+  "schema": "living_town.asset_toolbox.recipe.v1",
+  "name": "Source/Windows inventory only; no full evidence validation, publication or ZIP creation",
+  "required_runtimes": [
+    "python"
+  ],
+  "required_inputs": [],
+  "source_paths": [
+    "${repo}/tools",
+    "${repo}/game/scripts",
+    "${repo}/game/scenes",
+    "${repo}/game/data",
+    "${repo}/game/assets/town3d",
+    "${repo}/game/assets/characters3d",
+    "${repo}/game/project.godot",
+    "${repo}/docs/town_bridge",
+    "${repo}/docs/town_walkthrough"
+  ],
+  "stages": [
+    {
+      "id": "source-package-inventory",
+      "kind": "command",
+      "phase": "package_inventory",
+      "depends_on": [],
+      "inputs": [],
+      "argv": [
+        "${runtime.python}",
+        "${repo}/tools/package_town_bridge.py",
+        "--root",
+        "${repo}"
+      ],
+      "outputs": [
+        "${iteration}/logs/source-package-inventory.stdout.log"
+      ],
+      "checks": [],
+      "effects": [],
+      "timeout_seconds": 3600
+    },
+    {
+      "id": "windows-package-inventory",
+      "kind": "command",
+      "phase": "package_inventory",
+      "depends_on": [],
+      "inputs": [],
+      "argv": [
+        "${runtime.python}",
+        "${repo}/tools/package_town_windows.py",
+        "--root",
+        "${repo}",
+        "--freeze-id",
+        "toolbox-inventory"
+      ],
+      "outputs": [
+        "${iteration}/logs/windows-package-inventory.stdout.log"
+      ],
+      "checks": [],
+      "effects": [],
+      "timeout_seconds": 3600
+    }
+  ]
+}

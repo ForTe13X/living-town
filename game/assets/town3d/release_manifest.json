@@ -1,0 +1,367 @@
+{
+  "schema": "living_town.runtime_release.v2",
+  "status": "URLS_CONFIGURED_PUBLICATION_UNVERIFIED",
+  "stage_manifest_sha256": "14841567aa0172536446f1ac95e161b8dda3249d72a5956f83802e6711f429d0",
+  "characters_manifest_sha256": "00b272523dffef832a1025bba68b347d6a7917023898ba4fd6d4d20e48210970",
+  "source_asset_set_sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a",
+  "files": [
+    {
+      "path": "game/assets/characters3d/aria.glb",
+      "bytes": 47833116,
+      "sha256": "d7b1b8e93f665b45bf26505e470c7c676d602dd3b39fdd60e0558a567f19a135",
+      "asset_name": "game__assets__characters3d__aria.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__aria.glb"
+    },
+    {
+      "path": "game/assets/characters3d/ben.glb",
+      "bytes": 24586704,
+      "sha256": "c17395e7e0bfe2d5a63ab7c7b57721394a16438c09dc4a645f11a31176fb6849",
+      "asset_name": "game__assets__characters3d__ben.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__ben.glb"
+    },
+    {
+      "path": "game/assets/characters3d/coco.glb",
+      "bytes": 48172024,
+      "sha256": "becc2c626541a2faf6ec21ee7ab25a27ff702e5dcb8d2015d1a6ef0fe9357703",
+      "asset_name": "game__assets__characters3d__coco.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__coco.glb"
+    },
+    {
+      "path": "game/assets/characters3d/dan.glb",
+      "bytes": 26073412,
+      "sha256": "dfd763af26b8135d7669ac15976400f87052fa030a84db5e7cafe2aed101567e",
+      "asset_name": "game__assets__characters3d__dan.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__dan.glb"
+    },
+    {
+      "path": "game/assets/characters3d/dou.glb",
+      "bytes": 22290672,
+      "sha256": "126d7266b38a6679f47bbf469a054e0baf71950c03fca2ee0c6a97eb577e147c",
+      "asset_name": "game__assets__characters3d__dou.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__dou.glb"
+    },
+    {
+      "path": "game/assets/characters3d/evy.glb",
+      "bytes": 22212252,
+      "sha256": "1a0d15b5d2df2c071ba737e8aaa77114cf1f4f513a6e62a17ca033613444b8d1",
+      "asset_name": "game__assets__characters3d__evy.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__evy.glb"
+    },
+    {
+      "path": "game/assets/characters3d/fei.glb",
+      "bytes": 25013976,
+      "sha256": "758096057b2a00e7e6d40c9d90d54ac61d4165142f6325ce9689fff199a80297",
+      "asset_name": "game__assets__characters3d__fei.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__fei.glb"
+    },
+    {
+      "path": "game/assets/characters3d/gui.glb",
+      "bytes": 48326128,
+      "sha256": "05ba025d44e87037f86b66c89a75a0c9d1a0d4368f68b0b9a0e7cd54ac413051",
+      "asset_name": "game__assets__characters3d__gui.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__gui.glb"
+    },
+    {
+      "path": "game/assets/characters3d/hai.glb",
+      "bytes": 25101160,
+      "sha256": "73e6a19298a2a39960e0548d09935b7d30150c86fd07b157a15d08d6f12dc5c7",
+      "asset_name": "game__assets__characters3d__hai.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__hai.glb"
+    },
+    {
+      "path": "game/assets/characters3d/hua.glb",
+      "bytes": 47639896,
+      "sha256": "6959067ddbaae6636c6dbf9c81d95f8f274dc848a54509f2c02e01b588cfcaac",
+      "asset_name": "game__assets__characters3d__hua.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__hua.glb"
+    },
+    {
+      "path": "game/assets/characters3d/huai.glb",
+      "bytes": 26040320,
+      "sha256": "90c11768ee8f01243c722675c8c0676941d47cbef329b82321386bcb29bc62ae",
+      "asset_name": "game__assets__characters3d__huai.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__huai.glb"
+    },
+    {
+      "path": "game/assets/characters3d/lin.glb",
+      "bytes": 47967768,
+      "sha256": "9d1d4280bece73417834e03f93d263e428ddc00fd4ea277dd8f8f5b4991ca34b",
+      "asset_name": "game__assets__characters3d__lin.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__lin.glb"
+    },
+    {
+      "path": "game/assets/characters3d/liu.glb",
+      "bytes": 48163784,
+      "sha256": "87527e1488f3569af6ddec7bc8bd297db40d05e074b08aa748d3aa92570cf7f6",
+      "asset_name": "game__assets__characters3d__liu.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__liu.glb"
+    },
+    {
+      "path": "game/assets/characters3d/mei.glb",
+      "bytes": 48293828,
+      "sha256": "7332ec20437771ced058a59c48bebc2c18cfdd00f15f4e6b30448c5db29c534a",
+      "asset_name": "game__assets__characters3d__mei.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__mei.glb"
+    },
+    {
+      "path": "game/assets/characters3d/mian.glb",
+      "bytes": 48155704,
+      "sha256": "942f9e47d39b0c40bc205fab41efb086a9c83265b3fccd3c7abd526efdc4a227",
+      "asset_name": "game__assets__characters3d__mian.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__mian.glb"
+    },
+    {
+      "path": "game/assets/characters3d/mo.glb",
+      "bytes": 24591156,
+      "sha256": "8b10913f2492b8dd0849af177bc2f902e771c24f49e0841c2540d4c1051a02e1",
+      "asset_name": "game__assets__characters3d__mo.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__mo.glb"
+    },
+    {
+      "path": "game/assets/characters3d/player.glb",
+      "bytes": 21284400,
+      "sha256": "fcbbdc1acf42586d50740180d9494c5ed6b36b3e7b60644e88ac9f6daa2a5c1c",
+      "asset_name": "game__assets__characters3d__player.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__player.glb"
+    },
+    {
+      "path": "game/assets/characters3d/qin.glb",
+      "bytes": 22302524,
+      "sha256": "8bd2377646a3c6e5446de8af4de0d23d6ba7c1383d1d4e0ceb0905aa30af8b95",
+      "asset_name": "game__assets__characters3d__qin.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__qin.glb"
+    },
+    {
+      "path": "game/assets/characters3d/shi.glb",
+      "bytes": 24849736,
+      "sha256": "849e32924e202f54dad52a4ea237bf7390be1eb754eb930c97970671846a9b69",
+      "asset_name": "game__assets__characters3d__shi.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__shi.glb"
+    },
+    {
+      "path": "game/assets/characters3d/shu.glb",
+      "bytes": 24111768,
+      "sha256": "97daec23f006606442db215a28bd6d4f11a77b51cc67b5074779927a07144a46",
+      "asset_name": "game__assets__characters3d__shu.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__shu.glb"
+    },
+    {
+      "path": "game/assets/characters3d/tao.glb",
+      "bytes": 24877784,
+      "sha256": "94b2e207561542ed2db0b98321e73500b7f7a37f9c5969997fa439650c5c8b4f",
+      "asset_name": "game__assets__characters3d__tao.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__tao.glb"
+    },
+    {
+      "path": "game/assets/characters3d/tie.glb",
+      "bytes": 47117216,
+      "sha256": "93628944043444a4161661c46e7a5fb8324a538b6661c3d5ab87ea3ba21aa98a",
+      "asset_name": "game__assets__characters3d__tie.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__tie.glb"
+    },
+    {
+      "path": "game/assets/characters3d/yin.glb",
+      "bytes": 24019640,
+      "sha256": "f2438c040509decd2c2ef905445e7e555a953fa44e2750846027bab102241070",
+      "asset_name": "game__assets__characters3d__yin.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__yin.glb"
+    },
+    {
+      "path": "game/assets/characters3d/yong.glb",
+      "bytes": 25576748,
+      "sha256": "e81c057bd82efed30437e3790af4cfa4d73559c7b0fb833a4ef354b259df19d0",
+      "asset_name": "game__assets__characters3d__yong.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__yong.glb"
+    },
+    {
+      "path": "game/assets/characters3d/yun.glb",
+      "bytes": 21827012,
+      "sha256": "9877157ace279c07f6ca9c5c94d8c334dc49cc1e2fa07b6a75bec370472a5651",
+      "asset_name": "game__assets__characters3d__yun.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__characters3d__yun.glb"
+    },
+    {
+      "path": "game/assets/town3d/stage_manifest.json",
+      "bytes": 7973,
+      "sha256": "14841567aa0172536446f1ac95e161b8dda3249d72a5956f83802e6711f429d0",
+      "asset_name": "game__assets__town3d__stage_manifest.json",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__stage_manifest.json"
+    },
+    {
+      "path": "game/assets/town3d/static_render_cache.json",
+      "bytes": 670,
+      "sha256": "1a47f31174ccfeabdddc73e0ebddc733ed6953a22f59856825b94745b1aa5627",
+      "asset_name": "game__assets__town3d__static_render_cache.json",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__static_render_cache.json"
+    },
+    {
+      "path": "game/assets/town3d/static_render_cache.res",
+      "bytes": 23405364,
+      "sha256": "ede4da4734e95249c03f529683d1fd246861174347a126ec2dc90072650f2d19",
+      "asset_name": "game__assets__town3d__static_render_cache.res",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__static_render_cache.res"
+    },
+    {
+      "path": "game/assets/town3d/town_00_D06.catalog.json",
+      "bytes": 2192213,
+      "sha256": "8d0d60f89d3dda4975cf968535e7c301b7b0e5085ee9f27df3c9054d772db9d7",
+      "asset_name": "game__assets__town3d__town_00_D06.catalog.json",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_00_D06.catalog.json"
+    },
+    {
+      "path": "game/assets/town3d/town_00_D06.glb",
+      "bytes": 98449304,
+      "sha256": "b319da8610f3eb459788fa550eb6520fb70762a9585745a1cdc174194f85bdf6",
+      "asset_name": "game__assets__town3d__town_00_D06.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_00_D06.glb"
+    },
+    {
+      "path": "game/assets/town3d/town_01_D07.catalog.json",
+      "bytes": 3759412,
+      "sha256": "cb407b51f436e1981c84bc5d7c005d7404a8ff204dc01ca06a2a1eb8b86f10e9",
+      "asset_name": "game__assets__town3d__town_01_D07.catalog.json",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_01_D07.catalog.json"
+    },
+    {
+      "path": "game/assets/town3d/town_01_D07.glb",
+      "bytes": 105887796,
+      "sha256": "1d3c6efddd046d5e176a79bf40eaef59a989e740944e1e754816f08f70622222",
+      "asset_name": "game__assets__town3d__town_01_D07.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_01_D07.glb"
+    },
+    {
+      "path": "game/assets/town3d/town_02_D08.catalog.json",
+      "bytes": 4779236,
+      "sha256": "4be2306cc97a87578c8225e9d105311c9e90110cd2bebc9de9279f9160baad85",
+      "asset_name": "game__assets__town3d__town_02_D08.catalog.json",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_02_D08.catalog.json"
+    },
+    {
+      "path": "game/assets/town3d/town_02_D08.glb",
+      "bytes": 114311008,
+      "sha256": "ff172230eb0ded3ab0ba3b4287ec4f2dd70819c7572dbcd0cf6b5d3793dcdd4f",
+      "asset_name": "game__assets__town3d__town_02_D08.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_02_D08.glb"
+    },
+    {
+      "path": "game/assets/town3d/town_03_D09.catalog.json",
+      "bytes": 3376781,
+      "sha256": "14bc5f49e8a991d25dac0528e3536bf3107ce7fbb98d4fa0c6bbf8968120b027",
+      "asset_name": "game__assets__town3d__town_03_D09.catalog.json",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_03_D09.catalog.json"
+    },
+    {
+      "path": "game/assets/town3d/town_03_D09.glb",
+      "bytes": 101355768,
+      "sha256": "b11bc28b08ce991dac79cd4661bbb26ed0f6ce174a994b3ecf0440f699a4ca22",
+      "asset_name": "game__assets__town3d__town_03_D09.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_03_D09.glb"
+    },
+    {
+      "path": "game/assets/town3d/town_04_D10.catalog.json",
+      "bytes": 2916780,
+      "sha256": "5e0ae7c6e0ea0fad5f75cc8e2ee1e9c14502fe0721b6002a7dcbbac0d47dfa85",
+      "asset_name": "game__assets__town3d__town_04_D10.catalog.json",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_04_D10.catalog.json"
+    },
+    {
+      "path": "game/assets/town3d/town_04_D10.glb",
+      "bytes": 107867632,
+      "sha256": "1afa21bcb377490c31b73ae95e2571ab5081c5eb6dc2418021cd0cbba271b2f2",
+      "asset_name": "game__assets__town3d__town_04_D10.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_04_D10.glb"
+    },
+    {
+      "path": "game/assets/town3d/town_05_botanical_inland.catalog.json",
+      "bytes": 2355828,
+      "sha256": "c0c9292a577719f5a0c44d8f41b893db32b283c177e2a3fbc4b760a179bef88e",
+      "asset_name": "game__assets__town3d__town_05_botanical_inland.catalog.json",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_05_botanical_inland.catalog.json"
+    },
+    {
+      "path": "game/assets/town3d/town_05_botanical_inland.glb",
+      "bytes": 102793728,
+      "sha256": "78bfb108d9fb73587a0c417c8f3a8a1ff3a778b6f70b85f8a26176a63519f912",
+      "asset_name": "game__assets__town3d__town_05_botanical_inland.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_05_botanical_inland.glb"
+    },
+    {
+      "path": "game/assets/town3d/town_06_botanical_town.catalog.json",
+      "bytes": 6396370,
+      "sha256": "60165463a3e5a7525441977e164db08f89ac4527a2fe965681cdd3dc19724387",
+      "asset_name": "game__assets__town3d__town_06_botanical_town.catalog.json",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_06_botanical_town.catalog.json"
+    },
+    {
+      "path": "game/assets/town3d/town_06_botanical_town.glb",
+      "bytes": 106750576,
+      "sha256": "66fabf0cf3052c00e9a39ebebeafa5a279112bf862a641c7d4842651d785bbae",
+      "asset_name": "game__assets__town3d__town_06_botanical_town.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_06_botanical_town.glb"
+    },
+    {
+      "path": "game/assets/town3d/town_07_botanical_west.catalog.json",
+      "bytes": 9748238,
+      "sha256": "48b7f625354006c3bb6114ddc7b94c7baaeff61f06dd0eb014572ff2f9789a39",
+      "asset_name": "game__assets__town3d__town_07_botanical_west.catalog.json",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_07_botanical_west.catalog.json"
+    },
+    {
+      "path": "game/assets/town3d/town_07_botanical_west.glb",
+      "bytes": 103046772,
+      "sha256": "90cc62c8fe4bd459a804aa7efb4ef0981345b7006df0916178ca000a55a395e6",
+      "asset_name": "game__assets__town3d__town_07_botanical_west.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_07_botanical_west.glb"
+    },
+    {
+      "path": "game/assets/town3d/town_08_reserve_amenities.catalog.json",
+      "bytes": 1953320,
+      "sha256": "4e6174cdd0095ba48b35197943aa84a20d36cb3d6d1938de69dff00439515dc2",
+      "asset_name": "game__assets__town3d__town_08_reserve_amenities.catalog.json",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_08_reserve_amenities.catalog.json"
+    },
+    {
+      "path": "game/assets/town3d/town_08_reserve_amenities.glb",
+      "bytes": 93049404,
+      "sha256": "d657beeb434774970e8bddbe529b3e6bff4985b1b31692ef95426902dd412c82",
+      "asset_name": "game__assets__town3d__town_08_reserve_amenities.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_08_reserve_amenities.glb"
+    },
+    {
+      "path": "game/assets/town3d/town_09_territory_landscape.catalog.json",
+      "bytes": 910684,
+      "sha256": "55c539a25c425907ec371c5201241b4a05b156cc32e55612d17723f517c30a63",
+      "asset_name": "game__assets__town3d__town_09_territory_landscape.catalog.json",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_09_territory_landscape.catalog.json"
+    },
+    {
+      "path": "game/assets/town3d/town_09_territory_landscape.glb",
+      "bytes": 479547904,
+      "sha256": "bab68b48ffda8c4ef6e9d734af8fb1d78ca6fd08e0bfae51b66efbc3bae8fe3f",
+      "asset_name": "game__assets__town3d__town_09_territory_landscape.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_09_territory_landscape.glb"
+    },
+    {
+      "path": "game/assets/town3d/town_10_urban_core.catalog.json",
+      "bytes": 8376025,
+      "sha256": "223c820b6b0d03da0f53fa01e7d84634d3a83d22c2bbd7fc0a43432b3a60bb44",
+      "asset_name": "game__assets__town3d__town_10_urban_core.catalog.json",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_10_urban_core.catalog.json"
+    },
+    {
+      "path": "game/assets/town3d/town_10_urban_core.glb",
+      "bytes": 165264616,
+      "sha256": "d7140ad87b69f945ccf84a6110f6dfb6ae9fbf073c24028b17533040ff1c2b76",
+      "asset_name": "game__assets__town3d__town_10_urban_core.glb",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__assets__town3d__town_10_urban_core.glb"
+    },
+    {
+      "path": "game/data/town3d/characters.json",
+      "bytes": 83806,
+      "sha256": "00b272523dffef832a1025bba68b347d6a7917023898ba4fd6d4d20e48210970",
+      "asset_name": "game__data__town3d__characters.json",
+      "url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/game__data__town3d__characters.json"
+    }
+  ],
+  "local_policy": "Matching installed bytes require no network. Missing bytes require --local-source or explicitly published URLs."
+}

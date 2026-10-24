@@ -33,11 +33,16 @@ var _ghost_textures_3d: Dictionary = {}
 var _occlusion_clock_3d := 0.0
 var _occlusion_subject_3d := ""
 var _occlusion_info_3d: Dictionary = {"blocked": false, "ray_count": 0}
+var _runtime_proof_path_3d: String = ""
 var _plane_key_3d := ""
 var _overlay_time_3d := 0.0
 var _load_error_3d := ""
 
 func _ready() -> void:
+	var runtime_args: PackedStringArray = OS.get_cmdline_user_args()
+	for argument_index: int in range(runtime_args.size() - 1):
+		if runtime_args[argument_index] == "--town-runtime-proof" and runtime_args[argument_index + 1].is_absolute_path():
+			_runtime_proof_path_3d = runtime_args[argument_index + 1]
 	# Deliberately skip the base ready: its old 2D void/light children draw separately.
 	process_priority = 50 # LifeMode first updates canonical camera and prompt state.
 	load_projection_3d()
@@ -60,7 +65,7 @@ func _ready() -> void:
 	camera_3d = Camera3D.new()
 	camera_3d.projection = Camera3D.PROJECTION_ORTHOGONAL
 	camera_3d.near = 0.05
-	camera_3d.far = 600.0
+	camera_3d.far = 4000.0
 	camera_3d.current = true
 	scene_3d.add_child(camera_3d)
 	var model_script: Script = load("res://scripts/TownModel3D.gd")
@@ -110,15 +115,25 @@ func _build_environment_3d() -> void:
 	_environment_3d.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	_environment_3d.ambient_light_color = Color("d8e3e8")
 	_environment_3d.ambient_light_energy = 0.24
-	_environment_3d.tonemap_mode = Environment.TONE_MAPPER_LINEAR
+	_environment_3d.tonemap_mode = Environment.TONE_MAPPER_AGX
 	we.environment = _environment_3d
 	scene_3d.add_child(we)
 	_sun_3d = DirectionalLight3D.new()
 	_sun_3d.rotation_degrees = Vector3(-52, -28, 0)
 	_sun_3d.light_color = Color("fff1d8")
-	_sun_3d.light_energy = 0.72
+	_sun_3d.light_energy = 0.95
 	_sun_3d.shadow_enabled = true
 	scene_3d.add_child(_sun_3d)
+
+func _load_interiors() -> void:
+	# The inherited pose classifier must inspect the same authored furniture
+	# supplied to Sim, rather than the legacy 2D tile layout.
+	_interiors_loaded = true
+	var path: String = "res://data/town3d/interiors.json"
+	if FileAccess.file_exists(path):
+		var data: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+		if data is Dictionary:
+			_interiors = data
 
 func _resize_3d() -> void:
 	if not is_instance_valid(viewport_3d):
@@ -217,9 +232,14 @@ func sync_camera() -> void:
 		south = Vector3(0, 0, 1)
 	south = south.normalized()
 	var pitch := deg_to_rad(CAMERA_PITCH_3D)
-	camera_3d.position = center + south * (cos(pitch) * 100.0) + Vector3.UP * (sin(pitch) * 100.0)
-	camera_3d.look_at(center, Vector3.UP)
 	camera_3d.size = float(viewport_3d.size.y) * CAMERA_HEIGHT_SCALE_3D / maxf(0.025, pb.cam.zoom.x)
+	# The full reserve spans hundreds of metres. A fixed100m camera offset would
+	# put southern hills behind the lens when framing the complete territory.
+	var distance: float = maxf(100.0, camera_3d.size * 1.6)
+	camera_3d.position = center + south * (cos(pitch) * distance) + Vector3.UP * (sin(pitch) * distance)
+	camera_3d.look_at(center, Vector3.UP)
+	if town_model_3d != null and town_model_3d.has_method("set_view_scope"):
+		town_model_3d.call("set_view_scope", camera_3d.size)
 
 func fit_zoom_3d(bounds: Rect2, vp: Vector2, pad: Vector2) -> float:
 	var p := active_plane_3d()
@@ -267,6 +287,11 @@ func pick_to_canonical(screen: Vector2, space_id := "", floor_id := "") -> Vecto
 			continue
 		var feet := canonical_to_screen(_rpos(ag), "", "", 0.03)
 		var head := canonical_to_screen(_rpos(ag), "", "", ACTOR_HEIGHT_M_3D)
+		var visual: Dictionary = _actors_3d.get(id, {})
+		if visual.get("kind", "sprite") == "mesh":
+			var body: Node3D = visual["node"] as Node3D
+			feet = camera_3d.unproject_position(body.global_position)
+			head = camera_3d.unproject_position(body.global_position + Vector3.UP * float(visual.get("height_m", 1.7)))
 		var body_h := maxf(12, feet.y - head.y)
 		var box := Rect2(Vector2(feet.x - maxf(9, body_h * 0.27), head.y), Vector2(maxf(18, body_h * 0.54), body_h + 5))
 		if box.has_point(screen):
@@ -373,6 +398,17 @@ func _char8_key(ag: Dictionary) -> String:
 	return super._char8_key(ag)
 
 func _make_actor_3d(ag: Dictionary) -> Dictionary:
+	if FileAccess.file_exists("res://data/town3d/characters.json") and ResourceLoader.exists("res://scripts/TownCharacter3D.gd"):
+		var character_script: Script = load("res://scripts/TownCharacter3D.gd")
+		if character_script != null:
+			var character: Node3D = character_script.new() as Node3D
+			character.name = "Resident3D_" + str(ag["id"])
+			scene_3d.add_child(character)
+			character.call("setup", ag)
+			var visual: Dictionary = character.call("get_visual_info")
+			if bool(visual.get("loaded", false)):
+				return {"node": character, "kind": "mesh", "key": str(ag.get("persona_key", ag["id"])), "height_m": visual.get("body_height_m", 1.7)}
+			character.free()
 	var key := _char8_key(ag)
 	var sheet: Texture2D = Art.char_sheet(key) if key != "" else _fallback_tex(ag)
 	var frame_px := 48
@@ -406,7 +442,7 @@ func _make_actor_3d(ag: Dictionary) -> Dictionary:
 	sprite.shaded = false
 	sprite.double_sided = true
 	scene_3d.add_child(sprite)
-	return {"node": sprite, "key": key, "cols": cols, "rows": rows}
+	return {"node": sprite, "kind": "sprite", "key": key, "cols": cols, "rows": rows}
 
 func _screen_row_3d(ag: Dictionary) -> int:
 	var id := String(ag["id"])
@@ -425,20 +461,83 @@ func _screen_row_3d(ag: Dictionary) -> int:
 	var octant := posmod(int(round(atan2(screen.y, screen.x) / (PI / 4.0))), 8)
 	return [2, 1, 0, 7, 6, 5, 4, 3][octant]
 
-func _update_actor_3d(ag: Dictionary) -> void:
+func _update_actor_3d(ag: Dictionary, delta: float = 0.0) -> void:
 	var id := String(ag["id"])
 	if not _actors_3d.has(id):
 		_actors_3d[id] = _make_actor_3d(ag)
 	var item: Dictionary = _actors_3d[id]
-	var sprite: Sprite3D = item["node"]
+	var actor: Node3D = item["node"] as Node3D
 	var pb := _probe_3d()
 	var space_id := String(ag.get("space", "town"))
 	var floor_id := String(ag.get("floor", "outdoor"))
-	sprite.visible = pb != null and space_id == String(pb.active_space) and floor_id == String(pb.active_floor)
-	if not sprite.visible:
+	actor.visible = pb != null and space_id == String(pb.active_space) and floor_id == String(pb.active_floor)
+	if not actor.visible:
 		return
-	sprite.position = canonical_to_world(_rpos(ag), space_id, floor_id) + Vector3.UP * 0.025
+	actor.position = canonical_to_world(_rpos(ag), space_id, floor_id) + Vector3.UP * 0.025
 	var moving := bool(_moving.get(id, false))
+	if item.get("kind", "sprite") == "mesh":
+		var direction: Vector2 = Vector2(0, 1)
+		var row: int = int(_dir8.get(id, 0))
+		for step: Vector2i in DIR8_ROW:
+			if int(DIR8_ROW[step]) == row:
+				direction = Vector2(step)
+				break
+		var world_direction: Vector3 = canonical_to_world(_rpos(ag) + direction * 48, space_id, floor_id) - canonical_to_world(_rpos(ag), space_id, floor_id)
+		var pose: Dictionary = _use_pose(ag)
+		if not pose.is_empty():
+			var option: Dictionary = ag.get("option", {})
+			var binding: Dictionary = projection_3d.get("interaction_bindings", {}).get(str(option.get("target", "")), {})
+			var fixture_kind: String = str(binding.get("model_asset_kind", ""))
+			if fixture_kind in ["cafe_counter", "retail_counter", "counter", "kitchen", "kitchen_run", "basin", "workbench", "shower", "shower_screen"]:
+				pose["kind"] = "face"
+			elif fixture_kind in ["bed", "bunk"]:
+				pose["kind"] = "lie"
+			elif fixture_kind in ["sofa", "banquette", "bench", "pew", "lounge_chair", "toilet"]:
+				pose["kind"] = "sit_on"
+			elif fixture_kind in ["cafe_table_set", "dining_table"]:
+				pose["kind"] = "sit_at"
+			if binding.get("fixture_center_local_m") is Array:
+				var p: Dictionary = plane_3d(space_id, floor_id)
+				var local: Vector2 = _v2_3d(binding["fixture_center_local_m"])
+				var fixture_cell: Vector2 = Vector2((local.x - float(p["origin_local_m"][0])) / float(p["cell_size_m"]), (float(p["origin_local_m"][1]) - local.y) / float(p["cell_size_m"]))
+				var fixture_world: Vector3 = canonical_to_world(fixture_cell * 48, space_id, floor_id)
+				var facing: Vector3 = fixture_world - actor.position
+				if facing.length_squared() > 0.01:
+					world_direction = facing
+				pose["fixture_rotation_degrees"] = float(binding.get("fixture_rotation_degrees", 0)) + float(p.get("yaw_degrees", 0)) + 180.0
+				pose["fixture_dimensions_m"] = binding.get("fixture_dimensions_m", [])
+				if str(pose.get("kind", "face")) in ["lie", "soak", "sit_on"]:
+					actor.position = fixture_world + Vector3.UP * 0.025
+				elif str(pose.get("kind", "face")) == "sit_at":
+					var best_seat_distance: float = INF
+					var seat_position: Vector3 = actor.position
+					var seated_ids: Array[String] = []
+					for other: Dictionary in Sim.agents:
+						var other_option: Variant = other.get("option")
+						if other_option is Dictionary and other_option.get("phase", "") == "use":
+							var other_binding: Dictionary = projection_3d.get("interaction_bindings", {}).get(str(other_option.get("target", "")), {})
+							if other_binding.get("model_asset_id", "") == binding.get("model_asset_id", ""):
+								seated_ids.append(str(other["id"]))
+					seated_ids.sort()
+					var seats: Array = binding.get("fixture_seat_centers_local_m", [])
+					var seat_rank: int = seated_ids.find(id)
+					for seat_index: int in range(seats.size()):
+						if seated_ids.size() > 1 and seat_rank >= 0 and seat_index != posmod(seat_rank, seats.size()):
+							continue
+						var seat: Array = seats[seat_index]
+						var seat_local: Vector2 = _v2_3d(seat)
+						var seat_cell: Vector2 = Vector2((seat_local.x - float(p["origin_local_m"][0])) / float(p["cell_size_m"]), (float(p["origin_local_m"][1]) - seat_local.y) / float(p["cell_size_m"]))
+						var seat_world: Vector3 = canonical_to_world(seat_cell * 48, space_id, floor_id)
+						var seat_distance: float = actor.position.distance_to(seat_world)
+						if seat_distance < best_seat_distance:
+							best_seat_distance = seat_distance
+							seat_position = seat_world
+					actor.position = seat_position + Vector3.UP * 0.025
+					world_direction = fixture_world - actor.position
+					pose["seat_height_m"] = 0.462 if fixture_kind == "cafe_table_set" else 0.48
+		actor.call("update_pose", ag, moving, Vector2(world_direction.x, world_direction.z), pose, delta, Sim.tick_no)
+		return
+	var sprite: Sprite3D = actor as Sprite3D
 	var col := 1 + posmod(Sim.tick_no, maxi(1, int(item["cols"]) - 1)) if moving else 0
 	var row := _screen_row_3d(ag) if String(item["key"]) != "" else mini(1, int(item["rows"]) - 1)
 	sprite.frame_coords = Vector2i(col, row)
@@ -472,12 +571,19 @@ func _update_controlled_occlusion_3d(delta: float) -> void:
 	var id := String(Sim.controlled_id)
 	if id == "" and bool(Sim.get_agent("player").get("is_player", false)):
 		id = "player"
+	for other_id: String in _actors_3d:
+		var other: Dictionary = _actors_3d[other_id]
+		if other_id != id and other.get("kind", "sprite") == "mesh":
+			other["node"].call("set_occlusion_visible", false)
 	var item: Dictionary = _actors_3d.get(id, {})
 	if item.is_empty() or not bool(item["node"].visible):
 		if _occlusion_ghost_3d != null:
 			_occlusion_ghost_3d.visible = false
 		_occlusion_subject_3d = ""
 		_occlusion_info_3d["blocked"] = false
+		return
+	if item.get("kind", "sprite") == "mesh":
+		_update_mesh_occlusion_3d(item, id, delta)
 		return
 	var primary: Sprite3D = item["node"]
 	if _occlusion_ghost_3d == null:
@@ -522,6 +628,27 @@ func _update_controlled_occlusion_3d(delta: float) -> void:
 			"occluder": String(hit["node"].name) if blocked else "",
 			"max_query_hz": 5, "normal_depth_preserved": not primary.no_depth_test}
 		_occlusion_ghost_3d.visible = blocked
+
+func _update_mesh_occlusion_3d(item: Dictionary, id: String, delta: float) -> void:
+	if _occlusion_ghost_3d != null:
+		_occlusion_ghost_3d.visible = false
+	var actor: Node3D = item["node"] as Node3D
+	var subject: String = id + "/" + _plane_key_3d
+	if subject != _occlusion_subject_3d:
+		_occlusion_subject_3d = subject
+		_occlusion_clock_3d = 0.0
+	_occlusion_clock_3d -= delta
+	if _occlusion_clock_3d > 0.0 or town_model_3d == null:
+		return
+	_occlusion_clock_3d = 0.2
+	var body: Vector3 = actor.global_position + Vector3.UP * float(item.get("height_m", 1.7)) * 0.55
+	var origin: Vector3 = camera_3d.project_ray_origin(camera_3d.unproject_position(body))
+	var distance: float = origin.distance_to(body)
+	var hit: Dictionary = town_model_3d.call("raycast_geometry", origin, (body - origin).normalized(), maxf(0, distance - 0.12), "all")
+	var blocked: bool = not hit.is_empty() and Vector3(hit["position"]).y > actor.global_position.y + 0.10
+	actor.call("set_occlusion_visible", blocked)
+	_occlusion_info_3d = {"blocked": blocked, "actor_id": id, "ray_count": int(_occlusion_info_3d.get("ray_count", 0)) + 1,
+		"occluder": str(hit["node"].name) if blocked else "", "max_query_hz": 5, "normal_depth_preserved": true, "actor_kind": "refined_mesh"}
 
 func _reset_3d() -> void:
 	_render_pos.clear()
@@ -574,7 +701,7 @@ func _process(delta: float) -> void:
 		_render_pos[id] = cur if bool(_moving[id]) else target
 	sync_camera()
 	for ag in Sim.agents:
-		_update_actor_3d(ag)
+		_update_actor_3d(ag, delta)
 	_update_controlled_occlusion_3d(delta)
 	for id in _actors_3d.keys():
 		if not alive.has(id):
@@ -582,11 +709,45 @@ func _process(delta: float) -> void:
 			_actors_3d.erase(id)
 			_render_pos.erase(id)
 	var daylight := clampf(sin((Sim.time_of_day() - 0.23) * TAU) * 0.5 + 0.5, 0.0, 1.0)
-	_sun_3d.light_energy = lerpf(0.08, 0.72, daylight)
-	_environment_3d.ambient_light_energy = lerpf(0.10, 0.24, daylight)
+	# Calibrated against actual Compatibility-renderer plaster/paving frames.
+	# Its LDR lighting clips detail before an HDR AgX curve can recover it.
+	_sun_3d.light_energy = lerpf(0.08, 0.95, daylight)
+	_environment_3d.ambient_light_energy = lerpf(0.14, 0.30, daylight)
 	_refresh_social_markers_3d()
 	_sync_life_prompt_3d()
 	_screen_overlay_3d.queue_redraw()
+	if not _runtime_proof_path_3d.is_empty() and _actors_3d.size() >= 12 and Engine.get_frames_drawn() > 5:
+		var proof_path: String = _runtime_proof_path_3d
+		_runtime_proof_path_3d = ""
+		call_deferred("_write_runtime_proof_3d", proof_path)
+
+func _write_runtime_proof_3d(path: String) -> void:
+	await RenderingServer.frame_post_draw
+	var info: Dictionary = get_bridge_info()
+	var current_scene: Node = get_tree().current_scene
+	var entry: String = current_scene.scene_file_path if current_scene != null else ""
+	var expected: int = (projection_3d.get("building_spaces", {}) as Dictionary).size()
+	var executable: String = OS.get_executable_path()
+	var pack: String = executable.get_base_dir().path_join("LivingTown.pck")
+	var screenshot_path: String = path.get_basename() + "_native.png"
+	var image: Image = get_viewport().get_texture().get_image()
+	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	var screenshot_ok: bool = image != null and image.save_png(screenshot_path) == OK
+	var passed: bool = entry == "res://scenes/Main.tscn" and screenshot_ok and bool(info.get("model", {}).get("loaded", false)) and int(info.get("model", {}).get("building_count", 0)) == expected and expected >= 151 and int(info.get("mesh_actor_count", 0)) == int(info.get("actor_count", 0)) and DisplayServer.get_name() != "headless"
+	var proof: Dictionary = {"schema":"living_town.normal_entry_runtime.v2", "status":"PASS" if passed else "FAIL", "actual_gpu":DisplayServer.get_name() != "headless",
+		"entry_scene":entry, "normal_product_entry":entry == "res://scenes/Main.tscn", "engine_frames_drawn":Engine.get_frames_drawn(), "engine_version":Engine.get_version_info(), "view":info,
+		"executable":executable, "executable_sha256":FileAccess.get_sha256(executable), "pack_sha256":FileAccess.get_sha256(pack) if FileAccess.file_exists(pack) else "",
+		"screenshots":[{"file":screenshot_path,"sha256":FileAccess.get_sha256(screenshot_path),"width":image.get_width() if image != null else 0,"height":image.get_height() if image != null else 0}],
+		"profile_sha256":FileAccess.get_sha256("res://data/town3d/profile.json"), "projection_sha256":FileAccess.get_sha256("res://data/town3d/projection.json"),
+		"stage_manifest_sha256":FileAccess.get_sha256("res://assets/town3d/stage_manifest.json"), "characters_manifest_sha256":FileAccess.get_sha256("res://data/town3d/characters.json"),
+		"source_asset_set_sha256":info.get("model", {}).get("source_asset_set_sha256", ""), "source_blend_sha256":info.get("model", {}).get("source_blend_sha256", ""),
+		"scope":"Actual rendered Main entry and loaded visual inventory; complete interaction walkthrough and save/load are separately verified."}
+	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
+	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
+	if file != null:
+		file.store_string(JSON.stringify(proof, "\t") + "\n")
+		file.close()
+	print("TOWN NORMAL ENTRY PROOF ", proof["status"], " ", path)
 
 func _refresh_social_markers_3d() -> void:
 	# The base renderer built these caches in its skipped _draw_body.
@@ -668,6 +829,10 @@ func draw_screen_overlay_3d(n: Node2D) -> void:
 	var life_active := life != null and bool(life.get("active"))
 	var life_pid := String(life.get("pid")) if life_active else ""
 	var selected := _selected_id()
+	# At town scale, incidental speech/status plates can cover entire buildings.
+	# Keep the controlled/selected resident identifiable; nearby views retain the
+	# ordinary social plates. The underlying events remain in the activity feed.
+	var nearby_plates: bool = camera_3d.size <= 90.0
 	for ag in Sim.agents:
 		var id := String(ag["id"])
 		if not _actors_3d.has(id) or not _actors_3d[id]["node"].visible:
@@ -675,7 +840,7 @@ func draw_screen_overlay_3d(n: Node2D) -> void:
 		var px := _rpos(ag)
 		var anchor := canonical_to_screen(px, "", "", ACTOR_HEIGHT_M_3D + 0.20)
 		var saying: bool = _say.has(id) and Sim.tick_no < int(_say[id]["until"])
-		var focus := id == selected or id == life_pid or saying or _in_conflict(id) or _has_meet(id) or _rc_social_ids.has(id)
+		var focus := id == selected or id == life_pid or (nearby_plates and (saying or _in_conflict(id) or _has_meet(id) or _rc_social_ids.has(id)))
 		if id == selected or id == life_pid:
 			_ground_ring_3d(n, px, 0.4, Color("e6c66f"))
 		if pb.cam.zoom.x >= 0.55 or focus:
@@ -710,7 +875,14 @@ func draw_screen_overlay_3d(n: Node2D) -> void:
 			_ground_ring_3d(n, Vector2(dest) * 48 + Vector2(24,24), 0.22 + sin(_overlay_time_3d * 6) * 0.03, Color("e6c66f"))
 
 func get_bridge_info() -> Dictionary:
+	var mesh_actors: int = 0
+	var character_details: Array = []
+	for item: Dictionary in _actors_3d.values():
+		if item.get("kind", "sprite") == "mesh":
+			mesh_actors += 1
+			character_details.append(item["node"].call("get_visual_info"))
 	return {"projection_loaded": not projection_3d.is_empty(), "active_plane": _plane_key_3d,
 		"actor_count": _actors_3d.size(), "error": _load_error_3d,
+		"mesh_actor_count": mesh_actors, "character_visuals": character_details,
 		"controlled_occlusion": _occlusion_info_3d.duplicate(),
 		"model": town_model_3d.call("get_info") if town_model_3d != null else {}}

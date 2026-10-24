@@ -1,0 +1,249 @@
+{
+  "schema": "living_town.asset_toolbox.recipe.v1",
+  "name": "Optional staged game: actual logic, 14-minute recording, Edge TTS, MP4 and review",
+  "required_runtimes": [
+    "python",
+    "godot",
+    "powershell",
+    "ffmpeg",
+    "ffprobe"
+  ],
+  "required_inputs": [
+    "edge_deps",
+    "concept"
+  ],
+  "source_paths": [
+    "${repo}/tools/town_upgrade/",
+    "${repo}/game/scripts",
+    "${repo}/game/scenes",
+    "${repo}/game/data",
+    "${repo}/game/assets/town3d",
+    "${repo}/game/assets/characters3d",
+    "${repo}/game/project.godot",
+    "${repo}/tools/record-town-walkthrough.ps1",
+    "${repo}/tools/run-godot-supervised.ps1",
+    "${repo}/tools/build_town_walkthrough.py",
+    "${repo}/docs/town_walkthrough/narration.json",
+    "${repo}/docs/town_walkthrough/route_plan.json"
+  ],
+  "stages": [
+    {
+      "id": "logical",
+      "kind": "command",
+      "phase": "engine_consumer",
+      "depends_on": [],
+      "inputs": [],
+      "argv": [
+        "${runtime.godot}",
+        "--headless",
+        "--path",
+        "${repo}/game",
+        "--single-threaded-scene",
+        "res://scenes/town_upgrade_integration_test.tscn",
+        "--",
+        "--report=${iteration}/logical_report.json"
+      ],
+      "outputs": [
+        "${iteration}/logical_report.json"
+      ],
+      "checks": [
+        {
+          "file": "${iteration}/logical_report.json",
+          "pointer": "/status",
+          "equals": "PASS"
+        }
+      ],
+      "effects": [
+        "workspace_write"
+      ],
+      "timeout_seconds": 1800
+    },
+    {
+      "id": "capture",
+      "kind": "command",
+      "phase": "actual_gameplay",
+      "depends_on": [
+        "logical"
+      ],
+      "inputs": [],
+      "argv": [
+        "${runtime.powershell}",
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "${repo}/tools/record-town-walkthrough.ps1",
+        "-Godot",
+        "${runtime.godot}",
+        "-OutputDir",
+        "${iteration}/capture"
+      ],
+      "outputs": [
+        "${iteration}/capture/capture.avi",
+        "${iteration}/capture/walkthrough_report.json",
+        "${iteration}/capture/walkthrough_cues.json",
+        "${iteration}/capture/save_guard.json"
+      ],
+      "checks": [
+        {
+          "file": "${iteration}/capture/walkthrough_report.json",
+          "pointer": "/status",
+          "equals": "PASS"
+        },
+        {
+          "file": "${iteration}/capture/walkthrough_report.json",
+          "pointer": "/preview",
+          "equals": false
+        }
+      ],
+      "effects": [
+        "workspace_write"
+      ],
+      "timeout_seconds": 4200
+    },
+    {
+      "id": "voice",
+      "kind": "command",
+      "phase": "narration",
+      "depends_on": [
+        "capture"
+      ],
+      "inputs": [],
+      "argv": [
+        "${runtime.python}",
+        "${repo}/tools/build_town_walkthrough.py",
+        "voice",
+        "--outdir",
+        "${iteration}/capture",
+        "--raw",
+        "${iteration}/capture/capture.avi",
+        "--report",
+        "${iteration}/capture/walkthrough_report.json",
+        "--output",
+        "${iteration}/capture/LivingTown_Walkthrough.mp4",
+        "--ffmpeg",
+        "${runtime.ffmpeg}",
+        "--ffprobe",
+        "${runtime.ffprobe}",
+        "--edge-deps",
+        "${input.edge_deps}"
+      ],
+      "outputs": [
+        "${iteration}/capture/voice_report.json",
+        "${iteration}/capture/narration.wav",
+        "${iteration}/capture/narration.ass",
+        "${iteration}/capture/narration.srt",
+        "${iteration}/capture/captions.json"
+      ],
+      "checks": [],
+      "effects": [
+        "network"
+      ],
+      "timeout_seconds": 3600
+    },
+    {
+      "id": "compose",
+      "kind": "command",
+      "phase": "recording",
+      "depends_on": [
+        "voice"
+      ],
+      "inputs": [
+        "${iteration}/capture/capture.avi",
+        "${iteration}/capture/walkthrough_report.json",
+        "${iteration}/capture/voice_report.json"
+      ],
+      "argv": [
+        "${runtime.python}",
+        "${repo}/tools/build_town_walkthrough.py",
+        "compose",
+        "--outdir",
+        "${iteration}/capture",
+        "--raw",
+        "${iteration}/capture/capture.avi",
+        "--report",
+        "${iteration}/capture/walkthrough_report.json",
+        "--output",
+        "${iteration}/capture/LivingTown_Walkthrough.mp4",
+        "--ffmpeg",
+        "${runtime.ffmpeg}",
+        "--ffprobe",
+        "${runtime.ffprobe}",
+        "--edge-deps",
+        "${input.edge_deps}"
+      ],
+      "outputs": [
+        "${iteration}/capture/LivingTown_Walkthrough.mp4",
+        "${iteration}/capture/composition_report.json"
+      ],
+      "checks": [],
+      "effects": [],
+      "timeout_seconds": 7200
+    },
+    {
+      "id": "verify-media",
+      "kind": "command",
+      "phase": "technical_verification",
+      "depends_on": [
+        "compose"
+      ],
+      "inputs": [
+        "${iteration}/capture/LivingTown_Walkthrough.mp4",
+        "${iteration}/capture/composition_report.json"
+      ],
+      "argv": [
+        "${runtime.python}",
+        "${repo}/tools/build_town_walkthrough.py",
+        "verify",
+        "--outdir",
+        "${iteration}/capture",
+        "--raw",
+        "${iteration}/capture/capture.avi",
+        "--report",
+        "${iteration}/capture/walkthrough_report.json",
+        "--output",
+        "${iteration}/capture/LivingTown_Walkthrough.mp4",
+        "--ffmpeg",
+        "${runtime.ffmpeg}",
+        "--ffprobe",
+        "${runtime.ffprobe}",
+        "--edge-deps",
+        "${input.edge_deps}"
+      ],
+      "outputs": [
+        "${iteration}/capture/verification_report.json",
+        "${iteration}/capture/qa"
+      ],
+      "checks": [
+        {
+          "file": "${iteration}/capture/verification_report.json",
+          "pointer": "/status",
+          "equals": "PASS"
+        }
+      ],
+      "effects": [],
+      "timeout_seconds": 3600
+    },
+    {
+      "id": "gameplay-art-review",
+      "kind": "review",
+      "phase": "visual_review",
+      "depends_on": [
+        "verify-media"
+      ],
+      "inputs": [
+        "${iteration}/logical_report.json",
+        "${iteration}/capture/verification_report.json"
+      ],
+      "artifacts": [
+        "${iteration}/capture/qa",
+        "${iteration}/capture/LivingTown_Walkthrough.mp4",
+        "${input.concept}"
+      ],
+      "criteria": [
+        "Watch the actual complete route and inspect detailed frames: rooms/furniture/actions, upper floors, terrain routes, foliage coverage, contact/shading and camera framing.",
+        "Listen to the full actual audio; check voice clarity, pacing, sync, subtitle readability and HUD visibility; do not infer these from decode/word-boundary tests.",
+        "Compare close details and whole-town composition with the concept and document unresolved granular differences and performance limitations."
+      ]
+    }
+  ]
+}

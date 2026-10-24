@@ -1,69 +1,59 @@
 {
-  "source": {
-    "url": "https://github.com/ForTe13X/living-town/releases/download/town3d-walkthrough-2026-10-12/LivingTown_Walkthrough.mp4",
-    "sha256": "a1f97fdcc79e232784874c4ebd67c9b52a3ed98cc52982a9baf24872d10184d7",
-    "dimensions": [
-      1280,
-      864
-    ],
-    "duration_seconds": 600,
-    "fps": 24
+  "schema": "living_town.walkthrough.gif_preview.v2",
+  "status": "PASS_DECODED_AND_SAMPLED_VISUAL_REVIEW",
+  "source_mp4": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\LivingTown_Walkthrough.mp4",
+    "sha256": "9c72fa15426706d76307fd1eebaec77404de3cbabb67c80e9928d83ecbf4e252",
+    "bytes": 528362448
   },
-  "preview": {
-    "file": "town3d-walkthrough.gif",
-    "sha256": "a45eec70ad0118ca713311ad445d20138df551fa263c1da783398e7261e8ff79",
-    "bytes": 12265976,
-    "dimensions": [
-      640,
-      384
+  "gif": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\town3d-walkthrough.gif",
+    "sha256": "b68f52e7aef6f6c39fd02247db23491142d9fdface9a06aee030951eb1c91e24",
+    "bytes": 14736629
+  },
+  "source_intervals_seconds": [
+    [
+      10,
+      15
     ],
-    "duration_seconds": 30.0,
-    "frames": 120,
-    "fps": 4,
-    "loop": "infinite",
-    "audio": false,
-    "crop": "Retain the full 1280 x 768 game viewport; remove only the lower 96-pixel narration matte.",
-    "palette": "256 colors; stats_mode=diff; dither=none; diff_mode=rectangle",
-    "source_windows_seconds": [
-      {
-        "start": 5,
-        "end_exclusive": 9,
-        "subject": "Coastal town"
-      },
-      {
-        "start": 72,
-        "end_exclusive": 76,
-        "subject": "Furnished home"
-      },
-      {
-        "start": 105,
-        "end_exclusive": 111,
-        "subject": "Gameplay: stairs and table"
-      },
-      {
-        "start": 174,
-        "end_exclusive": 178,
-        "subject": "Gameplay: cafe"
-      },
-      {
-        "start": 279,
-        "end_exclusive": 283,
-        "subject": "Library inspection"
-      },
-      {
-        "start": 382,
-        "end_exclusive": 386,
-        "subject": "Working harbor"
-      },
-      {
-        "start": 415,
-        "end_exclusive": 419,
-        "subject": "Pond and planting"
-      }
+    [
+      65,
+      70
     ],
-    "ffmpeg_montage_filter": "select=gte(t\\,5)*lt(t\\,9)+gte(t\\,72)*lt(t\\,76)+gte(t\\,105)*lt(t\\,111)+gte(t\\,174)*lt(t\\,178)+gte(t\\,279)*lt(t\\,283)+gte(t\\,382)*lt(t\\,386)+gte(t\\,415)*lt(t\\,419),setpts=N/(24*TB),fps=6,crop=1280:768:0:0",
-    "ffmpeg_palette_filter": "fps=4,scale=640:384:flags=neighbor,palettegen=max_colors=256:stats_mode=diff",
-    "ffmpeg_gif_filter": "[0:v]fps=4,scale=640:384:flags=neighbor[v];[v][1:v]paletteuse=dither=none:diff_mode=rectangle",
-    "verification": "FFmpeg full decode plus Pillow decoding of every frame, duration and loop checks."
-  }
+    [
+      320,
+      325
+    ],
+    [
+      500,
+      505
+    ],
+    [
+      695,
+      700
+    ],
+    [
+      820,
+      825
+    ]
+  ],
+  "filter_complex": "[0:v]select=gte(t\\,10)*lt(t\\,15)+gte(t\\,65)*lt(t\\,70)+gte(t\\,320)*lt(t\\,325)+gte(t\\,500)*lt(t\\,505)+gte(t\\,695)*lt(t\\,700)+gte(t\\,820)*lt(t\\,825),setpts=N/(18*TB),fps=4,crop=1280:768:0:0,scale=640:384:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=256:stats_mode=diff[p];[s1][p]paletteuse=dither=none:diff_mode=rectangle[gif]",
+  "width": 640,
+  "height": 384,
+  "decoded_frames": 120,
+  "duration_seconds": 30.0,
+  "loop": 0,
+  "audio_streams": 0,
+  "crop_scope": "Only96pixelappendedsubtitlematte removed; original1280x768gameframe retained.",
+  "decoded_palette_contact_sheet": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\extra_qa\\gif_contact_sheet.png",
+    "sha256": "04ab074e314ef33163948cbe7a7311e1cf8e9b60936f6c534434a1355c76e1d9",
+    "bytes": 1591852
+  },
+  "visually_reviewed": true,
+  "review_method": "Root viewed actual decoded six-scene palette contact sheet and all six source motion strips; all120GIFframes decoded by Pillow.",
+  "review_scope": "No blank scene, obvious palette corruption, HUD clipping or crop of original game image in reviewed samples. Sparse frame review is not complete motion viewing.",
+  "intended_video_url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/LivingTown_Walkthrough.mp4",
+  "public_retrieval_verified": false,
+  "reviewed_utc": "2026-10-24T05:56:42.675317+00:00"
 }

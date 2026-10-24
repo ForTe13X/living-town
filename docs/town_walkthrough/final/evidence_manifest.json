@@ -1,23 +1,34 @@
 {
   "schema": "living_town.walkthrough.finalization.v1",
-  "generated_utc": "2026-10-12T21:20:43.020210+00:00",
+  "generated_utc": "2026-10-24T06:05:34.759707+00:00",
   "status": "PUBLISHED_LOCAL_EVIDENCE",
-  "public_mp4_url": "https://github.com/ForTe13X/living-town/releases/download/town3d-walkthrough-2026-10-12/LivingTown_Walkthrough.mp4",
+  "public_mp4_url": "https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/LivingTown_Walkthrough.mp4",
   "remote_url_checked": false,
   "movie": {
-    "file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\LivingTown_Walkthrough.mp4",
-    "bytes": 245232169,
-    "sha256": "a1f97fdcc79e232784874c4ebd67c9b52a3ed98cc52982a9baf24872d10184d7"
+    "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\LivingTown_Walkthrough.mp4",
+    "bytes": 528362448,
+    "sha256": "9c72fa15426706d76307fd1eebaec77404de3cbabb67c80e9928d83ecbf4e252"
   },
   "raw": {
-    "file": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\capture.ogv",
-    "bytes": 552075506,
-    "sha256": "5c0f8f745579ed3584c0a688f7c386206bfbce499925305efc12c5236f5c8e64"
+    "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\capture.avi",
+    "bytes": 2140923750,
+    "sha256": "46352f61725d85b56fa641ae4e62773f2bc6a744b922372142129a4fe8732d01"
+  },
+  "finalizer": {
+    "file": "build/town_walkthrough/final_h002_005/finalize_walkthrough_evidence.py",
+    "bytes": 51110,
+    "sha256": "f37c841dfd3190d4cf0b1e9239f11173fb324f969f6f7e79bcc693867e7f9e8c"
+  },
+  "timeline": {
+    "seconds": 840,
+    "fps": 18,
+    "frames": 15120,
+    "chapters": 12
   },
   "checks": {
     "capture": {
-      "passed": 32,
-      "total": 32,
+      "passed": 64,
+      "total": 64,
       "failed": 0
     },
     "technical_video": {
@@ -25,30 +36,21 @@
       "total": 13,
       "failed": 0
     },
-    "source_suites": {
-      "logical": {
-        "passed": 36,
-        "total": 36,
-        "failed": 0
-      },
-      "visual": {
-        "passed": 28,
-        "total": 28,
-        "failed": 0
-      }
-    }
+    "source_suites": {}
   },
   "voice": {
     "voice": "en-US-AriaNeural",
     "rate": "+0%",
-    "words": 945,
-    "paragraphs": 22,
-    "caption_cues": 106
+    "paragraphs": 24,
+    "words": 857,
+    "word_count_method": "sum(len(segment.text.split())) over the actual current24 paragraph texts",
+    "script_declared_spoken_word_count": 855,
+    "caption_cues": 95
   },
   "supervisor": {
-    "run_id": "20261012T135014914Z_6a0f295f264f45d298e2671f94795940",
-    "source_identity": "exact_commit",
-    "source_head": "264e025c88f41f30ab96d9f754760cfe92e6f357",
+    "run_id": "20261024T052654790Z_f612bb9a645c45b7a7220aff928656d8",
+    "source_identity": "dirty_candidate",
+    "source_head": "750edb4921a28e08d0836163a63dbed8fc75226a",
     "game_tree": "8f8bc8147ea05ad66924e1ae1f847b99a5416fd4",
     "source_stable": true,
     "cleanup_verified": true,
@@ -58,1794 +60,2216 @@
     "provided": true,
     "status": "PASS",
     "actual_visual_acceptance": true,
-    "reviewer_kind": "agent",
+    "reviewer_kind": "Codex visual review of actual decoded images",
     "report": {
-      "file": "build/town_walkthrough/final_movie_visual_review.json",
-      "bytes": 18917,
-      "sha256": "0dc28c0c38051ab1472a6f3030e4f3c1cdf8ecedc1986c3275d07eeecec1d69f"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\visual_review.json",
+      "bytes": 5466,
+      "sha256": "73172a99e27fb7a422d649dfe13bd63935d32933e352519e8d39285f3bb4d4e5"
     }
   },
   "audio_review": {
-    "provided": false,
-    "status": "NOT_RECORDED",
-    "actual_human_acceptance": false
+    "provided": true,
+    "status": "PASS",
+    "actual_audio_review_recorded": true,
+    "actual_human_acceptance": false,
+    "listened_to_by_human": false,
+    "reviewer_kind": "Codex technical audio/source-timing review",
+    "method": "Read actual complete decoded PCM statistics, encoded AAC presence/duration, all24measuredcachedEdgeTTStakes and measuredcaptiontimeline; review active-caption timing samples.",
+    "scope": "Signal completeness, non-silence, no fullscale clipping and exact source/timing provenance. Perceptual listening was not performed.",
+    "technical_coverage": {
+      "decoded_QA": {
+        "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\verification_report.json",
+        "bytes": 21181,
+        "sha256": "e3abee4f3dbd10deb61af89932160cc28f253235b6f348639ac16171196a7215"
+      },
+      "review_recorded_coverage": {
+        "samples": 20160512,
+        "duration_seconds": 840.0213333333334,
+        "sample_rate": 24000,
+        "peak_amplitude": 27844,
+        "peak_dbfs": -1.4143661974193422,
+        "rms_dbfs": -20.415379155124857,
+        "nonzero_samples": 20119695,
+        "full_scale_peak": false
+      }
+    },
+    "subjective_coverage": "NOT_RECORDED",
+    "report": {
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\audio_review.json",
+      "bytes": 1568,
+      "sha256": "b64ac23d8cd7e6b9b77df058b1d43a43863ad930a0edc164926dbbd444c66876"
+    },
+    "note": "PASS belongs to the recorded review method/scope. Technical decoding or ASR alone does not assert human listening or complete subjective audio acceptance."
   },
   "semantic_reconciliation": {
     "report_graph_current": true,
     "format_and_chapters_recorded_valid": true,
     "measured_voice_and_captions_valid": true,
-    "boot_prefix_frames": 307,
-    "narration_words": 945,
-    "caption_cues": 106,
+    "boot_prefix_frames": 239,
+    "narration_words": 857,
+    "caption_cues": 95,
     "technical_checks_required": 13,
     "note": "Reconciles completed report data; no engine/media decode or human listening is performed here.",
     "route_check_policy": {
-      "mandatory_named_checks": 31,
-      "mandatory_names": [
-        "actual_Main_F5_writes_profile_save",
-        "actual_Main_F8_restores_saved_profile_and_resident",
-        "actual_Main_verified_town_loaded",
-        "actual_framebuffer_01_town_overview",
-        "actual_framebuffer_02_owner_upper_home",
-        "actual_framebuffer_03_actual_stair_arrival",
-        "actual_framebuffer_04_counter_action_complete",
-        "actual_framebuffer_05_exterior_threshold_visibility",
-        "actual_framebuffer_06_inspection_library",
-        "actual_framebuffer_07_inspection_home",
-        "actual_framebuffer_08_inspection_hotel",
-        "actual_framebuffer_09_irregular_inland_streets",
-        "actual_framebuffer_10_working_harbor",
-        "actual_framebuffer_11_pond_and_planting",
-        "actual_framebuffer_12_autonomous_resident",
-        "actual_framebuffer_13_save_restored_gameplay",
-        "actual_framebuffer_14_final_whole_town",
-        "actual_framebuffer_fixture_menu_cafe1f_counter",
-        "actual_framebuffer_fixture_menu_cafe1f_table",
-        "actual_input_exterior_door_traversal",
-        "actual_input_stair_traversal",
-        "actual_mesh_menu_cafe1f_counter",
-        "actual_mesh_menu_cafe1f_table",
-        "actual_screen_input_street_walk",
-        "closing_morning_reached_through_actual_clock_wait",
-        "existing_Aria_selected_at_real_upper_home",
-        "existing_free_will_runs_live_core_clock",
-        "morning_established_by_real_clock_wait_without_relocation",
-        "real_fixture_action_cafe1f_counter",
-        "real_fixture_action_cafe1f_table",
-        "real_framebuffer_driver"
+      "contract": "unchanged tools/build_town_walkthrough.py capture_contract",
+      "actual_total_checks": 64,
+      "actual_bound_capture_count": 20,
+      "policy": "All actual recorded boolean checks must pass; preview is rejected. Repeated menu checks and source-conditional fixture/upper-floor PNGs retain the current director's actual outcomes."
+    },
+    "static_render_cache_policy": {
+      "runtime_files_verified": 51,
+      "manifest": {
+        "file": "game/assets/town3d/static_render_cache.json",
+        "bytes": 670,
+        "sha256": "1a47f31174ccfeabdddc73e0ebddc733ed6953a22f59856825b94745b1aa5627"
+      },
+      "resource": {
+        "file": "game/assets/town3d/static_render_cache.res",
+        "bytes": 23405364,
+        "sha256": "ede4da4734e95249c03f529683d1fd246861174347a126ec2dc90072650f2d19"
+      },
+      "binding_sha256": "00e711bfa5ab91b29d19b0f9119d9ae0b85711942596389a3c04bd49aa17ca53",
+      "groups": 2880,
+      "source_members": 19197,
+      "actual_Main_cache_hits": 2,
+      "derived_binding_locations": [
+        "walkthrough_report.json.checks[0].detail.model.static_render_batches.preparation.cache.binding_sha256",
+        "walkthrough_report.json.checks[4].detail.model.static_render_batches.preparation.cache.binding_sha256"
       ],
-      "optional_check_allowed": "actual_framebuffer_resident_social_menu",
-      "optional_check_present": true,
-      "actual_total_checks": 32,
-      "actual_bound_capture_count": 17,
-      "policy": "All 31 mandatory named checks must pass. Only the conditional social-menu framebuffer check is permitted in addition, with its matching current PNG SHA and actual menu outcome. No other extras or duplicate names are accepted."
+      "unknown_hash_fields_remain_fail_closed": true
     }
   },
   "verified_recorded_bindings": [
     {
-      "location": "live_route.capture.01_town_overview",
+      "location": "original_finalizer",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/01_town_overview.png",
-      "bytes": 1298942,
-      "sha256": "733502263ea776016198118a1bbf288aa1d6d51691d5c36a9453f2eba1fd8f67"
+      "file": "build/town_walkthrough/finalize_walkthrough_evidence.py",
+      "bytes": 41909,
+      "sha256": "f4418a518f775d19354baa415c73e9feb441c972ac0fb8298f938c62a4dbeaba"
     },
     {
-      "location": "live_route.capture.02_owner_upper_home",
+      "location": "reviewed_current_builder",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/02_owner_upper_home.png",
-      "bytes": 1039963,
-      "sha256": "7961f7c9c7f08134fc46368a9530ff3df63e32d13b222bf284e98c8ce9d01d92"
+      "file": "tools/build_town_walkthrough.py",
+      "bytes": 45993,
+      "sha256": "43e1d016efd5e9935e783adc69f7ff0def99f22dd8f7a612ac9f4bf8916c516b"
     },
     {
-      "location": "live_route.capture.03_actual_stair_arrival",
+      "location": "actual_H002_native",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/03_actual_stair_arrival.png",
-      "bytes": 1347373,
-      "sha256": "c911d1415b31091c732a4d65be6c89d8208bc8e1910f1a70db49aaac2382b888"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\horticulture_native_v16_002\\refined_whole_town.blend",
+      "bytes": 584661611,
+      "sha256": "3162c204689cdb7888a5e0d21bb5dde9be04a89ac6253ba03a88d7f5ddd86274"
     },
     {
-      "location": "live_route.capture.fixture_menu_cafe1f_table",
+      "location": "live_route.capture.01_complete_town_and_woodland.png",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/fixture_menu_cafe1f_table.png",
-      "bytes": 1289574,
-      "sha256": "b730daf11602ae288aa5881622e3a001ae89327fa83778836d07e7f1360edb3f"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\01_complete_town_and_woodland.png",
+      "bytes": 1352838,
+      "sha256": "c8f2f6791b2e8ca28397a3f07f4d393057d3f1ad306ea61f58bf6a0cf9cc7efe"
     },
     {
-      "location": "live_route.capture.fixture_menu_cafe1f_counter",
+      "location": "live_route.capture.02_Aria_refined_character_upper_home.png",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/fixture_menu_cafe1f_counter.png",
-      "bytes": 1243059,
-      "sha256": "521277b0c6e3a8bd855252722bc5112a55ccbd3c5bd5577865ce52cb1a81529a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\02_Aria_refined_character_upper_home.png",
+      "bytes": 1087729,
+      "sha256": "1fbf7e4a210f60717652ab6544c926070f836bb9a91df87a7c797b89c7198a10"
     },
     {
-      "location": "live_route.capture.04_counter_action_complete",
+      "location": "live_route.capture.02b_expandable_activity_and_wishes.png",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/04_counter_action_complete.png",
-      "bytes": 1275587,
-      "sha256": "4741f86f30da26e991860808eeedff48a7da6fa10ed18ae216dd30fe1e43d666"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\02b_expandable_activity_and_wishes.png",
+      "bytes": 1063330,
+      "sha256": "0f92663b571a58bda537a257bfd20dbc6ec8f92d12fa167f1f9913441bfab829"
     },
     {
-      "location": "live_route.capture.05_exterior_threshold_visibility",
+      "location": "live_route.capture.03_actual_stair_arrival.png",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/05_exterior_threshold_visibility.png",
-      "bytes": 1278506,
-      "sha256": "224eb8a0aea5430f9d556c6437f6814bbfc94d47701166c042c032ff24ef5b15"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\03_actual_stair_arrival.png",
+      "bytes": 1258890,
+      "sha256": "432f5f0e005f0ec8b8703bd90736d9df290e308204e741ca4932fe9e2d4cc493"
     },
     {
-      "location": "live_route.capture.06_inspection_library",
+      "location": "live_route.capture.fixture_menu_cafe1f_table.png",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/06_inspection_library.png",
-      "bytes": 1237359,
-      "sha256": "15e2e89f109fb421c1fc2c8cd855a475652577e532a42a6ac287176c46a1d7a2"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\fixture_menu_cafe1f_table.png",
+      "bytes": 1210161,
+      "sha256": "39268ff536626ac27eee8d5eac899e12c80d43e24244987bb9c79f52448ff610"
     },
     {
-      "location": "live_route.capture.07_inspection_home",
+      "location": "live_route.capture.fixture_menu_cafe1f_counter.png",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/07_inspection_home.png",
-      "bytes": 1183398,
-      "sha256": "06912f71ca1613328bf2c81fbbe1889dd638f878d05dfd63c1da0cc448b83d7c"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\fixture_menu_cafe1f_counter.png",
+      "bytes": 1171938,
+      "sha256": "aab253fbb165c92b0d6eb1730706f8e45f3c2ab921b564a2290cf02db84e3771"
     },
     {
-      "location": "live_route.capture.08_inspection_hotel",
+      "location": "live_route.capture.04_cafe_action_and_street_threshold.png",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/08_inspection_hotel.png",
-      "bytes": 1043955,
-      "sha256": "39ce256e47b17de9600f5dbe04c34f930d7b4a31c0d56b973006f764f7611d5a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\04_cafe_action_and_street_threshold.png",
+      "bytes": 1213407,
+      "sha256": "52cdeb190f4e1a2731bfa3bdbcac99f64241ab1a865fbea24808e36730b2a58c"
     },
     {
-      "location": "live_route.capture.09_irregular_inland_streets",
+      "location": "live_route.capture.05_actual_expansion_venue_arrival.png",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/09_irregular_inland_streets.png",
-      "bytes": 1428077,
-      "sha256": "c0f88b0d94fe7e87594788d9fb6585568f976ebf98809f58a89a9cf071bd1be8"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\05_actual_expansion_venue_arrival.png",
+      "bytes": 868148,
+      "sha256": "57e050f2c38a9c63e28cfa04c4f34f77a9cbe28ea6dac27a5a35400caaad6841"
     },
     {
-      "location": "live_route.capture.10_working_harbor",
+      "location": "live_route.capture.fixture_menu_upgrade_Expansion_D09_Orchard_Lane_Loop_R12_L00_Rear_Room_A01_dining_table.png",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/10_working_harbor.png",
-      "bytes": 1267620,
-      "sha256": "0dcb29a3bc57765ec9dc5aa25ccbd5a02604ccbe255ad238e7e089b3a39733d8"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\fixture_menu_upgrade_Expansion_D09_Orchard_Lane_Loop_R12_L00_Rear_Room_A01_dining_table.png",
+      "bytes": 773110,
+      "sha256": "5b28626100e9f3845007c32ce3d5dd63b4a8064493b2cc7f9c73f86ac131d5ea"
     },
     {
-      "location": "live_route.capture.11_pond_and_planting",
+      "location": "live_route.capture.06_actual_expansion_upper_interior.png",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/11_pond_and_planting.png",
-      "bytes": 1267097,
-      "sha256": "3ec4731fa0a59290a2d98694a887d294efc90759536a3718d7aee02319c35843"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\06_actual_expansion_upper_interior.png",
+      "bytes": 745833,
+      "sha256": "c7b656ebf6a840d60bddf6bea22b51d466d4321980aa7f869c0078510943d547"
     },
     {
-      "location": "live_route.capture.resident_social_menu",
+      "location": "live_route.capture.fixture_menu_upgrade_Reserve_Bathhouse_L00_Wash_West_Washbasin_0.png",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/resident_social_menu.png",
-      "bytes": 1086994,
-      "sha256": "2b63c692a1ce701a10cc7870721bc6e54ad3ac9a40564056d1d5a73f410adea7"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\fixture_menu_upgrade_Reserve_Bathhouse_L00_Wash_West_Washbasin_0.png",
+      "bytes": 1064540,
+      "sha256": "8b3735ee7e8b4ae9e96f6f10b5488ff8e8ff11e8abd52cf2712257a6ca27b672"
     },
     {
-      "location": "live_route.capture.12_autonomous_resident",
+      "location": "live_route.capture.07_actual_reserve_bathhouse_action.png",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/12_autonomous_resident.png",
-      "bytes": 1092559,
-      "sha256": "d5e2a6d373105c5b9e169aff597456c10b2f497afede865a3d9e6048cb0ea13a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\07_actual_reserve_bathhouse_action.png",
+      "bytes": 1055124,
+      "sha256": "a76e1980316c381cd64ac52bea67122d9820cbe68fdf1b1439f309353d9303d8"
     },
     {
-      "location": "live_route.capture.13_save_restored_gameplay",
+      "location": "live_route.capture.fixture_menu_upgrade_Reserve_Trailer_N06_L00_Private_Bathroom_Handwash.png",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/13_save_restored_gameplay.png",
-      "bytes": 1147654,
-      "sha256": "6e7b8f5c222d57af0101ee0bbee07b18f0243ccb51bc46aa52db30fb67080b49"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\fixture_menu_upgrade_Reserve_Trailer_N06_L00_Private_Bathroom_Handwash.png",
+      "bytes": 919695,
+      "sha256": "bab3d9f719f038410a7df063986faceb4c7ecd555e950387e1730e33692e8be8"
     },
     {
-      "location": "live_route.capture.14_final_whole_town",
+      "location": "live_route.capture.08_actual_trailer_interior_and_use.png",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/14_final_whole_town.png",
-      "bytes": 1250395,
-      "sha256": "b31e88d876e380e562316a5da12683c147235c0cc7ae1f177aa465068dfa48fe"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\08_actual_trailer_interior_and_use.png",
+      "bytes": 848991,
+      "sha256": "6b5b769af506f438191e4bfd9d1677ab7b872ea7fb1e7dc501a79e568ff69a91"
+    },
+    {
+      "location": "live_route.capture.09_actual_return_from_reserve_to_core.png",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\09_actual_return_from_reserve_to_core.png",
+      "bytes": 1288886,
+      "sha256": "7982348678e54ffa5e4663bdd09d737abdfb0264d858329a5b71f9cbb7477a90"
+    },
+    {
+      "location": "live_route.capture.10_inspection_ravine_bridge_forest.png",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\10_inspection_ravine_bridge_forest.png",
+      "bytes": 1816674,
+      "sha256": "6170b8642a81aa06477986aac8acc9961b83d287219871577a6cf504945710d3"
+    },
+    {
+      "location": "live_route.capture.11_inspection_stone_stair_topography.png",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\11_inspection_stone_stair_topography.png",
+      "bytes": 1831721,
+      "sha256": "4e83c16663ba030529abf8fbce2daa09a18d213b76f4903c84ade1b9e002d283"
+    },
+    {
+      "location": "live_route.capture.12_inspection_pond_horticulture.png",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\12_inspection_pond_horticulture.png",
+      "bytes": 1165154,
+      "sha256": "636c851161d0f88c6f8b1531eb298910da35c3e658289bcdbabbfb568c02ebaa"
+    },
+    {
+      "location": "live_route.capture.13_restored_actual_resident_life.png",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\13_restored_actual_resident_life.png",
+      "bytes": 1200848,
+      "sha256": "e925fb00b540b8ed6943a580840d072d8fa3f2f2f164d9b503a30b4e7d82144e"
+    },
+    {
+      "location": "live_route.capture.14_complete_upgraded_playable_town.png",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\14_complete_upgraded_playable_town.png",
+      "bytes": 1093476,
+      "sha256": "2516f99b353059f99297e7c2884493bbe0df4e23081e267b071d2c0fe4d8f17f"
+    },
+    {
+      "location": "current_static_cache.manifest",
+      "kind": "file_sha256",
+      "file": "game/assets/town3d/static_render_cache.json",
+      "bytes": 670,
+      "sha256": "1a47f31174ccfeabdddc73e0ebddc733ed6953a22f59856825b94745b1aa5627"
+    },
+    {
+      "location": "current_static_cache.resource",
+      "kind": "file_sha256",
+      "file": "game/assets/town3d/static_render_cache.res",
+      "bytes": 23405364,
+      "sha256": "ede4da4734e95249c03f529683d1fd246861174347a126ec2dc90072650f2d19"
     },
     {
       "location": "walkthrough_report.json.captures[0].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/01_town_overview.png",
-      "bytes": 1298942,
-      "sha256": "733502263ea776016198118a1bbf288aa1d6d51691d5c36a9453f2eba1fd8f67"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\01_complete_town_and_woodland.png",
+      "bytes": 1352838,
+      "sha256": "c8f2f6791b2e8ca28397a3f07f4d393057d3f1ad306ea61f58bf6a0cf9cc7efe"
     },
     {
       "location": "walkthrough_report.json.captures[1].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/02_owner_upper_home.png",
-      "bytes": 1039963,
-      "sha256": "7961f7c9c7f08134fc46368a9530ff3df63e32d13b222bf284e98c8ce9d01d92"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\02_Aria_refined_character_upper_home.png",
+      "bytes": 1087729,
+      "sha256": "1fbf7e4a210f60717652ab6544c926070f836bb9a91df87a7c797b89c7198a10"
     },
     {
       "location": "walkthrough_report.json.captures[2].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/03_actual_stair_arrival.png",
-      "bytes": 1347373,
-      "sha256": "c911d1415b31091c732a4d65be6c89d8208bc8e1910f1a70db49aaac2382b888"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\02b_expandable_activity_and_wishes.png",
+      "bytes": 1063330,
+      "sha256": "0f92663b571a58bda537a257bfd20dbc6ec8f92d12fa167f1f9913441bfab829"
     },
     {
       "location": "walkthrough_report.json.captures[3].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/fixture_menu_cafe1f_table.png",
-      "bytes": 1289574,
-      "sha256": "b730daf11602ae288aa5881622e3a001ae89327fa83778836d07e7f1360edb3f"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\03_actual_stair_arrival.png",
+      "bytes": 1258890,
+      "sha256": "432f5f0e005f0ec8b8703bd90736d9df290e308204e741ca4932fe9e2d4cc493"
     },
     {
       "location": "walkthrough_report.json.captures[4].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/fixture_menu_cafe1f_counter.png",
-      "bytes": 1243059,
-      "sha256": "521277b0c6e3a8bd855252722bc5112a55ccbd3c5bd5577865ce52cb1a81529a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\fixture_menu_cafe1f_table.png",
+      "bytes": 1210161,
+      "sha256": "39268ff536626ac27eee8d5eac899e12c80d43e24244987bb9c79f52448ff610"
     },
     {
       "location": "walkthrough_report.json.captures[5].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/04_counter_action_complete.png",
-      "bytes": 1275587,
-      "sha256": "4741f86f30da26e991860808eeedff48a7da6fa10ed18ae216dd30fe1e43d666"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\fixture_menu_cafe1f_counter.png",
+      "bytes": 1171938,
+      "sha256": "aab253fbb165c92b0d6eb1730706f8e45f3c2ab921b564a2290cf02db84e3771"
     },
     {
       "location": "walkthrough_report.json.captures[6].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/05_exterior_threshold_visibility.png",
-      "bytes": 1278506,
-      "sha256": "224eb8a0aea5430f9d556c6437f6814bbfc94d47701166c042c032ff24ef5b15"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\04_cafe_action_and_street_threshold.png",
+      "bytes": 1213407,
+      "sha256": "52cdeb190f4e1a2731bfa3bdbcac99f64241ab1a865fbea24808e36730b2a58c"
     },
     {
       "location": "walkthrough_report.json.captures[7].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/06_inspection_library.png",
-      "bytes": 1237359,
-      "sha256": "15e2e89f109fb421c1fc2c8cd855a475652577e532a42a6ac287176c46a1d7a2"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\05_actual_expansion_venue_arrival.png",
+      "bytes": 868148,
+      "sha256": "57e050f2c38a9c63e28cfa04c4f34f77a9cbe28ea6dac27a5a35400caaad6841"
     },
     {
       "location": "walkthrough_report.json.captures[8].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/07_inspection_home.png",
-      "bytes": 1183398,
-      "sha256": "06912f71ca1613328bf2c81fbbe1889dd638f878d05dfd63c1da0cc448b83d7c"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\fixture_menu_upgrade_Expansion_D09_Orchard_Lane_Loop_R12_L00_Rear_Room_A01_dining_table.png",
+      "bytes": 773110,
+      "sha256": "5b28626100e9f3845007c32ce3d5dd63b4a8064493b2cc7f9c73f86ac131d5ea"
     },
     {
       "location": "walkthrough_report.json.captures[9].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/08_inspection_hotel.png",
-      "bytes": 1043955,
-      "sha256": "39ce256e47b17de9600f5dbe04c34f930d7b4a31c0d56b973006f764f7611d5a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\06_actual_expansion_upper_interior.png",
+      "bytes": 745833,
+      "sha256": "c7b656ebf6a840d60bddf6bea22b51d466d4321980aa7f869c0078510943d547"
     },
     {
       "location": "walkthrough_report.json.captures[10].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/09_irregular_inland_streets.png",
-      "bytes": 1428077,
-      "sha256": "c0f88b0d94fe7e87594788d9fb6585568f976ebf98809f58a89a9cf071bd1be8"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\fixture_menu_upgrade_Reserve_Bathhouse_L00_Wash_West_Washbasin_0.png",
+      "bytes": 1064540,
+      "sha256": "8b3735ee7e8b4ae9e96f6f10b5488ff8e8ff11e8abd52cf2712257a6ca27b672"
     },
     {
       "location": "walkthrough_report.json.captures[11].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/10_working_harbor.png",
-      "bytes": 1267620,
-      "sha256": "0dcb29a3bc57765ec9dc5aa25ccbd5a02604ccbe255ad238e7e089b3a39733d8"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\07_actual_reserve_bathhouse_action.png",
+      "bytes": 1055124,
+      "sha256": "a76e1980316c381cd64ac52bea67122d9820cbe68fdf1b1439f309353d9303d8"
     },
     {
       "location": "walkthrough_report.json.captures[12].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/11_pond_and_planting.png",
-      "bytes": 1267097,
-      "sha256": "3ec4731fa0a59290a2d98694a887d294efc90759536a3718d7aee02319c35843"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\fixture_menu_upgrade_Reserve_Trailer_N06_L00_Private_Bathroom_Handwash.png",
+      "bytes": 919695,
+      "sha256": "bab3d9f719f038410a7df063986faceb4c7ecd555e950387e1730e33692e8be8"
     },
     {
       "location": "walkthrough_report.json.captures[13].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/resident_social_menu.png",
-      "bytes": 1086994,
-      "sha256": "2b63c692a1ce701a10cc7870721bc6e54ad3ac9a40564056d1d5a73f410adea7"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\08_actual_trailer_interior_and_use.png",
+      "bytes": 848991,
+      "sha256": "6b5b769af506f438191e4bfd9d1677ab7b872ea7fb1e7dc501a79e568ff69a91"
     },
     {
       "location": "walkthrough_report.json.captures[14].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/12_autonomous_resident.png",
-      "bytes": 1092559,
-      "sha256": "d5e2a6d373105c5b9e169aff597456c10b2f497afede865a3d9e6048cb0ea13a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\09_actual_return_from_reserve_to_core.png",
+      "bytes": 1288886,
+      "sha256": "7982348678e54ffa5e4663bdd09d737abdfb0264d858329a5b71f9cbb7477a90"
     },
     {
       "location": "walkthrough_report.json.captures[15].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/13_save_restored_gameplay.png",
-      "bytes": 1147654,
-      "sha256": "6e7b8f5c222d57af0101ee0bbee07b18f0243ccb51bc46aa52db30fb67080b49"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\10_inspection_ravine_bridge_forest.png",
+      "bytes": 1816674,
+      "sha256": "6170b8642a81aa06477986aac8acc9961b83d287219871577a6cf504945710d3"
     },
     {
       "location": "walkthrough_report.json.captures[16].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/14_final_whole_town.png",
-      "bytes": 1250395,
-      "sha256": "b31e88d876e380e562316a5da12683c147235c0cc7ae1f177aa465068dfa48fe"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\11_inspection_stone_stair_topography.png",
+      "bytes": 1831721,
+      "sha256": "4e83c16663ba030529abf8fbce2daa09a18d213b76f4903c84ade1b9e002d283"
+    },
+    {
+      "location": "walkthrough_report.json.captures[17].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\12_inspection_pond_horticulture.png",
+      "bytes": 1165154,
+      "sha256": "636c851161d0f88c6f8b1531eb298910da35c3e658289bcdbabbfb568c02ebaa"
+    },
+    {
+      "location": "walkthrough_report.json.captures[18].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\13_restored_actual_resident_life.png",
+      "bytes": 1200848,
+      "sha256": "e925fb00b540b8ed6943a580840d072d8fa3f2f2f164d9b503a30b4e7d82144e"
+    },
+    {
+      "location": "walkthrough_report.json.captures[19].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\14_complete_upgraded_playable_town.png",
+      "bytes": 1093476,
+      "sha256": "2516f99b353059f99297e7c2884493bbe0df4e23081e267b071d2c0fe4d8f17f"
+    },
+    {
+      "location": "walkthrough_report.json.characters_manifest_sha256",
+      "kind": "file_sha256",
+      "file": "game/data/town3d/characters.json",
+      "bytes": 83806,
+      "sha256": "00b272523dffef832a1025bba68b347d6a7917023898ba4fd6d4d20e48210970"
+    },
+    {
+      "location": "walkthrough_report.json.checks[0].detail.model.source_asset_set_sha256",
+      "kind": "derived_staged_asset_set_sha256",
+      "sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a"
     },
     {
       "location": "walkthrough_report.json.checks[0].detail.model.source_blend_sha256",
       "kind": "file_sha256",
-      "file": "art/living_town/living_town_complete.blend",
-      "bytes": 47817270,
-      "sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\horticulture_native_v16_002\\refined_whole_town.blend",
+      "bytes": 584661611,
+      "sha256": "3162c204689cdb7888a5e0d21bb5dde9be04a89ac6253ba03a88d7f5ddd86274"
     },
     {
       "location": "walkthrough_report.json.checks[0].detail.model.source_glb_sha256",
-      "kind": "file_sha256",
-      "file": "game/assets/town3d/living_town_game.glb",
-      "bytes": 203666604,
-      "sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c"
+      "kind": "derived_staged_asset_set_sha256",
+      "sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a"
     },
     {
-      "location": "walkthrough_report.json.checks[27].detail.sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/recorded_quicksave.dat",
-      "bytes": 2486624,
-      "sha256": "4442dbea92510e76a60a50e86b2ee5f2e5f352b0c02d59b62221874652c0c8df"
+      "location": "walkthrough_report.json.checks[0].detail.model.static_render_batches.preparation.cache.binding_sha256",
+      "kind": "verified_current_cache_internal_binding_sha256",
+      "sha256": "00e711bfa5ab91b29d19b0f9119d9ae0b85711942596389a3c04bd49aa17ca53"
     },
     {
-      "location": "walkthrough_report.json.checks[28].detail.world_reset.profile.projection_sha256",
+      "location": "walkthrough_report.json.checks[0].detail.model.static_render_batches.preparation.cache.resource_sha256",
+      "kind": "file_sha256",
+      "file": "game/assets/town3d/static_render_cache.res",
+      "bytes": 23405364,
+      "sha256": "ede4da4734e95249c03f529683d1fd246861174347a126ec2dc90072650f2d19"
+    },
+    {
+      "location": "walkthrough_report.json.checks[4].detail.model.source_asset_set_sha256",
+      "kind": "derived_staged_asset_set_sha256",
+      "sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a"
+    },
+    {
+      "location": "walkthrough_report.json.checks[4].detail.model.source_blend_sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\horticulture_native_v16_002\\refined_whole_town.blend",
+      "bytes": 584661611,
+      "sha256": "3162c204689cdb7888a5e0d21bb5dde9be04a89ac6253ba03a88d7f5ddd86274"
+    },
+    {
+      "location": "walkthrough_report.json.checks[4].detail.model.source_glb_sha256",
+      "kind": "derived_staged_asset_set_sha256",
+      "sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a"
+    },
+    {
+      "location": "walkthrough_report.json.checks[4].detail.model.static_render_batches.preparation.cache.binding_sha256",
+      "kind": "verified_current_cache_internal_binding_sha256",
+      "sha256": "00e711bfa5ab91b29d19b0f9119d9ae0b85711942596389a3c04bd49aa17ca53"
+    },
+    {
+      "location": "walkthrough_report.json.checks[4].detail.model.static_render_batches.preparation.cache.resource_sha256",
+      "kind": "file_sha256",
+      "file": "game/assets/town3d/static_render_cache.res",
+      "bytes": 23405364,
+      "sha256": "ede4da4734e95249c03f529683d1fd246861174347a126ec2dc90072650f2d19"
+    },
+    {
+      "location": "walkthrough_report.json.checks[59].detail.sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\recorded_quicksave.dat",
+      "bytes": 27733060,
+      "sha256": "5ecb6b62154564985bae0783bbfbe84afd37149f9ff305d9ce093b44579ff089"
+    },
+    {
+      "location": "walkthrough_report.json.checks[60].detail.restored.profile.projection_sha256",
       "kind": "file_sha256",
       "file": "game/data/town3d/projection.json",
-      "bytes": 1133444,
-      "sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
+      "bytes": 10703662,
+      "sha256": "98146b008f130870d0067a7c1e0940f6ab373b5f255e5ba66ac24ca0ed48b3bc"
     },
     {
       "location": "walkthrough_report.json.harness_sha256",
       "kind": "file_sha256",
       "file": "game/scripts/town_walkthrough.gd",
-      "bytes": 31517,
-      "sha256": "5da35636355dcb1e590fa474765bd4892e3d3f96d2d3fe1607567131b4385138"
+      "bytes": 44099,
+      "sha256": "09c0a1f5fe86c449c9034435341b50badad16f42648f78aac773d40568dd1fad"
+    },
+    {
+      "location": "walkthrough_report.json.profile_sha256",
+      "kind": "file_sha256",
+      "file": "game/data/town3d/profile.json",
+      "bytes": 3427,
+      "sha256": "8499a7d376739dcb759d5e404c277a707c8443230763dcfd7962fe730b1fcb4e"
     },
     {
       "location": "walkthrough_report.json.projection_sha256",
       "kind": "file_sha256",
       "file": "game/data/town3d/projection.json",
-      "bytes": 1133444,
-      "sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
+      "bytes": 10703662,
+      "sha256": "98146b008f130870d0067a7c1e0940f6ab373b5f255e5ba66ac24ca0ed48b3bc"
     },
     {
       "location": "walkthrough_report.json.route_plan_sha256",
       "kind": "file_sha256",
       "file": "docs/town_walkthrough/route_plan.json",
-      "bytes": 11307,
-      "sha256": "c92282e0e4167cf2a2edc1fc96f5bcc5a3a10beb13700072e201ab949fcf6fdb"
+      "bytes": 11625,
+      "sha256": "30f560b986c095d09456aa3a4b03df76cc798e7413b5e1a151adf4ccaa9a1667"
     },
     {
       "location": "walkthrough_report.json.source_blend_sha256",
       "kind": "file_sha256",
-      "file": "art/living_town/living_town_complete.blend",
-      "bytes": 47817270,
-      "sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\horticulture_native_v16_002\\refined_whole_town.blend",
+      "bytes": 584661611,
+      "sha256": "3162c204689cdb7888a5e0d21bb5dde9be04a89ac6253ba03a88d7f5ddd86274"
     },
     {
       "location": "walkthrough_report.json.source_glb_sha256",
+      "kind": "derived_staged_asset_set_sha256",
+      "sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a"
+    },
+    {
+      "location": "walkthrough_report.json.stage_manifest_sha256",
       "kind": "file_sha256",
-      "file": "game/assets/town3d/living_town_game.glb",
-      "bytes": 203666604,
-      "sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c"
+      "file": "game/assets/town3d/stage_manifest.json",
+      "bytes": 7973,
+      "sha256": "14841567aa0172536446f1ac95e161b8dda3249d72a5956f83802e6711f429d0"
     },
     {
       "location": "walkthrough_report.json.world_reset_events[0].profile.projection_sha256",
       "kind": "file_sha256",
       "file": "game/data/town3d/projection.json",
-      "bytes": 1133444,
-      "sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
+      "bytes": 10703662,
+      "sha256": "98146b008f130870d0067a7c1e0940f6ab373b5f255e5ba66ac24ca0ed48b3bc"
     },
     {
       "location": "composition_report.json.raw.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/capture.ogv",
-      "bytes": 552075506,
-      "sha256": "5c0f8f745579ed3584c0a688f7c386206bfbce499925305efc12c5236f5c8e64"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\capture.avi",
+      "bytes": 2140923750,
+      "sha256": "46352f61725d85b56fa641ae4e62773f2bc6a744b922372142129a4fe8732d01"
     },
     {
       "location": "composition_report.json.capture_report.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/walkthrough_report.json",
-      "bytes": 41907,
-      "sha256": "8084c954963f87f07cb5a432c7b1d73476efb58d60f31a469c7a29a9f710856c"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\walkthrough_report.json",
+      "bytes": 214006,
+      "sha256": "f1d9e3d026f7189da354504e3fbf6f535d14162846e7821df717dce8ae5c1240"
     },
     {
       "location": "composition_report.json.voice_report.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_report.json",
-      "bytes": 139918,
-      "sha256": "9facf6b38bc84a6a2b2827309b0cdb5c10d5d18e671b1c4f72990ecbc1aca0ab"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_report.json",
+      "bytes": 133169,
+      "sha256": "17b83a15b01239307bcafb86f3c765a8e41472c5b0eb6c02f9719f77017d76be"
     },
     {
       "location": "composition_report.json.narration.sha256",
       "kind": "file_sha256",
       "file": "docs/town_walkthrough/narration.json",
-      "bytes": 16116,
-      "sha256": "12fb27ecfc3421288554243e858c7f9094af86a3f5bcd03bd6f8946520bcae66"
+      "bytes": 13673,
+      "sha256": "9c3e3a7e41e53a5fd3968b9213f3b54ed121b16bb39cfdc057edc877a8208961"
     },
     {
       "location": "composition_report.json.route.sha256",
       "kind": "file_sha256",
       "file": "docs/town_walkthrough/route_plan.json",
-      "bytes": 11307,
-      "sha256": "c92282e0e4167cf2a2edc1fc96f5bcc5a3a10beb13700072e201ab949fcf6fdb"
+      "bytes": 11625,
+      "sha256": "30f560b986c095d09456aa3a4b03df76cc798e7413b5e1a151adf4ccaa9a1667"
     },
     {
       "location": "composition_report.json.builder.sha256",
       "kind": "file_sha256",
       "file": "tools/build_town_walkthrough.py",
-      "bytes": 45349,
-      "sha256": "2a9ae48e88b12eab5d898c7cb74bcf22779254e22f99ab71273fdf2b4d9c4778"
+      "bytes": 45993,
+      "sha256": "43e1d016efd5e9935e783adc69f7ff0def99f22dd8f7a612ac9f4bf8916c516b"
     },
     {
       "location": "composition_report.json.source_glb_sha256",
-      "kind": "file_sha256",
-      "file": "game/assets/town3d/living_town_game.glb",
-      "bytes": 203666604,
-      "sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c"
+      "kind": "derived_staged_asset_set_sha256",
+      "sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a"
     },
     {
       "location": "composition_report.json.source_blend_sha256",
       "kind": "file_sha256",
-      "file": "art/living_town/living_town_complete.blend",
-      "bytes": 47817270,
-      "sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\horticulture_native_v16_002\\refined_whole_town.blend",
+      "bytes": 584661611,
+      "sha256": "3162c204689cdb7888a5e0d21bb5dde9be04a89ac6253ba03a88d7f5ddd86274"
     },
     {
       "location": "composition_report.json.projection_sha256",
       "kind": "file_sha256",
       "file": "game/data/town3d/projection.json",
-      "bytes": 1133444,
-      "sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
-    },
-    {
-      "location": "composition_report.json.raw_video_timeline.packet_table.sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/raw_video_packets.json",
-      "bytes": 1163332,
-      "sha256": "edb234ff11c827bce0c4bae7580c8ad99b22feeb2bb4896e30132928445ff5ac"
+      "bytes": 10703662,
+      "sha256": "98146b008f130870d0067a7c1e0940f6ab373b5f255e5ba66ac24ca0ed48b3bc"
     },
     {
       "location": "composition_report.json.assets.narration_normalized.wav.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/narration_normalized.wav",
-      "bytes": 28800078,
-      "sha256": "56b5803141704b64e463e29495f8609fa2355f53ed44e355569a1dbb6dfe516e"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration_normalized.wav",
+      "bytes": 40320078,
+      "sha256": "20dc2e83e382ca196c259b7cfeb083f9acffffa571b6a09c3dbbe55aec6eb9c4"
     },
     {
       "location": "composition_report.json.assets.chapters.ffmetadata.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/chapters.ffmetadata",
-      "bytes": 1171,
-      "sha256": "8759935ef433a855dae4c666d6d4c7e28a2f99e86b9fddeb3729f02d30e9b31e"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\chapters.ffmetadata",
+      "bytes": 1251,
+      "sha256": "a642dd69dee52af816ad4deb00271fbb29c45903ac06bbda59e82662f692628d"
     },
     {
       "location": "composition_report.json.assets.composition_filters.txt.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/composition_filters.txt",
-      "bytes": 430,
-      "sha256": "89ffa2e11defe91cd4053c7c6afb3b91b42ba159e53ef8e46d09dde81337e576"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\composition_filters.txt",
+      "bytes": 394,
+      "sha256": "03c38802be1b8b4fc57300eac0e7e4de8f33020bc47afb8faa675a4f218bb309"
     },
     {
       "location": "composition_report.json.assets.narration.ass.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/narration.ass",
-      "bytes": 12258,
-      "sha256": "fac0a4c068996b19da1e0b4b781a5da1f3f2a456e89f931f099c7410e33c604a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration.ass",
+      "bytes": 11017,
+      "sha256": "d352b17a7033a38a69d9e932454c331e7134e4f7e1cb06d04b23c636e25a5bd6"
     },
     {
       "location": "composition_report.json.assets.narration.srt.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/narration.srt",
-      "bytes": 10268,
-      "sha256": "776f1aa2df6b8d0cec7356f6e576ebe09ab1b05f7e7fbd57c9b20d131c791ae8"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration.srt",
+      "bytes": 9163,
+      "sha256": "ef5e567cddb771ecbd93af4d0482474f71cd4a546e1eca1f50cf4d00d5f74f4f"
     },
     {
       "location": "composition_report.json.assets.captions.json.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/captions.json",
-      "bytes": 21029,
-      "sha256": "ee721afcb2f4dc8d8270e0dec4df7c70bac3fdab2b914c7bb53d6a30f36fe1b5"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\captions.json",
+      "bytes": 19020,
+      "sha256": "20c84fc3c132c3a559edcc73a5b29e1b4e6f9f08c5500ffd43fddb2b553c5cd0"
     },
     {
       "location": "composition_report.json.output.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/LivingTown_Walkthrough.mp4",
-      "bytes": 245232169,
-      "sha256": "a1f97fdcc79e232784874c4ebd67c9b52a3ed98cc52982a9baf24872d10184d7"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\LivingTown_Walkthrough.mp4",
+      "bytes": 528362448,
+      "sha256": "9c72fa15426706d76307fd1eebaec77404de3cbabb67c80e9928d83ecbf4e252"
     },
     {
       "location": "verification_report.json.output.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/LivingTown_Walkthrough.mp4",
-      "bytes": 245232169,
-      "sha256": "a1f97fdcc79e232784874c4ebd67c9b52a3ed98cc52982a9baf24872d10184d7"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\LivingTown_Walkthrough.mp4",
+      "bytes": 528362448,
+      "sha256": "9c72fa15426706d76307fd1eebaec77404de3cbabb67c80e9928d83ecbf4e252"
     },
     {
       "location": "verification_report.json.composition_report.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/composition_report.json",
-      "bytes": 7727,
-      "sha256": "5c524861b5c334a81bb10fcab5fdcb6c1cd91dc8bdeda0b67e141855ee03222c"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\composition_report.json",
+      "bytes": 7121,
+      "sha256": "b658d4d5590a33cfae5901de0b39351b3565cbbfba075114ace2e847cb6bc21e"
     },
     {
       "location": "verification_report.json.capture_report.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/walkthrough_report.json",
-      "bytes": 41907,
-      "sha256": "8084c954963f87f07cb5a432c7b1d73476efb58d60f31a469c7a29a9f710856c"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\walkthrough_report.json",
+      "bytes": 214006,
+      "sha256": "f1d9e3d026f7189da354504e3fbf6f535d14162846e7821df717dce8ae5c1240"
     },
     {
       "location": "verification_report.json.voice_report.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_report.json",
-      "bytes": 139918,
-      "sha256": "9facf6b38bc84a6a2b2827309b0cdb5c10d5d18e671b1c4f72990ecbc1aca0ab"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_report.json",
+      "bytes": 133169,
+      "sha256": "17b83a15b01239307bcafb86f3c765a8e41472c5b0eb6c02f9719f77017d76be"
     },
     {
       "location": "verification_report.json.narration.sha256",
       "kind": "file_sha256",
       "file": "docs/town_walkthrough/narration.json",
-      "bytes": 16116,
-      "sha256": "12fb27ecfc3421288554243e858c7f9094af86a3f5bcd03bd6f8946520bcae66"
+      "bytes": 13673,
+      "sha256": "9c3e3a7e41e53a5fd3968b9213f3b54ed121b16bb39cfdc057edc877a8208961"
     },
     {
       "location": "verification_report.json.route.sha256",
       "kind": "file_sha256",
       "file": "docs/town_walkthrough/route_plan.json",
-      "bytes": 11307,
-      "sha256": "c92282e0e4167cf2a2edc1fc96f5bcc5a3a10beb13700072e201ab949fcf6fdb"
+      "bytes": 11625,
+      "sha256": "30f560b986c095d09456aa3a4b03df76cc798e7413b5e1a151adf4ccaa9a1667"
     },
     {
       "location": "verification_report.json.builder.sha256",
       "kind": "file_sha256",
       "file": "tools/build_town_walkthrough.py",
-      "bytes": 45349,
-      "sha256": "2a9ae48e88b12eab5d898c7cb74bcf22779254e22f99ab71273fdf2b4d9c4778"
+      "bytes": 45993,
+      "sha256": "43e1d016efd5e9935e783adc69f7ff0def99f22dd8f7a612ac9f4bf8916c516b"
     },
     {
       "location": "verification_report.json.source_glb_sha256",
-      "kind": "file_sha256",
-      "file": "game/assets/town3d/living_town_game.glb",
-      "bytes": 203666604,
-      "sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c"
+      "kind": "derived_staged_asset_set_sha256",
+      "sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a"
     },
     {
       "location": "verification_report.json.source_blend_sha256",
       "kind": "file_sha256",
-      "file": "art/living_town/living_town_complete.blend",
-      "bytes": 47817270,
-      "sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\horticulture_native_v16_002\\refined_whole_town.blend",
+      "bytes": 584661611,
+      "sha256": "3162c204689cdb7888a5e0d21bb5dde9be04a89ac6253ba03a88d7f5ddd86274"
     },
     {
       "location": "verification_report.json.projection_sha256",
       "kind": "file_sha256",
       "file": "game/data/town3d/projection.json",
-      "bytes": 1133444,
-      "sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
+      "bytes": 10703662,
+      "sha256": "98146b008f130870d0067a7c1e0940f6ab373b5f255e5ba66ac24ca0ed48b3bc"
     },
     {
       "location": "verification_report.json.qa_images.samples[0].image.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_01.png",
-      "bytes": 895601,
-      "sha256": "eb06fb51499bedd215fd934e2e9e3fab9fd5ec38f3c1772423355ab0f5ae422a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_01.png",
+      "bytes": 1465821,
+      "sha256": "32bbd2c50a560ae6e85423d133239e0fc8573d1f2c72fb5a4612ac5702b32895"
     },
     {
       "location": "verification_report.json.qa_images.samples[1].image.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_02.png",
-      "bytes": 1067453,
-      "sha256": "cc2ba224bb7698aa3faeb5a9155d72081cf9992044fc139af3a7475cc544c7b3"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_02.png",
+      "bytes": 922805,
+      "sha256": "49a9621df4482aae7d4e6d765ecb16489d63047c3611cef90cdb8872d76812f8"
     },
     {
       "location": "verification_report.json.qa_images.samples[2].image.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_03.png",
-      "bytes": 1134035,
-      "sha256": "a4ca22cc719fea799fe3ad2bc2c2e9baae568ae7d46f212401dc37220e79be53"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_03.png",
+      "bytes": 1064688,
+      "sha256": "f1b0b7c06bc5fb68337571e2aa50fd324f2475b54cf7961c0d722ae1a165a685"
     },
     {
       "location": "verification_report.json.qa_images.samples[3].image.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_04.png",
-      "bytes": 1101048,
-      "sha256": "26c5cfb6cf58fb2cdd0a3299f5ab070749035ca7efc9047fe3b2be31ccc618a1"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_04.png",
+      "bytes": 1007318,
+      "sha256": "b9b1a23288cd5a366c87804cbd86a3a3a60ce4d4a85c55b1d2851478d2cdbce7"
     },
     {
       "location": "verification_report.json.qa_images.samples[4].image.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_05.png",
-      "bytes": 1016967,
-      "sha256": "d3dba27baa0965911bc3be29a90d59e4560d7eb4f0bc58c0f88b3c5c69a43ff1"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_05.png",
+      "bytes": 566539,
+      "sha256": "d9334266d3b9a4e98ecc9a13d82a177af698ce98d77f0349b1bc10fb88282689"
     },
     {
       "location": "verification_report.json.qa_images.samples[5].image.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_06.png",
-      "bytes": 1024016,
-      "sha256": "41a5f7f740d2f933ed3d52533297ce85c8cc2420c8e5e3de115d03d93882a029"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_06.png",
+      "bytes": 310785,
+      "sha256": "49f2a2167b208a71369d3ea6003c661e27e70badda2e052deb97c3a38a254575"
     },
     {
       "location": "verification_report.json.qa_images.samples[6].image.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_07.png",
-      "bytes": 1290563,
-      "sha256": "1a1ee51c1a026b708f81d326ab96452953a81a6912f4126bac694366f85d2094"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_07.png",
+      "bytes": 777160,
+      "sha256": "ded8c373de748d3954331ccd67d89d43f783a1ea1784d02fb7de8c98d0c4b693"
     },
     {
       "location": "verification_report.json.qa_images.samples[7].image.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_08.png",
-      "bytes": 1023334,
-      "sha256": "37e077242aaf72656adb90a9e0df9cf5632231871d0d2c8e20d6de75ef5e8f61"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_08.png",
+      "bytes": 669498,
+      "sha256": "f31f09db069b46fdc99e9432dd8a899a4bb7b9c29eccd3b5ba8da4dcdea50f2f"
     },
     {
       "location": "verification_report.json.qa_images.samples[8].image.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_09.png",
-      "bytes": 926933,
-      "sha256": "fd9a1f26a8511fb227badd433bc809c9a4e79ab8bd500a0f916f6a969b465031"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_09.png",
+      "bytes": 1085549,
+      "sha256": "11b0534e1d80534db50f99ec2ece690e942548a30ad25c03160e1b564844785a"
     },
     {
       "location": "verification_report.json.qa_images.samples[9].image.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_10.png",
-      "bytes": 993000,
-      "sha256": "24d6c512ee6789e42f804ea0c6b7d768e67878abb0014aa80f5ab9dfdd8915ed"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_10.png",
+      "bytes": 1647724,
+      "sha256": "c3fa563a768d9ae5f35c67349396c37592227d9340916688ea4595955183669f"
     },
     {
       "location": "verification_report.json.qa_images.samples[10].image.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_11.png",
-      "bytes": 1238274,
-      "sha256": "cf5d4c937db6d2ffe4a3607a4ea2cde4e3029e6380ed08d25c176bf7b6ac31b6"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_11.png",
+      "bytes": 796823,
+      "sha256": "32d156c2d504453da8ec512fbbdbbb1d7be6f012f46e1a63764c3dcc9275067f"
+    },
+    {
+      "location": "verification_report.json.qa_images.samples[11].image.sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_12.png",
+      "bytes": 1528784,
+      "sha256": "b19f7dcd394f481b798ca8a0ff1f85a2e23fcd42d5f75644233b50765fa4b3a1"
     },
     {
       "location": "verification_report.json.qa_images.contact_sheet.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/contact_sheet.png",
-      "bytes": 1141755,
-      "sha256": "3edbdc6cf36d9cc7efea0da83d6a56c5db087048df4ff47c0c5cba6a9079ae3c"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\contact_sheet.png",
+      "bytes": 1014103,
+      "sha256": "1912fb1e864656b2acdd0febf2ab957cf8ea1be51e192ae338a444f51bc67243"
     },
     {
       "location": "save_guard.json.walkthrough_report_sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/walkthrough_report.json",
-      "bytes": 41907,
-      "sha256": "8084c954963f87f07cb5a432c7b1d73476efb58d60f31a469c7a29a9f710856c"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\walkthrough_report.json",
+      "bytes": 214006,
+      "sha256": "f1d9e3d026f7189da354504e3fbf6f535d14162846e7821df717dce8ae5c1240"
     },
     {
       "location": "voice_report.json.narration.sha256",
       "kind": "file_sha256",
       "file": "docs/town_walkthrough/narration.json",
-      "bytes": 16116,
-      "sha256": "12fb27ecfc3421288554243e858c7f9094af86a3f5bcd03bd6f8946520bcae66"
+      "bytes": 13673,
+      "sha256": "9c3e3a7e41e53a5fd3968b9213f3b54ed121b16bb39cfdc057edc877a8208961"
     },
     {
       "location": "voice_report.json.route.sha256",
       "kind": "file_sha256",
       "file": "docs/town_walkthrough/route_plan.json",
-      "bytes": 11307,
-      "sha256": "c92282e0e4167cf2a2edc1fc96f5bcc5a3a10beb13700072e201ab949fcf6fdb"
+      "bytes": 11625,
+      "sha256": "30f560b986c095d09456aa3a4b03df76cc798e7413b5e1a151adf4ccaa9a1667"
     },
     {
       "location": "voice_report.json.builder.sha256",
       "kind": "file_sha256",
       "file": "tools/build_town_walkthrough.py",
-      "bytes": 45349,
-      "sha256": "2a9ae48e88b12eab5d898c7cb74bcf22779254e22f99ab71273fdf2b4d9c4778"
+      "bytes": 45993,
+      "sha256": "43e1d016efd5e9935e783adc69f7ff0def99f22dd8f7a612ac9f4bf8916c516b"
     },
     {
       "location": "voice_report.json.takes[0].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "fe687957a79e747f5b2978807dca45c6390535b3059789d374b2234c531e7c71"
+      "sha256": "38891b1f29ec6fe6651a203d5901fd2d4870e2dbd3e28d40d71c73351ac18356"
     },
     {
       "location": "voice_report.json.takes[0].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/fe687957a79e747f5b2978807dca45c6390535b3059789d374b2234c531e7c71.mp3",
-      "bytes": 95616,
-      "sha256": "2e78ad375cc9ec9cc4eb0130864e4a2ccf34f4cd66ddcdefb7d18dc5953b111e"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\38891b1f29ec6fe6651a203d5901fd2d4870e2dbd3e28d40d71c73351ac18356.mp3",
+      "bytes": 83520,
+      "sha256": "cc185c8f67a6bffa4a5cc31a07cf7bbb94d3270b5bc710f210deae92ddc9b560"
     },
     {
       "location": "voice_report.json.takes[0].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/fe687957a79e747f5b2978807dca45c6390535b3059789d374b2234c531e7c71.words.json",
-      "bytes": 3121,
-      "sha256": "bc7ab81a4d19d8df2025be508c6843fa85a6074eb04cd1702a2194d48102fc31"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\38891b1f29ec6fe6651a203d5901fd2d4870e2dbd3e28d40d71c73351ac18356.words.json",
+      "bytes": 3106,
+      "sha256": "3f26449e3bfce9137b8c34d29b2a510c0b19a2caeee5e8db18f77129028a76fb"
     },
     {
       "location": "voice_report.json.takes[1].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "6dbcaffd8326a1917e1c8cb3070d4d33ef6a5ffcdf683cccaff54dda3f3bceb2"
+      "sha256": "1ffe8632ccf7bb81cbe2092560eb22e45f893e2eae7afa795123b9641c48e656"
     },
     {
       "location": "voice_report.json.takes[1].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/6dbcaffd8326a1917e1c8cb3070d4d33ef6a5ffcdf683cccaff54dda3f3bceb2.mp3",
-      "bytes": 99936,
-      "sha256": "b165133522d81c5f9d873fe879df4c02efc64624051fd80d5f8149a2ba8c025a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\1ffe8632ccf7bb81cbe2092560eb22e45f893e2eae7afa795123b9641c48e656.mp3",
+      "bytes": 100512,
+      "sha256": "e7ebcd7207ca2472a6ed29eae10208eced84315c143abe20e1d397f6a7903d04"
     },
     {
       "location": "voice_report.json.takes[1].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/6dbcaffd8326a1917e1c8cb3070d4d33ef6a5ffcdf683cccaff54dda3f3bceb2.words.json",
-      "bytes": 3495,
-      "sha256": "ba27711bfe99c5c63e527a57c7c63712d972b22d0695e6b23f962962ee422318"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\1ffe8632ccf7bb81cbe2092560eb22e45f893e2eae7afa795123b9641c48e656.words.json",
+      "bytes": 3396,
+      "sha256": "472ce7fdfa67ae2caaf530fd904f6bcbfe887724c2e2c2f88004f539b517c922"
     },
     {
       "location": "voice_report.json.takes[2].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "efaab99ca99a18b6ff3db22181f78f7ea9ae7b2b77ed1328997f5492091ea045"
+      "sha256": "ed3932fed64a84bbf4e429beba50bc719330988c67429927367c0abdaae00feb"
     },
     {
       "location": "voice_report.json.takes[2].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/efaab99ca99a18b6ff3db22181f78f7ea9ae7b2b77ed1328997f5492091ea045.mp3",
-      "bytes": 107568,
-      "sha256": "38ef5f0901e898ee6641210826cde583b7c5e25d9620809a5b63890249030085"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\ed3932fed64a84bbf4e429beba50bc719330988c67429927367c0abdaae00feb.mp3",
+      "bytes": 103680,
+      "sha256": "7fc2c7e1fc66a723dd7242b6940927cc474352cf1154b191d94c0079e5b6907e"
     },
     {
       "location": "voice_report.json.takes[2].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/efaab99ca99a18b6ff3db22181f78f7ea9ae7b2b77ed1328997f5492091ea045.words.json",
-      "bytes": 3841,
-      "sha256": "b7a5745b4de0830880e3cdff715962d734f7f0769da50253bbc1c115fa86b970"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\ed3932fed64a84bbf4e429beba50bc719330988c67429927367c0abdaae00feb.words.json",
+      "bytes": 3388,
+      "sha256": "5a865aec814c248830ff3eac561c93052565f57590f8094c10cb142f0df1d087"
     },
     {
       "location": "voice_report.json.takes[3].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "4f030e06b8237c6102889e3ca5979d16fffb2c6af668442894500d86490c35ad"
+      "sha256": "f973dc953d4a9408aa7f92314edf420b37f5bd86058c219d08bfc7cbd9ac827f"
     },
     {
       "location": "voice_report.json.takes[3].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/4f030e06b8237c6102889e3ca5979d16fffb2c6af668442894500d86490c35ad.mp3",
-      "bytes": 113040,
-      "sha256": "e7aac941509061da2685d46f087672e377bfd94bc51087caa0bde28c627e3049"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\f973dc953d4a9408aa7f92314edf420b37f5bd86058c219d08bfc7cbd9ac827f.mp3",
+      "bytes": 82800,
+      "sha256": "16ad71077631c6f64f11638b7e265d156a0155e3f5c7bc5dffea8cdf6e585a2f"
     },
     {
       "location": "voice_report.json.takes[3].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/4f030e06b8237c6102889e3ca5979d16fffb2c6af668442894500d86490c35ad.words.json",
-      "bytes": 3748,
-      "sha256": "bcce4d829baaa82f9df07016b7e954f1fa63d8ea89bf255f3a9d03d7775fd062"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\f973dc953d4a9408aa7f92314edf420b37f5bd86058c219d08bfc7cbd9ac827f.words.json",
+      "bytes": 3539,
+      "sha256": "cff12327e432efb900496686fd791359a53adc3fd2b6e415c7d1c4da35a62fc7"
     },
     {
       "location": "voice_report.json.takes[4].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "1a759fb6d11f3eaca6a8f82d7a703877bab8e792a5f869db87ac5545944bdf6c"
+      "sha256": "2d62d0d7f4bc9a1b5b50ffb57fc47cb1c222bf543371a04dc88e4f5dfcedce9e"
     },
     {
       "location": "voice_report.json.takes[4].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/1a759fb6d11f3eaca6a8f82d7a703877bab8e792a5f869db87ac5545944bdf6c.mp3",
-      "bytes": 112608,
-      "sha256": "20d39956c5ed073a348e3107d7bea112133d1648c8380e9b60f70c0b6fbf79db"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\2d62d0d7f4bc9a1b5b50ffb57fc47cb1c222bf543371a04dc88e4f5dfcedce9e.mp3",
+      "bytes": 97776,
+      "sha256": "68d4812ee47c18809ecfe91e2d743e23dfbf6e40c59fa665e1bc769cdd201ebe"
     },
     {
       "location": "voice_report.json.takes[4].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/1a759fb6d11f3eaca6a8f82d7a703877bab8e792a5f869db87ac5545944bdf6c.words.json",
-      "bytes": 4044,
-      "sha256": "9e66441053c9bb53abc3eb5b7b93fd8d4804574a037047a58c53975bc02bf14f"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\2d62d0d7f4bc9a1b5b50ffb57fc47cb1c222bf543371a04dc88e4f5dfcedce9e.words.json",
+      "bytes": 3215,
+      "sha256": "8537c53363507b36d47c711931ff1db904aae40a6d53e8abe460749a0ad91fde"
     },
     {
       "location": "voice_report.json.takes[5].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "a6882f922da30ecb89827bb60ec0d975a16654cc0b06cb76a5ade2d9f7367b13"
+      "sha256": "f4269705c1cfcbaf19dc36f0ba9dfa8c4f9d0640259de6b3b06afb022aa6d711"
     },
     {
       "location": "voice_report.json.takes[5].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/a6882f922da30ecb89827bb60ec0d975a16654cc0b06cb76a5ade2d9f7367b13.mp3",
-      "bytes": 101952,
-      "sha256": "05b821ce98b13d255305b6bd9aad7ce7926092eefedbee8ab19916be47fe7592"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\f4269705c1cfcbaf19dc36f0ba9dfa8c4f9d0640259de6b3b06afb022aa6d711.mp3",
+      "bytes": 96912,
+      "sha256": "d86104ca5d8ad99544561955b773b6f8575726f860abe4bedbbcd63fe46c1be6"
     },
     {
       "location": "voice_report.json.takes[5].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/a6882f922da30ecb89827bb60ec0d975a16654cc0b06cb76a5ade2d9f7367b13.words.json",
-      "bytes": 3844,
-      "sha256": "67c9cf784e7e84a643fceb66cb63b03e9ab4c0626030be7ac6eafc9d3d153592"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\f4269705c1cfcbaf19dc36f0ba9dfa8c4f9d0640259de6b3b06afb022aa6d711.words.json",
+      "bytes": 3834,
+      "sha256": "90bd397cc2be0c7aaf89219ab1899f4dd8d13d63f7d296895981da9a338c34f5"
     },
     {
       "location": "voice_report.json.takes[6].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "b4d151d125367311e6b9fedcda26ae61fb33cd75a75e81b5b2a56008cce3c401"
+      "sha256": "13c4f17ebea6b7db7206dc73ed7d89ad4d84f5daead818dbacb47d699e8e98c9"
     },
     {
       "location": "voice_report.json.takes[6].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/b4d151d125367311e6b9fedcda26ae61fb33cd75a75e81b5b2a56008cce3c401.mp3",
-      "bytes": 116208,
-      "sha256": "6003d2d52b015d6d904c01569ec86e781892127e7edf88a214615af4ddfd2991"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\13c4f17ebea6b7db7206dc73ed7d89ad4d84f5daead818dbacb47d699e8e98c9.mp3",
+      "bytes": 102528,
+      "sha256": "471df247fa0dd64d06c085a69ffeec1bcabad423c0aa3685bd276482115f204a"
     },
     {
       "location": "voice_report.json.takes[6].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/b4d151d125367311e6b9fedcda26ae61fb33cd75a75e81b5b2a56008cce3c401.words.json",
-      "bytes": 4132,
-      "sha256": "782ad07413a2ca346aef218594222f88622a6f2973e3b9520e472f40c700828f"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\13c4f17ebea6b7db7206dc73ed7d89ad4d84f5daead818dbacb47d699e8e98c9.words.json",
+      "bytes": 3496,
+      "sha256": "27e7488d3d6a6174bcd3e7fdf85c023a87a1390aaaba870ea45233afa1aa00c0"
     },
     {
       "location": "voice_report.json.takes[7].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "2711e2f14ca648ab6903bfd82187e3a03e01a62d95eb0a4f0eb6c82db166294c"
+      "sha256": "4bc2464d57ede05f32fb755a9ecaace17e337bbf6e76fdbc982041ab373cc5ff"
     },
     {
       "location": "voice_report.json.takes[7].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/2711e2f14ca648ab6903bfd82187e3a03e01a62d95eb0a4f0eb6c82db166294c.mp3",
-      "bytes": 131328,
-      "sha256": "f9367ab27d4fcd543401e4b12cb6e947f6f6e2031df1de648239b32afadfd335"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\4bc2464d57ede05f32fb755a9ecaace17e337bbf6e76fdbc982041ab373cc5ff.mp3",
+      "bytes": 102096,
+      "sha256": "02165a1e31f3228c720cd2a6bfd2b0662f7efbd69f221b6bbc7952226fca7ef1"
     },
     {
       "location": "voice_report.json.takes[7].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/2711e2f14ca648ab6903bfd82187e3a03e01a62d95eb0a4f0eb6c82db166294c.words.json",
-      "bytes": 4270,
-      "sha256": "9afe1d77b97281d7afdd03ed2cd0af5582dd4007a52afb48e6fc0e59a970fbea"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\4bc2464d57ede05f32fb755a9ecaace17e337bbf6e76fdbc982041ab373cc5ff.words.json",
+      "bytes": 3506,
+      "sha256": "a54dc94298dd08b08cc9ae555e5c7677388af0be86ae9d543435eb0148877196"
     },
     {
       "location": "voice_report.json.takes[8].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "2cce916afad9349a6f41710415fbe4f07df343346ddbdab7894f0aaf35690718"
+      "sha256": "a6ec915fa0760e2b4aa13e29fb824fe4ce7720d1ced76ee8ff8fb89ae334daa9"
     },
     {
       "location": "voice_report.json.takes[8].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/2cce916afad9349a6f41710415fbe4f07df343346ddbdab7894f0aaf35690718.mp3",
-      "bytes": 112752,
-      "sha256": "452002836a6dba471ed261e887be0e6bf2814daa13e74b4309d2f6f20d8531e9"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\a6ec915fa0760e2b4aa13e29fb824fe4ce7720d1ced76ee8ff8fb89ae334daa9.mp3",
+      "bytes": 90432,
+      "sha256": "874d578577ea9df3118d38a09dd1ef4dc4550d7f6f6e019fb807436d3e948cdd"
     },
     {
       "location": "voice_report.json.takes[8].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/2cce916afad9349a6f41710415fbe4f07df343346ddbdab7894f0aaf35690718.words.json",
-      "bytes": 4149,
-      "sha256": "a15bd1b019366de97a5ae436e93124e9026a04a429e8d70b2c969cb96dff16b3"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\a6ec915fa0760e2b4aa13e29fb824fe4ce7720d1ced76ee8ff8fb89ae334daa9.words.json",
+      "bytes": 3371,
+      "sha256": "7c8f7fa7287f7a9a7ace828076b94fdc5d782161e7e07d9870bc73fc8d30725a"
     },
     {
       "location": "voice_report.json.takes[9].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "68ab64871b32afe49852a27da82317b37c91cdba84a6d2c8926241e788842127"
+      "sha256": "0a494b5e8a2ca7e9511f897fbb48e7b626b808ace4ad5676ea1d69942192e237"
     },
     {
       "location": "voice_report.json.takes[9].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/68ab64871b32afe49852a27da82317b37c91cdba84a6d2c8926241e788842127.mp3",
-      "bytes": 110016,
-      "sha256": "b6b43c2c12b95046ffb3d1d9ded3a5ffa55292bc9493d32565554ab18f6cebc9"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\0a494b5e8a2ca7e9511f897fbb48e7b626b808ace4ad5676ea1d69942192e237.mp3",
+      "bytes": 97488,
+      "sha256": "5ef0be318077730658f0b53d00c2b5db02aa50fde740e64e5b66042d72fd8503"
     },
     {
       "location": "voice_report.json.takes[9].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/68ab64871b32afe49852a27da82317b37c91cdba84a6d2c8926241e788842127.words.json",
-      "bytes": 4138,
-      "sha256": "a9aa3bc00a25d529ffdfcce15272596579bb7a69cdf1dbf1e7d64a01caa3433e"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\0a494b5e8a2ca7e9511f897fbb48e7b626b808ace4ad5676ea1d69942192e237.words.json",
+      "bytes": 3313,
+      "sha256": "e500d4d92c5acb004ab197175defc9100a81f5161aec7956ff5c0d476cd05201"
     },
     {
       "location": "voice_report.json.takes[10].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "2d3855d2a7b68c7e0652398577d977c001ee9e589b8c0308dc399cb340e5a0fd"
+      "sha256": "9849cf43320dba4e5871c23d372296392949d4531f9aef7497afa2792a22b43b"
     },
     {
       "location": "voice_report.json.takes[10].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/2d3855d2a7b68c7e0652398577d977c001ee9e589b8c0308dc399cb340e5a0fd.mp3",
-      "bytes": 140976,
-      "sha256": "ba925e8fd8b64afe0280162c2c2f0a0a8ad3dd8db0a19f5dcf7e49f1270f7a8c"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\9849cf43320dba4e5871c23d372296392949d4531f9aef7497afa2792a22b43b.mp3",
+      "bytes": 105984,
+      "sha256": "422224f659d938f51c0c170d0d93f9e21889399da916a39d417481d0a715eb4d"
     },
     {
       "location": "voice_report.json.takes[10].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/2d3855d2a7b68c7e0652398577d977c001ee9e589b8c0308dc399cb340e5a0fd.words.json",
-      "bytes": 4360,
-      "sha256": "a9f1acb33df3af5f14d6e83202b43b284efc03527294f4c94a96d9fdf42edaf2"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\9849cf43320dba4e5871c23d372296392949d4531f9aef7497afa2792a22b43b.words.json",
+      "bytes": 3501,
+      "sha256": "70e065bd36849a17aaa4603ece5e7d2bb621705bb88095c3ebd903dbab26d794"
     },
     {
       "location": "voice_report.json.takes[11].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "d9dc88bed93413e541d43e7d3a1342d3889d1ac035bb8b41ee4816c2201aa3f0"
+      "sha256": "6ada1aab7e6fef92e481c81c2c35ab3fae0065cc7e85aa0637ae60c4976ae3ac"
     },
     {
       "location": "voice_report.json.takes[11].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/d9dc88bed93413e541d43e7d3a1342d3889d1ac035bb8b41ee4816c2201aa3f0.mp3",
-      "bytes": 138096,
-      "sha256": "e68af143e2236e823f336817481db9f292b0f2d34323f1ec8fc20f5459dc5012"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\6ada1aab7e6fef92e481c81c2c35ab3fae0065cc7e85aa0637ae60c4976ae3ac.mp3",
+      "bytes": 95040,
+      "sha256": "193786cad3d2396bd2fcfb4f34b4940cb83f68bf654f4a5e11852ca8f57fc3d5"
     },
     {
       "location": "voice_report.json.takes[11].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/d9dc88bed93413e541d43e7d3a1342d3889d1ac035bb8b41ee4816c2201aa3f0.words.json",
-      "bytes": 4644,
-      "sha256": "2bba860884a0588225b2402f575f3b0eb0525279374b469b284419f939eadb0f"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\6ada1aab7e6fef92e481c81c2c35ab3fae0065cc7e85aa0637ae60c4976ae3ac.words.json",
+      "bytes": 3392,
+      "sha256": "e85da0f852b781c7ad7a50adba4fb1fcf1fe21a9fc749799721da9777a9dfcca"
     },
     {
       "location": "voice_report.json.takes[12].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "ea27cc0f6f568b5d5c7f7b52be993ee76bbb45ef028735ee147a487025120529"
+      "sha256": "3ec6257bf3f6bb08e0d9d754f038fa31bc24ed03910090895eadedeccf4e6358"
     },
     {
       "location": "voice_report.json.takes[12].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/ea27cc0f6f568b5d5c7f7b52be993ee76bbb45ef028735ee147a487025120529.mp3",
-      "bytes": 132192,
-      "sha256": "b0b728dfd85ef24879dd291c0b02f273fe47fddb15b2886b66f563afba3a1513"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\3ec6257bf3f6bb08e0d9d754f038fa31bc24ed03910090895eadedeccf4e6358.mp3",
+      "bytes": 91008,
+      "sha256": "745a15746a9f45209ffd0bbbd7185fa973809efa5d466d51a2d3e41c1026fdf5"
     },
     {
       "location": "voice_report.json.takes[12].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/ea27cc0f6f568b5d5c7f7b52be993ee76bbb45ef028735ee147a487025120529.words.json",
-      "bytes": 4601,
-      "sha256": "8773a84789a994594e6d08362b2f3f9aaec484a299781c95c7379d83e8317d6e"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\3ec6257bf3f6bb08e0d9d754f038fa31bc24ed03910090895eadedeccf4e6358.words.json",
+      "bytes": 3304,
+      "sha256": "8091769b01a5743509c5cd55b1b0527a2e33bf41b14614922d56de772602d0cd"
     },
     {
       "location": "voice_report.json.takes[13].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "49f7c05ecd7a1f596513eaf66046f2d068e72e2b9bda2cbfd18159b25a57d3fe"
+      "sha256": "839f5938072d5bfcec44152f2599dcd30515fcf5a0960aac08928db59aca63a4"
     },
     {
       "location": "voice_report.json.takes[13].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/49f7c05ecd7a1f596513eaf66046f2d068e72e2b9bda2cbfd18159b25a57d3fe.mp3",
-      "bytes": 127584,
-      "sha256": "aa982055c0790829fefcfa5ed23116dac434eac0dd72cb813fc21dea9659fca6"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\839f5938072d5bfcec44152f2599dcd30515fcf5a0960aac08928db59aca63a4.mp3",
+      "bytes": 97056,
+      "sha256": "f019938f9ab8e0e911eb4bc869dd5e62e645174a25f48d505bf7e135d36f4f56"
     },
     {
       "location": "voice_report.json.takes[13].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/49f7c05ecd7a1f596513eaf66046f2d068e72e2b9bda2cbfd18159b25a57d3fe.words.json",
-      "bytes": 4357,
-      "sha256": "2cc09b408b1c9acab450f9bbac4750ef95b94678c091e09e2afdaf680fb4640a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\839f5938072d5bfcec44152f2599dcd30515fcf5a0960aac08928db59aca63a4.words.json",
+      "bytes": 3574,
+      "sha256": "d07fdc8e507fb995e9257127d555ac34aad8e8e21d6948ec5cfdb6e8941574ea"
     },
     {
       "location": "voice_report.json.takes[14].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "006f11e71b0ff2af45f13cd97f4e22b4b119c2f1eb11142d2753cc6f0c271b8d"
+      "sha256": "e1b332f4768463d6e97cbd0425df257befc32c5ca6015ccd6452e98f15b2d764"
     },
     {
       "location": "voice_report.json.takes[14].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/006f11e71b0ff2af45f13cd97f4e22b4b119c2f1eb11142d2753cc6f0c271b8d.mp3",
-      "bytes": 123840,
-      "sha256": "7261d047080a2476c0f2e6d69e3778df53ba9ff2809e35b91a75a256f7950d40"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\e1b332f4768463d6e97cbd0425df257befc32c5ca6015ccd6452e98f15b2d764.mp3",
+      "bytes": 100512,
+      "sha256": "7f02f02e5ad3d785711c766c2c51a9f61fb5c006770d2ff960af714a4ca4b097"
     },
     {
       "location": "voice_report.json.takes[14].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/006f11e71b0ff2af45f13cd97f4e22b4b119c2f1eb11142d2753cc6f0c271b8d.words.json",
-      "bytes": 4508,
-      "sha256": "494ce5c1eab50680bb276b518b3816f756255fca0192ba4c1b9622b55addcb11"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\e1b332f4768463d6e97cbd0425df257befc32c5ca6015ccd6452e98f15b2d764.words.json",
+      "bytes": 3500,
+      "sha256": "38e2bfdbc21e438e4f0c791ab6dce6ae70924ec0e60d18287b8fd7ecde2e4522"
     },
     {
       "location": "voice_report.json.takes[15].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "cf0fb0757cd2262fb7cc844812a9a41e2961b8857e0f2bc2d87f6756b7f3aa82"
+      "sha256": "eb95cd4eaa24a0fa7d291ce1ffa7b7bc5184bcd6986fea89c1d8bec07615b449"
     },
     {
       "location": "voice_report.json.takes[15].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/cf0fb0757cd2262fb7cc844812a9a41e2961b8857e0f2bc2d87f6756b7f3aa82.mp3",
-      "bytes": 156240,
-      "sha256": "a1600e9da8e9ab15cec531fb3482864b0947c7ded46eb1424c422e1993ce29d3"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\eb95cd4eaa24a0fa7d291ce1ffa7b7bc5184bcd6986fea89c1d8bec07615b449.mp3",
+      "bytes": 95040,
+      "sha256": "296991fe0a5503eb30ee2802a632ac6d126a3e6dec5a9860839a6092058cdf20"
     },
     {
       "location": "voice_report.json.takes[15].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/cf0fb0757cd2262fb7cc844812a9a41e2961b8857e0f2bc2d87f6756b7f3aa82.words.json",
-      "bytes": 4827,
-      "sha256": "430021861ad28fdaf20a3c81fe9eddcfcab1ee92e6d803a251d5330ad31d400e"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\eb95cd4eaa24a0fa7d291ce1ffa7b7bc5184bcd6986fea89c1d8bec07615b449.words.json",
+      "bytes": 3483,
+      "sha256": "56a1ad90e7e2577cb205033049eda7fa2b0a3567aeafb739353c4075c1efea58"
     },
     {
       "location": "voice_report.json.takes[16].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "9d2c997e0d45fd8c56ccadc7c84637bbbd3ced593f98c04736166683bbbd6545"
+      "sha256": "7f0a05c450d278f1869f74bc1a2b1b95d0b9c8014308897d2535ed0cd3fa9296"
     },
     {
       "location": "voice_report.json.takes[16].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/9d2c997e0d45fd8c56ccadc7c84637bbbd3ced593f98c04736166683bbbd6545.mp3",
-      "bytes": 116640,
-      "sha256": "8643640efc157e3ee2a3ec2cd49d434064d354f180552737be23bab60df745b3"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\7f0a05c450d278f1869f74bc1a2b1b95d0b9c8014308897d2535ed0cd3fa9296.mp3",
+      "bytes": 97776,
+      "sha256": "e2ffa7588ff08a872c6c91f37922b1b9367bba53fd1712b170d425de44771aef"
     },
     {
       "location": "voice_report.json.takes[16].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/9d2c997e0d45fd8c56ccadc7c84637bbbd3ced593f98c04736166683bbbd6545.words.json",
-      "bytes": 4301,
-      "sha256": "c545179245c081dd89be4eec84126f1ca1653b68241c2b534cccb89530e1dd3a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\7f0a05c450d278f1869f74bc1a2b1b95d0b9c8014308897d2535ed0cd3fa9296.words.json",
+      "bytes": 3755,
+      "sha256": "4067036bca229fe86d95ce5782d1cd5cc930f84a1243ca787d39a33ff9c36d62"
     },
     {
       "location": "voice_report.json.takes[17].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "272413a2aed66290b0f1577f04c767238d97fde6c9825d648500e99cab57ca26"
+      "sha256": "51ab5e11956a7ef7f2e5fb2a041b43a548101e069786a44312b21a8948eb77cd"
     },
     {
       "location": "voice_report.json.takes[17].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/272413a2aed66290b0f1577f04c767238d97fde6c9825d648500e99cab57ca26.mp3",
-      "bytes": 133920,
-      "sha256": "197016e63a307896addf13da6319babe0ca2d722b58996081a0658562e9235b9"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\51ab5e11956a7ef7f2e5fb2a041b43a548101e069786a44312b21a8948eb77cd.mp3",
+      "bytes": 98064,
+      "sha256": "d896165d8c02b173a9e9e2138afd971abbc453e0ee27f0e8ea1f0ac5a7c935cc"
     },
     {
       "location": "voice_report.json.takes[17].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/272413a2aed66290b0f1577f04c767238d97fde6c9825d648500e99cab57ca26.words.json",
-      "bytes": 4359,
-      "sha256": "e5f0397021143ad8c88679da4c81004ced39b541871b518b5ec9bd7e1c9518b6"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\51ab5e11956a7ef7f2e5fb2a041b43a548101e069786a44312b21a8948eb77cd.words.json",
+      "bytes": 3742,
+      "sha256": "c2d9901c77db2931733b7d36bb8f03db36f0cdffa67348b7cec1e16dd02b68df"
     },
     {
       "location": "voice_report.json.takes[18].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "25d7b0f7d79ee710b06e65d7a159378f8725abfed44b537ec9aaa7f614af7dc1"
+      "sha256": "63bdce89f24e2c736b6ac6e7ef428ebcad55baf319e036534007923df5a9b355"
     },
     {
       "location": "voice_report.json.takes[18].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/25d7b0f7d79ee710b06e65d7a159378f8725abfed44b537ec9aaa7f614af7dc1.mp3",
-      "bytes": 113472,
-      "sha256": "5a4cef7202341f123148524e7c4ba17d25188dcbd19e727b617944176b298011"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\63bdce89f24e2c736b6ac6e7ef428ebcad55baf319e036534007923df5a9b355.mp3",
+      "bytes": 91152,
+      "sha256": "c33ee217f3399ac6617cc0a5f0d0f01e71bd19980cd3f06cd92aa506105c79d5"
     },
     {
       "location": "voice_report.json.takes[18].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/25d7b0f7d79ee710b06e65d7a159378f8725abfed44b537ec9aaa7f614af7dc1.words.json",
-      "bytes": 4135,
-      "sha256": "5655d3c55df588cf4d2617413ce5bf4ff4f386fe28f38d833fdf207d2a5cf762"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\63bdce89f24e2c736b6ac6e7ef428ebcad55baf319e036534007923df5a9b355.words.json",
+      "bytes": 3395,
+      "sha256": "fde300b9668e7a1003f5bf7de5729832d4b4b3736ffe4f2f7baac6f273b9f0b1"
     },
     {
       "location": "voice_report.json.takes[19].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "a32542362dbd2ba15e54e1448e793fec28ea2bd92bc600567a956a374f9c1c00"
+      "sha256": "cc0918926e1d9143ae68f189dda2720f9f6bda3e6f2281aee91bad24e7989f39"
     },
     {
       "location": "voice_report.json.takes[19].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/a32542362dbd2ba15e54e1448e793fec28ea2bd92bc600567a956a374f9c1c00.mp3",
-      "bytes": 137088,
-      "sha256": "f0736aab149595582faf9fdc95698a676bd5767d92aa3e292f09c56777b0eafd"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\cc0918926e1d9143ae68f189dda2720f9f6bda3e6f2281aee91bad24e7989f39.mp3",
+      "bytes": 104688,
+      "sha256": "9873411326d72bfa55b9e08a1ad9cdab1c55bbd172a4300bbb1730a864a5a715"
     },
     {
       "location": "voice_report.json.takes[19].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/a32542362dbd2ba15e54e1448e793fec28ea2bd92bc600567a956a374f9c1c00.words.json",
-      "bytes": 4271,
-      "sha256": "b8770b41c2f223f2cc089173f74fab8771cec3197e4233031d47fe0b0eaa69a1"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\cc0918926e1d9143ae68f189dda2720f9f6bda3e6f2281aee91bad24e7989f39.words.json",
+      "bytes": 3593,
+      "sha256": "4059eaab678cef0d63a4e5a61bb28d38028aa70781b0750c16bbf4985f7bb61b"
     },
     {
       "location": "voice_report.json.takes[20].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "9045c8d27cf5aef10568004f94efcb34e7342dd903eb4c2099af616d9fbc8f95"
+      "sha256": "6f4ac124fd719d384c2b9f6a1ee7ac2070f19d6a053cf5af017bff959f5ff4cc"
     },
     {
       "location": "voice_report.json.takes[20].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/9045c8d27cf5aef10568004f94efcb34e7342dd903eb4c2099af616d9fbc8f95.mp3",
-      "bytes": 96336,
-      "sha256": "02ee0134f1934a91db836a47b5ec2becdd2fde87c1cc5129b48983ce76ff2f48"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\6f4ac124fd719d384c2b9f6a1ee7ac2070f19d6a053cf5af017bff959f5ff4cc.mp3",
+      "bytes": 101088,
+      "sha256": "bb0f3ee226bbe384533dd618f8991f7162a31141dce7445d1e194e612d088540"
     },
     {
       "location": "voice_report.json.takes[20].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/9045c8d27cf5aef10568004f94efcb34e7342dd903eb4c2099af616d9fbc8f95.words.json",
-      "bytes": 3059,
-      "sha256": "53dc8715c72f5939eb5cfad1ba60ce0af4a6987a9189872433d10cb249d910f0"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\6f4ac124fd719d384c2b9f6a1ee7ac2070f19d6a053cf5af017bff959f5ff4cc.words.json",
+      "bytes": 3661,
+      "sha256": "38bf5311f5c39c7416af87c565cebc4ca6fbc87b0d4ddb585f9b96bfe59c49a2"
     },
     {
       "location": "voice_report.json.takes[21].request_hash",
       "kind": "canonical_request_sha256",
-      "sha256": "7a79e3bc6930558dd57a413d559ef299666b7b115d1bd9ffe18d563d57472a41"
+      "sha256": "803e208e5c5d5c0b51ec935151f589b22dd7c8f777d9976a8aa803dfe8391d1d"
     },
     {
       "location": "voice_report.json.takes[21].mp3.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/7a79e3bc6930558dd57a413d559ef299666b7b115d1bd9ffe18d563d57472a41.mp3",
-      "bytes": 99792,
-      "sha256": "6490e64a2266d33aee67224490ef98a1679a8f6ffecf71619b2a4d27f4e65fc0"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\803e208e5c5d5c0b51ec935151f589b22dd7c8f777d9976a8aa803dfe8391d1d.mp3",
+      "bytes": 110016,
+      "sha256": "10bb25625dca629ca09b75e589deabc713e240fefbe9116f367cadc868821c2b"
     },
     {
       "location": "voice_report.json.takes[21].word_boundaries.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_cache/7a79e3bc6930558dd57a413d559ef299666b7b115d1bd9ffe18d563d57472a41.words.json",
-      "bytes": 2860,
-      "sha256": "118033604faf8a17d5c8be915aef75db8289d178bef3d849e91f1fdd4dba2cd7"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\803e208e5c5d5c0b51ec935151f589b22dd7c8f777d9976a8aa803dfe8391d1d.words.json",
+      "bytes": 3498,
+      "sha256": "9203e37b91c0bfc01eca2aa5c23c7e2a45e5e3f307d259fc2f910f9a2b798f5d"
+    },
+    {
+      "location": "voice_report.json.takes[22].request_hash",
+      "kind": "canonical_request_sha256",
+      "sha256": "49e095ec7b6ec49c9a274a1a731a844c16177a7915bde1eafdfd501cd7491feb"
+    },
+    {
+      "location": "voice_report.json.takes[22].mp3.sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\49e095ec7b6ec49c9a274a1a731a844c16177a7915bde1eafdfd501cd7491feb.mp3",
+      "bytes": 66384,
+      "sha256": "70c6ae8b25d31d912dfca0dd7c743c4579eed772d9371aead8b64a581d692cd3"
+    },
+    {
+      "location": "voice_report.json.takes[22].word_boundaries.sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\49e095ec7b6ec49c9a274a1a731a844c16177a7915bde1eafdfd501cd7491feb.words.json",
+      "bytes": 2087,
+      "sha256": "921616d272de32a6f7c25378a895de07d27c2f569bbd4e60ed877f9423ce3f17"
+    },
+    {
+      "location": "voice_report.json.takes[23].request_hash",
+      "kind": "canonical_request_sha256",
+      "sha256": "884c9d8d8b68b36c99fa969de63c6f9f56826f065506319dfcc1f80cbfe89e40"
+    },
+    {
+      "location": "voice_report.json.takes[23].mp3.sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\884c9d8d8b68b36c99fa969de63c6f9f56826f065506319dfcc1f80cbfe89e40.mp3",
+      "bytes": 61344,
+      "sha256": "1b6a1f336ec027c8a6347ab108cb2027bd4379e2dcfe0efdd402f7b0b4907b57"
+    },
+    {
+      "location": "voice_report.json.takes[23].word_boundaries.sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_cache\\884c9d8d8b68b36c99fa969de63c6f9f56826f065506319dfcc1f80cbfe89e40.words.json",
+      "bytes": 1998,
+      "sha256": "e522f64b9a39859746e6bd69dacb6ef9143a7059a1861a4da3e7b50bd92b002e"
     },
     {
       "location": "voice_report.json.assets.narration.wav.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/narration.wav",
-      "bytes": 28800044,
-      "sha256": "41243c210b72d93ff46d7e5aa81441c96ca1c414387101310d98de171f343a68"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration.wav",
+      "bytes": 40320044,
+      "sha256": "f90a71d0373bcd664b715e4f022d990ee14398da645a7005506aeaba4763884e"
     },
     {
       "location": "voice_report.json.assets.narration.ass.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/narration.ass",
-      "bytes": 12258,
-      "sha256": "fac0a4c068996b19da1e0b4b781a5da1f3f2a456e89f931f099c7410e33c604a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration.ass",
+      "bytes": 11017,
+      "sha256": "d352b17a7033a38a69d9e932454c331e7134e4f7e1cb06d04b23c636e25a5bd6"
     },
     {
       "location": "voice_report.json.assets.narration.srt.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/narration.srt",
-      "bytes": 10268,
-      "sha256": "776f1aa2df6b8d0cec7356f6e576ebe09ab1b05f7e7fbd57c9b20d131c791ae8"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration.srt",
+      "bytes": 9163,
+      "sha256": "ef5e567cddb771ecbd93af4d0482474f71cd4a546e1eca1f50cf4d00d5f74f4f"
     },
     {
       "location": "voice_report.json.assets.captions.json.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/captions.json",
-      "bytes": 21029,
-      "sha256": "ee721afcb2f4dc8d8270e0dec4df7c70bac3fdab2b914c7bb53d6a30f36fe1b5"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\captions.json",
+      "bytes": 19020,
+      "sha256": "20c84fc3c132c3a559edcc73a5b29e1b4e6f9f08c5500ffd43fddb2b553c5cd0"
     },
     {
-      "location": "current_route.source_bindings.game/data/town3d/profile.json",
+      "location": "walkthrough_cues.json.captures[0].sha256",
       "kind": "file_sha256",
-      "file": "game/data/town3d/profile.json",
-      "bytes": 4268,
-      "sha256": "66c800130175677ec9c82ed44d7a1833dca634c602ffcc604e9aa258386d2c5e"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\01_complete_town_and_woodland.png",
+      "bytes": 1352838,
+      "sha256": "c8f2f6791b2e8ca28397a3f07f4d393057d3f1ad306ea61f58bf6a0cf9cc7efe"
     },
     {
-      "location": "current_route.source_bindings.game/data/town3d/projection.json",
+      "location": "walkthrough_cues.json.captures[1].sha256",
       "kind": "file_sha256",
-      "file": "game/data/town3d/projection.json",
-      "bytes": 1133444,
-      "sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\02_Aria_refined_character_upper_home.png",
+      "bytes": 1087729,
+      "sha256": "1fbf7e4a210f60717652ab6544c926070f836bb9a91df87a7c797b89c7198a10"
     },
     {
-      "location": "current_route.source_bindings.game/assets/town3d/stage_manifest.json",
+      "location": "walkthrough_cues.json.captures[2].sha256",
       "kind": "file_sha256",
-      "file": "game/assets/town3d/stage_manifest.json",
-      "bytes": 2830,
-      "sha256": "2787a4895e0f6b5889fdaeb7c83bcccc04ec035544898615c33b5ba1efad2225"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\02b_expandable_activity_and_wishes.png",
+      "bytes": 1063330,
+      "sha256": "0f92663b571a58bda537a257bfd20dbc6ec8f92d12fa167f1f9913441bfab829"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[3].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\03_actual_stair_arrival.png",
+      "bytes": 1258890,
+      "sha256": "432f5f0e005f0ec8b8703bd90736d9df290e308204e741ca4932fe9e2d4cc493"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[4].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\fixture_menu_cafe1f_table.png",
+      "bytes": 1210161,
+      "sha256": "39268ff536626ac27eee8d5eac899e12c80d43e24244987bb9c79f52448ff610"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[5].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\fixture_menu_cafe1f_counter.png",
+      "bytes": 1171938,
+      "sha256": "aab253fbb165c92b0d6eb1730706f8e45f3c2ab921b564a2290cf02db84e3771"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[6].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\04_cafe_action_and_street_threshold.png",
+      "bytes": 1213407,
+      "sha256": "52cdeb190f4e1a2731bfa3bdbcac99f64241ab1a865fbea24808e36730b2a58c"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[7].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\05_actual_expansion_venue_arrival.png",
+      "bytes": 868148,
+      "sha256": "57e050f2c38a9c63e28cfa04c4f34f77a9cbe28ea6dac27a5a35400caaad6841"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[8].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\fixture_menu_upgrade_Expansion_D09_Orchard_Lane_Loop_R12_L00_Rear_Room_A01_dining_table.png",
+      "bytes": 773110,
+      "sha256": "5b28626100e9f3845007c32ce3d5dd63b4a8064493b2cc7f9c73f86ac131d5ea"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[9].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\06_actual_expansion_upper_interior.png",
+      "bytes": 745833,
+      "sha256": "c7b656ebf6a840d60bddf6bea22b51d466d4321980aa7f869c0078510943d547"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[10].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\fixture_menu_upgrade_Reserve_Bathhouse_L00_Wash_West_Washbasin_0.png",
+      "bytes": 1064540,
+      "sha256": "8b3735ee7e8b4ae9e96f6f10b5488ff8e8ff11e8abd52cf2712257a6ca27b672"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[11].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\07_actual_reserve_bathhouse_action.png",
+      "bytes": 1055124,
+      "sha256": "a76e1980316c381cd64ac52bea67122d9820cbe68fdf1b1439f309353d9303d8"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[12].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\fixture_menu_upgrade_Reserve_Trailer_N06_L00_Private_Bathroom_Handwash.png",
+      "bytes": 919695,
+      "sha256": "bab3d9f719f038410a7df063986faceb4c7ecd555e950387e1730e33692e8be8"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[13].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\08_actual_trailer_interior_and_use.png",
+      "bytes": 848991,
+      "sha256": "6b5b769af506f438191e4bfd9d1677ab7b872ea7fb1e7dc501a79e568ff69a91"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[14].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\09_actual_return_from_reserve_to_core.png",
+      "bytes": 1288886,
+      "sha256": "7982348678e54ffa5e4663bdd09d737abdfb0264d858329a5b71f9cbb7477a90"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[15].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\10_inspection_ravine_bridge_forest.png",
+      "bytes": 1816674,
+      "sha256": "6170b8642a81aa06477986aac8acc9961b83d287219871577a6cf504945710d3"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[16].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\11_inspection_stone_stair_topography.png",
+      "bytes": 1831721,
+      "sha256": "4e83c16663ba030529abf8fbce2daa09a18d213b76f4903c84ade1b9e002d283"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[17].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\12_inspection_pond_horticulture.png",
+      "bytes": 1165154,
+      "sha256": "636c851161d0f88c6f8b1531eb298910da35c3e658289bcdbabbfb568c02ebaa"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[18].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\13_restored_actual_resident_life.png",
+      "bytes": 1200848,
+      "sha256": "e925fb00b540b8ed6943a580840d072d8fa3f2f2f164d9b503a30b4e7d82144e"
+    },
+    {
+      "location": "walkthrough_cues.json.captures[19].sha256",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\14_complete_upgraded_playable_town.png",
+      "bytes": 1093476,
+      "sha256": "2516f99b353059f99297e7c2884493bbe0df4e23081e267b071d2c0fe4d8f17f"
+    },
+    {
+      "location": "current_route.source_bindings.policy.pinned_route_sha256",
+      "kind": "file_sha256",
+      "file": "docs/town_walkthrough/route_plan.json",
+      "bytes": 11625,
+      "sha256": "30f560b986c095d09456aa3a4b03df76cc798e7413b5e1a151adf4ccaa9a1667"
     },
     {
       "location": "composition_report.json.capture_report",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/walkthrough_report.json",
-      "bytes": 41907,
-      "sha256": "8084c954963f87f07cb5a432c7b1d73476efb58d60f31a469c7a29a9f710856c"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\walkthrough_report.json",
+      "bytes": 214006,
+      "sha256": "f1d9e3d026f7189da354504e3fbf6f535d14162846e7821df717dce8ae5c1240"
     },
     {
       "location": "composition_report.json.voice_report",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_report.json",
-      "bytes": 139918,
-      "sha256": "9facf6b38bc84a6a2b2827309b0cdb5c10d5d18e671b1c4f72990ecbc1aca0ab"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_report.json",
+      "bytes": 133169,
+      "sha256": "17b83a15b01239307bcafb86f3c765a8e41472c5b0eb6c02f9719f77017d76be"
     },
     {
       "location": "composition_report.json.narration",
       "kind": "file_sha256",
       "file": "docs/town_walkthrough/narration.json",
-      "bytes": 16116,
-      "sha256": "12fb27ecfc3421288554243e858c7f9094af86a3f5bcd03bd6f8946520bcae66"
+      "bytes": 13673,
+      "sha256": "9c3e3a7e41e53a5fd3968b9213f3b54ed121b16bb39cfdc057edc877a8208961"
     },
     {
       "location": "composition_report.json.route",
       "kind": "file_sha256",
       "file": "docs/town_walkthrough/route_plan.json",
-      "bytes": 11307,
-      "sha256": "c92282e0e4167cf2a2edc1fc96f5bcc5a3a10beb13700072e201ab949fcf6fdb"
+      "bytes": 11625,
+      "sha256": "30f560b986c095d09456aa3a4b03df76cc798e7413b5e1a151adf4ccaa9a1667"
     },
     {
       "location": "composition_report.json.builder",
       "kind": "file_sha256",
       "file": "tools/build_town_walkthrough.py",
-      "bytes": 45349,
-      "sha256": "2a9ae48e88b12eab5d898c7cb74bcf22779254e22f99ab71273fdf2b4d9c4778"
+      "bytes": 45993,
+      "sha256": "43e1d016efd5e9935e783adc69f7ff0def99f22dd8f7a612ac9f4bf8916c516b"
     },
     {
       "location": "composition_report.json.output",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/LivingTown_Walkthrough.mp4",
-      "bytes": 245232169,
-      "sha256": "a1f97fdcc79e232784874c4ebd67c9b52a3ed98cc52982a9baf24872d10184d7"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\LivingTown_Walkthrough.mp4",
+      "bytes": 528362448,
+      "sha256": "9c72fa15426706d76307fd1eebaec77404de3cbabb67c80e9928d83ecbf4e252"
     },
     {
       "location": "verification_report.json.capture_report",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/walkthrough_report.json",
-      "bytes": 41907,
-      "sha256": "8084c954963f87f07cb5a432c7b1d73476efb58d60f31a469c7a29a9f710856c"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\walkthrough_report.json",
+      "bytes": 214006,
+      "sha256": "f1d9e3d026f7189da354504e3fbf6f535d14162846e7821df717dce8ae5c1240"
     },
     {
       "location": "verification_report.json.voice_report",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/voice_report.json",
-      "bytes": 139918,
-      "sha256": "9facf6b38bc84a6a2b2827309b0cdb5c10d5d18e671b1c4f72990ecbc1aca0ab"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_report.json",
+      "bytes": 133169,
+      "sha256": "17b83a15b01239307bcafb86f3c765a8e41472c5b0eb6c02f9719f77017d76be"
     },
     {
       "location": "verification_report.json.narration",
       "kind": "file_sha256",
       "file": "docs/town_walkthrough/narration.json",
-      "bytes": 16116,
-      "sha256": "12fb27ecfc3421288554243e858c7f9094af86a3f5bcd03bd6f8946520bcae66"
+      "bytes": 13673,
+      "sha256": "9c3e3a7e41e53a5fd3968b9213f3b54ed121b16bb39cfdc057edc877a8208961"
     },
     {
       "location": "verification_report.json.route",
       "kind": "file_sha256",
       "file": "docs/town_walkthrough/route_plan.json",
-      "bytes": 11307,
-      "sha256": "c92282e0e4167cf2a2edc1fc96f5bcc5a3a10beb13700072e201ab949fcf6fdb"
+      "bytes": 11625,
+      "sha256": "30f560b986c095d09456aa3a4b03df76cc798e7413b5e1a151adf4ccaa9a1667"
     },
     {
       "location": "verification_report.json.builder",
       "kind": "file_sha256",
       "file": "tools/build_town_walkthrough.py",
-      "bytes": 45349,
-      "sha256": "2a9ae48e88b12eab5d898c7cb74bcf22779254e22f99ab71273fdf2b4d9c4778"
+      "bytes": 45993,
+      "sha256": "43e1d016efd5e9935e783adc69f7ff0def99f22dd8f7a612ac9f4bf8916c516b"
     },
     {
       "location": "verification_report.json.output",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/LivingTown_Walkthrough.mp4",
-      "bytes": 245232169,
-      "sha256": "a1f97fdcc79e232784874c4ebd67c9b52a3ed98cc52982a9baf24872d10184d7"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\LivingTown_Walkthrough.mp4",
+      "bytes": 528362448,
+      "sha256": "9c72fa15426706d76307fd1eebaec77404de3cbabb67c80e9928d83ecbf4e252"
     },
     {
       "location": "verification.composition_report",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/composition_report.json",
-      "bytes": 7727,
-      "sha256": "5c524861b5c334a81bb10fcab5fdcb6c1cd91dc8bdeda0b67e141855ee03222c"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\composition_report.json",
+      "bytes": 7121,
+      "sha256": "b658d4d5590a33cfae5901de0b39351b3565cbbfba075114ace2e847cb6bc21e"
     },
     {
       "location": "voice.narration",
       "kind": "file_sha256",
       "file": "docs/town_walkthrough/narration.json",
-      "bytes": 16116,
-      "sha256": "12fb27ecfc3421288554243e858c7f9094af86a3f5bcd03bd6f8946520bcae66"
+      "bytes": 13673,
+      "sha256": "9c3e3a7e41e53a5fd3968b9213f3b54ed121b16bb39cfdc057edc877a8208961"
     },
     {
       "location": "voice.route",
       "kind": "file_sha256",
       "file": "docs/town_walkthrough/route_plan.json",
-      "bytes": 11307,
-      "sha256": "c92282e0e4167cf2a2edc1fc96f5bcc5a3a10beb13700072e201ab949fcf6fdb"
+      "bytes": 11625,
+      "sha256": "30f560b986c095d09456aa3a4b03df76cc798e7413b5e1a151adf4ccaa9a1667"
     },
     {
       "location": "voice.builder",
       "kind": "file_sha256",
       "file": "tools/build_town_walkthrough.py",
-      "bytes": 45349,
-      "sha256": "2a9ae48e88b12eab5d898c7cb74bcf22779254e22f99ab71273fdf2b4d9c4778"
+      "bytes": 45993,
+      "sha256": "43e1d016efd5e9935e783adc69f7ff0def99f22dd8f7a612ac9f4bf8916c516b"
     },
     {
-      "location": "voice.assets.narration.ass",
+      "location": "voice.original.narration.wav",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/narration.ass",
-      "bytes": 12258,
-      "sha256": "fac0a4c068996b19da1e0b4b781a5da1f3f2a456e89f931f099c7410e33c604a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration.wav",
+      "bytes": 40320044,
+      "sha256": "f90a71d0373bcd664b715e4f022d990ee14398da645a7005506aeaba4763884e"
+    },
+    {
+      "location": "voice.reused_copy.narration.wav",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration.wav",
+      "bytes": 40320044,
+      "sha256": "f90a71d0373bcd664b715e4f022d990ee14398da645a7005506aeaba4763884e"
+    },
+    {
+      "location": "voice.original.narration.ass",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration.ass",
+      "bytes": 11017,
+      "sha256": "d352b17a7033a38a69d9e932454c331e7134e4f7e1cb06d04b23c636e25a5bd6"
+    },
+    {
+      "location": "voice.reused_copy.narration.ass",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration.ass",
+      "bytes": 11017,
+      "sha256": "d352b17a7033a38a69d9e932454c331e7134e4f7e1cb06d04b23c636e25a5bd6"
     },
     {
       "location": "composition.assets.narration.ass",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/narration.ass",
-      "bytes": 12258,
-      "sha256": "fac0a4c068996b19da1e0b4b781a5da1f3f2a456e89f931f099c7410e33c604a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration.ass",
+      "bytes": 11017,
+      "sha256": "d352b17a7033a38a69d9e932454c331e7134e4f7e1cb06d04b23c636e25a5bd6"
     },
     {
-      "location": "voice.assets.narration.srt",
+      "location": "voice.original.narration.srt",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/narration.srt",
-      "bytes": 10268,
-      "sha256": "776f1aa2df6b8d0cec7356f6e576ebe09ab1b05f7e7fbd57c9b20d131c791ae8"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration.srt",
+      "bytes": 9163,
+      "sha256": "ef5e567cddb771ecbd93af4d0482474f71cd4a546e1eca1f50cf4d00d5f74f4f"
+    },
+    {
+      "location": "voice.reused_copy.narration.srt",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration.srt",
+      "bytes": 9163,
+      "sha256": "ef5e567cddb771ecbd93af4d0482474f71cd4a546e1eca1f50cf4d00d5f74f4f"
     },
     {
       "location": "composition.assets.narration.srt",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/narration.srt",
-      "bytes": 10268,
-      "sha256": "776f1aa2df6b8d0cec7356f6e576ebe09ab1b05f7e7fbd57c9b20d131c791ae8"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration.srt",
+      "bytes": 9163,
+      "sha256": "ef5e567cddb771ecbd93af4d0482474f71cd4a546e1eca1f50cf4d00d5f74f4f"
     },
     {
-      "location": "voice.assets.captions.json",
+      "location": "voice.original.captions.json",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/captions.json",
-      "bytes": 21029,
-      "sha256": "ee721afcb2f4dc8d8270e0dec4df7c70bac3fdab2b914c7bb53d6a30f36fe1b5"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\captions.json",
+      "bytes": 19020,
+      "sha256": "20c84fc3c132c3a559edcc73a5b29e1b4e6f9f08c5500ffd43fddb2b553c5cd0"
+    },
+    {
+      "location": "voice.reused_copy.captions.json",
+      "kind": "file_sha256",
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\captions.json",
+      "bytes": 19020,
+      "sha256": "20c84fc3c132c3a559edcc73a5b29e1b4e6f9f08c5500ffd43fddb2b553c5cd0"
     },
     {
       "location": "composition.assets.captions.json",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/captions.json",
-      "bytes": 21029,
-      "sha256": "ee721afcb2f4dc8d8270e0dec4df7c70bac3fdab2b914c7bb53d6a30f36fe1b5"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\captions.json",
+      "bytes": 19020,
+      "sha256": "20c84fc3c132c3a559edcc73a5b29e1b4e6f9f08c5500ffd43fddb2b553c5cd0"
     },
     {
       "location": "supervisor.files.godot.sha256",
       "kind": "file_sha256",
-      "file": "C:\\Users\\yp\\AppData\\Local\\Temp\\living-town-godot-runs\\20261012T135014914Z_6a0f295f264f45d298e2671f94795940\\godot.log",
-      "bytes": 3386,
-      "sha256": "6020b25facff7d898126b7a64a93aae1e522863203ac3405d57d7d9e474e1596"
+      "file": "C:\\Users\\yp\\AppData\\Local\\Temp\\living-town-godot-runs\\20261024T052654790Z_f612bb9a645c45b7a7220aff928656d8\\godot.log",
+      "bytes": 6074,
+      "sha256": "64b20c9712b3b046e09aa5e62b8c4dcdb2dcb13d2f5cab0c79e083b623f8e9dc"
     },
     {
       "location": "supervisor.files.stdout.sha256",
       "kind": "file_sha256",
-      "file": "C:\\Users\\yp\\AppData\\Local\\Temp\\living-town-godot-runs\\20261012T135014914Z_6a0f295f264f45d298e2671f94795940\\stdout.log",
-      "bytes": 3319,
-      "sha256": "a243cc229c4d6b8306d94c88c00c6baded6421146b30f8116a6c8b211e9d42bb"
+      "file": "C:\\Users\\yp\\AppData\\Local\\Temp\\living-town-godot-runs\\20261024T052654790Z_f612bb9a645c45b7a7220aff928656d8\\stdout.log",
+      "bytes": 6040,
+      "sha256": "9ba932929a93e74c1273e818e157a405d35543244c41260f9b2a245b79b47d02"
     },
     {
       "location": "supervisor.files.stderr.sha256",
       "kind": "file_sha256",
-      "file": "C:\\Users\\yp\\AppData\\Local\\Temp\\living-town-godot-runs\\20261012T135014914Z_6a0f295f264f45d298e2671f94795940\\stderr.log",
+      "file": "C:\\Users\\yp\\AppData\\Local\\Temp\\living-town-godot-runs\\20261024T052654790Z_f612bb9a645c45b7a7220aff928656d8\\stderr.log",
       "bytes": 124,
       "sha256": "7e8f5deb3bf520c8abb23951deafb0669c320cebb4ceb6668c755c617c5fd7d3"
     },
     {
-      "location": "suite.logical.profile_sha256",
-      "kind": "file_sha256",
-      "file": "game/data/town3d/profile.json",
-      "bytes": 4268,
-      "sha256": "66c800130175677ec9c82ed44d7a1833dca634c602ffcc604e9aa258386d2c5e"
-    },
-    {
-      "location": "suite.logical.projection_sha256",
-      "kind": "file_sha256",
-      "file": "game/data/town3d/projection.json",
-      "bytes": 1133444,
-      "sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
-    },
-    {
-      "location": "suite.logical.source_blend_sha256",
-      "kind": "file_sha256",
-      "file": "art/living_town/living_town_complete.blend",
-      "bytes": 47817270,
-      "sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755"
-    },
-    {
-      "location": "suite.logical.source_hashes.game/scripts/Main.gd",
-      "kind": "file_sha256",
-      "file": "game/scripts/Main.gd",
-      "bytes": 244531,
-      "sha256": "2523ae2e5eef10840f4a04d7927d3e8e5ec27cff653e25c645ba1b148350f7c1"
-    },
-    {
-      "location": "suite.logical.source_hashes.game/scripts/Sim.gd",
-      "kind": "file_sha256",
-      "file": "game/scripts/Sim.gd",
-      "bytes": 590718,
-      "sha256": "37badd0b2c8f5f9bce91a3988fa34901a1e51b31f3a8757d63f320d63c884a41"
-    },
-    {
-      "location": "suite.logical.source_hashes.game/scripts/SpaceGraph.gd",
-      "kind": "file_sha256",
-      "file": "game/scripts/SpaceGraph.gd",
-      "bytes": 9440,
-      "sha256": "60fed06c94414336d11413fe89d6ee64aed525997f2315dc274b3b2d921de62a"
-    },
-    {
-      "location": "suite.logical.source_hashes.game/scripts/TownWorldProfile.gd",
-      "kind": "file_sha256",
-      "file": "game/scripts/TownWorldProfile.gd",
-      "bytes": 5715,
-      "sha256": "c41adf7a0a72c780c1cf057c97c56d5f9fb165a4def24ca46b0f1ce10a5c68d5"
-    },
-    {
-      "location": "suite.logical.source_hashes.game/scripts/WorldView3D.gd",
-      "kind": "file_sha256",
-      "file": "game/scripts/WorldView3D.gd",
-      "bytes": 29940,
-      "sha256": "c470cf9423086b08c60c18183632773dba467e6e99b50389b1a2347175e975fd"
-    },
-    {
-      "location": "suite.logical.source_hashes.game/scripts/town_bridge_test.gd",
-      "kind": "file_sha256",
-      "file": "game/scripts/town_bridge_test.gd",
-      "bytes": 23904,
-      "sha256": "c05184c128a37f1e2a21da8da868e97360c0d0a79a6b9e9b2d90059e0ff041a1"
-    },
-    {
-      "location": "suite.visual.checks[1].detail.model.source_blend_sha256",
-      "kind": "file_sha256",
-      "file": "art/living_town/living_town_complete.blend",
-      "bytes": 47817270,
-      "sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755"
-    },
-    {
-      "location": "suite.visual.checks[1].detail.model.source_glb_sha256",
-      "kind": "file_sha256",
-      "file": "game/assets/town3d/living_town_game.glb",
-      "bytes": 203666604,
-      "sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c"
-    },
-    {
-      "location": "suite.visual.projection_sha256",
-      "kind": "file_sha256",
-      "file": "game/data/town3d/projection.json",
-      "bytes": 1133444,
-      "sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
-    },
-    {
-      "location": "suite.visual.screenshots[0].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/null_anchor_visual/01_owner_upper.png",
-      "bytes": 919454,
-      "sha256": "dabfc2a0926065b26220680197187aa35736f79c04060eb303ccd8fbacb7701d"
-    },
-    {
-      "location": "suite.visual.screenshots[0].model_source_blend_sha256",
-      "kind": "file_sha256",
-      "file": "art/living_town/living_town_complete.blend",
-      "bytes": 47817270,
-      "sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755"
-    },
-    {
-      "location": "suite.visual.screenshots[1].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/null_anchor_visual/02_fixture_menu.png",
-      "bytes": 974899,
-      "sha256": "7b062124500fff3fada55e7523ba7616d322b47dd9fd9b648e7cd2f8ab2a79f6"
-    },
-    {
-      "location": "suite.visual.screenshots[1].model_source_blend_sha256",
-      "kind": "file_sha256",
-      "file": "art/living_town/living_town_complete.blend",
-      "bytes": 47817270,
-      "sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755"
-    },
-    {
-      "location": "suite.visual.screenshots[2].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/null_anchor_visual/03_character_walking.png",
-      "bytes": 1041117,
-      "sha256": "d98e7b72e8e91cdddf2428b170362444209fad817f2cccc56246edffa9a9c7ab"
-    },
-    {
-      "location": "suite.visual.screenshots[2].model_source_blend_sha256",
-      "kind": "file_sha256",
-      "file": "art/living_town/living_town_complete.blend",
-      "bytes": 47817270,
-      "sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755"
-    },
-    {
-      "location": "suite.visual.screenshots[3].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/null_anchor_visual/04_fixture_use_complete.png",
-      "bytes": 1104157,
-      "sha256": "6ad87e84dcdfe8cbeb74b9d90eb2e7ea20131b8cfb0c6cc701e383a08993fb00"
-    },
-    {
-      "location": "suite.visual.screenshots[3].model_source_blend_sha256",
-      "kind": "file_sha256",
-      "file": "art/living_town/living_town_complete.blend",
-      "bytes": 47817270,
-      "sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755"
-    },
-    {
-      "location": "suite.visual.screenshots[4].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/null_anchor_visual/05_town_exterior.png",
-      "bytes": 1151070,
-      "sha256": "deda892cf135d94d6353d9f9677c9e5551fd1b55d115c3917524f154dabb08f6"
-    },
-    {
-      "location": "suite.visual.screenshots[4].model_source_blend_sha256",
-      "kind": "file_sha256",
-      "file": "art/living_town/living_town_complete.blend",
-      "bytes": 47817270,
-      "sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755"
-    },
-    {
-      "location": "suite.visual.source_blend_sha256",
-      "kind": "file_sha256",
-      "file": "art/living_town/living_town_complete.blend",
-      "bytes": 47817270,
-      "sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755"
-    },
-    {
-      "location": "suite.visual.source_glb_sha256",
-      "kind": "file_sha256",
-      "file": "game/assets/town3d/living_town_game.glb",
-      "bytes": 203666604,
-      "sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c"
-    },
-    {
       "location": "visual_review.movie.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/LivingTown_Walkthrough.mp4",
-      "bytes": 245232169,
-      "sha256": "a1f97fdcc79e232784874c4ebd67c9b52a3ed98cc52982a9baf24872d10184d7"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\LivingTown_Walkthrough.mp4",
+      "bytes": 528362448,
+      "sha256": "9c72fa15426706d76307fd1eebaec77404de3cbabb67c80e9928d83ecbf4e252"
     },
     {
-      "location": "visual_review.actual_mp4_sha256",
+      "location": "visual_review.walkthrough_report_sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/LivingTown_Walkthrough.mp4",
-      "bytes": 245232169,
-      "sha256": "a1f97fdcc79e232784874c4ebd67c9b52a3ed98cc52982a9baf24872d10184d7"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\walkthrough_report.json",
+      "bytes": 214006,
+      "sha256": "f1d9e3d026f7189da354504e3fbf6f535d14162846e7821df717dce8ae5c1240"
     },
     {
-      "location": "visual_review.movie_sha256",
+      "location": "visual_review.stage_manifest_sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/LivingTown_Walkthrough.mp4",
-      "bytes": 245232169,
-      "sha256": "a1f97fdcc79e232784874c4ebd67c9b52a3ed98cc52982a9baf24872d10184d7"
+      "file": "game/assets/town3d/stage_manifest.json",
+      "bytes": 7973,
+      "sha256": "14841567aa0172536446f1ac95e161b8dda3249d72a5956f83802e6711f429d0"
     },
     {
-      "location": "visual_review.verification.sha256",
+      "location": "visual_review.characters_manifest_sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/verification_report.json",
-      "bytes": 20585,
-      "sha256": "bcf2b0e93195eee2ce87b745170f4fc70d53b14efc0213f4da330d7126e61f4b"
+      "file": "game/data/town3d/characters.json",
+      "bytes": 83806,
+      "sha256": "00b272523dffef832a1025bba68b347d6a7917023898ba4fd6d4d20e48210970"
     },
     {
-      "location": "visual_review.composition.sha256",
+      "location": "visual_review.verification_report_sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/composition_report.json",
-      "bytes": 7727,
-      "sha256": "5c524861b5c334a81bb10fcab5fdcb6c1cd91dc8bdeda0b67e141855ee03222c"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\verification_report.json",
+      "bytes": 21181,
+      "sha256": "e3abee4f3dbd10deb61af89932160cc28f253235b6f348639ac16171196a7215"
     },
     {
-      "location": "visual_review.capture.sha256",
+      "location": "visual_review.reviewed_images[0].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/walkthrough_report.json",
-      "bytes": 41907,
-      "sha256": "8084c954963f87f07cb5a432c7b1d73476efb58d60f31a469c7a29a9f710856c"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\contact_sheet.png",
+      "bytes": 1014103,
+      "sha256": "1912fb1e864656b2acdd0febf2ab957cf8ea1be51e192ae338a444f51bc67243"
     },
     {
-      "location": "visual_review.source_blend_sha256",
+      "location": "visual_review.reviewed_images[1].sha256",
       "kind": "file_sha256",
-      "file": "art/living_town/living_town_complete.blend",
-      "bytes": 47817270,
-      "sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_03.png",
+      "bytes": 1064688,
+      "sha256": "f1b0b7c06bc5fb68337571e2aa50fd324f2475b54cf7961c0d722ae1a165a685"
     },
     {
-      "location": "visual_review.source_glb_sha256",
+      "location": "visual_review.reviewed_images[2].sha256",
       "kind": "file_sha256",
-      "file": "game/assets/town3d/living_town_game.glb",
-      "bytes": 203666604,
-      "sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_06.png",
+      "bytes": 310785,
+      "sha256": "49f2a2167b208a71369d3ea6003c661e27e70badda2e052deb97c3a38a254575"
     },
     {
-      "location": "visual_review.projection_sha256",
+      "location": "visual_review.reviewed_images[3].sha256",
       "kind": "file_sha256",
-      "file": "game/data/town3d/projection.json",
-      "bytes": 1133444,
-      "sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_07.png",
+      "bytes": 777160,
+      "sha256": "ded8c373de748d3954331ccd67d89d43f783a1ea1784d02fb7de8c98d0c4b693"
     },
     {
-      "location": "visual_review.source_checks.builder.sha256",
+      "location": "visual_review.reviewed_images[4].sha256",
       "kind": "file_sha256",
-      "file": "tools/build_town_walkthrough.py",
-      "bytes": 45349,
-      "sha256": "2a9ae48e88b12eab5d898c7cb74bcf22779254e22f99ab71273fdf2b4d9c4778"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_08.png",
+      "bytes": 669498,
+      "sha256": "f31f09db069b46fdc99e9432dd8a899a4bb7b9c29eccd3b5ba8da4dcdea50f2f"
     },
     {
-      "location": "visual_review.source_checks.narration.sha256",
+      "location": "visual_review.reviewed_images[5].sha256",
       "kind": "file_sha256",
-      "file": "docs/town_walkthrough/narration.json",
-      "bytes": 16116,
-      "sha256": "12fb27ecfc3421288554243e858c7f9094af86a3f5bcd03bd6f8946520bcae66"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\extra_qa\\long_two_line_caption.png",
+      "bytes": 954314,
+      "sha256": "5008ea6926380dc19798eb40eed09c84e237076ddfff82d4d3eaffbfda474576"
     },
     {
-      "location": "visual_review.source_checks.route.sha256",
+      "location": "visual_review.reviewed_images[6].sha256",
       "kind": "file_sha256",
-      "file": "docs/town_walkthrough/route_plan.json",
-      "bytes": 11307,
-      "sha256": "c92282e0e4167cf2a2edc1fc96f5bcc5a3a10beb13700072e201ab949fcf6fdb"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\extra_qa\\retimed_pond_caption.png",
+      "bytes": 924263,
+      "sha256": "8e2aa6886ccf80dc35ab480dc04ef0d63e6f8dda5ae72a29b8d1e3ff81ba9941"
     },
     {
-      "location": "visual_review.source_checks.game/scripts/town_walkthrough.gd.sha256",
+      "location": "visual_review.reviewed_images[7].sha256",
       "kind": "file_sha256",
-      "file": "game/scripts/town_walkthrough.gd",
-      "bytes": 31517,
-      "sha256": "5da35636355dcb1e590fa474765bd4892e3d3f96d2d3fe1607567131b4385138"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\extra_qa\\motion_strip_01_10_15.png",
+      "bytes": 466278,
+      "sha256": "d893530b028f41d8532fce6da044f329181781f32cb60216a84d982ed156e98e"
     },
     {
-      "location": "visual_review.source_checks.docs/town_walkthrough/route_plan.json.sha256",
+      "location": "visual_review.reviewed_images[8].sha256",
       "kind": "file_sha256",
-      "file": "docs/town_walkthrough/route_plan.json",
-      "bytes": 11307,
-      "sha256": "c92282e0e4167cf2a2edc1fc96f5bcc5a3a10beb13700072e201ab949fcf6fdb"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\extra_qa\\motion_strip_02_65_70.png",
+      "bytes": 415774,
+      "sha256": "222077a3d2c2e75ef7256e5cfd97bd4053dbd4b60a032f2b3691688ffb74a4a0"
     },
     {
-      "location": "visual_review.source_checks.game/data/town3d/projection.json.sha256",
+      "location": "visual_review.reviewed_images[9].sha256",
       "kind": "file_sha256",
-      "file": "game/data/town3d/projection.json",
-      "bytes": 1133444,
-      "sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\extra_qa\\motion_strip_03_320_325.png",
+      "bytes": 190854,
+      "sha256": "6edb1c8d58038de51324bf7b8710afcd181ef3c2774d7023661b31a59b84457d"
     },
     {
-      "location": "visual_review.timeline.raw_packet_proof.packet_table.sha256",
+      "location": "visual_review.reviewed_images[10].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/raw_video_packets.json",
-      "bytes": 1163332,
-      "sha256": "edb234ff11c827bce0c4bae7580c8ad99b22feeb2bb4896e30132928445ff5ac"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\extra_qa\\motion_strip_04_500_505.png",
+      "bytes": 328186,
+      "sha256": "d037ae8d47fef7c275e5375113108d4479b44e68d51c8ce23a8c78379f935786"
     },
     {
-      "location": "visual_review.images[0].sha256",
+      "location": "visual_review.reviewed_images[11].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_01.png",
-      "bytes": 895601,
-      "sha256": "eb06fb51499bedd215fd934e2e9e3fab9fd5ec38f3c1772423355ab0f5ae422a"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\extra_qa\\motion_strip_05_695_700.png",
+      "bytes": 584985,
+      "sha256": "a742aa4a9b42816b7d2658a91864124ac1889a8e5e653f5d00db617ff7750034"
     },
     {
-      "location": "visual_review.images[1].sha256",
+      "location": "visual_review.reviewed_images[12].sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_02.png",
-      "bytes": 1067453,
-      "sha256": "cc2ba224bb7698aa3faeb5a9155d72081cf9992044fc139af3a7475cc544c7b3"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\extra_qa\\motion_strip_06_820_825.png",
+      "bytes": 506534,
+      "sha256": "795045d2e129aa238a481dc9076fcdfa915371373dfc3144609087e7402d5b33"
     },
     {
-      "location": "visual_review.images[2].sha256",
+      "location": "audio_review.movie_sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_03.png",
-      "bytes": 1134035,
-      "sha256": "a4ca22cc719fea799fe3ad2bc2c2e9baae568ae7d46f212401dc37220e79be53"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\LivingTown_Walkthrough.mp4",
+      "bytes": 528362448,
+      "sha256": "9c72fa15426706d76307fd1eebaec77404de3cbabb67c80e9928d83ecbf4e252"
     },
     {
-      "location": "visual_review.images[3].sha256",
+      "location": "audio_review.verification_report_sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_04.png",
-      "bytes": 1101048,
-      "sha256": "26c5cfb6cf58fb2cdd0a3299f5ab070749035ca7efc9047fe3b2be31ccc618a1"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\verification_report.json",
+      "bytes": 21181,
+      "sha256": "e3abee4f3dbd10deb61af89932160cc28f253235b6f348639ac16171196a7215"
     },
     {
-      "location": "visual_review.images[4].sha256",
+      "location": "audio_review.voice_report.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_05.png",
-      "bytes": 1016967,
-      "sha256": "d3dba27baa0965911bc3be29a90d59e4560d7eb4f0bc58c0f88b3c5c69a43ff1"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_report.json",
+      "bytes": 133169,
+      "sha256": "17b83a15b01239307bcafb86f3c765a8e41472c5b0eb6c02f9719f77017d76be"
     },
     {
-      "location": "visual_review.images[5].sha256",
+      "location": "audio_review.caption_report.sha256",
       "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_06.png",
-      "bytes": 1024016,
-      "sha256": "41a5f7f740d2f933ed3d52533297ce85c8cc2420c8e5e3de115d03d93882a029"
-    },
-    {
-      "location": "visual_review.images[6].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_07.png",
-      "bytes": 1290563,
-      "sha256": "1a1ee51c1a026b708f81d326ab96452953a81a6912f4126bac694366f85d2094"
-    },
-    {
-      "location": "visual_review.images[7].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_08.png",
-      "bytes": 1023334,
-      "sha256": "37e077242aaf72656adb90a9e0df9cf5632231871d0d2c8e20d6de75ef5e8f61"
-    },
-    {
-      "location": "visual_review.images[8].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_09.png",
-      "bytes": 926933,
-      "sha256": "fd9a1f26a8511fb227badd433bc809c9a4e79ab8bd500a0f916f6a969b465031"
-    },
-    {
-      "location": "visual_review.images[9].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_10.png",
-      "bytes": 993000,
-      "sha256": "24d6c512ee6789e42f804ea0c6b7d768e67878abb0014aa80f5ab9dfdd8915ed"
-    },
-    {
-      "location": "visual_review.images[10].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/chapter_11.png",
-      "bytes": 1238274,
-      "sha256": "cf5d4c937db6d2ffe4a3607a4ea2cde4e3029e6380ed08d25c176bf7b6ac31b6"
-    },
-    {
-      "location": "visual_review.images[11].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/caption_006.png",
-      "bytes": 889316,
-      "sha256": "6198300cc3e45ae292f2ce370f296e9fb55237706716cae5bbeee65f902f6485"
-    },
-    {
-      "location": "visual_review.images[12].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/caption_030.png",
-      "bytes": 953192,
-      "sha256": "7b7a24be2a4927217f76eaf5c129e9b9c071c157b2b98e81948595b35997a0f2"
-    },
-    {
-      "location": "visual_review.images[13].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/qa/caption_469.png",
-      "bytes": 1133845,
-      "sha256": "c0a23f25c98933813d54221828627dcdf9a537401deb3af80d48ca2318df8d7d"
-    },
-    {
-      "location": "visual_review.supplementary_live_captures[0].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/fixture_menu_cafe1f_table.png",
-      "bytes": 1289574,
-      "sha256": "b730daf11602ae288aa5881622e3a001ae89327fa83778836d07e7f1360edb3f"
-    },
-    {
-      "location": "visual_review.supplementary_live_captures[1].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/fixture_menu_cafe1f_counter.png",
-      "bytes": 1243059,
-      "sha256": "521277b0c6e3a8bd855252722bc5112a55ccbd3c5bd5577865ce52cb1a81529a"
-    },
-    {
-      "location": "visual_review.supplementary_live_captures[2].sha256",
-      "kind": "file_sha256",
-      "file": "build/town_walkthrough/full_v2/resident_social_menu.png",
-      "bytes": 1086994,
-      "sha256": "2b63c692a1ce701a10cc7870721bc6e54ad3ac9a40564056d1d5a73f410adea7"
+      "file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\captions.json",
+      "bytes": 19020,
+      "sha256": "20c84fc3c132c3a559edcc73a5b29e1b4e6f9f08c5500ffd43fddb2b553c5cd0"
     }
   ],
-  "source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
-  "projection_sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a",
+  "source_glb_sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a",
+  "source_glb_sha256_semantics": "v2 staged asset-set digest, not a single chunk file hash",
+  "source_blend_sha256": "3162c204689cdb7888a5e0d21bb5dde9be04a89ac6253ba03a88d7f5ddd86274",
+  "stage_manifest_sha256": "14841567aa0172536446f1ac95e161b8dda3249d72a5956f83802e6711f429d0",
+  "characters_manifest_sha256": "00b272523dffef832a1025bba68b347d6a7917023898ba4fd6d4d20e48210970",
+  "projection_sha256": "98146b008f130870d0067a7c1e0940f6ab373b5f255e5ba66ac24ca0ed48b3bc",
   "copied_assets": [
     {
       "file": "docs/town_walkthrough/final/walkthrough_report.json",
-      "bytes": 41907,
-      "sha256": "8084c954963f87f07cb5a432c7b1d73476efb58d60f31a469c7a29a9f710856c"
+      "bytes": 214006,
+      "sha256": "f1d9e3d026f7189da354504e3fbf6f535d14162846e7821df717dce8ae5c1240"
     },
     {
       "file": "docs/town_walkthrough/final/composition_report.json",
-      "bytes": 7727,
-      "sha256": "5c524861b5c334a81bb10fcab5fdcb6c1cd91dc8bdeda0b67e141855ee03222c"
+      "bytes": 7121,
+      "sha256": "b658d4d5590a33cfae5901de0b39351b3565cbbfba075114ace2e847cb6bc21e"
     },
     {
       "file": "docs/town_walkthrough/final/verification_report.json",
-      "bytes": 20585,
-      "sha256": "bcf2b0e93195eee2ce87b745170f4fc70d53b14efc0213f4da330d7126e61f4b"
+      "bytes": 21181,
+      "sha256": "e3abee4f3dbd10deb61af89932160cc28f253235b6f348639ac16171196a7215"
     },
     {
       "file": "docs/town_walkthrough/final/save_guard.json",
-      "bytes": 526,
-      "sha256": "6a6b9deb4229ec46b69e376d8933ebe3fb5fc39be265072a57f10ab7618724c2"
+      "bytes": 541,
+      "sha256": "9094cd15c35de332d08bde3a8f51be7de5d5cb2bb4b14bfd16f12f9b646c3aa2"
     },
     {
       "file": "docs/town_walkthrough/final/voice_report.json",
-      "bytes": 139918,
-      "sha256": "9facf6b38bc84a6a2b2827309b0cdb5c10d5d18e671b1c4f72990ecbc1aca0ab"
+      "bytes": 133169,
+      "sha256": "17b83a15b01239307bcafb86f3c765a8e41472c5b0eb6c02f9719f77017d76be"
     },
     {
       "file": "docs/town_walkthrough/final/captions.json",
-      "bytes": 21029,
-      "sha256": "ee721afcb2f4dc8d8270e0dec4df7c70bac3fdab2b914c7bb53d6a30f36fe1b5"
+      "bytes": 19020,
+      "sha256": "20c84fc3c132c3a559edcc73a5b29e1b4e6f9f08c5500ffd43fddb2b553c5cd0"
+    },
+    {
+      "file": "docs/town_walkthrough/final/walkthrough_cues.json",
+      "bytes": 8616,
+      "sha256": "e4fd667eb0da2c350f77023851cc237b58aa0b93cb62701747ce38e17286571b"
+    },
+    {
+      "file": "docs/town_walkthrough/final/route_plan.json",
+      "bytes": 11625,
+      "sha256": "30f560b986c095d09456aa3a4b03df76cc798e7413b5e1a151adf4ccaa9a1667"
+    },
+    {
+      "file": "docs/town_walkthrough/final/narration.json",
+      "bytes": 13673,
+      "sha256": "9c3e3a7e41e53a5fd3968b9213f3b54ed121b16bb39cfdc057edc877a8208961"
     },
     {
       "file": "docs/town_walkthrough/final/narration.srt",
-      "bytes": 10268,
-      "sha256": "776f1aa2df6b8d0cec7356f6e576ebe09ab1b05f7e7fbd57c9b20d131c791ae8"
+      "bytes": 9163,
+      "sha256": "ef5e567cddb771ecbd93af4d0482474f71cd4a546e1eca1f50cf4d00d5f74f4f"
     },
     {
       "file": "docs/town_walkthrough/final/narration.ass",
-      "bytes": 12258,
-      "sha256": "fac0a4c068996b19da1e0b4b781a5da1f3f2a456e89f931f099c7410e33c604a"
+      "bytes": 11017,
+      "sha256": "d352b17a7033a38a69d9e932454c331e7134e4f7e1cb06d04b23c636e25a5bd6"
     },
     {
       "file": "docs/town_walkthrough/final/contact_sheet.png",
-      "bytes": 1141755,
-      "sha256": "3edbdc6cf36d9cc7efea0da83d6a56c5db087048df4ff47c0c5cba6a9079ae3c"
+      "bytes": 1014103,
+      "sha256": "1912fb1e864656b2acdd0febf2ab957cf8ea1be51e192ae338a444f51bc67243"
     },
     {
       "file": "docs/town_walkthrough/final/supervised_receipt.json",
-      "bytes": 3359,
-      "sha256": "f941f7b4f8f38a80e9d58d3d6248f42160ab6b5f364d5c76cbfa7d263e74e2db"
-    },
-    {
-      "file": "docs/town_walkthrough/final/suite_logical.json",
-      "bytes": 6206,
-      "sha256": "200fae54768f27934698cfd01570b051516794cb99a7b21dac48d86e54c54aca"
-    },
-    {
-      "file": "docs/town_walkthrough/final/suite_visual.json",
-      "bytes": 13731,
-      "sha256": "f5782bed4c1bdb82e4a17d9fd7095785dd6b6fa5089dd0624140fd6d39e87163"
+      "bytes": 102027,
+      "sha256": "567a4a94cdd0a4328e3d1cd370a08d2c013098b3c768eaa87fc22609a268e60e"
     },
     {
       "file": "docs/town_walkthrough/final/visual_review.json",
-      "bytes": 18917,
-      "sha256": "0dc28c0c38051ab1472a6f3030e4f3c1cdf8ecedc1986c3275d07eeecec1d69f"
+      "bytes": 5466,
+      "sha256": "73172a99e27fb7a422d649dfe13bd63935d32933e352519e8d39285f3bb4d4e5"
     },
     {
-      "file": "docs/town_walkthrough/README.md",
-      "bytes": 4272,
-      "sha256": "5139a6dc2a09942db4c87b82f076c4440710e40dbf601e1037e55d8d311b5129"
+      "file": "docs/town_walkthrough/final/audio_review.json",
+      "bytes": 1568,
+      "sha256": "b64ac23d8cd7e6b9b77df058b1d43a43863ad930a0edc164926dbbd444c66876"
+    },
+    {
+      "file": "docs/town_walkthrough/final/qa/chapter_01.png",
+      "bytes": 1465821,
+      "sha256": "32bbd2c50a560ae6e85423d133239e0fc8573d1f2c72fb5a4612ac5702b32895"
+    },
+    {
+      "file": "docs/town_walkthrough/final/qa/chapter_02.png",
+      "bytes": 922805,
+      "sha256": "49a9621df4482aae7d4e6d765ecb16489d63047c3611cef90cdb8872d76812f8"
+    },
+    {
+      "file": "docs/town_walkthrough/final/qa/chapter_03.png",
+      "bytes": 1064688,
+      "sha256": "f1b0b7c06bc5fb68337571e2aa50fd324f2475b54cf7961c0d722ae1a165a685"
+    },
+    {
+      "file": "docs/town_walkthrough/final/qa/chapter_04.png",
+      "bytes": 1007318,
+      "sha256": "b9b1a23288cd5a366c87804cbd86a3a3a60ce4d4a85c55b1d2851478d2cdbce7"
+    },
+    {
+      "file": "docs/town_walkthrough/final/qa/chapter_05.png",
+      "bytes": 566539,
+      "sha256": "d9334266d3b9a4e98ecc9a13d82a177af698ce98d77f0349b1bc10fb88282689"
+    },
+    {
+      "file": "docs/town_walkthrough/final/qa/chapter_06.png",
+      "bytes": 310785,
+      "sha256": "49f2a2167b208a71369d3ea6003c661e27e70badda2e052deb97c3a38a254575"
+    },
+    {
+      "file": "docs/town_walkthrough/final/qa/chapter_07.png",
+      "bytes": 777160,
+      "sha256": "ded8c373de748d3954331ccd67d89d43f783a1ea1784d02fb7de8c98d0c4b693"
+    },
+    {
+      "file": "docs/town_walkthrough/final/qa/chapter_08.png",
+      "bytes": 669498,
+      "sha256": "f31f09db069b46fdc99e9432dd8a899a4bb7b9c29eccd3b5ba8da4dcdea50f2f"
+    },
+    {
+      "file": "docs/town_walkthrough/final/qa/chapter_09.png",
+      "bytes": 1085549,
+      "sha256": "11b0534e1d80534db50f99ec2ece690e942548a30ad25c03160e1b564844785a"
+    },
+    {
+      "file": "docs/town_walkthrough/final/qa/chapter_10.png",
+      "bytes": 1647724,
+      "sha256": "c3fa563a768d9ae5f35c67349396c37592227d9340916688ea4595955183669f"
+    },
+    {
+      "file": "docs/town_walkthrough/final/qa/chapter_11.png",
+      "bytes": 796823,
+      "sha256": "32d156c2d504453da8ec512fbbdbbb1d7be6f012f46e1a63764c3dcc9275067f"
+    },
+    {
+      "file": "docs/town_walkthrough/final/qa/chapter_12.png",
+      "bytes": 1528784,
+      "sha256": "b19f7dcd394f481b798ca8a0ff1f85a2e23fcd42d5f75644233b50765fa4b3a1"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/01_complete_town_and_woodland.png",
+      "bytes": 1352838,
+      "sha256": "c8f2f6791b2e8ca28397a3f07f4d393057d3f1ad306ea61f58bf6a0cf9cc7efe"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/02_Aria_refined_character_upper_home.png",
+      "bytes": 1087729,
+      "sha256": "1fbf7e4a210f60717652ab6544c926070f836bb9a91df87a7c797b89c7198a10"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/02b_expandable_activity_and_wishes.png",
+      "bytes": 1063330,
+      "sha256": "0f92663b571a58bda537a257bfd20dbc6ec8f92d12fa167f1f9913441bfab829"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/03_actual_stair_arrival.png",
+      "bytes": 1258890,
+      "sha256": "432f5f0e005f0ec8b8703bd90736d9df290e308204e741ca4932fe9e2d4cc493"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/fixture_menu_cafe1f_table.png",
+      "bytes": 1210161,
+      "sha256": "39268ff536626ac27eee8d5eac899e12c80d43e24244987bb9c79f52448ff610"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/fixture_menu_cafe1f_counter.png",
+      "bytes": 1171938,
+      "sha256": "aab253fbb165c92b0d6eb1730706f8e45f3c2ab921b564a2290cf02db84e3771"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/04_cafe_action_and_street_threshold.png",
+      "bytes": 1213407,
+      "sha256": "52cdeb190f4e1a2731bfa3bdbcac99f64241ab1a865fbea24808e36730b2a58c"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/05_actual_expansion_venue_arrival.png",
+      "bytes": 868148,
+      "sha256": "57e050f2c38a9c63e28cfa04c4f34f77a9cbe28ea6dac27a5a35400caaad6841"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/fixture_menu_upgrade_Expansion_D09_Orchard_Lane_Loop_R12_L00_Rear_Room_A01_dining_table.png",
+      "bytes": 773110,
+      "sha256": "5b28626100e9f3845007c32ce3d5dd63b4a8064493b2cc7f9c73f86ac131d5ea"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/06_actual_expansion_upper_interior.png",
+      "bytes": 745833,
+      "sha256": "c7b656ebf6a840d60bddf6bea22b51d466d4321980aa7f869c0078510943d547"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/fixture_menu_upgrade_Reserve_Bathhouse_L00_Wash_West_Washbasin_0.png",
+      "bytes": 1064540,
+      "sha256": "8b3735ee7e8b4ae9e96f6f10b5488ff8e8ff11e8abd52cf2712257a6ca27b672"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/07_actual_reserve_bathhouse_action.png",
+      "bytes": 1055124,
+      "sha256": "a76e1980316c381cd64ac52bea67122d9820cbe68fdf1b1439f309353d9303d8"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/fixture_menu_upgrade_Reserve_Trailer_N06_L00_Private_Bathroom_Handwash.png",
+      "bytes": 919695,
+      "sha256": "bab3d9f719f038410a7df063986faceb4c7ecd555e950387e1730e33692e8be8"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/08_actual_trailer_interior_and_use.png",
+      "bytes": 848991,
+      "sha256": "6b5b769af506f438191e4bfd9d1677ab7b872ea7fb1e7dc501a79e568ff69a91"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/09_actual_return_from_reserve_to_core.png",
+      "bytes": 1288886,
+      "sha256": "7982348678e54ffa5e4663bdd09d737abdfb0264d858329a5b71f9cbb7477a90"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/10_inspection_ravine_bridge_forest.png",
+      "bytes": 1816674,
+      "sha256": "6170b8642a81aa06477986aac8acc9961b83d287219871577a6cf504945710d3"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/11_inspection_stone_stair_topography.png",
+      "bytes": 1831721,
+      "sha256": "4e83c16663ba030529abf8fbce2daa09a18d213b76f4903c84ade1b9e002d283"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/12_inspection_pond_horticulture.png",
+      "bytes": 1165154,
+      "sha256": "636c851161d0f88c6f8b1531eb298910da35c3e658289bcdbabbfb568c02ebaa"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/13_restored_actual_resident_life.png",
+      "bytes": 1200848,
+      "sha256": "e925fb00b540b8ed6943a580840d072d8fa3f2f2f164d9b503a30b4e7d82144e"
+    },
+    {
+      "file": "docs/town_walkthrough/final/captures/14_complete_upgraded_playable_town.png",
+      "bytes": 1093476,
+      "sha256": "2516f99b353059f99297e7c2884493bbe0df4e23081e267b071d2c0fe4d8f17f"
+    },
+    {
+      "file": "docs/town_walkthrough/final/review_images/long_two_line_caption.png",
+      "bytes": 954314,
+      "sha256": "5008ea6926380dc19798eb40eed09c84e237076ddfff82d4d3eaffbfda474576"
+    },
+    {
+      "file": "docs/town_walkthrough/final/review_images/retimed_pond_caption.png",
+      "bytes": 924263,
+      "sha256": "8e2aa6886ccf80dc35ab480dc04ef0d63e6f8dda5ae72a29b8d1e3ff81ba9941"
+    },
+    {
+      "file": "docs/town_walkthrough/final/review_images/motion_strip_01_10_15.png",
+      "bytes": 466278,
+      "sha256": "d893530b028f41d8532fce6da044f329181781f32cb60216a84d982ed156e98e"
+    },
+    {
+      "file": "docs/town_walkthrough/final/review_images/motion_strip_02_65_70.png",
+      "bytes": 415774,
+      "sha256": "222077a3d2c2e75ef7256e5cfd97bd4053dbd4b60a032f2b3691688ffb74a4a0"
+    },
+    {
+      "file": "docs/town_walkthrough/final/review_images/motion_strip_03_320_325.png",
+      "bytes": 190854,
+      "sha256": "6edb1c8d58038de51324bf7b8710afcd181ef3c2774d7023661b31a59b84457d"
+    },
+    {
+      "file": "docs/town_walkthrough/final/review_images/motion_strip_04_500_505.png",
+      "bytes": 328186,
+      "sha256": "d037ae8d47fef7c275e5375113108d4479b44e68d51c8ce23a8c78379f935786"
+    },
+    {
+      "file": "docs/town_walkthrough/final/review_images/motion_strip_05_695_700.png",
+      "bytes": 584985,
+      "sha256": "a742aa4a9b42816b7d2658a91864124ac1889a8e5e653f5d00db617ff7750034"
+    },
+    {
+      "file": "docs/town_walkthrough/final/review_images/motion_strip_06_820_825.png",
+      "bytes": 506534,
+      "sha256": "795045d2e129aa238a481dc9076fcdfa915371373dfc3144609087e7402d5b33"
     }
   ],
-  "note": "Manifest excludes its own hash. Technical validation never invents visual or human listening acceptance."
+  "checkpoint_assets": [
+    {
+      "file": "docs/town_bridge/captures/01_complete_town_and_woodland.png",
+      "bytes": 1352838,
+      "sha256": "c8f2f6791b2e8ca28397a3f07f4d393057d3f1ad306ea61f58bf6a0cf9cc7efe"
+    },
+    {
+      "file": "docs/town_bridge/captures/02_Aria_refined_character_upper_home.png",
+      "bytes": 1087729,
+      "sha256": "1fbf7e4a210f60717652ab6544c926070f836bb9a91df87a7c797b89c7198a10"
+    },
+    {
+      "file": "docs/town_bridge/captures/02b_expandable_activity_and_wishes.png",
+      "bytes": 1063330,
+      "sha256": "0f92663b571a58bda537a257bfd20dbc6ec8f92d12fa167f1f9913441bfab829"
+    },
+    {
+      "file": "docs/town_bridge/captures/03_actual_stair_arrival.png",
+      "bytes": 1258890,
+      "sha256": "432f5f0e005f0ec8b8703bd90736d9df290e308204e741ca4932fe9e2d4cc493"
+    },
+    {
+      "file": "docs/town_bridge/captures/fixture_menu_cafe1f_table.png",
+      "bytes": 1210161,
+      "sha256": "39268ff536626ac27eee8d5eac899e12c80d43e24244987bb9c79f52448ff610"
+    },
+    {
+      "file": "docs/town_bridge/captures/fixture_menu_cafe1f_counter.png",
+      "bytes": 1171938,
+      "sha256": "aab253fbb165c92b0d6eb1730706f8e45f3c2ab921b564a2290cf02db84e3771"
+    },
+    {
+      "file": "docs/town_bridge/captures/04_cafe_action_and_street_threshold.png",
+      "bytes": 1213407,
+      "sha256": "52cdeb190f4e1a2731bfa3bdbcac99f64241ab1a865fbea24808e36730b2a58c"
+    },
+    {
+      "file": "docs/town_bridge/captures/05_actual_expansion_venue_arrival.png",
+      "bytes": 868148,
+      "sha256": "57e050f2c38a9c63e28cfa04c4f34f77a9cbe28ea6dac27a5a35400caaad6841"
+    },
+    {
+      "file": "docs/town_bridge/captures/fixture_menu_upgrade_Expansion_D09_Orchard_Lane_Loop_R12_L00_Rear_Room_A01_dining_table.png",
+      "bytes": 773110,
+      "sha256": "5b28626100e9f3845007c32ce3d5dd63b4a8064493b2cc7f9c73f86ac131d5ea"
+    },
+    {
+      "file": "docs/town_bridge/captures/06_actual_expansion_upper_interior.png",
+      "bytes": 745833,
+      "sha256": "c7b656ebf6a840d60bddf6bea22b51d466d4321980aa7f869c0078510943d547"
+    },
+    {
+      "file": "docs/town_bridge/captures/fixture_menu_upgrade_Reserve_Bathhouse_L00_Wash_West_Washbasin_0.png",
+      "bytes": 1064540,
+      "sha256": "8b3735ee7e8b4ae9e96f6f10b5488ff8e8ff11e8abd52cf2712257a6ca27b672"
+    },
+    {
+      "file": "docs/town_bridge/captures/07_actual_reserve_bathhouse_action.png",
+      "bytes": 1055124,
+      "sha256": "a76e1980316c381cd64ac52bea67122d9820cbe68fdf1b1439f309353d9303d8"
+    },
+    {
+      "file": "docs/town_bridge/captures/fixture_menu_upgrade_Reserve_Trailer_N06_L00_Private_Bathroom_Handwash.png",
+      "bytes": 919695,
+      "sha256": "bab3d9f719f038410a7df063986faceb4c7ecd555e950387e1730e33692e8be8"
+    },
+    {
+      "file": "docs/town_bridge/captures/08_actual_trailer_interior_and_use.png",
+      "bytes": 848991,
+      "sha256": "6b5b769af506f438191e4bfd9d1677ab7b872ea7fb1e7dc501a79e568ff69a91"
+    },
+    {
+      "file": "docs/town_bridge/captures/09_actual_return_from_reserve_to_core.png",
+      "bytes": 1288886,
+      "sha256": "7982348678e54ffa5e4663bdd09d737abdfb0264d858329a5b71f9cbb7477a90"
+    },
+    {
+      "file": "docs/town_bridge/captures/10_inspection_ravine_bridge_forest.png",
+      "bytes": 1816674,
+      "sha256": "6170b8642a81aa06477986aac8acc9961b83d287219871577a6cf504945710d3"
+    },
+    {
+      "file": "docs/town_bridge/captures/11_inspection_stone_stair_topography.png",
+      "bytes": 1831721,
+      "sha256": "4e83c16663ba030529abf8fbce2daa09a18d213b76f4903c84ade1b9e002d283"
+    },
+    {
+      "file": "docs/town_bridge/captures/12_inspection_pond_horticulture.png",
+      "bytes": 1165154,
+      "sha256": "636c851161d0f88c6f8b1531eb298910da35c3e658289bcdbabbfb568c02ebaa"
+    },
+    {
+      "file": "docs/town_bridge/captures/13_restored_actual_resident_life.png",
+      "bytes": 1200848,
+      "sha256": "e925fb00b540b8ed6943a580840d072d8fa3f2f2f164d9b503a30b4e7d82144e"
+    },
+    {
+      "file": "docs/town_bridge/captures/14_complete_upgraded_playable_town.png",
+      "bytes": 1093476,
+      "sha256": "2516f99b353059f99297e7c2884493bbe0df4e23081e267b071d2c0fe4d8f17f"
+    }
+  ],
+  "note": "Reports retain original bytes/absolute paths; copied binding index locates the coherent small bundle. README/GIF/media publication and remote URL verification remain separate root actions. Recorded save restoration is reconciled against its retained guard/backup, not later user activity.",
+  "archive": {
+    "file": "docs/town_walkthrough/archive/oct12_600s_before_h002_full3_20261023/archive_manifest.json",
+    "bytes": 2424,
+    "sha256": "9505a80ab5c998cad52f2115e219af230a08feac16053163e21728a1e10fe7d0"
+  }
 }

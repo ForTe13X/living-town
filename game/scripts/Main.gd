@@ -6,6 +6,7 @@ var _view: Node2D
 var _probe: Node                      # ProbeController：拥有 Camera2D + 观察状态（纯 View，不写 Sim）
 var _locked_ortho_c1: Node2D          # optional C1 projection; no Sim authority or input ownership
 var _life: Node                       # LifeMode（docs/190）：开局选人 + 附身过日子；null = 观察者/M1 模式
+var _town_hud: Node                   # town3d-only presentation; keeps existing public HUD nodes
 var _sg: RefCounted                   # SpaceGraph：Space/Floor/Portal 合同（纯数据查询；兼容期 town/outdoor 兜底）
 var _town3d := false
 var _modulate: CanvasModulate
@@ -947,6 +948,10 @@ func _build_hud() -> void:
 
 	_build_civic_panel(layer, fnt)
 	_build_bank_panel(fnt)
+	if _town3d and not _clean_player_presentation and _locked_ortho_c1 == null:
+		_town_hud = preload("res://scripts/ui/TownHud.gd").new()
+		add_child(_town_hud)
+		_town_hud.call("setup",self,fnt)
 
 	# B15：按当前视口锚定一次；并接 size_changed —— 手机转屏/桌面拉窗口都会重排（这是唯一入口）。
 	_relayout_hud()
@@ -1809,6 +1814,8 @@ func _relayout_hud() -> void:
 	_update_scrubber()                         # fill/handle 由它按新的 _sx0/_sx1/_sy 重画
 	if _clean_player_presentation:
 		_apply_clean_player_presentation()
+	if _town_hud != null:
+		_town_hud.call("layout")
 
 ## 观察台两档几何（_relayout_hud 与 _toggle_obs 共用；dx/dy 见 B15 的"基准 + 增量"写法）。
 ## 展开档的左缘刻意仍是 x=978 —— 与改动前逐像素同位，便于差分只归因于"档位"而不是"我顺手挪了面板"。
@@ -2354,6 +2361,18 @@ func _build_settings(layer: CanvasLayer, fnt: Font) -> void:
 	var pbtn := _mk_sbtn(fnt, "开/关 (F3)", 150)
 	pbtn.pressed.connect(_toggle_perf)
 	rp.add_child(pbtn)
+	if _town3d and not _clean_player_presentation:
+		(rp.get_child(0) as Label).text = "更多 Details"
+		pbtn.text = "性能 F3"
+		pbtn.custom_minimum_size.x = 100
+		var details := _mk_sbtn(fnt,"居民详情",100)
+		details.pressed.connect(func():
+			_settings_panel.hide()
+			if _life != null and bool(_life.get("active")):
+				_life.call("_open_modal",{})
+			else:
+				_toggle_obs())
+		rp.add_child(details)
 
 	var hint := Label.new()
 	hint.text = "改 NPC 数量 / 玩家模式 → 同种子重开小镇（确定性）"
@@ -2610,6 +2629,12 @@ func _update_status() -> void:
 	if not Sim.mayor_state.is_empty():
 		civic_brief += "  ·  镇长%s" % _nm(String(Sim.mayor_state.get("mayor", "")))
 	var full := core + etxt + tail + counts
+	if _town_hud != null:
+		var compact := "Living Town  ·  第%d天  %s%s  ·  %s" % [Sim.day,clock,wx,"运行 %s" % spd if Sim.running else "已暂停 Paused"]
+		var extra := "\n[color=#d7e4df]东海货仓 · 货运观测室（只读） · 点柜台查回执[/color]" if warehouse_status else ("\n[color=#d7e4df]WASD 移动 · 点居民互动 · F5 存档 / F8 读档[/color]" if _player_mode else "")
+		_town_hud.call("update_status",compact,full + ptxt,extra)
+		_refresh_clean_player_text()
+		return
 	# Keep the warehouse identity in the visible row even when the full
 	# instruction belongs in the tooltip rather than the narrow status bar.
 	var visible_ptxt := "\n[color=#80e1ff]你：东海货仓 · 货运观测室（只读） · 点柜台查回执[/color]" if warehouse_status else ptxt
@@ -3562,11 +3587,15 @@ func _push_event(e: Dictionary) -> void:
 		if _log_hot.size() > LOG_HOT_CAP:
 			_log_hot = _log_hot.slice(_log_hot.size() - LOG_HOT_CAP, _log_hot.size())
 	_log_recent.append(line)
+	if _town_hud != null and _salience(e) >= SALIENT_MIN:
+		_town_hud.call("notify",line,true)
 	_render_log()
 
 ## 系统提示（存读档/后端切换/操作反馈）只进「近况」，不占大事位。
 func _push(line: String) -> void:
 	_log_recent.append(line)
+	if _town_hud != null:
+		_town_hud.call("notify",line)
 	_render_log()
 
 func _render_log() -> void:
@@ -3585,6 +3614,8 @@ func _render_log() -> void:
 		out.append("[color=#5a6072]— 近况 —[/color]")
 	out.append_array(_log_recent)
 	_logbox.text = "\n".join(out)
+	if _town_hud != null:
+		_town_hud.call("update_feed",out,_log_hot,_log_recent)
 	_refresh_clean_player_text()
 
 ## 回放/读档后重建播报：旧时间线的字必须清干净，否则 scrub 完屏幕上还在讲一段已被抹掉的历史。
@@ -3658,6 +3689,12 @@ func _unhandled_input(e: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 		match e.keycode:
+			KEY_H:
+				if _town_hud != null and not bool(_town_hud.call("clock_blocked")):
+					if e.shift_pressed and _life != null and bool(_life.get("active")):
+						_life.call("_toggle_town_wants")
+					else:
+						_town_hud.call("toggle_activity")
 			KEY_SPACE: Sim.running = not Sim.running
 			KEY_0, KEY_KP_0: Sim.running = false
 			KEY_1, KEY_KP_1: Sim.running = true; Sim.speed = 1.0

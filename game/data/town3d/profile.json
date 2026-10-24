@@ -1,7 +1,7 @@
 {
   "schema": "living_town.world_profile.v1",
   "id": "town3d",
-  "label": "Delivered Living Town 3D",
+  "label": "Living Town: complete upgraded playable territory",
   "files": {
     "map.json": "res://data/town3d/map.json",
     "spaces.json": "res://data/town3d/spaces.json",
@@ -16,47 +16,36 @@
     "elections.json": "res://data/town3d/elections.json"
   },
   "projection_path": "res://data/town3d/projection.json",
-  "cell_sizes_m": {
-    "outdoor": 0.5,
-    "interior": 0.25
-  },
-  "source_hashes": {
-    "game/data/map.json": "5a51c6d68b744a6f0f9f8df62647b6bda17c71d6768ed325bf2ec9ce6072699c",
-    "game/data/spaces.json": "5ecd091807116e46f57fb04404acf20d742f5616229ac891455a1736c675b027",
-    "game/data/interiors.json": "e937aa1e6d7273b8293ae15878f976b42c89a2acd4b35c546ee6065635b52fe6",
-    "game/data/agents.json": "98044c7c12d9ca06c691847e78e33e92785a4beee4126bc645de74dc5a135a49",
-    "game/data/buildings.json": "60db5ba64ee7df41661171bf05006f4431f6cb679f0b7eff73fefea6f4f755ea",
-    "game/data/jobs.json": "3558f0781814c1e27e67899e9338c83822e938dcbc99c761f0f712d6dd40d248",
-    "game/data/production.json": "79fd00621dd9cd834747e0ecb81e5bf828b31ebda2d272f99c75772290a12df9",
-    "game/data/logistics.json": "0910a4e937f9772296dfa41b777f6abb7abd2e3ff7dedc9e240900cfac244cd0",
-    "game/data/housing.json": "c9633d1033f042530f86680b1f6e43778ce56b7b0a1c691e0ec8d94d4f4dd040",
-    "game/data/festivals.json": "010623dd4ecc1f81fcc75287ef707f9a1fc34a8f14cae5cffbb34447bfc0da43",
-    "game/data/elections.json": "d93e818780bc58b6c9bdb12b779e174a783cc46bdf37e07359a244c846d791c6",
-    "art/living_town/masterplan.json": "b7e5522f62f4a390faa95502537fbbac14856cb278bccb695fbd5cabe186377f",
-    "art/living_town/interior_plan.json": "a857d40e536ce84b3ed468a5815c54311f92f46ebbb1e1f7541ce76a498d08b4",
-    "art/living_town/town_manifest.json": "09e1a479de52cbfc5636f257a7383562215d30761fbd20c878fadbe4b8c67e85",
-    "art/living_town/terrain_plan.json": "69fc114cc289b33fc8e1d33e57daf77dd65e94d0340715c6a1974cd4d99fe349",
-    "art/living_town/landscape_plan.json": "68b8f4d2a9269b1fa8e9dde530bc83bd41b871effaf4d224ffd12ab953f6d4b1",
-    "art/living_town/tools/terrain_profile.py": "6f722d04566f11cc58b3dd93cace5b781d8b2092bb7e70169f1f08279febc3b8",
-    "art/living_town/tools/interior_design.py": "a467e4dc23bd2388e7e924a04a1b478bf0d0b7fc4deeb0616184de69b8c49025",
-    "art/living_town/game_assets/export_manifest.json": "ef251073f8547b8b34a56f10fc19d23d4e5d8db0b52f03d85960ac7c9d710d6e",
-    "tools/build_town_profile.py": "e9db0ec8d62d618c10353828fbb91c7c5efc0690c19f62b36bd80be226268d52"
-  },
   "base_data_untouched": true,
   "save_namespace": "town3d",
-  "model_source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
-  "file_hashes": {
-    "map.json": "330febe815bbe9d1324cbaa644e04b534973175e20ae7f72275ee1ed740fc5fb",
-    "spaces.json": "192d1e9efca883ec9c7d2ed5b83fc78a1f5d255af2a0e64f0851001f10afdbd7",
-    "interiors.json": "f5c056363421846648fb77d01a2a893bebdda3f166ff58a3630865551c4b387e",
-    "agents.json": "59791794086aabf1972d710737378325e503a7cb8dba83fcbea52658521fb3f7",
-    "buildings.json": "e6979fbec7bb7088a23b3452353739a4e72246933aeb00457fca33018f1731a2",
-    "jobs.json": "b7c313a69b99851e8aa711b5e54c2fb836edee198b731c6043560b3d42855d07",
-    "production.json": "8311bd5eee192751be412a5d17d30ca896f918aa4402a9a714765e075fcf9cb2",
-    "logistics.json": "c36417ed5bd02f240a51b011757c0369a563d1a7f95ecf157551cea04488db23",
-    "housing.json": "3f8f34445e1d23c85d864e4359143a4557395319719391d3616c934b6c999969",
-    "festivals.json": "c2d1439ab158c25ea79a9bc3adb36d95ddbfe9f72cf3eaa587d76a83c47b7a27",
-    "elections.json": "8cd81159d25acdd2a92465cf0907f1b6581c329a7840a268e8f26885a8bcdef5"
+  "model_source_blend_sha256": "3162c204689cdb7888a5e0d21bb5dde9be04a89ac6253ba03a88d7f5ddd86274",
+  "source_asset_set_sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a",
+  "source_upgrade_manifest_sha256": "007a2b506f3e3456a589c87b139cb48a3b85de432f6e616603620aa43cbb2e9d",
+  "presentation_source_hashes": {
+    "game/scripts/Main.gd": "8c7cf4b48251a43a49cdfa1c8f8a394107ff590510725bfab102112e8f1721e3",
+    "game/scripts/WorldView3D.gd": "c54c50174546c3f2e032ba467beb45e0c13a1e1675d7c49bbb88ee643d040588",
+    "game/scripts/TownModel3D.gd": "d01efda1933f4d0f4185ae1db1535c078fee85a2e8a50dffb4ee28feb44385cc",
+    "game/scripts/TownRayIndex3D.gd": "68905f530cb98619f47db6c837e33c9a7bad641105b80cfc2564744415202580",
+    "game/scripts/TownStaticBatch3D.gd": "e18664a7ca64260063cb4106658980685fa4d562d6a0756ad9b2673d573e1b34",
+    "game/scripts/TownCharacter3D.gd": "57fb4cd43afdf4d8db8a7aa081a50653f9ae4bac30b45f6876f7f1da5b8e8e04",
+    "game/scripts/TownWorldProfile.gd": "b2aca442b6e05ec276953d3de011e0fae99cba85566d383148e9ea5be4751785",
+    "game/scripts/LifeMode.gd": "f37e1329a65eaf405da20a6840c078bb730a03ec3825b5e5c532bf90e3398de2",
+    "game/scripts/Sim.gd": "672935f20b91d4ba2f95060c24909bd429d1f6d4516c2228b46bbe5c3fa42610",
+    "game/scripts/ui/TownHud.gd": "e112dd1dc39d57aa9513c1403bb17ff9c6704e2baaf4039bdd725b4f6f6584bc",
+    "game/scripts/ui/TownHudStyle.gd": "470788941e3b2df91ed52b6e851f162473ab3757bcec6dcc7bbeaefe1bb9dd6c"
   },
-  "projection_sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a"
+  "file_hashes": {
+    "map.json": "c74a02e43e1dc9b71f42b1f6c331a8a3dcc981310e41cec5611986ebe4e96f58",
+    "spaces.json": "6b4e8f30458cded568b3ef8750c75cd075ffdfd0462db58a124d1c3bbbaa7a26",
+    "interiors.json": "a17439abcb50f89c9c6077b3aa57541282638a529ca10f5fd88472094aa6e760",
+    "agents.json": "fda4596387cffd0eec0cab7fb021e7950afc4c6e878467712949924a630f0d8b",
+    "buildings.json": "cc647a819d14008a8f92a984a6e9a2e7b3372783ab50af9b028bb23abcb3e698",
+    "jobs.json": "cbe1a8dc9b708f7a30b8d37ba86ad5b1bd71e0987c1d86a82c49e9b7d7764123",
+    "production.json": "f4629e669770c0e7834f9a1e68e40b274a1bfa03db4c7a4c0d76e3ab11caff5e",
+    "logistics.json": "fe7b823be8b3c015aa4f213b3f3f47cda704fe4e4359c214504df99ba9f40303",
+    "housing.json": "1e1a23ef4c60c36d7200bb24855eb77b3f5752daf72f8fcd43c3f7d128e64820",
+    "festivals.json": "725a829333149951acaa76b40d50593973613555e84315d77f4231722f57413e",
+    "elections.json": "74fef7847d39b79635e8f28dcfe9924240fb4a4d3fa68e43b289b292b97fd0bd"
+  },
+  "projection_sha256": "98146b008f130870d0067a7c1e0940f6ab373b5f255e5ba66ac24ca0ed48b3bc"
 }

@@ -7,12 +7,14 @@ var projection: Dictionary = {}
 var error_message: String = ""
 var _files: Dictionary = {}
 var _blocked_cells: Dictionary = {}
+var _save_topology_bytes: int = 0
 
 func load_profile(path: String = "res://data/town3d/profile.json") -> bool:
 	profile = {}
 	projection = {}
 	_files = {}
 	_blocked_cells = {}
+	_save_topology_bytes = 0
 	error_message = ""
 	var parsed: Variant = _dictionary_file(path)
 	if not (parsed is Dictionary):
@@ -59,6 +61,13 @@ func load_profile(path: String = "res://data/town3d/profile.json") -> bool:
 	if not (stage is Dictionary) or stage.get("source_blend_sha256") != profile.get("model_source_blend_sha256"):
 		error_message = "Town spatial profile and staged model have different sources"
 		return false
+	if profile.has("source_asset_set_sha256"):
+		if stage.get("schema", "") != "living_town.game_stage.v2" or stage.get("status", "") != "PASS" or stage.get("source_asset_set_sha256", "") != profile["source_asset_set_sha256"] or projection.get("source_asset_set_sha256", "") != profile["source_asset_set_sha256"]:
+			error_message = "Upgraded gameplay topology and exact visual chunk set differ"
+			return false
+		if (projection.get("building_spaces", {}) as Dictionary).size() != int(stage.get("building_count", 0)):
+			error_message = "Upgraded gameplay omits a staged physical building"
+			return false
 	var interiors: Dictionary = _files["interiors.json"]
 	for key in projection.get("planes", {}):
 		var plane: Dictionary = projection["planes"][key]
@@ -68,6 +77,21 @@ func load_profile(path: String = "res://data/town3d/profile.json") -> bool:
 		for cell in content.get("nav_blockers", []):
 			blocked[int(cell[1]) * int(size[0]) + int(cell[0])] = true
 		_blocked_cells[key] = blocked
+	# Schema2 retains these immutable receiver-authored fields. Measure those
+	# exact data trees once, without granting a second copy of the whole map or
+	# its mutable object records. The ordinary8MiB headroom stays separate and
+	# Sim independently clamps the complete file budget to64MiB.
+	var geometry: Dictionary = {}
+	for field: String in ["width", "height", "nav_blockers", "rooms", "areas"]:
+		geometry[field] = _files["map.json"].get(field)
+	var topology: Dictionary = _files["spaces.json"]
+	_save_topology_bytes = var_to_bytes(geometry).size() + var_to_bytes(topology.get("spaces", {})).size() \
+		+ var_to_bytes(topology.get("portals", [])).size() + var_to_bytes(interiors).size()
+	# Schema2 also retains Sim._blocked, the integer-keyed duplicate built by
+	# Sim._build_nav's authored nav_blockers branch. Account for that exact
+	# receiver-owned dictionary, never a value or budget supplied by a save.
+	if _files["map.json"].has("nav_blockers"):
+		_save_topology_bytes += var_to_bytes(_blocked_cells.get("town/outdoor", {})).size()
 	return true
 
 func is_valid() -> bool:
@@ -80,6 +104,16 @@ func world_data_for(path: String) -> Variant:
 func save_identity() -> Dictionary:
 	return {"id": String(profile.get("id", "")),
 		"projection_sha256": String(profile.get("projection_sha256", ""))}
+
+func save_topology_allowance_bytes() -> int:
+	return _save_topology_bytes if is_valid() else 0
+
+func travel_step_budget(space: String, floor: String) -> int:
+	var plane: Dictionary = projection.get("planes", {}).get(space + "/" + floor, {})
+	var size: Array = plane.get("grid_size", [0, 0])
+	# Long reserve roads can wind around ravines. Retain the old minimum while
+	# allowing a finite trip proportional to the actual active territory bounds.
+	return maxi(160, (int(size[0]) + int(size[1])) * 2)
 
 func position_allowed(space: String, floor: String, pos: Vector2i) -> bool:
 	var key := space + "/" + floor

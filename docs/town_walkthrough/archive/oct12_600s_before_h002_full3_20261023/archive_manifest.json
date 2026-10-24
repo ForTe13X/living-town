@@ -1,0 +1,69 @@
+{
+  "schema": "living_town.walkthrough.evidence_archive.v1",
+  "generated_utc": "2026-10-24T06:05:35.585432+00:00",
+  "prior_final_files": {
+    "captions.json": {
+      "bytes": 21029,
+      "sha256": "ee721afcb2f4dc8d8270e0dec4df7c70bac3fdab2b914c7bb53d6a30f36fe1b5"
+    },
+    "composition_report.json": {
+      "bytes": 7727,
+      "sha256": "5c524861b5c334a81bb10fcab5fdcb6c1cd91dc8bdeda0b67e141855ee03222c"
+    },
+    "contact_sheet.png": {
+      "bytes": 1141755,
+      "sha256": "3edbdc6cf36d9cc7efea0da83d6a56c5db087048df4ff47c0c5cba6a9079ae3c"
+    },
+    "evidence_manifest.json": {
+      "bytes": 76053,
+      "sha256": "981d929acd55477904cc49c95d51c86810ee172b72c8409bde1e2b60985c6295"
+    },
+    "narration.ass": {
+      "bytes": 12258,
+      "sha256": "fac0a4c068996b19da1e0b4b781a5da1f3f2a456e89f931f099c7410e33c604a"
+    },
+    "narration.srt": {
+      "bytes": 10268,
+      "sha256": "776f1aa2df6b8d0cec7356f6e576ebe09ab1b05f7e7fbd57c9b20d131c791ae8"
+    },
+    "save_guard.json": {
+      "bytes": 526,
+      "sha256": "6a6b9deb4229ec46b69e376d8933ebe3fb5fc39be265072a57f10ab7618724c2"
+    },
+    "suite_logical.json": {
+      "bytes": 6206,
+      "sha256": "200fae54768f27934698cfd01570b051516794cb99a7b21dac48d86e54c54aca"
+    },
+    "suite_visual.json": {
+      "bytes": 13731,
+      "sha256": "f5782bed4c1bdb82e4a17d9fd7095785dd6b6fa5089dd0624140fd6d39e87163"
+    },
+    "supervised_receipt.json": {
+      "bytes": 3359,
+      "sha256": "f941f7b4f8f38a80e9d58d3d6248f42160ab6b5f364d5c76cbfa7d263e74e2db"
+    },
+    "verification_report.json": {
+      "bytes": 20585,
+      "sha256": "bcf2b0e93195eee2ce87b745170f4fc70d53b14efc0213f4da330d7126e61f4b"
+    },
+    "visual_review.json": {
+      "bytes": 18917,
+      "sha256": "0dc28c0c38051ab1472a6f3030e4f3c1cdf8ecedc1986c3275d07eeecec1d69f"
+    },
+    "voice_report.json": {
+      "bytes": 139918,
+      "sha256": "9facf6b38bc84a6a2b2827309b0cdb5c10d5d18e671b1c4f72990ecbc1aca0ab"
+    },
+    "walkthrough_report.json": {
+      "bytes": 41907,
+      "sha256": "8084c954963f87f07cb5a432c7b1d73476efb58d60f31a469c7a29a9f710856c"
+    }
+  },
+  "checkpoint_files": {},
+  "readme": {
+    "file": "docs/town_walkthrough/archive/oct12_600s_before_h002_full3_20261023/README.md",
+    "bytes": 4272,
+    "sha256": "5139a6dc2a09942db4c87b82f076c4440710e40dbf601e1037e55d8d311b5129"
+  },
+  "note": "Exact historical bytes; the archived reports were not rewritten."
+}

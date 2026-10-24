@@ -6,18 +6,18 @@
       "persona": "aria",
       "home": [
         7,
-        21
+        18
       ],
       "spawn": [
         7,
-        21
+        18
       ],
       "spatial_address": {
         "space_id": "cafe",
         "floor_id": "2f",
         "position": [
           7,
-          21
+          18
         ]
       },
       "home_needs": [
@@ -75,11 +75,11 @@
       "persona": "dan",
       "home": [
         7,
-        17
+        14
       ],
       "spawn": [
         7,
-        17
+        14
       ],
       "cafe_regular": true,
       "spatial_address": {
@@ -87,7 +87,7 @@
         "floor_id": "2f",
         "position": [
           7,
-          17
+          14
         ]
       },
       "home_needs": [
@@ -99,18 +99,18 @@
       "persona": "evy",
       "home": [
         7,
-        17
+        14
       ],
       "spawn": [
         7,
-        17
+        14
       ],
       "spatial_address": {
         "space_id": "home2",
         "floor_id": "2f",
         "position": [
           7,
-          17
+          14
         ]
       },
       "home_needs": [
@@ -189,18 +189,18 @@
       "persona": "shu",
       "home": [
         7,
-        17
+        14
       ],
       "spawn": [
         7,
-        17
+        14
       ],
       "spatial_address": {
         "space_id": "home2",
         "floor_id": "2f",
         "position": [
           7,
-          17
+          14
         ]
       }
     },
@@ -209,11 +209,11 @@
       "persona": "mei",
       "home": [
         7,
-        17
+        14
       ],
       "spawn": [
         7,
-        17
+        14
       ],
       "cafe_regular": true,
       "spatial_address": {
@@ -221,7 +221,7 @@
         "floor_id": "2f",
         "position": [
           7,
-          17
+          14
         ]
       }
     },
@@ -230,18 +230,18 @@
       "persona": "qin",
       "home": [
         7,
-        17
+        14
       ],
       "spawn": [
         7,
-        17
+        14
       ],
       "spatial_address": {
         "space_id": "test_loft",
         "floor_id": "2f",
         "position": [
           7,
-          17
+          14
         ]
       }
     },
@@ -274,12 +274,12 @@
       "id": "tao",
       "persona": "tao",
       "home": [
-        255,
-        31
+        661,
+        457
       ],
       "spawn": [
-        255,
-        31
+        661,
+        457
       ],
       "affiliate": true,
       "cafe_regular": true,
@@ -288,8 +288,8 @@
         "space_id": "town",
         "floor_id": "outdoor",
         "position": [
-          255,
-          31
+          661,
+          457
         ]
       }
     },
@@ -297,12 +297,12 @@
       "id": "yong",
       "persona": "yong",
       "home": [
-        255,
-        21
+        661,
+        452
       ],
       "spawn": [
-        255,
-        21
+        661,
+        452
       ],
       "affiliate": true,
       "cafe_regular": false,
@@ -311,8 +311,8 @@
         "space_id": "town",
         "floor_id": "outdoor",
         "position": [
-          255,
-          21
+          661,
+          452
         ]
       }
     }

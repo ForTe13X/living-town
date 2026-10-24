@@ -34,6 +34,17 @@ __pycache__/
 analysis/**/packet_*.jsonl
 # Large reproducible town assets are published as checksum-verified release files.
 game/assets/town3d/*.glb
+# Refined skinned residents use the same verified release-asset bootstrap.
+game/assets/characters3d/*.glb
+# Godot regenerates embedded GLB texture extractions on local import.
+game/assets/town3d/*.png
+game/assets/town3d/*.jpg
+game/assets/town3d/*.jpeg
+game/assets/characters3d/*.png
+game/assets/characters3d/*.jpg
+game/assets/characters3d/*.jpeg
+# Tripo's local project/account context stays private.
+.tripo/
 art/**/*.zip
 art/**/*.glb
 art/**/*.blend
@@ -46,3 +57,6 @@ art/interactive_delivery/*.pck
 
 # Local authoring archive, renders and supplied references; tracked authoring source stays tracked.
 art/
+
+# Godot-specific acceleration binary is restored from verified release assets.
+game/assets/town3d/static_render_cache.res

@@ -1,20 +1,5 @@
 {
-  "_note": "Optional model-aligned profile. Base spaces.json remains unchanged.",
   "spaces": {
-    "town": {
-      "kind": "outdoor",
-      "label": "Living Town",
-      "bounds": [
-        0,
-        0,
-        268,
-        216
-      ],
-      "floors": [
-        "outdoor"
-      ],
-      "default_floor": "outdoor"
-    },
     "cafe": {
       "_why": "P3 竖切片：阿丽的咖啡馆真室内。1F 公共咖啡区(吧台/咖啡机/甜点柜/吧凳/卡座/菜单牌)、2F 阿丽私人居所(床/衣柜/床头柜/书桌/梳妆镜/相片墙)。街门 portal 接 town/outdoor 的咖啡馆门(41,19)，楼梯 portal 接 1F→2F(owner 权限=私人上层)。内容在 interiors.json、渲染走非-town active-space 路径。Tier-B(★AM1 订正——旧注误写『Tier-A：居民不进、digest 逐字节不变』，与实况矛盾)：带 spatial_address 的居民【真住】非-town 平面并按 portal 跨平面走动——阿丽(aria) spatial_address={cafe,2f,[2,2]} 就住 2F，journey 在镇↔店之间跨平面(_journey_candidates→_route_next_hop→_move_agent)。金标口径：带 advertises 的室内家具经 _compile_interiors 进 world 候选、家具格经 _build_interior_grids 进各平面导航网 ⇒ 动它们/其位置=移金标；纯装饰家具(无 advertises)重排=AM1 实测 golden 12/12 逐字节不变。",
       "kind": "interior",
@@ -865,6 +850,1724 @@
       "default_floor": "1f",
       "model_building_id": "lot_17_longere",
       "public_venue": false
+    },
+    "model_reserve_visitor_reception": {
+      "kind": "interior",
+      "label": "visitor reception",
+      "bounds": [
+        0,
+        0,
+        36,
+        28
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Visitor_Reception",
+      "public_venue": false
+    },
+    "model_reserve_convenience": {
+      "kind": "interior",
+      "label": "convenience store",
+      "bounds": [
+        0,
+        0,
+        40,
+        28
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Convenience",
+      "public_venue": false
+    },
+    "model_reserve_souvenir": {
+      "kind": "interior",
+      "label": "souvenir store",
+      "bounds": [
+        0,
+        0,
+        36,
+        28
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Souvenir",
+      "public_venue": false
+    },
+    "model_reserve_bathhouse": {
+      "kind": "interior",
+      "label": "public bathhouse",
+      "bounds": [
+        0,
+        0,
+        56,
+        36
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Bathhouse",
+      "public_venue": false
+    },
+    "model_reserve_public_toilets": {
+      "kind": "interior",
+      "label": "public toilets",
+      "bounds": [
+        0,
+        0,
+        28,
+        20
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Public_Toilets",
+      "public_venue": false
+    },
+    "model_reserve_food_truck": {
+      "kind": "interior",
+      "label": "food truck",
+      "bounds": [
+        0,
+        0,
+        28,
+        11
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Food_Truck",
+      "public_venue": false
+    },
+    "model_reserve_laundry": {
+      "kind": "interior",
+      "label": "laundry",
+      "bounds": [
+        0,
+        0,
+        32,
+        24
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Laundry",
+      "public_venue": false
+    },
+    "model_reserve_maintenance": {
+      "kind": "interior",
+      "label": "maintenance",
+      "bounds": [
+        0,
+        0,
+        28,
+        20
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Maintenance",
+      "public_venue": false
+    },
+    "model_reserve_refuse_service": {
+      "kind": "interior",
+      "label": "refuse service",
+      "bounds": [
+        0,
+        0,
+        24,
+        16
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Refuse_Service",
+      "public_venue": false
+    },
+    "model_reserve_trailer_n01": {
+      "kind": "interior",
+      "label": "trailer",
+      "bounds": [
+        0,
+        0,
+        14,
+        34
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Trailer_N01",
+      "public_venue": false
+    },
+    "model_reserve_trailer_n02": {
+      "kind": "interior",
+      "label": "trailer",
+      "bounds": [
+        0,
+        0,
+        14,
+        34
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Trailer_N02",
+      "public_venue": false
+    },
+    "model_reserve_trailer_n03": {
+      "kind": "interior",
+      "label": "trailer",
+      "bounds": [
+        0,
+        0,
+        14,
+        34
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Trailer_N03",
+      "public_venue": false
+    },
+    "model_reserve_trailer_n04": {
+      "kind": "interior",
+      "label": "trailer",
+      "bounds": [
+        0,
+        0,
+        14,
+        34
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Trailer_N04",
+      "public_venue": false
+    },
+    "model_reserve_trailer_n05": {
+      "kind": "interior",
+      "label": "trailer",
+      "bounds": [
+        0,
+        0,
+        14,
+        34
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Trailer_N05",
+      "public_venue": false
+    },
+    "model_reserve_trailer_n06": {
+      "kind": "interior",
+      "label": "trailer",
+      "bounds": [
+        0,
+        0,
+        14,
+        34
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Trailer_N06",
+      "public_venue": false
+    },
+    "model_reserve_trailer_s01": {
+      "kind": "interior",
+      "label": "trailer",
+      "bounds": [
+        0,
+        0,
+        14,
+        34
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Trailer_S01",
+      "public_venue": false
+    },
+    "model_reserve_trailer_s02": {
+      "kind": "interior",
+      "label": "trailer",
+      "bounds": [
+        0,
+        0,
+        14,
+        34
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Trailer_S02",
+      "public_venue": false
+    },
+    "model_reserve_trailer_s03": {
+      "kind": "interior",
+      "label": "trailer",
+      "bounds": [
+        0,
+        0,
+        14,
+        34
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Trailer_S03",
+      "public_venue": false
+    },
+    "model_reserve_trailer_s04": {
+      "kind": "interior",
+      "label": "trailer",
+      "bounds": [
+        0,
+        0,
+        14,
+        34
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Trailer_S04",
+      "public_venue": false
+    },
+    "model_reserve_trailer_s05": {
+      "kind": "interior",
+      "label": "trailer",
+      "bounds": [
+        0,
+        0,
+        14,
+        34
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Trailer_S05",
+      "public_venue": false
+    },
+    "model_reserve_trailer_s06": {
+      "kind": "interior",
+      "label": "trailer",
+      "bounds": [
+        0,
+        0,
+        14,
+        34
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Reserve_Trailer_S06",
+      "public_venue": false
+    },
+    "model_expansion_d06_harbor_back_loop_l04": {
+      "kind": "interior",
+      "label": "Expansion_D06_Harbor_Back_Loop_L04",
+      "bounds": [
+        0,
+        0,
+        40,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D06_Harbor_Back_Loop_L04",
+      "public_venue": false
+    },
+    "model_expansion_d06_harbor_back_loop_r03": {
+      "kind": "interior",
+      "label": "Expansion_D06_Harbor_Back_Loop_R03",
+      "bounds": [
+        0,
+        0,
+        29,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f",
+        "3f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D06_Harbor_Back_Loop_R03",
+      "public_venue": false
+    },
+    "model_expansion_d06_harbor_back_loop_r07": {
+      "kind": "interior",
+      "label": "Expansion_D06_Harbor_Back_Loop_R07",
+      "bounds": [
+        0,
+        0,
+        32,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D06_Harbor_Back_Loop_R07",
+      "public_venue": false
+    },
+    "model_expansion_d06_harbor_upper_loop_l04": {
+      "kind": "interior",
+      "label": "Expansion_D06_Harbor_Upper_Loop_L04",
+      "bounds": [
+        0,
+        0,
+        29,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D06_Harbor_Upper_Loop_L04",
+      "public_venue": false
+    },
+    "model_expansion_d06_harbor_upper_loop_l07": {
+      "kind": "interior",
+      "label": "Expansion_D06_Harbor_Upper_Loop_L07",
+      "bounds": [
+        0,
+        0,
+        34,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D06_Harbor_Upper_Loop_L07",
+      "public_venue": false
+    },
+    "model_expansion_d06_harbor_upper_loop_r01": {
+      "kind": "interior",
+      "label": "Expansion_D06_Harbor_Upper_Loop_R01",
+      "bounds": [
+        0,
+        0,
+        32,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D06_Harbor_Upper_Loop_R01",
+      "public_venue": false
+    },
+    "model_expansion_d06_harbor_upper_loop_r02": {
+      "kind": "interior",
+      "label": "Expansion_D06_Harbor_Upper_Loop_R02",
+      "bounds": [
+        0,
+        0,
+        36,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D06_Harbor_Upper_Loop_R02",
+      "public_venue": false
+    },
+    "model_expansion_d06_harbor_upper_loop_r03": {
+      "kind": "interior",
+      "label": "Expansion_D06_Harbor_Upper_Loop_R03",
+      "bounds": [
+        0,
+        0,
+        34,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D06_Harbor_Upper_Loop_R03",
+      "public_venue": false
+    },
+    "model_expansion_d06_north_harbor_road_l07": {
+      "kind": "interior",
+      "label": "Expansion_D06_North_Harbor_Road_L07",
+      "bounds": [
+        0,
+        0,
+        29,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D06_North_Harbor_Road_L07",
+      "public_venue": false
+    },
+    "model_expansion_d06_north_harbor_road_r04": {
+      "kind": "interior",
+      "label": "Expansion_D06_North_Harbor_Road_R04",
+      "bounds": [
+        0,
+        0,
+        36,
+        31
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D06_North_Harbor_Road_R04",
+      "public_venue": false
+    },
+    "model_expansion_d07_west_market_street_l09": {
+      "kind": "interior",
+      "label": "Expansion_D07_West_Market_Street_L09",
+      "bounds": [
+        0,
+        0,
+        34,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_West_Market_Street_L09",
+      "public_venue": false
+    },
+    "model_expansion_d07_west_market_street_r02": {
+      "kind": "interior",
+      "label": "Expansion_D07_West_Market_Street_R02",
+      "bounds": [
+        0,
+        0,
+        34,
+        31
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_West_Market_Street_R02",
+      "public_venue": false
+    },
+    "model_expansion_d07_west_market_street_r06": {
+      "kind": "interior",
+      "label": "Expansion_D07_West_Market_Street_R06",
+      "bounds": [
+        0,
+        0,
+        40,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_West_Market_Street_R06",
+      "public_venue": false
+    },
+    "model_expansion_d07_west_market_street_r09": {
+      "kind": "interior",
+      "label": "Expansion_D07_West_Market_Street_R09",
+      "bounds": [
+        0,
+        0,
+        40,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_West_Market_Street_R09",
+      "public_venue": false
+    },
+    "model_expansion_d07_west_workyard_lane_l01": {
+      "kind": "interior",
+      "label": "Expansion_D07_West_Workyard_Lane_L01",
+      "bounds": [
+        0,
+        0,
+        32,
+        29
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_West_Workyard_Lane_L01",
+      "public_venue": false
+    },
+    "model_expansion_d07_west_workyard_lane_l05": {
+      "kind": "interior",
+      "label": "Expansion_D07_West_Workyard_Lane_L05",
+      "bounds": [
+        0,
+        0,
+        34,
+        29
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_West_Workyard_Lane_L05",
+      "public_venue": false
+    },
+    "model_expansion_d07_west_workyard_lane_l06": {
+      "kind": "interior",
+      "label": "Expansion_D07_West_Workyard_Lane_L06",
+      "bounds": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_West_Workyard_Lane_L06",
+      "public_venue": false
+    },
+    "model_expansion_d07_west_workyard_lane_r02": {
+      "kind": "interior",
+      "label": "Expansion_D07_West_Workyard_Lane_R02",
+      "bounds": [
+        0,
+        0,
+        40,
+        31
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_West_Workyard_Lane_R02",
+      "public_venue": false
+    },
+    "model_expansion_d07_west_workyard_lane_r03": {
+      "kind": "interior",
+      "label": "Expansion_D07_West_Workyard_Lane_R03",
+      "bounds": [
+        0,
+        0,
+        40,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f",
+        "3f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_West_Workyard_Lane_R03",
+      "public_venue": false
+    },
+    "model_expansion_d07_west_workyard_lane_r04": {
+      "kind": "interior",
+      "label": "Expansion_D07_West_Workyard_Lane_R04",
+      "bounds": [
+        0,
+        0,
+        32,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_West_Workyard_Lane_R04",
+      "public_venue": false
+    },
+    "model_expansion_d07_west_workyard_lane_r05": {
+      "kind": "interior",
+      "label": "Expansion_D07_West_Workyard_Lane_R05",
+      "bounds": [
+        0,
+        0,
+        40,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_West_Workyard_Lane_R05",
+      "public_venue": false
+    },
+    "model_expansion_d07_west_workyard_lane_r06": {
+      "kind": "interior",
+      "label": "Expansion_D07_West_Workyard_Lane_R06",
+      "bounds": [
+        0,
+        0,
+        36,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_West_Workyard_Lane_R06",
+      "public_venue": false
+    },
+    "model_expansion_d07_west_workyard_lane_r07": {
+      "kind": "interior",
+      "label": "Expansion_D07_West_Workyard_Lane_R07",
+      "bounds": [
+        0,
+        0,
+        40,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_West_Workyard_Lane_R07",
+      "public_venue": false
+    },
+    "model_expansion_d07_workshop_court_loop_l03": {
+      "kind": "interior",
+      "label": "Expansion_D07_Workshop_Court_Loop_L03",
+      "bounds": [
+        0,
+        0,
+        40,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_Workshop_Court_Loop_L03",
+      "public_venue": false
+    },
+    "model_expansion_d07_workshop_court_loop_l05": {
+      "kind": "interior",
+      "label": "Expansion_D07_Workshop_Court_Loop_L05",
+      "bounds": [
+        0,
+        0,
+        34,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f",
+        "3f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_Workshop_Court_Loop_L05",
+      "public_venue": false
+    },
+    "model_expansion_d07_workshop_court_loop_r04": {
+      "kind": "interior",
+      "label": "Expansion_D07_Workshop_Court_Loop_R04",
+      "bounds": [
+        0,
+        0,
+        40,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f",
+        "3f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_Workshop_Court_Loop_R04",
+      "public_venue": false
+    },
+    "model_expansion_d07_workshop_court_loop_r05": {
+      "kind": "interior",
+      "label": "Expansion_D07_Workshop_Court_Loop_R05",
+      "bounds": [
+        0,
+        0,
+        29,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D07_Workshop_Court_Loop_R05",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_contour_road_l02": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Contour_Road_L02",
+      "bounds": [
+        0,
+        0,
+        34,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Contour_Road_L02",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_contour_road_l03": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Contour_Road_L03",
+      "bounds": [
+        0,
+        0,
+        34,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Contour_Road_L03",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_contour_road_l04": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Contour_Road_L04",
+      "bounds": [
+        0,
+        0,
+        32,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Contour_Road_L04",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_contour_road_l05": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Contour_Road_L05",
+      "bounds": [
+        0,
+        0,
+        34,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Contour_Road_L05",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_contour_road_l06": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Contour_Road_L06",
+      "bounds": [
+        0,
+        0,
+        36,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Contour_Road_L06",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_contour_road_l08": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Contour_Road_L08",
+      "bounds": [
+        0,
+        0,
+        40,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Contour_Road_L08",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_contour_road_l09": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Contour_Road_L09",
+      "bounds": [
+        0,
+        0,
+        32,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Contour_Road_L09",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_contour_road_l12": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Contour_Road_L12",
+      "bounds": [
+        0,
+        0,
+        36,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Contour_Road_L12",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_contour_road_r08": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Contour_Road_R08",
+      "bounds": [
+        0,
+        0,
+        36,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Contour_Road_R08",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_contour_road_r09": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Contour_Road_R09",
+      "bounds": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f",
+        "3f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Contour_Road_R09",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_contour_road_r10": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Contour_Road_R10",
+      "bounds": [
+        0,
+        0,
+        32,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Contour_Road_R10",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_contour_road_r11": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Contour_Road_R11",
+      "bounds": [
+        0,
+        0,
+        40,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Contour_Road_R11",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_contour_road_r12": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Contour_Road_R12",
+      "bounds": [
+        0,
+        0,
+        32,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Contour_Road_R12",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_lower_loop_l02": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Lower_Loop_L02",
+      "bounds": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Lower_Loop_L02",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_lower_loop_l06": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Lower_Loop_L06",
+      "bounds": [
+        0,
+        0,
+        29,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Lower_Loop_L06",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_lower_loop_l08": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Lower_Loop_L08",
+      "bounds": [
+        0,
+        0,
+        34,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Lower_Loop_L08",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_lower_loop_r01": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Lower_Loop_R01",
+      "bounds": [
+        0,
+        0,
+        29,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Lower_Loop_R01",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_lower_loop_r03": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Lower_Loop_R03",
+      "bounds": [
+        0,
+        0,
+        36,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Lower_Loop_R03",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_lower_loop_r05": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Lower_Loop_R05",
+      "bounds": [
+        0,
+        0,
+        29,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Lower_Loop_R05",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_lower_loop_r06": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Lower_Loop_R06",
+      "bounds": [
+        0,
+        0,
+        29,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f",
+        "3f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Lower_Loop_R06",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_market_link_l03": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Market_Link_L03",
+      "bounds": [
+        0,
+        0,
+        34,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Market_Link_L03",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_market_link_l04": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Market_Link_L04",
+      "bounds": [
+        0,
+        0,
+        36,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Market_Link_L04",
+      "public_venue": false
+    },
+    "model_expansion_d08_hillside_market_link_r04": {
+      "kind": "interior",
+      "label": "Expansion_D08_Hillside_Market_Link_R04",
+      "bounds": [
+        0,
+        0,
+        32,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D08_Hillside_Market_Link_R04",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_cross_lane_l00": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Cross_Lane_L00",
+      "bounds": [
+        0,
+        0,
+        40,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Cross_Lane_L00",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_cross_lane_l01": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Cross_Lane_L01",
+      "bounds": [
+        0,
+        0,
+        29,
+        31
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Cross_Lane_L01",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_cross_lane_l02": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Cross_Lane_L02",
+      "bounds": [
+        0,
+        0,
+        34,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Cross_Lane_L02",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_cross_lane_l03": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Cross_Lane_L03",
+      "bounds": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Cross_Lane_L03",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_lane_loop_l06": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Lane_Loop_L06",
+      "bounds": [
+        0,
+        0,
+        34,
+        32
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Lane_Loop_L06",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_lane_loop_l08": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Lane_Loop_L08",
+      "bounds": [
+        0,
+        0,
+        32,
+        29
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Lane_Loop_L08",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_lane_loop_l10": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Lane_Loop_L10",
+      "bounds": [
+        0,
+        0,
+        36,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Lane_Loop_L10",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_lane_loop_l15": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Lane_Loop_L15",
+      "bounds": [
+        0,
+        0,
+        29,
+        29
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Lane_Loop_L15",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_lane_loop_l17": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Lane_Loop_L17",
+      "bounds": [
+        0,
+        0,
+        34,
+        29
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Lane_Loop_L17",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_lane_loop_r00": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Lane_Loop_R00",
+      "bounds": [
+        0,
+        0,
+        40,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Lane_Loop_R00",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_lane_loop_r04": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Lane_Loop_R04",
+      "bounds": [
+        0,
+        0,
+        29,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Lane_Loop_R04",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_lane_loop_r05": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Lane_Loop_R05",
+      "bounds": [
+        0,
+        0,
+        34,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Lane_Loop_R05",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_lane_loop_r06": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Lane_Loop_R06",
+      "bounds": [
+        0,
+        0,
+        40,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Lane_Loop_R06",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_lane_loop_r07": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Lane_Loop_R07",
+      "bounds": [
+        0,
+        0,
+        34,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Lane_Loop_R07",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_lane_loop_r08": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Lane_Loop_R08",
+      "bounds": [
+        0,
+        0,
+        34,
+        29
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Lane_Loop_R08",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_lane_loop_r09": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Lane_Loop_R09",
+      "bounds": [
+        0,
+        0,
+        40,
+        36
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Lane_Loop_R09",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_lane_loop_r10": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Lane_Loop_R10",
+      "bounds": [
+        0,
+        0,
+        34,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Lane_Loop_R10",
+      "public_venue": false
+    },
+    "model_expansion_d09_orchard_lane_loop_r12": {
+      "kind": "interior",
+      "label": "Expansion_D09_Orchard_Lane_Loop_R12",
+      "bounds": [
+        0,
+        0,
+        36,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D09_Orchard_Lane_Loop_R12",
+      "public_venue": false
+    },
+    "model_expansion_d10_forest_edge_link_l00": {
+      "kind": "interior",
+      "label": "Expansion_D10_Forest_Edge_Link_L00",
+      "bounds": [
+        0,
+        0,
+        37,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D10_Forest_Edge_Link_L00",
+      "public_venue": false
+    },
+    "model_expansion_d10_forest_edge_link_l01": {
+      "kind": "interior",
+      "label": "Expansion_D10_Forest_Edge_Link_L01",
+      "bounds": [
+        0,
+        0,
+        32,
+        29
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D10_Forest_Edge_Link_L01",
+      "public_venue": false
+    },
+    "model_expansion_d10_forest_edge_link_l02": {
+      "kind": "interior",
+      "label": "Expansion_D10_Forest_Edge_Link_L02",
+      "bounds": [
+        0,
+        0,
+        29,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D10_Forest_Edge_Link_L02",
+      "public_venue": false
+    },
+    "model_expansion_d10_forest_edge_link_l09": {
+      "kind": "interior",
+      "label": "Expansion_D10_Forest_Edge_Link_L09",
+      "bounds": [
+        0,
+        0,
+        34,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D10_Forest_Edge_Link_L09",
+      "public_venue": false
+    },
+    "model_expansion_d10_forest_edge_link_r00": {
+      "kind": "interior",
+      "label": "Expansion_D10_Forest_Edge_Link_R00",
+      "bounds": [
+        0,
+        0,
+        32,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D10_Forest_Edge_Link_R00",
+      "public_venue": false
+    },
+    "model_expansion_d10_forest_edge_link_r01": {
+      "kind": "interior",
+      "label": "Expansion_D10_Forest_Edge_Link_R01",
+      "bounds": [
+        0,
+        0,
+        34,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D10_Forest_Edge_Link_R01",
+      "public_venue": false
+    },
+    "model_expansion_d10_forest_edge_link_r03": {
+      "kind": "interior",
+      "label": "Expansion_D10_Forest_Edge_Link_R03",
+      "bounds": [
+        0,
+        0,
+        37,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D10_Forest_Edge_Link_R03",
+      "public_venue": false
+    },
+    "model_expansion_d10_forest_edge_link_r08": {
+      "kind": "interior",
+      "label": "Expansion_D10_Forest_Edge_Link_R08",
+      "bounds": [
+        0,
+        0,
+        34,
+        36
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D10_Forest_Edge_Link_R08",
+      "public_venue": false
+    },
+    "model_expansion_d10_forest_edge_link_r09": {
+      "kind": "interior",
+      "label": "Expansion_D10_Forest_Edge_Link_R09",
+      "bounds": [
+        0,
+        0,
+        29,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D10_Forest_Edge_Link_R09",
+      "public_venue": false
+    },
+    "model_expansion_d10_forest_edge_link_r10": {
+      "kind": "interior",
+      "label": "Expansion_D10_Forest_Edge_Link_R10",
+      "bounds": [
+        0,
+        0,
+        29,
+        32
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D10_Forest_Edge_Link_R10",
+      "public_venue": false
+    },
+    "model_expansion_d10_trailhead_village_loop_l04": {
+      "kind": "interior",
+      "label": "Expansion_D10_Trailhead_Village_Loop_L04",
+      "bounds": [
+        0,
+        0,
+        32,
+        31
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D10_Trailhead_Village_Loop_L04",
+      "public_venue": false
+    },
+    "model_expansion_d10_trailhead_village_loop_r00": {
+      "kind": "interior",
+      "label": "Expansion_D10_Trailhead_Village_Loop_R00",
+      "bounds": [
+        0,
+        0,
+        34,
+        36
+      ],
+      "floors": [
+        "1f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D10_Trailhead_Village_Loop_R00",
+      "public_venue": false
+    },
+    "model_expansion_d10_trailhead_village_loop_r04": {
+      "kind": "interior",
+      "label": "Expansion_D10_Trailhead_Village_Loop_R04",
+      "bounds": [
+        0,
+        0,
+        29,
+        36
+      ],
+      "floors": [
+        "1f",
+        "2f"
+      ],
+      "default_floor": "1f",
+      "model_building_id": "Expansion_D10_Trailhead_Village_Loop_R04",
+      "public_venue": false
+    },
+    "town": {
+      "kind": "outdoor",
+      "label": "Living Town and National Reserve",
+      "bounds": [
+        0,
+        0,
+        666,
+        840
+      ],
+      "floors": [
+        "outdoor"
+      ],
+      "default_floor": "outdoor"
     }
   },
   "portals": [
@@ -875,8 +2578,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          144,
-          116
+          606,
+          500
         ]
       },
       "to": {
@@ -923,8 +2626,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          144,
-          99
+          606,
+          491
         ]
       },
       "to": {
@@ -970,8 +2673,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          33,
-          89
+          550,
+          486
         ]
       },
       "to": {
@@ -1018,8 +2721,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          46,
-          86
+          557,
+          485
         ]
       },
       "to": {
@@ -1040,8 +2743,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          95,
-          103
+          581,
+          493
         ]
       },
       "to": {
@@ -1087,8 +2790,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          130,
-          69
+          599,
+          476
         ]
       },
       "to": {
@@ -1111,8 +2814,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          157,
-          61
+          612,
+          472
         ]
       },
       "to": {
@@ -1135,8 +2838,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          85,
-          73
+          576,
+          478
         ]
       },
       "to": {
@@ -1182,8 +2885,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          124,
-          99
+          596,
+          491
         ]
       },
       "to": {
@@ -1253,8 +2956,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          19,
-          53
+          543,
+          468
         ]
       },
       "to": {
@@ -1299,8 +3002,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          231,
-          33
+          649,
+          458
         ]
       },
       "to": {
@@ -1321,8 +3024,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          107,
-          120
+          587,
+          502
         ]
       },
       "to": {
@@ -1368,8 +3071,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          144,
-          131
+          606,
+          507
         ]
       },
       "to": {
@@ -1415,15 +3118,15 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          126,
-          139
+          595,
+          511
         ]
       },
       "to": {
         "space": "halles",
         "floor": "1f",
         "pos": [
-          25,
+          30,
           25
         ]
       },
@@ -1439,8 +3142,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          204,
-          55
+          636,
+          469
         ]
       },
       "to": {
@@ -1511,8 +3214,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          175,
-          33
+          621,
+          458
         ]
       },
       "to": {
@@ -1532,8 +3235,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          209,
-          33
+          638,
+          458
         ]
       },
       "to": {
@@ -1555,8 +3258,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          41,
-          149
+          555,
+          517
         ]
       },
       "to": {
@@ -1603,8 +3306,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          53,
-          145
+          561,
+          514
         ]
       },
       "to": {
@@ -1674,8 +3377,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          65,
-          140
+          567,
+          512
         ]
       },
       "to": {
@@ -1720,8 +3423,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          77,
-          135
+          573,
+          510
         ]
       },
       "to": {
@@ -1766,8 +3469,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          43,
-          159
+          555,
+          521
         ]
       },
       "to": {
@@ -1812,8 +3515,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          55,
-          154
+          561,
+          518
         ]
       },
       "to": {
@@ -1858,8 +3561,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          67,
-          149
+          567,
+          516
         ]
       },
       "to": {
@@ -1904,8 +3607,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          79,
-          145
+          573,
+          514
         ]
       },
       "to": {
@@ -1950,8 +3653,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          91,
-          140
+          579,
+          512
         ]
       },
       "to": {
@@ -1996,8 +3699,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          59,
-          86
+          563,
+          485
         ]
       },
       "to": {
@@ -2019,8 +3722,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          72,
-          88
+          570,
+          486
         ]
       },
       "to": {
@@ -2042,8 +3745,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          34,
-          95
+          551,
+          489
         ]
       },
       "to": {
@@ -2088,8 +3791,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          47,
-          94
+          557,
+          489
         ]
       },
       "to": {
@@ -2134,8 +3837,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          61,
-          94
+          564,
+          488
         ]
       },
       "to": {
@@ -2180,8 +3883,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          74,
-          93
+          571,
+          488
         ]
       },
       "to": {
@@ -2226,8 +3929,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          118,
-          186
+          593,
+          535
         ]
       },
       "to": {
@@ -2249,8 +3952,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          132,
-          187
+          600,
+          535
         ]
       },
       "to": {
@@ -2272,8 +3975,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          146,
-          189
+          607,
+          536
         ]
       },
       "to": {
@@ -2295,8 +3998,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          115,
-          177
+          591,
+          530
         ]
       },
       "to": {
@@ -2341,8 +4044,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          131,
-          177
+          599,
+          530
         ]
       },
       "to": {
@@ -2387,8 +4090,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          147,
-          177
+          607,
+          530
         ]
       },
       "to": {
@@ -2433,8 +4136,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          207,
-          170
+          637,
+          527
         ]
       },
       "to": {
@@ -2479,8 +4182,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          207,
-          157
+          637,
+          520
         ]
       },
       "to": {
@@ -2525,8 +4228,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          207,
-          143
+          637,
+          513
         ]
       },
       "to": {
@@ -2571,8 +4274,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          207,
-          130
+          637,
+          507
         ]
       },
       "to": {
@@ -2617,8 +4320,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          207,
-          111
+          637,
+          497
         ]
       },
       "to": {
@@ -2663,8 +4366,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          207,
-          98
+          637,
+          491
         ]
       },
       "to": {
@@ -2709,8 +4412,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          207,
-          84
+          637,
+          484
         ]
       },
       "to": {
@@ -2755,8 +4458,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          185,
-          165
+          626,
+          524
         ]
       },
       "to": {
@@ -2801,8 +4504,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          185,
-          152
+          626,
+          518
         ]
       },
       "to": {
@@ -2847,8 +4550,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          185,
-          139
+          626,
+          511
         ]
       },
       "to": {
@@ -2893,8 +4596,8 @@
         "space": "town",
         "floor": "outdoor",
         "pos": [
-          185,
-          86
+          626,
+          485
         ]
       },
       "to": {
@@ -2926,6 +4629,4008 @@
         "pos": [
           20,
           8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_visitor_reception_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          469,
+          554
+        ]
+      },
+      "to": {
+        "space": "model_reserve_visitor_reception",
+        "floor": "1f",
+        "pos": [
+          17,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_convenience_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          483,
+          554
+        ]
+      },
+      "to": {
+        "space": "model_reserve_convenience",
+        "floor": "1f",
+        "pos": [
+          19,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_souvenir_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          497,
+          554
+        ]
+      },
+      "to": {
+        "space": "model_reserve_souvenir",
+        "floor": "1f",
+        "pos": [
+          17,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_bathhouse_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          468,
+          577
+        ]
+      },
+      "to": {
+        "space": "model_reserve_bathhouse",
+        "floor": "1f",
+        "pos": [
+          27,
+          34
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_public_toilets_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          488,
+          574
+        ]
+      },
+      "to": {
+        "space": "model_reserve_public_toilets",
+        "floor": "1f",
+        "pos": [
+          13,
+          18
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_food_truck_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          503,
+          565
+        ]
+      },
+      "to": {
+        "space": "model_reserve_food_truck",
+        "floor": "1f",
+        "pos": [
+          25,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_laundry_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          459,
+          598
+        ]
+      },
+      "to": {
+        "space": "model_reserve_laundry",
+        "floor": "1f",
+        "pos": [
+          15,
+          22
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_maintenance_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          459,
+          612
+        ]
+      },
+      "to": {
+        "space": "model_reserve_maintenance",
+        "floor": "1f",
+        "pos": [
+          13,
+          18
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_refuse_service_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          460,
+          626
+        ]
+      },
+      "to": {
+        "space": "model_reserve_refuse_service",
+        "floor": "1f",
+        "pos": [
+          11,
+          14
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_trailer_n01_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          396,
+          607
+        ]
+      },
+      "to": {
+        "space": "model_reserve_trailer_n01",
+        "floor": "1f",
+        "pos": [
+          6,
+          32
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_trailer_n02_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          406,
+          607
+        ]
+      },
+      "to": {
+        "space": "model_reserve_trailer_n02",
+        "floor": "1f",
+        "pos": [
+          6,
+          32
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_trailer_n03_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          416,
+          607
+        ]
+      },
+      "to": {
+        "space": "model_reserve_trailer_n03",
+        "floor": "1f",
+        "pos": [
+          6,
+          32
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_trailer_n04_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          426,
+          607
+        ]
+      },
+      "to": {
+        "space": "model_reserve_trailer_n04",
+        "floor": "1f",
+        "pos": [
+          6,
+          32
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_trailer_n05_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          436,
+          607
+        ]
+      },
+      "to": {
+        "space": "model_reserve_trailer_n05",
+        "floor": "1f",
+        "pos": [
+          6,
+          32
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_trailer_n06_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          446,
+          607
+        ]
+      },
+      "to": {
+        "space": "model_reserve_trailer_n06",
+        "floor": "1f",
+        "pos": [
+          6,
+          32
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_trailer_s01_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          396,
+          622
+        ]
+      },
+      "to": {
+        "space": "model_reserve_trailer_s01",
+        "floor": "1f",
+        "pos": [
+          6,
+          32
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_trailer_s02_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          406,
+          622
+        ]
+      },
+      "to": {
+        "space": "model_reserve_trailer_s02",
+        "floor": "1f",
+        "pos": [
+          6,
+          32
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_trailer_s03_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          416,
+          622
+        ]
+      },
+      "to": {
+        "space": "model_reserve_trailer_s03",
+        "floor": "1f",
+        "pos": [
+          6,
+          32
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_trailer_s04_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          426,
+          622
+        ]
+      },
+      "to": {
+        "space": "model_reserve_trailer_s04",
+        "floor": "1f",
+        "pos": [
+          6,
+          32
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_trailer_s05_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          436,
+          622
+        ]
+      },
+      "to": {
+        "space": "model_reserve_trailer_s05",
+        "floor": "1f",
+        "pos": [
+          6,
+          32
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_reserve_trailer_s06_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          446,
+          622
+        ]
+      },
+      "to": {
+        "space": "model_reserve_trailer_s06",
+        "floor": "1f",
+        "pos": [
+          6,
+          32
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d06_harbor_back_loop_l04_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          572,
+          422
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_back_loop_l04",
+        "floor": "1f",
+        "pos": [
+          19,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d06_harbor_back_loop_l04_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d06_harbor_back_loop_l04",
+        "floor": "1f",
+        "pos": [
+          35,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_back_loop_l04",
+        "floor": "2f",
+        "pos": [
+          35,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d06_harbor_back_loop_r03_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          583,
+          423
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_back_loop_r03",
+        "floor": "1f",
+        "pos": [
+          14,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d06_harbor_back_loop_r03_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d06_harbor_back_loop_r03",
+        "floor": "1f",
+        "pos": [
+          25,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_back_loop_r03",
+        "floor": "2f",
+        "pos": [
+          25,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d06_harbor_back_loop_r03_stairs_2_3",
+      "from": {
+        "space": "model_expansion_d06_harbor_back_loop_r03",
+        "floor": "2f",
+        "pos": [
+          25,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_back_loop_r03",
+        "floor": "3f",
+        "pos": [
+          25,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d06_harbor_back_loop_r07_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          577,
+          396
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_back_loop_r07",
+        "floor": "1f",
+        "pos": [
+          15,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d06_harbor_back_loop_r07_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d06_harbor_back_loop_r07",
+        "floor": "1f",
+        "pos": [
+          27,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_back_loop_r07",
+        "floor": "2f",
+        "pos": [
+          27,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d06_harbor_upper_loop_l04_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          595,
+          356
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_upper_loop_l04",
+        "floor": "1f",
+        "pos": [
+          14,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d06_harbor_upper_loop_l04_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d06_harbor_upper_loop_l04",
+        "floor": "1f",
+        "pos": [
+          25,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_upper_loop_l04",
+        "floor": "2f",
+        "pos": [
+          25,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d06_harbor_upper_loop_l07_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          569,
+          364
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_upper_loop_l07",
+        "floor": "1f",
+        "pos": [
+          16,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d06_harbor_upper_loop_l07_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d06_harbor_upper_loop_l07",
+        "floor": "1f",
+        "pos": [
+          29,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_upper_loop_l07",
+        "floor": "2f",
+        "pos": [
+          29,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d06_harbor_upper_loop_r01_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          622,
+          378
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_upper_loop_r01",
+        "floor": "1f",
+        "pos": [
+          15,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d06_harbor_upper_loop_r01_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d06_harbor_upper_loop_r01",
+        "floor": "1f",
+        "pos": [
+          27,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_upper_loop_r01",
+        "floor": "2f",
+        "pos": [
+          27,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d06_harbor_upper_loop_r02_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          618,
+          366
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_upper_loop_r02",
+        "floor": "1f",
+        "pos": [
+          17,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d06_harbor_upper_loop_r02_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d06_harbor_upper_loop_r02",
+        "floor": "1f",
+        "pos": [
+          32,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_upper_loop_r02",
+        "floor": "2f",
+        "pos": [
+          32,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d06_harbor_upper_loop_r03_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          609,
+          353
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_upper_loop_r03",
+        "floor": "1f",
+        "pos": [
+          16,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d06_harbor_upper_loop_r03_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d06_harbor_upper_loop_r03",
+        "floor": "1f",
+        "pos": [
+          29,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_harbor_upper_loop_r03",
+        "floor": "2f",
+        "pos": [
+          29,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d06_north_harbor_road_l07_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          593,
+          389
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_north_harbor_road_l07",
+        "floor": "1f",
+        "pos": [
+          14,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d06_north_harbor_road_l07_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d06_north_harbor_road_l07",
+        "floor": "1f",
+        "pos": [
+          25,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_north_harbor_road_l07",
+        "floor": "2f",
+        "pos": [
+          25,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d06_north_harbor_road_r04_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          622,
+          406
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d06_north_harbor_road_r04",
+        "floor": "1f",
+        "pos": [
+          17,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_west_market_street_l09_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          440,
+          490
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_market_street_l09",
+        "floor": "1f",
+        "pos": [
+          16,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_west_market_street_l09_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d07_west_market_street_l09",
+        "floor": "1f",
+        "pos": [
+          29,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_market_street_l09",
+        "floor": "2f",
+        "pos": [
+          29,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_west_market_street_r02_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          509,
+          489
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_market_street_r02",
+        "floor": "1f",
+        "pos": [
+          16,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_west_market_street_r06_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          468,
+          482
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_market_street_r06",
+        "floor": "1f",
+        "pos": [
+          19,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_west_market_street_r06_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d07_west_market_street_r06",
+        "floor": "1f",
+        "pos": [
+          35,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_market_street_r06",
+        "floor": "2f",
+        "pos": [
+          35,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_west_market_street_r09_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          433,
+          484
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_market_street_r09",
+        "floor": "1f",
+        "pos": [
+          19,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_west_market_street_r09_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d07_west_market_street_r09",
+        "floor": "1f",
+        "pos": [
+          35,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_market_street_r09",
+        "floor": "2f",
+        "pos": [
+          35,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_west_workyard_lane_l01_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          408,
+          505
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_l01",
+        "floor": "1f",
+        "pos": [
+          15,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_west_workyard_lane_l05_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          412,
+          526
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_l05",
+        "floor": "1f",
+        "pos": [
+          16,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_west_workyard_lane_l06_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          423,
+          527
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_l06",
+        "floor": "1f",
+        "pos": [
+          15,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_west_workyard_lane_l06_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d07_west_workyard_lane_l06",
+        "floor": "1f",
+        "pos": [
+          27,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_l06",
+        "floor": "2f",
+        "pos": [
+          27,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_west_workyard_lane_r02_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          398,
+          505
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_r02",
+        "floor": "1f",
+        "pos": [
+          19,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_west_workyard_lane_r03_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          399,
+          519
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_r03",
+        "floor": "1f",
+        "pos": [
+          19,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_west_workyard_lane_r03_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d07_west_workyard_lane_r03",
+        "floor": "1f",
+        "pos": [
+          35,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_r03",
+        "floor": "2f",
+        "pos": [
+          35,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_west_workyard_lane_r03_stairs_2_3",
+      "from": {
+        "space": "model_expansion_d07_west_workyard_lane_r03",
+        "floor": "2f",
+        "pos": [
+          35,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_r03",
+        "floor": "3f",
+        "pos": [
+          35,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_west_workyard_lane_r04_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          405,
+          532
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_r04",
+        "floor": "1f",
+        "pos": [
+          15,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_west_workyard_lane_r04_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d07_west_workyard_lane_r04",
+        "floor": "1f",
+        "pos": [
+          27,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_r04",
+        "floor": "2f",
+        "pos": [
+          27,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_west_workyard_lane_r05_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          417,
+          532
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_r05",
+        "floor": "1f",
+        "pos": [
+          19,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_west_workyard_lane_r05_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d07_west_workyard_lane_r05",
+        "floor": "1f",
+        "pos": [
+          35,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_r05",
+        "floor": "2f",
+        "pos": [
+          35,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_west_workyard_lane_r06_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          434,
+          530
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_r06",
+        "floor": "1f",
+        "pos": [
+          17,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_west_workyard_lane_r06_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d07_west_workyard_lane_r06",
+        "floor": "1f",
+        "pos": [
+          32,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_r06",
+        "floor": "2f",
+        "pos": [
+          32,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_west_workyard_lane_r07_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          440,
+          519
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_r07",
+        "floor": "1f",
+        "pos": [
+          19,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_west_workyard_lane_r07_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d07_west_workyard_lane_r07",
+        "floor": "1f",
+        "pos": [
+          35,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_west_workyard_lane_r07",
+        "floor": "2f",
+        "pos": [
+          35,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_workshop_court_loop_l03_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          495,
+          510
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_workshop_court_loop_l03",
+        "floor": "1f",
+        "pos": [
+          19,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_workshop_court_loop_l03_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d07_workshop_court_loop_l03",
+        "floor": "1f",
+        "pos": [
+          35,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_workshop_court_loop_l03",
+        "floor": "2f",
+        "pos": [
+          35,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_workshop_court_loop_l05_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          473,
+          507
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_workshop_court_loop_l05",
+        "floor": "1f",
+        "pos": [
+          16,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_workshop_court_loop_l05_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d07_workshop_court_loop_l05",
+        "floor": "1f",
+        "pos": [
+          29,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_workshop_court_loop_l05",
+        "floor": "2f",
+        "pos": [
+          29,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_workshop_court_loop_l05_stairs_2_3",
+      "from": {
+        "space": "model_expansion_d07_workshop_court_loop_l05",
+        "floor": "2f",
+        "pos": [
+          29,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_workshop_court_loop_l05",
+        "floor": "3f",
+        "pos": [
+          29,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_workshop_court_loop_r04_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          485,
+          503
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_workshop_court_loop_r04",
+        "floor": "1f",
+        "pos": [
+          19,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_workshop_court_loop_r04_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d07_workshop_court_loop_r04",
+        "floor": "1f",
+        "pos": [
+          35,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_workshop_court_loop_r04",
+        "floor": "2f",
+        "pos": [
+          35,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_workshop_court_loop_r04_stairs_2_3",
+      "from": {
+        "space": "model_expansion_d07_workshop_court_loop_r04",
+        "floor": "2f",
+        "pos": [
+          35,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_workshop_court_loop_r04",
+        "floor": "3f",
+        "pos": [
+          35,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d07_workshop_court_loop_r05_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          473,
+          501
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_workshop_court_loop_r05",
+        "floor": "1f",
+        "pos": [
+          14,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d07_workshop_court_loop_r05_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d07_workshop_court_loop_r05",
+        "floor": "1f",
+        "pos": [
+          25,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d07_workshop_court_loop_r05",
+        "floor": "2f",
+        "pos": [
+          25,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_contour_road_l02_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          558,
+          388
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l02",
+        "floor": "1f",
+        "pos": [
+          16,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_contour_road_l02_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_contour_road_l02",
+        "floor": "1f",
+        "pos": [
+          29,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l02",
+        "floor": "2f",
+        "pos": [
+          29,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_contour_road_l03_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          546,
+          390
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l03",
+        "floor": "1f",
+        "pos": [
+          16,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_contour_road_l03_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_contour_road_l03",
+        "floor": "1f",
+        "pos": [
+          29,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l03",
+        "floor": "2f",
+        "pos": [
+          29,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_contour_road_l04_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          536,
+          394
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l04",
+        "floor": "1f",
+        "pos": [
+          15,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_contour_road_l04_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_contour_road_l04",
+        "floor": "1f",
+        "pos": [
+          27,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l04",
+        "floor": "2f",
+        "pos": [
+          27,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_contour_road_l05_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          524,
+          398
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l05",
+        "floor": "1f",
+        "pos": [
+          16,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_contour_road_l05_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_contour_road_l05",
+        "floor": "1f",
+        "pos": [
+          29,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l05",
+        "floor": "2f",
+        "pos": [
+          29,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_contour_road_l06_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          514,
+          399
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l06",
+        "floor": "1f",
+        "pos": [
+          17,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_contour_road_l06_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_contour_road_l06",
+        "floor": "1f",
+        "pos": [
+          32,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l06",
+        "floor": "2f",
+        "pos": [
+          32,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_contour_road_l08_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          492,
+          406
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l08",
+        "floor": "1f",
+        "pos": [
+          19,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_contour_road_l08_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_contour_road_l08",
+        "floor": "1f",
+        "pos": [
+          35,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l08",
+        "floor": "2f",
+        "pos": [
+          35,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_contour_road_l09_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          481,
+          411
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l09",
+        "floor": "1f",
+        "pos": [
+          15,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_contour_road_l09_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_contour_road_l09",
+        "floor": "1f",
+        "pos": [
+          27,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l09",
+        "floor": "2f",
+        "pos": [
+          27,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_contour_road_l12_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          455,
+          426
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l12",
+        "floor": "1f",
+        "pos": [
+          17,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_contour_road_l12_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_contour_road_l12",
+        "floor": "1f",
+        "pos": [
+          32,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_l12",
+        "floor": "2f",
+        "pos": [
+          32,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_contour_road_r08_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          491,
+          399
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_r08",
+        "floor": "1f",
+        "pos": [
+          17,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_contour_road_r08_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_contour_road_r08",
+        "floor": "1f",
+        "pos": [
+          32,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_r08",
+        "floor": "2f",
+        "pos": [
+          32,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_contour_road_r09_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          480,
+          402
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_r09",
+        "floor": "1f",
+        "pos": [
+          15,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_contour_road_r09_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_contour_road_r09",
+        "floor": "1f",
+        "pos": [
+          27,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_r09",
+        "floor": "2f",
+        "pos": [
+          27,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_contour_road_r09_stairs_2_3",
+      "from": {
+        "space": "model_expansion_d08_hillside_contour_road_r09",
+        "floor": "2f",
+        "pos": [
+          27,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_r09",
+        "floor": "3f",
+        "pos": [
+          27,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_contour_road_r10_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          469,
+          408
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_r10",
+        "floor": "1f",
+        "pos": [
+          15,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_contour_road_r10_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_contour_road_r10",
+        "floor": "1f",
+        "pos": [
+          27,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_r10",
+        "floor": "2f",
+        "pos": [
+          27,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_contour_road_r11_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          458,
+          415
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_r11",
+        "floor": "1f",
+        "pos": [
+          19,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_contour_road_r11_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_contour_road_r11",
+        "floor": "1f",
+        "pos": [
+          35,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_r11",
+        "floor": "2f",
+        "pos": [
+          35,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_contour_road_r12_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          447,
+          424
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_r12",
+        "floor": "1f",
+        "pos": [
+          15,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_contour_road_r12_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_contour_road_r12",
+        "floor": "1f",
+        "pos": [
+          27,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_contour_road_r12",
+        "floor": "2f",
+        "pos": [
+          27,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_lower_loop_l02_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          542,
+          423
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_lower_loop_l02",
+        "floor": "1f",
+        "pos": [
+          15,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_lower_loop_l02_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_lower_loop_l02",
+        "floor": "1f",
+        "pos": [
+          27,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_lower_loop_l02",
+        "floor": "2f",
+        "pos": [
+          27,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_lower_loop_l06_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          499,
+          431
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_lower_loop_l06",
+        "floor": "1f",
+        "pos": [
+          14,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_lower_loop_l06_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_lower_loop_l06",
+        "floor": "1f",
+        "pos": [
+          25,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_lower_loop_l06",
+        "floor": "2f",
+        "pos": [
+          25,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_lower_loop_l08_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          477,
+          425
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_lower_loop_l08",
+        "floor": "1f",
+        "pos": [
+          16,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_lower_loop_l08_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_lower_loop_l08",
+        "floor": "1f",
+        "pos": [
+          29,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_lower_loop_l08",
+        "floor": "2f",
+        "pos": [
+          29,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_lower_loop_r01_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          550,
+          411
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_lower_loop_r01",
+        "floor": "1f",
+        "pos": [
+          14,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_lower_loop_r01_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_lower_loop_r01",
+        "floor": "1f",
+        "pos": [
+          25,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_lower_loop_r01",
+        "floor": "2f",
+        "pos": [
+          25,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_lower_loop_r03_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          530,
+          418
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_lower_loop_r03",
+        "floor": "1f",
+        "pos": [
+          17,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_lower_loop_r03_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_lower_loop_r03",
+        "floor": "1f",
+        "pos": [
+          32,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_lower_loop_r03",
+        "floor": "2f",
+        "pos": [
+          32,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_lower_loop_r05_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          508,
+          423
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_lower_loop_r05",
+        "floor": "1f",
+        "pos": [
+          14,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_lower_loop_r05_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_lower_loop_r05",
+        "floor": "1f",
+        "pos": [
+          25,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_lower_loop_r05",
+        "floor": "2f",
+        "pos": [
+          25,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_lower_loop_r06_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          500,
+          426
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_lower_loop_r06",
+        "floor": "1f",
+        "pos": [
+          14,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_lower_loop_r06_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_lower_loop_r06",
+        "floor": "1f",
+        "pos": [
+          25,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_lower_loop_r06",
+        "floor": "2f",
+        "pos": [
+          25,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_lower_loop_r06_stairs_2_3",
+      "from": {
+        "space": "model_expansion_d08_hillside_lower_loop_r06",
+        "floor": "2f",
+        "pos": [
+          25,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_lower_loop_r06",
+        "floor": "3f",
+        "pos": [
+          25,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_market_link_l03_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          498,
+          464
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_market_link_l03",
+        "floor": "1f",
+        "pos": [
+          16,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_market_link_l03_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_market_link_l03",
+        "floor": "1f",
+        "pos": [
+          29,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_market_link_l03",
+        "floor": "2f",
+        "pos": [
+          29,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_market_link_l04_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          491,
+          474
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_market_link_l04",
+        "floor": "1f",
+        "pos": [
+          17,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_market_link_l04_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_market_link_l04",
+        "floor": "1f",
+        "pos": [
+          32,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_market_link_l04",
+        "floor": "2f",
+        "pos": [
+          32,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d08_hillside_market_link_r04_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          485,
+          470
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_market_link_r04",
+        "floor": "1f",
+        "pos": [
+          15,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d08_hillside_market_link_r04_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d08_hillside_market_link_r04",
+        "floor": "1f",
+        "pos": [
+          27,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d08_hillside_market_link_r04",
+        "floor": "2f",
+        "pos": [
+          27,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_cross_lane_l00_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          538,
+          587
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_cross_lane_l00",
+        "floor": "1f",
+        "pos": [
+          19,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d09_orchard_cross_lane_l00_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d09_orchard_cross_lane_l00",
+        "floor": "1f",
+        "pos": [
+          35,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_cross_lane_l00",
+        "floor": "2f",
+        "pos": [
+          35,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_cross_lane_l01_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          549,
+          588
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_cross_lane_l01",
+        "floor": "1f",
+        "pos": [
+          14,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_cross_lane_l02_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          559,
+          589
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_cross_lane_l02",
+        "floor": "1f",
+        "pos": [
+          16,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d09_orchard_cross_lane_l02_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d09_orchard_cross_lane_l02",
+        "floor": "1f",
+        "pos": [
+          29,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_cross_lane_l02",
+        "floor": "2f",
+        "pos": [
+          29,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_cross_lane_l03_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          569,
+          589
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_cross_lane_l03",
+        "floor": "1f",
+        "pos": [
+          15,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_lane_loop_l06_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          564,
+          614
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_l06",
+        "floor": "1f",
+        "pos": [
+          16,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_lane_loop_l08_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          580,
+          615
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_l08",
+        "floor": "1f",
+        "pos": [
+          15,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_lane_loop_l10_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          591,
+          600
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_l10",
+        "floor": "1f",
+        "pos": [
+          17,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d09_orchard_lane_loop_l10_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d09_orchard_lane_loop_l10",
+        "floor": "1f",
+        "pos": [
+          32,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_l10",
+        "floor": "2f",
+        "pos": [
+          32,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_lane_loop_l15_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          563,
+          570
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_l15",
+        "floor": "1f",
+        "pos": [
+          14,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_lane_loop_l17_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          544,
+          568
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_l17",
+        "floor": "1f",
+        "pos": [
+          16,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r00_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          527,
+          574
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r00",
+        "floor": "1f",
+        "pos": [
+          19,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r00_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d09_orchard_lane_loop_r00",
+        "floor": "1f",
+        "pos": [
+          35,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r00",
+        "floor": "2f",
+        "pos": [
+          35,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r04_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          541,
+          613
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r04",
+        "floor": "1f",
+        "pos": [
+          14,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r04_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d09_orchard_lane_loop_r04",
+        "floor": "1f",
+        "pos": [
+          25,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r04",
+        "floor": "2f",
+        "pos": [
+          25,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r05_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          554,
+          618
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r05",
+        "floor": "1f",
+        "pos": [
+          16,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r05_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d09_orchard_lane_loop_r05",
+        "floor": "1f",
+        "pos": [
+          29,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r05",
+        "floor": "2f",
+        "pos": [
+          29,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r06_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          564,
+          622
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r06",
+        "floor": "1f",
+        "pos": [
+          19,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r06_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d09_orchard_lane_loop_r06",
+        "floor": "1f",
+        "pos": [
+          35,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r06",
+        "floor": "2f",
+        "pos": [
+          35,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r07_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          578,
+          623
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r07",
+        "floor": "1f",
+        "pos": [
+          16,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r07_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d09_orchard_lane_loop_r07",
+        "floor": "1f",
+        "pos": [
+          29,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r07",
+        "floor": "2f",
+        "pos": [
+          29,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r08_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          589,
+          616
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r08",
+        "floor": "1f",
+        "pos": [
+          16,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r09_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          595,
+          606
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r09",
+        "floor": "1f",
+        "pos": [
+          19,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r10_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          598,
+          595
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r10",
+        "floor": "1f",
+        "pos": [
+          16,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r10_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d09_orchard_lane_loop_r10",
+        "floor": "1f",
+        "pos": [
+          29,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r10",
+        "floor": "2f",
+        "pos": [
+          29,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r12_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          588,
+          575
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r12",
+        "floor": "1f",
+        "pos": [
+          17,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d09_orchard_lane_loop_r12_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d09_orchard_lane_loop_r12",
+        "floor": "1f",
+        "pos": [
+          32,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d09_orchard_lane_loop_r12",
+        "floor": "2f",
+        "pos": [
+          32,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d10_forest_edge_link_l00_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          436,
+          439
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_l00",
+        "floor": "1f",
+        "pos": [
+          18,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d10_forest_edge_link_l00_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d10_forest_edge_link_l00",
+        "floor": "1f",
+        "pos": [
+          33,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_l00",
+        "floor": "2f",
+        "pos": [
+          33,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d10_forest_edge_link_l01_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          425,
+          442
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_l01",
+        "floor": "1f",
+        "pos": [
+          15,
+          26
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d10_forest_edge_link_l01_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d10_forest_edge_link_l01",
+        "floor": "1f",
+        "pos": [
+          27,
+          22
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_l01",
+        "floor": "2f",
+        "pos": [
+          27,
+          5
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d10_forest_edge_link_l02_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          414,
+          447
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_l02",
+        "floor": "1f",
+        "pos": [
+          14,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d10_forest_edge_link_l02_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d10_forest_edge_link_l02",
+        "floor": "1f",
+        "pos": [
+          25,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_l02",
+        "floor": "2f",
+        "pos": [
+          25,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d10_forest_edge_link_l09_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          385,
+          475
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_l09",
+        "floor": "1f",
+        "pos": [
+          16,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d10_forest_edge_link_l09_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d10_forest_edge_link_l09",
+        "floor": "1f",
+        "pos": [
+          29,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_l09",
+        "floor": "2f",
+        "pos": [
+          29,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d10_forest_edge_link_r00_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          432,
+          433
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_r00",
+        "floor": "1f",
+        "pos": [
+          15,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d10_forest_edge_link_r00_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d10_forest_edge_link_r00",
+        "floor": "1f",
+        "pos": [
+          27,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_r00",
+        "floor": "2f",
+        "pos": [
+          27,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d10_forest_edge_link_r01_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          422,
+          437
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_r01",
+        "floor": "1f",
+        "pos": [
+          16,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d10_forest_edge_link_r01_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d10_forest_edge_link_r01",
+        "floor": "1f",
+        "pos": [
+          29,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_r01",
+        "floor": "2f",
+        "pos": [
+          29,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d10_forest_edge_link_r03_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          402,
+          441
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_r03",
+        "floor": "1f",
+        "pos": [
+          18,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d10_forest_edge_link_r03_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d10_forest_edge_link_r03",
+        "floor": "1f",
+        "pos": [
+          33,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_r03",
+        "floor": "2f",
+        "pos": [
+          33,
+          10
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d10_forest_edge_link_r08_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          377,
+          477
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_r08",
+        "floor": "1f",
+        "pos": [
+          16,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d10_forest_edge_link_r09_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          387,
+          482
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_r09",
+        "floor": "1f",
+        "pos": [
+          14,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d10_forest_edge_link_r09_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d10_forest_edge_link_r09",
+        "floor": "1f",
+        "pos": [
+          25,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_r09",
+        "floor": "2f",
+        "pos": [
+          25,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d10_forest_edge_link_r10_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          395,
+          487
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_r10",
+        "floor": "1f",
+        "pos": [
+          14,
+          29
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d10_forest_edge_link_r10_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d10_forest_edge_link_r10",
+        "floor": "1f",
+        "pos": [
+          25,
+          24
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_forest_edge_link_r10",
+        "floor": "2f",
+        "pos": [
+          25,
+          8
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d10_trailhead_village_loop_l04_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          416,
+          479
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_trailhead_village_loop_l04",
+        "floor": "1f",
+        "pos": [
+          15,
+          28
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d10_trailhead_village_loop_l04_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d10_trailhead_village_loop_l04",
+        "floor": "1f",
+        "pos": [
+          27,
+          23
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_trailhead_village_loop_l04",
+        "floor": "2f",
+        "pos": [
+          27,
+          7
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d10_trailhead_village_loop_r00_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          451,
+          474
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_trailhead_village_loop_r00",
+        "floor": "1f",
+        "pos": [
+          16,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "door",
+      "access": "public",
+      "traversal_cost": 1,
+      "id": "p_model_expansion_d10_trailhead_village_loop_r04_door",
+      "from": {
+        "space": "town",
+        "floor": "outdoor",
+        "pos": [
+          411,
+          475
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_trailhead_village_loop_r04",
+        "floor": "1f",
+        "pos": [
+          14,
+          33
+        ]
+      },
+      "bidirectional": true
+    },
+    {
+      "kind": "stairs",
+      "access": "public",
+      "traversal_cost": 2,
+      "id": "p_model_expansion_d10_trailhead_village_loop_r04_stairs_1_2",
+      "from": {
+        "space": "model_expansion_d10_trailhead_village_loop_r04",
+        "floor": "1f",
+        "pos": [
+          25,
+          27
+        ]
+      },
+      "to": {
+        "space": "model_expansion_d10_trailhead_village_loop_r04",
+        "floor": "2f",
+        "pos": [
+          25,
+          10
         ]
       },
       "bidirectional": true

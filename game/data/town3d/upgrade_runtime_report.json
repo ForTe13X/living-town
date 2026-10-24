@@ -1,0 +1,198 @@
+{
+	"checks": [
+		{
+			"details": "",
+			"name": "exact_profile_and_visual_asset_set_load",
+			"passed": true
+		},
+		{
+			"details": null,
+			"name": "authored_profile_installed_before_world_start",
+			"passed": true
+		},
+		{
+			"details": 151,
+			"name": "all151physical_buildings_have_real_game_spaces",
+			"passed": true
+		},
+		{
+			"details": 264,
+			"name": "all_authored_floor_planes_compiled",
+			"passed": true
+		},
+		{
+			"details": null,
+			"name": "expanded_profile_exactly_matches_visual_chunk_set",
+			"passed": true
+		},
+		{
+			"details": 151,
+			"name": "every_building_has_an_actual_exterior_portal",
+			"passed": true
+		},
+		{
+			"details": [],
+			"name": "every_door_and_stair_endpoint_is_canonically_walkable",
+			"passed": true
+		},
+		{
+			"details": [],
+			"name": "every_bound_legacy_and_new_fixture_is_a_real_Sim_object",
+			"passed": true
+		},
+		{
+			"details": [],
+			"name": "every_fixture_has_an_open_standing_approach",
+			"passed": true
+		},
+		{
+			"details": 784,
+			"name": "new_territory_offers_meaningful_existing_actions",
+			"passed": true
+		},
+		{
+			"details": null,
+			"name": "existing_core_action_and_resident_ids_preserved",
+			"passed": true
+		},
+		{
+			"details": {
+				"expansion": 81,
+				"reserve": 21
+			},
+			"name": "reserve_and_five_expansion_districts_are_playable",
+			"passed": true
+		},
+		{
+			"details": {
+				"maximum_m": 56.6041,
+				"minimum_m": -0.88
+			},
+			"name": "actual_elevated_terrain_profile_is_retained",
+			"passed": true
+		},
+		{
+			"details": null,
+			"name": "original_private_and_staff_access_rules_preserved",
+			"passed": true
+		},
+		{
+			"details": null,
+			"name": "long_travel_uses_original_resident_at_authored_indoor_start",
+			"passed": true
+		},
+		{
+			"details": null,
+			"name": "long_travel_uses_public_possession",
+			"passed": true
+		},
+		{
+			"details": {
+				"new_floor": "1f",
+				"new_space": "cafe",
+				"ok": true,
+				"portal": "p_cafe_stairs",
+				"walk": {
+					"every_step_adjacent": true,
+					"ok": true,
+					"steps": 48
+				}
+			},
+			"name": "original_resident_walks_to_and_descends_real_owner_stairs",
+			"passed": true
+		},
+		{
+			"details": {
+				"new_floor": "outdoor",
+				"new_space": "town",
+				"ok": true,
+				"portal": "p_cafe_door",
+				"walk": {
+					"every_step_adjacent": true,
+					"ok": true,
+					"steps": 23
+				}
+			},
+			"name": "original_indoor_resident_reaches_outdoors_by_public_walk_and_portal",
+			"passed": true
+		},
+		{
+			"details": {
+				"budget": 3012,
+				"every_step_adjacent": true,
+				"goal": "(451, 474)",
+				"start": "(606, 500)",
+				"steps": 188
+			},
+			"name": "actual_LifeMode_route_beyond160steps_arrives_without_teleport",
+			"passed": true
+		},
+		{
+			"details": null,
+			"name": "unreachable_route_uses_actual_solid_geometry",
+			"passed": true
+		},
+		{
+			"details": {
+				"actual_position": "(451, 474)",
+				"solid_goal": "(453, 474)"
+			},
+			"name": "unreachable_route_still_stops_without_arrival_or_relocation",
+			"passed": true
+		},
+		{
+			"details": null,
+			"name": "complete_territory_save_succeeds",
+			"passed": true
+		},
+		{
+			"details": {
+				"actual_file_bytes": 26219672,
+				"base_limit_bytes": 8388608,
+				"effective_limit_bytes": 33738944,
+				"encoded_file_bytes": 26219672,
+				"receiver_topology_allowance_bytes": 25350336,
+				"variant_payload_bytes": 26219664
+			},
+			"name": "whole_town_actual_encoded_file_matches_measured_bounded_size",
+			"passed": true
+		},
+		{
+			"details": "",
+			"name": "exact_profile_and_visual_asset_set_load",
+			"passed": true
+		},
+		{
+			"details": null,
+			"name": "authored_profile_installed_before_world_start",
+			"passed": true
+		},
+		{
+			"details": null,
+			"name": "complete_territory_load_succeeds",
+			"passed": true
+		},
+		{
+			"details": null,
+			"name": "save_load_future_resident_state_is_deterministic",
+			"passed": true
+		}
+	],
+	"failures": 0,
+	"limitations": [
+		"This logical arm instantiates authoritative Sim, not graphics. The Main/LifeMode walkthrough is separate GPU/input evidence."
+	],
+	"profile_sha256": "8499a7d376739dcb759d5e404c277a707c8443230763dcfd7962fe730b1fcb4e",
+	"projection_sha256": "98146b008f130870d0067a7c1e0940f6ab373b5f255e5ba66ac24ca0ed48b3bc",
+	"save_budget": {
+		"actual_file_bytes": 26219672,
+		"base_limit_bytes": 8388608,
+		"effective_limit_bytes": 33738944,
+		"encoded_file_bytes": 26219672,
+		"receiver_topology_allowance_bytes": 25350336,
+		"variant_payload_bytes": 26219664
+	},
+	"schema": "living_town.upgrade_gameplay_integration.v1",
+	"source_asset_set_sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a",
+	"status": "PASS"
+}

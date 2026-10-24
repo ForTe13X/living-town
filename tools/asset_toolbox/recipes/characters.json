@@ -1,0 +1,120 @@
+{
+  "schema": "living_town.asset_toolbox.recipe.v1",
+  "name": "Residents: concept before work, native/PBR/GLTF, art review",
+  "required_runtimes": [
+    "python",
+    "blender"
+  ],
+  "required_inputs": [
+    "concept",
+    "character_textures"
+  ],
+  "source_paths": [
+    "${repo}/tools/town_upgrade/characters",
+    "${repo}/tools/asset_refinement",
+    "${repo}/game/data/personas.json",
+    "${repo}/game/scripts/TownCharacter3D.gd"
+  ],
+  "stages": [
+    {
+      "id": "concept-review",
+      "kind": "review",
+      "phase": "visual_review",
+      "depends_on": [],
+      "inputs": [],
+      "artifacts": [
+        "${input.concept}"
+      ],
+      "criteria": [
+        "Inspect the actual concept image and establish palette, proportions, clothing construction and detail priorities before authoring."
+      ]
+    },
+    {
+      "id": "characters",
+      "kind": "command",
+      "phase": "native_and_portable",
+      "depends_on": [
+        "concept-review"
+      ],
+      "inputs": [],
+      "argv": [
+        "${runtime.blender}",
+        "--background",
+        "--factory-startup",
+        "--threads",
+        "6",
+        "--python-exit-code",
+        "1",
+        "--python",
+        "${repo}/tools/town_upgrade/characters/build.py",
+        "--",
+        "--output",
+        "${iteration}/characters",
+        "--texture-library",
+        "${input.character_textures}/library_manifest.json",
+        "--texture-size",
+        "512",
+        "--render-review",
+        "--review-size",
+        "768",
+        "--samples",
+        "24"
+      ],
+      "outputs": [
+        "${iteration}/characters"
+      ],
+      "checks": [],
+      "effects": [],
+      "timeout_seconds": 14400
+    },
+    {
+      "id": "embedded-pbr",
+      "kind": "command",
+      "phase": "technical_verification",
+      "depends_on": [
+        "characters"
+      ],
+      "inputs": [
+        "${iteration}/characters"
+      ],
+      "argv": [
+        "${runtime.python}",
+        "${repo}/tools/town_upgrade/characters/verify_textures.py",
+        "--build",
+        "${iteration}/characters",
+        "--report",
+        "${iteration}/character_pbr_verification.json"
+      ],
+      "outputs": [
+        "${iteration}/character_pbr_verification.json"
+      ],
+      "checks": [
+        {
+          "file": "${iteration}/character_pbr_verification.json",
+          "pointer": "/success",
+          "equals": true
+        }
+      ],
+      "effects": [],
+      "timeout_seconds": 7200
+    },
+    {
+      "id": "character-art-review",
+      "kind": "review",
+      "phase": "visual_review",
+      "depends_on": [
+        "embedded-pbr"
+      ],
+      "inputs": [],
+      "artifacts": [
+        "${iteration}/characters/review",
+        "${input.concept}"
+      ],
+      "criteria": [
+        "Compare all supplied body, portrait, garment and motion views against the approved concept: proportions, identity and restrained summer palette.",
+        "Inspect skin, iris/cornea, brows/lashes/hair masks, collar/cuffs/seams, shoe/ankle fit and apron ties/pockets at full resolution.",
+        "Inspect all supplied pose/furniture contacts, cloth intersections and grounding; static exports and numerical clearance checks do not prove runtime motion quality."
+      ]
+    }
+  ]
+}

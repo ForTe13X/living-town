@@ -1,0 +1,913 @@
+{
+  "schema": "living_town.walkthrough.captions.v1",
+  "timing_source": "actual Edge TTS WordBoundary metadata",
+  "cues": [
+    {
+      "start": 2.05,
+      "end": 3.6425,
+      "lines": [
+        "Welcome to Living Town."
+      ],
+      "segment_id": "01a"
+    },
+    {
+      "start": 4.325,
+      "end": 9.2425,
+      "lines": [
+        "This is the running game, connecting the",
+        "coastal model to the existing life simulation."
+      ],
+      "segment_id": "01a"
+    },
+    {
+      "start": 9.925,
+      "end": 14.530000000000001,
+      "lines": [
+        "Forty-nine buildings contain eighty-nine",
+        "floors, linked by streets, courts,"
+      ],
+      "segment_id": "01a"
+    },
+    {
+      "start": 14.55,
+      "end": 17.255000000000003,
+      "lines": [
+        "homes, workshops, and a small harbor."
+      ],
+      "segment_id": "01a"
+    },
+    {
+      "start": 23.05,
+      "end": 26.505,
+      "lines": [
+        "We will play as one resident,",
+        "then inspect the architecture."
+      ],
+      "segment_id": "01b"
+    },
+    {
+      "start": 27.1875,
+      "end": 31.8425,
+      "lines": [
+        "Pale walls, dark roofs, stone paving,",
+        "and planted edges give this town its"
+      ],
+      "segment_id": "01b"
+    },
+    {
+      "start": 31.8625,
+      "end": 36.455000000000005,
+      "lines": [
+        "coastal character. Camera-only",
+        "inspection will be labelled clearly,"
+      ],
+      "segment_id": "01b"
+    },
+    {
+      "start": 36.5625,
+      "end": 38.955,
+      "lines": [
+        "separate from the resident's actual movement."
+      ],
+      "segment_id": "01b"
+    },
+    {
+      "start": 50.05,
+      "end": 52.6925,
+      "lines": [
+        "We choose Aria through the existing life mode."
+      ],
+      "segment_id": "02a"
+    },
+    {
+      "start": 53.3875,
+      "end": 57.7925,
+      "lines": [
+        "Her upper-floor rooms sit above the",
+        "café, with a real route downstairs."
+      ],
+      "segment_id": "02a"
+    },
+    {
+      "start": 58.475,
+      "end": 63.055,
+      "lines": [
+        "The portrait, name, job, money,",
+        "wishes, and needs belong to the same"
+      ],
+      "segment_id": "02a"
+    },
+    {
+      "start": 63.075,
+      "end": 67.23,
+      "lines": [
+        "resident as before. Her",
+        "identity and rules are retained."
+      ],
+      "segment_id": "02a"
+    },
+    {
+      "start": 74.05,
+      "end": 78.655,
+      "lines": [
+        "The bars track hunger, energy,",
+        "social contact, fun, and hygiene."
+      ],
+      "segment_id": "02b"
+    },
+    {
+      "start": 79.3375,
+      "end": 81.0425,
+      "lines": [
+        "Watch them beside the clock."
+      ],
+      "segment_id": "02b"
+    },
+    {
+      "start": 81.725,
+      "end": 86.3675,
+      "lines": [
+        "Actions take time. Use the",
+        "keyboard or a ground click to walk,"
+      ],
+      "segment_id": "02b"
+    },
+    {
+      "start": 86.4,
+      "end": 88.305,
+      "lines": [
+        "and E to interact nearby."
+      ],
+      "segment_id": "02b"
+    },
+    {
+      "start": 89.0,
+      "end": 92.14250000000001,
+      "lines": [
+        "Zoom changes the view without changing Aria's state."
+      ],
+      "segment_id": "02b"
+    },
+    {
+      "start": 102.05,
+      "end": 106.50500000000001,
+      "lines": [
+        "Walls, furnishings, and stair",
+        "openings define where Aria can stand."
+      ],
+      "segment_id": "03a"
+    },
+    {
+      "start": 107.1875,
+      "end": 111.655,
+      "lines": [
+        "The interior grid is finer than the",
+        "outdoor grid, allowing reachable approaches"
+      ],
+      "segment_id": "03a"
+    },
+    {
+      "start": 111.675,
+      "end": 113.3925,
+      "lines": [
+        "beside beds and counters."
+      ],
+      "segment_id": "03a"
+    },
+    {
+      "start": 114.0875,
+      "end": 116.805,
+      "lines": [
+        "A click through a wall cannot create a shortcut."
+      ],
+      "segment_id": "03a"
+    },
+    {
+      "start": 117.4875,
+      "end": 120.06750000000001,
+      "lines": [
+        "Movement must find a legal route around it."
+      ],
+      "segment_id": "03a"
+    },
+    {
+      "start": 129.05,
+      "end": 133.0675,
+      "lines": [
+        "The stair transition has brought Aria",
+        "downstairs through a legal opening."
+      ],
+      "segment_id": "03b"
+    },
+    {
+      "start": 133.7625,
+      "end": 136.705,
+      "lines": [
+        "Private stairs are not available to every resident."
+      ],
+      "segment_id": "03b"
+    },
+    {
+      "start": 137.3875,
+      "end": 141.2925,
+      "lines": [
+        "At the café table, a meal uses",
+        "the existing action system."
+      ],
+      "segment_id": "03b"
+    },
+    {
+      "start": 141.9875,
+      "end": 145.305,
+      "lines": [
+        "We watch for actual completion",
+        "and its effect on her needs."
+      ],
+      "segment_id": "03b"
+    },
+    {
+      "start": 157.05,
+      "end": 159.205,
+      "lines": [
+        "We click the visible café counter."
+      ],
+      "segment_id": "04a"
+    },
+    {
+      "start": 159.9,
+      "end": 164.49249999999998,
+      "lines": [
+        "The furnishing resolves to an existing",
+        "functional object and a reachable approach beside"
+      ],
+      "segment_id": "04a"
+    },
+    {
+      "start": 164.5125,
+      "end": 168.055,
+      "lines": [
+        "it. Its menu offers permitted actions."
+      ],
+      "segment_id": "04a"
+    },
+    {
+      "start": 168.7375,
+      "end": 171.6175,
+      "lines": [
+        "Aria walks into place and takes time to act."
+      ],
+      "segment_id": "04a"
+    },
+    {
+      "start": 172.3,
+      "end": 175.6675,
+      "lines": [
+        "The simulation records the",
+        "result in her state and history."
+      ],
+      "segment_id": "04a"
+    },
+    {
+      "start": 186.05,
+      "end": 189.43,
+      "lines": [
+        "The town has seven hundred and",
+        "fifty-three furnishing assemblies."
+      ],
+      "segment_id": "04b"
+    },
+    {
+      "start": 190.1125,
+      "end": 193.305,
+      "lines": [
+        "Only mapped functional objects offer game actions."
+      ],
+      "segment_id": "04b"
+    },
+    {
+      "start": 193.9875,
+      "end": 197.83,
+      "lines": [
+        "Decorative shelves and pots do",
+        "not automatically offer actions."
+      ],
+      "segment_id": "04b"
+    },
+    {
+      "start": 198.5125,
+      "end": 203.355,
+      "lines": [
+        "Social attempts retain the existing access",
+        "checks and the other resident's response."
+      ],
+      "segment_id": "04b"
+    },
+    {
+      "start": 204.0375,
+      "end": 207.18,
+      "lines": [
+        "Jobs and wages retain their existing engine rules."
+      ],
+      "segment_id": "04b"
+    },
+    {
+      "start": 217.05,
+      "end": 219.555,
+      "lines": [
+        "Aria leaves through the real café doorway."
+      ],
+      "segment_id": "05a"
+    },
+    {
+      "start": 220.25,
+      "end": 225.00500000000002,
+      "lines": [
+        "Her original directional character sheets",
+        "now appear inside a three-dimensional world."
+      ],
+      "segment_id": "05a"
+    },
+    {
+      "start": 225.6875,
+      "end": 229.93,
+      "lines": [
+        "The body keeps normal depth, so roofs",
+        "and trees can pass in front of it."
+      ],
+      "segment_id": "05a"
+    },
+    {
+      "start": 230.625,
+      "end": 235.0925,
+      "lines": [
+        "Ground markers and interaction prompts",
+        "remain attached to her actual position."
+      ],
+      "segment_id": "05a"
+    },
+    {
+      "start": 244.05,
+      "end": 248.98,
+      "lines": [
+        "When geometry blocks the controlled resident,",
+        "a gold silhouette keeps Aria readable."
+      ],
+      "segment_id": "05b"
+    },
+    {
+      "start": 249.675,
+      "end": 252.0175,
+      "lines": [
+        "It appears only during that obstruction."
+      ],
+      "segment_id": "05b"
+    },
+    {
+      "start": 252.7,
+      "end": 257.455,
+      "lines": [
+        "The normal sprite still obeys depth, and",
+        "the silhouette disappears in clear views."
+      ],
+      "segment_id": "05b"
+    },
+    {
+      "start": 258.15,
+      "end": 261.63,
+      "lines": [
+        "The awning and roof remain in",
+        "place as we walk toward the plaza."
+      ],
+      "segment_id": "05b"
+    },
+    {
+      "start": 272.05,
+      "end": 276.5675,
+      "lines": [
+        "This is architectural inspection:",
+        "camera movement, not Aria's travel."
+      ],
+      "segment_id": "06a"
+    },
+    {
+      "start": 277.2625,
+      "end": 282.08000000000004,
+      "lines": [
+        "The town has five hundred and sixty-one",
+        "logical zones, including circulation."
+      ],
+      "segment_id": "06a"
+    },
+    {
+      "start": 282.7625,
+      "end": 285.48,
+      "lines": [
+        "Two hundred and twenty-three are activity rooms."
+      ],
+      "segment_id": "06a"
+    },
+    {
+      "start": 286.1625,
+      "end": 290.70500000000004,
+      "lines": [
+        "Halls, landings, and stairs connect",
+        "those rooms, giving each interior a"
+      ],
+      "segment_id": "06a"
+    },
+    {
+      "start": 290.725,
+      "end": 294.805,
+      "lines": [
+        "usable layout. Each group is named and inspectable."
+      ],
+      "segment_id": "06a"
+    },
+    {
+      "start": 301.05,
+      "end": 305.83000000000004,
+      "lines": [
+        "Look for beds and storage, library shelves",
+        "and tables, and enclosed bathrooms in"
+      ],
+      "segment_id": "06b"
+    },
+    {
+      "start": 305.85,
+      "end": 308.84250000000003,
+      "lines": [
+        "hotel suites, with bedroom privacy preserved."
+      ],
+      "segment_id": "06b"
+    },
+    {
+      "start": 309.525,
+      "end": 313.13000000000005,
+      "lines": [
+        "Kitchens have sinks, hobs, and distinct refrigerators."
+      ],
+      "segment_id": "06b"
+    },
+    {
+      "start": 313.825,
+      "end": 318.305,
+      "lines": [
+        "Room and floor groups let a cutaway expose",
+        "one interior while neighboring roofs remain"
+      ],
+      "segment_id": "06b"
+    },
+    {
+      "start": 318.325,
+      "end": 322.59250000000003,
+      "lines": [
+        "intact. These authored dimensions",
+        "do not establish building-code"
+      ],
+      "segment_id": "06b"
+    },
+    {
+      "start": 322.6125,
+      "end": 323.71250000000003,
+      "lines": [
+        "approval."
+      ],
+      "segment_id": "06b"
+    },
+    {
+      "start": 332.05,
+      "end": 333.93,
+      "lines": [
+        "We remain in inspection mode."
+      ],
+      "segment_id": "07a"
+    },
+    {
+      "start": 334.625,
+      "end": 339.1925,
+      "lines": [
+        "Residential rows turn, streets",
+        "bend, and passages lead into courts."
+      ],
+      "segment_id": "07a"
+    },
+    {
+      "start": 339.875,
+      "end": 344.4425,
+      "lines": [
+        "The town has actual surface elevations",
+        "and gently graded paths rather than a flat"
+      ],
+      "segment_id": "07a"
+    },
+    {
+      "start": 344.4625,
+      "end": 348.9175,
+      "lines": [
+        "board. Roads, plazas, and building pads meet entrance"
+      ],
+      "segment_id": "07a"
+    },
+    {
+      "start": 348.9375,
+      "end": 353.34250000000003,
+      "lines": [
+        "thresholds. The harbor sits at",
+        "the coastal edge of the same site."
+      ],
+      "segment_id": "07a"
+    },
+    {
+      "start": 361.05,
+      "end": 365.705,
+      "lines": [
+        "This is a fictional engineered site,",
+        "not a surveyed coast or hydraulic study."
+      ],
+      "segment_id": "07b"
+    },
+    {
+      "start": 366.3875,
+      "end": 371.09250000000003,
+      "lines": [
+        "Terrain heights ground residents, while authored",
+        "blockers exclude building footprints and"
+      ],
+      "segment_id": "07b"
+    },
+    {
+      "start": 371.1125,
+      "end": 375.53000000000003,
+      "lines": [
+        "water. The movement contract",
+        "uses the game's spatial grid."
+      ],
+      "segment_id": "07b"
+    },
+    {
+      "start": 376.2125,
+      "end": 380.5675,
+      "lines": [
+        "Another engine would still need its own",
+        "decisions about physics, collision, and"
+      ],
+      "segment_id": "07b"
+    },
+    {
+      "start": 380.5875,
+      "end": 381.6875,
+      "lines": [
+        "navigation."
+      ],
+      "segment_id": "07b"
+    },
+    {
+      "start": 392.05,
+      "end": 396.70500000000004,
+      "lines": [
+        "The park pond cuts into the terrain, with",
+        "level water above a lower bed and graded"
+      ],
+      "segment_id": "08a"
+    },
+    {
+      "start": 396.725,
+      "end": 401.0425,
+      "lines": [
+        "banks. A continuous shore, reeds, benches, and a"
+      ],
+      "segment_id": "08a"
+    },
+    {
+      "start": 401.0625,
+      "end": 403.205,
+      "lines": [
+        "connected loop make the edge readable."
+      ],
+      "segment_id": "08a"
+    },
+    {
+      "start": 403.8875,
+      "end": 406.055,
+      "lines": [
+        "This is an authored ornamental pond."
+      ],
+      "segment_id": "08a"
+    },
+    {
+      "start": 406.7375,
+      "end": 411.20500000000004,
+      "lines": [
+        "Movement rules keep residents on accessible",
+        "ground beside the water, with planted"
+      ],
+      "segment_id": "08a"
+    },
+    {
+      "start": 411.225,
+      "end": 412.32500000000005,
+      "lines": [
+        "edges."
+      ],
+      "segment_id": "08a"
+    },
+    {
+      "start": 421.05,
+      "end": 425.38,
+      "lines": [
+        "Fifty-two planned landscape trees",
+        "shape streets, courts, and the park."
+      ],
+      "segment_id": "08b"
+    },
+    {
+      "start": 426.0625,
+      "end": 428.505,
+      "lines": [
+        "Broad crowns and willows frame the pond."
+      ],
+      "segment_id": "08b"
+    },
+    {
+      "start": 429.1875,
+      "end": 433.95500000000004,
+      "lines": [
+        "Flower beds, garden islands, low",
+        "planting, and coastal grasses add smaller"
+      ],
+      "segment_id": "08b"
+    },
+    {
+      "start": 433.975,
+      "end": 438.505,
+      "lines": [
+        "detail. Openings preserve doors, paths, and views."
+      ],
+      "segment_id": "08b"
+    },
+    {
+      "start": 439.1875,
+      "end": 443.08,
+      "lines": [
+        "The aim is shade and garden enclosure",
+        "along useful walking routes."
+      ],
+      "segment_id": "08b"
+    },
+    {
+      "start": 443.7625,
+      "end": 446.34250000000003,
+      "lines": [
+        "Background woodland adds distant enclosure."
+      ],
+      "segment_id": "08b"
+    },
+    {
+      "start": 452.05,
+      "end": 454.63,
+      "lines": [
+        "We return to Aria for a social attempt."
+      ],
+      "segment_id": "09a"
+    },
+    {
+      "start": 455.3125,
+      "end": 457.72999999999996,
+      "lines": [
+        "A visible neighbor must also be reachable."
+      ],
+      "segment_id": "09a"
+    },
+    {
+      "start": 458.4125,
+      "end": 462.73,
+      "lines": [
+        "Walls, floors, and access rules",
+        "matter even when both people appear on"
+      ],
+      "segment_id": "09a"
+    },
+    {
+      "start": 462.75,
+      "end": 467.14250000000004,
+      "lines": [
+        "screen. Acceptance or refusal",
+        "belongs to the running game."
+      ],
+      "segment_id": "09a"
+    },
+    {
+      "start": 467.825,
+      "end": 470.7425,
+      "lines": [
+        "Read the event and need changes to see the outcome."
+      ],
+      "segment_id": "09a"
+    },
+    {
+      "start": 479.05,
+      "end": 480.7675,
+      "lines": [
+        "Now we enable autonomy."
+      ],
+      "segment_id": "09b"
+    },
+    {
+      "start": 481.4625,
+      "end": 486.3425,
+      "lines": [
+        "The existing decision system chooses",
+        "available actions according to needs, jobs,"
+      ],
+      "segment_id": "09b"
+    },
+    {
+      "start": 486.3625,
+      "end": 488.5425,
+      "lines": [
+        "access, and circumstances."
+      ],
+      "segment_id": "09b"
+    },
+    {
+      "start": 489.225,
+      "end": 493.9175,
+      "lines": [
+        "The view follows the movement and activity;",
+        "it does not create a second simulation."
+      ],
+      "segment_id": "09b"
+    },
+    {
+      "start": 494.6,
+      "end": 499.20500000000004,
+      "lines": [
+        "This logic backend runs locally without",
+        "a downloaded language model or required"
+      ],
+      "segment_id": "09b"
+    },
+    {
+      "start": 499.225,
+      "end": 500.63,
+      "lines": [
+        "generated dialogue."
+      ],
+      "segment_id": "09b"
+    },
+    {
+      "start": 507.05,
+      "end": 511.1675,
+      "lines": [
+        "We save with F five, let the game",
+        "continue, and load with F eight."
+      ],
+      "segment_id": "10a"
+    },
+    {
+      "start": 511.8625,
+      "end": 515.8549999999999,
+      "lines": [
+        "Loading rebuilds the view from the",
+        "saved simulation and resident state."
+      ],
+      "segment_id": "10a"
+    },
+    {
+      "start": 516.55,
+      "end": 519.8799999999999,
+      "lines": [
+        "The three-dimensional profile",
+        "uses a separate quicksave."
+      ],
+      "segment_id": "10a"
+    },
+    {
+      "start": 520.5625,
+      "end": 525.2175,
+      "lines": [
+        "Incompatible spatial data is rejected",
+        "instead of loading into a different layout."
+      ],
+      "segment_id": "10a"
+    },
+    {
+      "start": 534.05,
+      "end": 535.705,
+      "lines": [
+        "The art remains portable."
+      ],
+      "segment_id": "10b"
+    },
+    {
+      "start": 536.4,
+      "end": 540.8425,
+      "lines": [
+        "Blender sources and engine-neutral",
+        "exports keep named buildings, floors,"
+      ],
+      "segment_id": "10b"
+    },
+    {
+      "start": 540.875,
+      "end": 543.8299999999999,
+      "lines": [
+        "rooms, materials, and furnishing groups."
+      ],
+      "segment_id": "10b"
+    },
+    {
+      "start": 544.5125,
+      "end": 547.305,
+      "lines": [
+        "This bridge binds them to its spatial profile."
+      ],
+      "segment_id": "10b"
+    },
+    {
+      "start": 547.9875,
+      "end": 552.63,
+      "lines": [
+        "Frozen file hashes, license credits,",
+        "and test evidence record the delivered"
+      ],
+      "segment_id": "10b"
+    },
+    {
+      "start": 552.65,
+      "end": 556.1549999999999,
+      "lines": [
+        "versions, leaving the town usable by other consumers."
+      ],
+      "segment_id": "10b"
+    },
+    {
+      "start": 562.05,
+      "end": 566.3925,
+      "lines": [
+        "The editable runtime passed thirty-six",
+        "logical checks and twenty-eight visual"
+      ],
+      "segment_id": "11a"
+    },
+    {
+      "start": 566.4125,
+      "end": 570.3675,
+      "lines": [
+        "checks. Legacy regression scenes also passed."
+      ],
+      "segment_id": "11a"
+    },
+    {
+      "start": 571.05,
+      "end": 575.6800000000001,
+      "lines": [
+        "The Windows package separately passed normal",
+        "launch and screen-render checks, rather than"
+      ],
+      "segment_id": "11a"
+    },
+    {
+      "start": 575.7,
+      "end": 577.3549999999999,
+      "lines": [
+        "the full interaction suite."
+      ],
+      "segment_id": "11a"
+    },
+    {
+      "start": 582.05,
+      "end": 586.9925,
+      "lines": [
+        "This bridge connects places, retained",
+        "residents, and observable consequences."
+      ],
+      "segment_id": "11b"
+    },
+    {
+      "start": 587.6875,
+      "end": 591.6175,
+      "lines": [
+        "It does not establish finished",
+        "balance or broad hardware performance."
+      ],
+      "segment_id": "11b"
+    },
+    {
+      "start": 592.3125,
+      "end": 594.1175,
+      "lines": [
+        "The full town loads together."
+      ],
+      "segment_id": "11b"
+    },
+    {
+      "start": 594.8,
+      "end": 597.9425,
+      "lines": [
+        "Inspect movement, actions, and saved life."
+      ],
+      "segment_id": "11b"
+    }
+  ]
+}

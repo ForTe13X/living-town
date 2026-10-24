@@ -1,0 +1,59 @@
+{
+  "schema": "living_town.asset_toolbox.recipe.v1",
+  "name": "Small offline planning smoke: historical core/reserve scope, not final 151-building generation",
+  "required_runtimes": [
+    "python"
+  ],
+  "required_inputs": [],
+  "source_paths": [
+    "${repo}/art/living_town/interior_plan.json",
+    "${repo}/art/living_town/landscape_plan.json",
+    "${repo}/art/living_town/masterplan.json",
+    "${repo}/art/living_town/reserve_plan.json",
+    "${repo}/art/living_town/terrain_plan.json",
+    "${repo}/art/living_town/tools/build_living_town.py",
+    "${repo}/art/living_town/tools/build_reserve.py",
+    "${repo}/art/living_town/tools/interior_design.py",
+    "${repo}/art/living_town/tools/reserve_plan.py",
+    "${repo}/art/living_town/tools/terrain_profile.py",
+    "${repo}/tools/asset_refinement/hero_foliage.py",
+    "${repo}/tools/asset_refinement/hero_furniture.py",
+    "${repo}/tools/asset_refinement/hero_pbr.py",
+    "${repo}/tools/asset_refinement/hero_walls.py",
+    "${repo}/tools/town_generation/breton_summer.json",
+    "${repo}/tools/town_generation/compile_recipe.py"
+  ],
+  "stages": [
+    {
+      "id": "compile-plan",
+      "kind": "command",
+      "phase": "plan_only",
+      "argv": [
+        "${runtime.python}",
+        "${repo}/tools/town_generation/compile_recipe.py",
+        "--root",
+        "${repo}",
+        "--profile",
+        "${repo}/tools/town_generation/breton_summer.json",
+        "--output",
+        "${iteration}/plan"
+      ],
+      "outputs": [
+        "${iteration}/plan"
+      ],
+      "checks": [
+        {
+          "file": "${iteration}/plan/generation_recipe.json",
+          "pointer": "/status",
+          "equals": "COMPILED_NOT_GENERATED"
+        },
+        {
+          "file": "${iteration}/plan/generation_recipe.json",
+          "pointer": "/blender_executed",
+          "equals": false
+        }
+      ],
+      "timeout_seconds": 300
+    }
+  ]
+}
