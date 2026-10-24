@@ -1,66 +1,62 @@
 {
   "schema": "living_town.walkthrough.composition.v1",
   "status": "PASS",
-  "generated_utc": "2026-10-12T21:09:02.675315+00:00",
+  "generated_utc": "2026-10-24T05:49:20.563660+00:00",
   "note": "Encoding completed; final verification and human visual/audio review are separate gates.",
   "raw": {
-    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\capture.ogv",
-    "bytes": 552075506,
-    "sha256": "5c0f8f745579ed3584c0a688f7c386206bfbce499925305efc12c5236f5c8e64"
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\capture.avi",
+    "bytes": 2140923750,
+    "sha256": "46352f61725d85b56fa641ae4e62773f2bc6a744b922372142129a4fe8732d01"
   },
   "capture_report": {
-    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\walkthrough_report.json",
-    "bytes": 41907,
-    "sha256": "8084c954963f87f07cb5a432c7b1d73476efb58d60f31a469c7a29a9f710856c"
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\walkthrough_report.json",
+    "bytes": 214006,
+    "sha256": "f1d9e3d026f7189da354504e3fbf6f535d14162846e7821df717dce8ae5c1240"
   },
   "voice_report": {
-    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_report.json",
-    "bytes": 139918,
-    "sha256": "9facf6b38bc84a6a2b2827309b0cdb5c10d5d18e671b1c4f72990ecbc1aca0ab"
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_report.json",
+    "bytes": 133169,
+    "sha256": "17b83a15b01239307bcafb86f3c765a8e41472c5b0eb6c02f9719f77017d76be"
   },
   "narration": {
     "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\docs\\town_walkthrough\\narration.json",
-    "bytes": 16116,
-    "sha256": "12fb27ecfc3421288554243e858c7f9094af86a3f5bcd03bd6f8946520bcae66"
+    "bytes": 13673,
+    "sha256": "9c3e3a7e41e53a5fd3968b9213f3b54ed121b16bb39cfdc057edc877a8208961"
   },
   "route": {
     "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\docs\\town_walkthrough\\route_plan.json",
-    "bytes": 11307,
-    "sha256": "c92282e0e4167cf2a2edc1fc96f5bcc5a3a10beb13700072e201ab949fcf6fdb"
+    "bytes": 11625,
+    "sha256": "30f560b986c095d09456aa3a4b03df76cc798e7413b5e1a151adf4ccaa9a1667"
   },
   "builder": {
     "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\build_town_walkthrough.py",
-    "bytes": 45349,
-    "sha256": "2a9ae48e88b12eab5d898c7cb74bcf22779254e22f99ab71273fdf2b4d9c4778"
+    "bytes": 45993,
+    "sha256": "43e1d016efd5e9935e783adc69f7ff0def99f22dd8f7a612ac9f4bf8916c516b"
   },
-  "source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
-  "source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
-  "projection_sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a",
-  "movie_boot_frames_to_trim": 307,
-  "trim_seconds": 12.791666666666666,
-  "target_frames": 14400,
-  "target_seconds": 600,
+  "source_glb_sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a",
+  "source_blend_sha256": "3162c204689cdb7888a5e0d21bb5dde9be04a89ac6253ba03a88d7f5ddd86274",
+  "projection_sha256": "98146b008f130870d0067a7c1e0940f6ab373b5f255e5ba66ac24ca0ed48b3bc",
+  "movie_boot_frames_to_trim": 239,
+  "trim_seconds": 13.277777777777779,
+  "target_frames": 15120,
+  "target_seconds": 840,
   "raw_video_timeline": {
-    "packet_count": 14709,
-    "repeat_packets": 2441,
-    "trailing_repeat_packets": 51,
-    "contiguous_packet_pts_verified": true,
-    "repeat_semantics": "Zero-byte Theora packets repeat the previous picture; only the proven trailing repeat count is padded after FPS reconstruction.",
-    "packet_table": {
-      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\raw_video_packets.json",
-      "bytes": 1163332,
-      "sha256": "edb234ff11c827bce0c4bae7580c8ad99b22feeb2bb4896e30132928445ff5ac"
-    }
+    "format": "Godot AVI",
+    "decoded_frames": 15361,
+    "required_frames": 15359,
+    "padding_frames": 0,
+    "repeated_or_invented_frames": false,
+    "trim_policy": "Exact recorded frame range, with original PTS; no FPS reconstruction or tpad"
   },
   "audio_mode": "narration_plus_actual_game_bed",
   "game_bed_stats": {
-    "samples": 14400000,
-    "duration_seconds": 600.0,
+    "samples": 20160000,
+    "duration_seconds": 840.0,
     "sample_rate": 24000,
-    "peak_amplitude": 19254,
-    "peak_dbfs": -4.618579349611405,
-    "rms_dbfs": -30.79319706933237,
-    "nonzero_samples": 14389699,
+    "peak_amplitude": 18602,
+    "peak_dbfs": -4.917805898417943,
+    "rms_dbfs": -28.322707242413536,
+    "nonzero_samples": 20141854,
     "full_scale_peak": false
   },
   "game_bed_audibility_thresholds": {
@@ -74,25 +70,25 @@
     "target_true_peak_dbfs": -1.5,
     "target_lra": 11,
     "analysis": {
-      "input_i": "-20.58",
-      "input_tp": "-1.50",
-      "input_lra": "3.90",
-      "input_thresh": "-30.95",
-      "output_i": "-16.53",
+      "input_i": "-20.63",
+      "input_tp": "-1.74",
+      "input_lra": "5.10",
+      "input_thresh": "-30.98",
+      "output_i": "-16.51",
       "output_tp": "-1.50",
-      "output_lra": "3.90",
-      "output_thresh": "-26.89",
+      "output_lra": "5.10",
+      "output_thresh": "-26.85",
       "normalization_type": "dynamic",
-      "target_offset": "0.53"
+      "target_offset": "0.51"
     },
     "normalized_pcm": {
-      "samples": 14400000,
-      "duration_seconds": 600.0,
+      "samples": 20160000,
+      "duration_seconds": 840.0,
       "sample_rate": 24000,
-      "peak_amplitude": 27692,
-      "peak_dbfs": -1.4619122404063862,
-      "rms_dbfs": -18.448218724970925,
-      "nonzero_samples": 8826481,
+      "peak_amplitude": 27665,
+      "peak_dbfs": -1.4703852081909339,
+      "rms_dbfs": -20.461668871658667,
+      "nonzero_samples": 7686690,
       "full_scale_peak": false
     }
   },
@@ -103,17 +99,17 @@
     "-threads",
     "2",
     "-i",
-    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\capture.ogv",
+    "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\capture.avi",
     "-i",
-    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\narration_normalized.wav",
+    "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration_normalized.wav",
     "-i",
-    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\game_bed.wav",
+    "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\game_bed.wav",
     "-f",
     "ffmetadata",
     "-i",
-    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\chapters.ffmetadata",
+    "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\chapters.ffmetadata",
     "-filter_complex",
-    "[0:v]fps=24:start_time=0,tpad=stop_mode=clone:stop=51,trim=start_frame=307:end_frame=14707,setpts=PTS-STARTPTS,scale=1280:768:flags=lanczos,pad=1280:864:0:0:color=0x111722,subtitles=filename=narration.ass[v];[1:a]asplit=2[narr][key];[2:a]volume=0.35[bed];[bed][key]sidechaincompress=threshold=0.025:ratio=8:attack=15:release=250[duck];[narr][duck]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.89:level=0:latency=1[a]",
+    "[0:v]trim=start_frame=239:end_frame=15359,setpts=PTS-STARTPTS,scale=1280:768:flags=lanczos:out_range=tv,pad=1280:864:0:0:color=0x111722,subtitles=filename=narration.ass[v];[1:a]asplit=2[narr][key];[2:a]volume=0.35[bed];[bed][key]sidechaincompress=threshold=0.025:ratio=8:attack=15:release=250[duck];[narr][duck]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.89:level=0:latency=1[a]",
     "-map",
     "[v]",
     "-map",
@@ -123,9 +119,9 @@
     "-map_chapters",
     "3",
     "-frames:v",
-    "14400",
+    "15120",
     "-t",
-    "600",
+    "840",
     "-c:v",
     "libx264",
     "-preset",
@@ -134,6 +130,8 @@
     "20",
     "-pix_fmt",
     "yuv420p",
+    "-color_range",
+    "tv",
     "-threads:v",
     "6",
     "-filter_complex_threads",
@@ -146,44 +144,44 @@
     "24000",
     "-movflags",
     "+faststart",
-    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\LivingTown_Walkthrough.mp4"
+    "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\LivingTown_Walkthrough.mp4"
   ],
   "assets": {
     "narration_normalized.wav": {
-      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\narration_normalized.wav",
-      "bytes": 28800078,
-      "sha256": "56b5803141704b64e463e29495f8609fa2355f53ed44e355569a1dbb6dfe516e"
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration_normalized.wav",
+      "bytes": 40320078,
+      "sha256": "20dc2e83e382ca196c259b7cfeb083f9acffffa571b6a09c3dbbe55aec6eb9c4"
     },
     "chapters.ffmetadata": {
-      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\chapters.ffmetadata",
-      "bytes": 1171,
-      "sha256": "8759935ef433a855dae4c666d6d4c7e28a2f99e86b9fddeb3729f02d30e9b31e"
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\chapters.ffmetadata",
+      "bytes": 1251,
+      "sha256": "a642dd69dee52af816ad4deb00271fbb29c45903ac06bbda59e82662f692628d"
     },
     "composition_filters.txt": {
-      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\composition_filters.txt",
-      "bytes": 430,
-      "sha256": "89ffa2e11defe91cd4053c7c6afb3b91b42ba159e53ef8e46d09dde81337e576"
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\composition_filters.txt",
+      "bytes": 394,
+      "sha256": "03c38802be1b8b4fc57300eac0e7e4de8f33020bc47afb8faa675a4f218bb309"
     },
     "narration.ass": {
-      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\narration.ass",
-      "bytes": 12258,
-      "sha256": "fac0a4c068996b19da1e0b4b781a5da1f3f2a456e89f931f099c7410e33c604a"
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration.ass",
+      "bytes": 11017,
+      "sha256": "d352b17a7033a38a69d9e932454c331e7134e4f7e1cb06d04b23c636e25a5bd6"
     },
     "narration.srt": {
-      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\narration.srt",
-      "bytes": 10268,
-      "sha256": "776f1aa2df6b8d0cec7356f6e576ebe09ab1b05f7e7fbd57c9b20d131c791ae8"
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\narration.srt",
+      "bytes": 9163,
+      "sha256": "ef5e567cddb771ecbd93af4d0482474f71cd4a546e1eca1f50cf4d00d5f74f4f"
     },
     "captions.json": {
-      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\captions.json",
-      "bytes": 21029,
-      "sha256": "ee721afcb2f4dc8d8270e0dec4df7c70bac3fdab2b914c7bb53d6a30f36fe1b5"
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\captions.json",
+      "bytes": 19020,
+      "sha256": "20c84fc3c132c3a559edcc73a5b29e1b4e6f9f08c5500ffd43fddb2b553c5cd0"
     }
   },
   "output": {
-    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\LivingTown_Walkthrough.mp4",
-    "bytes": 245232169,
-    "sha256": "a1f97fdcc79e232784874c4ebd67c9b52a3ed98cc52982a9baf24872d10184d7"
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\LivingTown_Walkthrough.mp4",
+    "bytes": 528362448,
+    "sha256": "9c72fa15426706d76307fd1eebaec77404de3cbabb67c80e9928d83ecbf4e252"
   },
   "visually_reviewed": false,
   "listened_to_by_human": false

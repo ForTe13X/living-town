@@ -1,0 +1,19 @@
+{
+	"binding_sha256": "00e711bfa5ab91b29d19b0f9119d9ae0b85711942596389a3c04bd49aa17ca53",
+	"engine_specific": true,
+	"full_build_validation": {
+		"batch_buffers_unchanged": true,
+		"ok": true,
+		"original_mesh_buffers_unchanged": true,
+		"original_nodes": 19197,
+		"semantic_ray_registry_unchanged": true
+	},
+	"groups": 2880,
+	"portable_asset_authority": false,
+	"resource_bytes": 23405364,
+	"resource_file": "static_render_cache.res",
+	"resource_sha256": "ede4da4734e95249c03f529683d1fd246861174347a126ec2dc90072650f2d19",
+	"schema": "living_town.static_render_cache.v1",
+	"source_members": 19197,
+	"status": "PASS_FULL_BUILDER_CODEC_VALIDATION_AND_RESOURCE_READBACK"
+}

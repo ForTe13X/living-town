@@ -1,0 +1,106 @@
+{
+  "schema": "living_town.terrain_sources.v1",
+  "license": "CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "credit": "Powered by Poly Haven",
+  "assets": {
+    "leafy_grass": {
+      "asset_url": "https://polyhaven.com/a/leafy_grass",
+      "dimensions_mm": [
+        2000,
+        2000
+      ],
+      "metadata_sha256": {
+        "info": "17ce08da291600e2e0e12fe3dc5c2d99289986027f61cdc7064a89e093a06311",
+        "files": "5487bd1147d2b1d5c8e6012be397d73da1b6402213183f279bf07fc804797b76"
+      }
+    },
+    "forest_leaves_02": {
+      "asset_url": "https://polyhaven.com/a/forest_leaves_02",
+      "dimensions_mm": [
+        3000.9725093841553,
+        3000.9801387786865
+      ],
+      "metadata_sha256": {
+        "info": "b7bbd38af7d68c8f02ebe65206ee9bdcfd487f7115fedba58e11c34515a28bc8",
+        "files": "ea2aef62643b4ab5b30d3ea484ff08aaa5cebdff95643d4f3d9831eca71429f5"
+      }
+    },
+    "aerial_grass_rock": {
+      "asset_url": "https://polyhaven.com/a/aerial_grass_rock",
+      "dimensions_mm": [
+        15000,
+        15000
+      ],
+      "metadata_sha256": {
+        "info": "3361d370fc1e9568fece375e397266eb422d2919d90c69c44f1ef74694a03417",
+        "files": "49aae7e471980d8541db5c7443750eeb3bf9b577c96363a1920a0f07d62e5503"
+      }
+    }
+  },
+  "files": [
+    {
+      "path": "leafy_grass/diff.jpg",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_diff_2k.jpg",
+      "source_md5": "8014f4dace676a62ed71b3dd76119dae",
+      "bytes": 4766204,
+      "sha256": "8e1c6d21365d4b89bc5a35ab664da98a78dbc3ab9ba6100474881c8619a5b113"
+    },
+    {
+      "path": "leafy_grass/nor_gl.jpg",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_nor_gl_2k.jpg",
+      "source_md5": "ea5e91abe01dc5e5d7028c68c3bc9194",
+      "bytes": 6047262,
+      "sha256": "df0cf0ce96e653f033e5b934d5b12995464bda027aa53bd12e329be889aa9f45"
+    },
+    {
+      "path": "leafy_grass/arm.jpg",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_arm_2k.jpg",
+      "source_md5": "64f2eb364e806301df19edc7a67d65bb",
+      "bytes": 4116600,
+      "sha256": "70d61c669fe9d186a84f5bb50e8a337083014d7e46534306a89d47d48fd5eb0e"
+    },
+    {
+      "path": "forest_leaves_02/diff.jpg",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_leaves_02/forest_leaves_02_diffuse_2k.jpg",
+      "source_md5": "b7837ba1c51fb0e11af36d6b4e225c20",
+      "bytes": 1668009,
+      "sha256": "9c38b2b151a0415457a6914966422cfca5a546c94674442e5395e0b1e908a196"
+    },
+    {
+      "path": "forest_leaves_02/nor_gl.jpg",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_leaves_02/forest_leaves_02_nor_gl_2k.jpg",
+      "source_md5": "f974000a2ddc7dcd22bc84c37aa5d7ce",
+      "bytes": 2323898,
+      "sha256": "af0346114834c347a8d6a138f6ea16a97b0bec8d6e4db32c24f1c7e482163235"
+    },
+    {
+      "path": "forest_leaves_02/arm.jpg",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_leaves_02/forest_leaves_02_arm_2k.jpg",
+      "source_md5": "4b476f0e4b633b2aef621afda5209baf",
+      "bytes": 1066850,
+      "sha256": "d8423b522d86285e26036d27fc51f4db7b8c6716b1558deb4575b288e14c28b7"
+    },
+    {
+      "path": "aerial_grass_rock/diff.jpg",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_grass_rock/aerial_grass_rock_diff_2k.jpg",
+      "source_md5": "024018554c0002620127749d1f585f3d",
+      "bytes": 2624635,
+      "sha256": "1a2ddfa4652adbe00447b940c40019d46f4b88245bc1b341cdf622c2110b7bc5"
+    },
+    {
+      "path": "aerial_grass_rock/nor_gl.jpg",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_grass_rock/aerial_grass_rock_nor_gl_2k.jpg",
+      "source_md5": "0c5423ce365169df7c242933b5137696",
+      "bytes": 3799025,
+      "sha256": "c6aa14b042ce243f93a6ca807f46a085711c23ad316b104578e92df7770ee285"
+    },
+    {
+      "path": "aerial_grass_rock/arm.jpg",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_grass_rock/aerial_grass_rock_arm_2k.jpg",
+      "source_md5": "1491ee517b5cf713639f3add1b91c933",
+      "bytes": 945301,
+      "sha256": "a7daabd9aa877f861ced2830b792709f31a399324db47df2bdac256c0414fc14"
+    }
+  ]
+}

@@ -1,0 +1,260 @@
+{
+  "schema": "living_town.asset_toolbox.recipe.v1",
+  "name": "Whole town: immutable native, visual review, portable chunks",
+  "required_runtimes": [
+    "python",
+    "blender"
+  ],
+  "required_inputs": [
+    "source_blend",
+    "expansion",
+    "pbr",
+    "botanical_library",
+    "botanical_sources",
+    "terrain_sources",
+    "concept"
+  ],
+  "source_paths": [
+    "${repo}/tools/town_upgrade/",
+    "${repo}/tools/town_generation",
+    "${repo}/tools/asset_refinement",
+    "${repo}/art/living_town"
+  ],
+  "stages": [
+    {
+      "id": "native",
+      "kind": "command",
+      "phase": "native",
+      "depends_on": [],
+      "inputs": [],
+      "argv": [
+        "${runtime.blender}",
+        "--background",
+        "--factory-startup",
+        "--threads",
+        "6",
+        "--python-exit-code",
+        "1",
+        "--python",
+        "${repo}/tools/town_upgrade/build_whole_town.py",
+        "--",
+        "--input",
+        "${input.source_blend}",
+        "--output",
+        "${iteration}/native",
+        "--expansion-dir",
+        "${input.expansion}",
+        "--pbr-library",
+        "${input.pbr}/library_manifest.json",
+        "--botanical-library",
+        "${input.botanical_library}",
+        "--sources",
+        "${input.botanical_sources}",
+        "--terrain-sources",
+        "${input.terrain_sources}",
+        "--texture-python",
+        "${runtime.python}",
+        "--skip-export"
+      ],
+      "outputs": [
+        "${iteration}/native"
+      ],
+      "checks": [
+        {
+          "file": "${iteration}/native/whole_town_native_geometry.json",
+          "pointer": "/status",
+          "equals": "PASS"
+        }
+      ],
+      "effects": [],
+      "timeout_seconds": 14400
+    },
+    {
+      "id": "building-renders",
+      "kind": "command",
+      "phase": "visual_evidence",
+      "depends_on": [
+        "native"
+      ],
+      "inputs": [
+        "${iteration}/native/refined_whole_town.blend",
+        "${iteration}/native/whole_town_buildings.json",
+        "${iteration}/native/whole_town_native_geometry.json"
+      ],
+      "argv": [
+        "${runtime.blender}",
+        "--background",
+        "--factory-startup",
+        "--threads",
+        "6",
+        "--python-exit-code",
+        "1",
+        "--python",
+        "${repo}/tools/town_upgrade/render_building_catalog.py",
+        "--",
+        "--native",
+        "${iteration}/native/refined_whole_town.blend",
+        "--buildings",
+        "${iteration}/native/whole_town_buildings.json",
+        "--output",
+        "${iteration}/building_views",
+        "--size",
+        "640",
+        "--samples",
+        "8"
+      ],
+      "outputs": [
+        "${iteration}/building_views"
+      ],
+      "checks": [],
+      "effects": [],
+      "timeout_seconds": 14400
+    },
+    {
+      "id": "context-renders",
+      "kind": "command",
+      "phase": "visual_evidence",
+      "depends_on": [
+        "native"
+      ],
+      "inputs": [
+        "${iteration}/native/refined_whole_town.blend",
+        "${iteration}/native/whole_town_buildings.json",
+        "${iteration}/native/whole_town_native_geometry.json"
+      ],
+      "argv": [
+        "${runtime.blender}",
+        "--background",
+        "--factory-startup",
+        "--threads",
+        "6",
+        "--python-exit-code",
+        "1",
+        "--python",
+        "${repo}/tools/town_upgrade/render_context_views.py",
+        "--",
+        "--native",
+        "${iteration}/native/refined_whole_town.blend",
+        "--buildings",
+        "${iteration}/native/whole_town_buildings.json",
+        "--output",
+        "${iteration}/context",
+        "--size",
+        "1500",
+        "--samples",
+        "16"
+      ],
+      "outputs": [
+        "${iteration}/context"
+      ],
+      "checks": [],
+      "effects": [],
+      "timeout_seconds": 14400
+    },
+    {
+      "id": "catalog",
+      "kind": "command",
+      "phase": "visual_evidence",
+      "depends_on": [
+        "building-renders"
+      ],
+      "inputs": [
+        "${iteration}/native/refined_whole_town.blend",
+        "${iteration}/native/whole_town_buildings.json",
+        "${iteration}/native/whole_town_native_geometry.json",
+        "${iteration}/building_views"
+      ],
+      "argv": [
+        "${runtime.python}",
+        "${repo}/tools/town_upgrade/build_visual_catalog.py",
+        "--buildings",
+        "${iteration}/native/whole_town_buildings.json",
+        "--receipts",
+        "${iteration}/building_views/render_receipts.json",
+        "--native",
+        "${iteration}/native/refined_whole_town.blend",
+        "--output",
+        "${iteration}/catalog"
+      ],
+      "outputs": [
+        "${iteration}/catalog"
+      ],
+      "checks": [
+        {
+          "file": "${iteration}/catalog/visual_catalog_coverage.json",
+          "pointer": "/status",
+          "equals": "COMPLETE_EVIDENCE"
+        }
+      ],
+      "effects": [],
+      "timeout_seconds": 3600
+    },
+    {
+      "id": "town-art-review",
+      "kind": "review",
+      "phase": "visual_review",
+      "depends_on": [
+        "catalog",
+        "context-renders"
+      ],
+      "inputs": [
+        "${iteration}/native/refined_whole_town.blend",
+        "${iteration}/native/whole_town_buildings.json",
+        "${iteration}/native/whole_town_native_geometry.json"
+      ],
+      "artifacts": [
+        "${iteration}/building_views",
+        "${iteration}/context",
+        "${input.concept}"
+      ],
+      "criteria": [
+        "Compare the actual images with the bound concept at wide, medium and close scales; record concrete differences rather than assuming parity.",
+        "Inspect every building exterior and floor: plausible circulation, room zoning, furnishing facing/grouping/clearances, stairs, entrances and enclosure; overhead floor cuts alone do not prove in-game cutaways.",
+        "Check wall plaster/stone/slate texture visibility and physical scale, window recesses and sills, eaves, gutters, handles, supports and contact shadows; no floating or intersecting decoration.",
+        "Check forest canopy/understory coverage, species/size variation, layered edges, flower horticulture, believable terrain transitions and pond banks while preserving real paths and thresholds.",
+        "Inspect lighting, palette, roughness, alpha foliage, silhouette, density and camera composition; list unresolved details and full-resolution outliers."
+      ]
+    },
+    {
+      "id": "portable",
+      "kind": "command",
+      "phase": "portable",
+      "depends_on": [
+        "town-art-review"
+      ],
+      "inputs": [
+        "${iteration}/native"
+      ],
+      "argv": [
+        "${runtime.python}",
+        "-m",
+        "tools.asset_toolbox.export_copy",
+        "--source",
+        "${iteration}/native",
+        "--output",
+        "${iteration}/portable",
+        "--blender",
+        "${runtime.blender}",
+        "--repo",
+        "${repo}"
+      ],
+      "outputs": [
+        "${iteration}/portable"
+      ],
+      "checks": [
+        {
+          "file": "${iteration}/portable/portable_export_receipt.json",
+          "pointer": "/status",
+          "equals": "PASS"
+        },
+        {
+          "file": "${iteration}/portable/export_working_copy_receipt.json",
+          "pointer": "/status",
+          "equals": "EXPORTED_SOURCE_UNCHANGED"
+        }
+      ],
+      "effects": [],
+      "timeout_seconds": 14400
+    }
+  ]
+}

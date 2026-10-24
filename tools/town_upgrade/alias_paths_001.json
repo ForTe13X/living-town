@@ -1,0 +1,4552 @@
+{
+  "schema": "living_town.exact_material_rna_alias_paths.v1",
+  "sources": {
+    "F:\\Living Town\\2026-10-20_Refined_Town\\tree_material_delta_v16_diag_002\\material_delta_diagnostic.json": {
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\tree_material_delta_v16_diag_002\\material_delta_diagnostic.json",
+      "bytes": 48973,
+      "sha256": "644d0660afad827cb7a860de158730a2a70b9f99ff695dcc0bb801d1435623e8"
+    },
+    "F:\\Living Town\\2026-10-20_Refined_Town\\tree_material_delta_v16_diag_002\\before.json": {
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\tree_material_delta_v16_diag_002\\before.json",
+      "bytes": 11650978,
+      "sha256": "8487019a5e050b0763cac353aff399f8708ada48a4739b381983a0a27d8c09d0"
+    },
+    "F:\\Living Town\\2026-10-20_Refined_Town\\tree_material_delta_v16_diag_002\\after.json": {
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\tree_material_delta_v16_diag_002\\after.json",
+      "bytes": 11651318,
+      "sha256": "2009eba72d8a1086a7d442abb2980b1f2726c1a0a5e02453233bc105d566d634"
+    },
+    "F:\\Living Town\\2026-10-20_Refined_Town\\tree_material_delta_v16_diag_002\\recursive_diff.json": {
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\tree_material_delta_v16_diag_002\\recursive_diff.json",
+      "bytes": 25123,
+      "sha256": "72b76c4574f37f3ae2db4666c13a4ff3510db994eba05ab15acdd3d9f565d2fa"
+    },
+    "F:\\Living Town\\2026-10-20_Refined_Town\\material_scalar_alias_v16_fixture_001\\scalar_alias_fixture.json": {
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\material_scalar_alias_v16_fixture_001\\scalar_alias_fixture.json",
+      "bytes": 10832,
+      "sha256": "b4c73a0236930627cf57d4811641b290b35b2c3a01fdce97ef390003a167bfe9"
+    },
+    "F:\\Living Town\\2026-10-20_Refined_Town\\material_scalar_alias_v16_fixture_001\\before.json": {
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\material_scalar_alias_v16_fixture_001\\before.json",
+      "bytes": 2131070,
+      "sha256": "e690ba5ec7b2d7e299f24f1f111d9fb6d79af24acc85e108e868b4d1f5079e17"
+    },
+    "F:\\Living Town\\2026-10-20_Refined_Town\\material_scalar_alias_v16_fixture_001\\after.json": {
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\material_scalar_alias_v16_fixture_001\\after.json",
+      "bytes": 2131595,
+      "sha256": "ca9f539a82bf545f1749ba6cde91f9979dfcf2d8093fcba3caa0ddbd1f9d7507"
+    },
+    "F:\\Living Town\\2026-10-20_Refined_Town\\material_scalar_alias_v16_fixture_001\\recursive_diff.json": {
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\material_scalar_alias_v16_fixture_001\\recursive_diff.json",
+      "bytes": 14714,
+      "sha256": "f9d32c510e77fa2812bb18673cd6fcf4114f4d1e2d033e94fbc0f05df1278603"
+    },
+    "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_upgrade\\entry_details.py": {
+      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\town_upgrade\\entry_details.py",
+      "bytes": 40342,
+      "sha256": "7cb64f0a0f25e92c59a693eb4271cb8b9c8e4a847603a9ce9d486a1975f6e0b5"
+    }
+  },
+  "policy": "Exact measured JSON paths, owning identities, live original scalar values; complete live raw afterstate comparison. No exclusions.",
+  "models": {
+    "wood_uv": {
+      "authors": [
+        {
+          "material": "island_tree_02",
+          "node": "Normal Map",
+          "old": "UVMap",
+          "new": "BotanicalUV"
+        },
+        {
+          "material": "island_tree_02_branches",
+          "node": "Normal Map",
+          "old": "UVMap",
+          "new": "BotanicalUV"
+        },
+        {
+          "material": "island_tree_02_branches",
+          "node": "UV Map",
+          "old": "UVMap",
+          "new": "BotanicalUV"
+        },
+        {
+          "material": "island_tree_02_branches",
+          "node": "UV Map.001",
+          "old": "UVMap",
+          "new": "BotanicalUV"
+        },
+        {
+          "material": "island_tree_02_branches",
+          "node": "UV Map.002",
+          "old": "UVMap",
+          "new": "BotanicalUV"
+        },
+        {
+          "material": "pine_sapling_medium_bark",
+          "node": "Normal Map",
+          "old": "UVMap",
+          "new": "BotanicalUV"
+        },
+        {
+          "material": "pine_sapling_medium_bark",
+          "node": "UV Map",
+          "old": "UVMap",
+          "new": "BotanicalUV"
+        },
+        {
+          "material": "pine_sapling_medium_bark",
+          "node": "UV Map.001",
+          "old": "UVMap",
+          "new": "BotanicalUV"
+        },
+        {
+          "material": "pine_sapling_medium_bark",
+          "node": "UV Map.002",
+          "old": "UVMap",
+          "new": "BotanicalUV"
+        },
+        {
+          "material": "pine_sapling_medium_dead_branches",
+          "node": "Normal Map",
+          "old": "UVMap",
+          "new": "BotanicalUV"
+        },
+        {
+          "material": "tree_small_02_branches",
+          "node": "Normal Map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV"
+        },
+        {
+          "material": "tree_small_02_branches",
+          "node": "UV Map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV"
+        },
+        {
+          "material": "tree_small_02_branches",
+          "node": "UV Map.001",
+          "old": "UVMap.001",
+          "new": "BotanicalUV"
+        },
+        {
+          "material": "tree_small_02_branches",
+          "node": "UV Map.002",
+          "old": "UVMap.001",
+          "new": "BotanicalUV"
+        },
+        {
+          "material": "tree_small_02_trunk",
+          "node": "Normal Map",
+          "old": "UVMap",
+          "new": "BotanicalUV"
+        }
+      ],
+      "paths": [
+        {
+          "path": "/island_tree_02/node_tree/nodes/6/settings/inputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings/inputs/0",
+              "identity": {
+                "name": "Strength",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Strength"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings/inputs/0/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02/node_tree/nodes/6/settings/inputs/1/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings/inputs/1",
+              "identity": {
+                "name": "Color",
+                "bl_idname": "NodeSocketColor",
+                "type": "RGBA",
+                "identifier": "Color"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings/inputs/1/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02/node_tree/nodes/6/settings/internal_links/0/from_node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings/internal_links/0/from_node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02/node_tree/nodes/6/settings/internal_links/0/from_socket/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings/internal_links/0/from_socket",
+              "identity": {
+                "name": "Strength",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Strength"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings/internal_links/0/from_socket/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02/node_tree/nodes/6/settings/internal_links/0/to_node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings/internal_links/0/to_node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02/node_tree/nodes/6/settings/internal_links/0/to_socket/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings/internal_links/0/to_socket",
+              "identity": {
+                "name": "Normal",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Normal"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings/internal_links/0/to_socket/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02/node_tree/nodes/6/settings/outputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings/outputs/0",
+              "identity": {
+                "name": "Normal",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Normal"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings/outputs/0/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02/node_tree/nodes/6/settings/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02_branches/node_tree/nodes/4/settings/outputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02_branches",
+            "node": "UV Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/4",
+              "identity": {
+                "name": "UV Map"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/4/settings",
+              "identity": {
+                "name": "UV Map",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/4/settings/outputs/0",
+              "identity": {
+                "name": "UV",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "UV"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/4/settings/outputs/0/node",
+              "identity": {
+                "name": "UV Map",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02_branches/node_tree/nodes/4/settings/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02_branches",
+            "node": "UV Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/4",
+              "identity": {
+                "name": "UV Map"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/4/settings",
+              "identity": {
+                "name": "UV Map",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02_branches/node_tree/nodes/9/settings/outputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02_branches",
+            "node": "UV Map.001",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/9",
+              "identity": {
+                "name": "UV Map.001"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/9/settings",
+              "identity": {
+                "name": "UV Map.001",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/9/settings/outputs/0",
+              "identity": {
+                "name": "UV",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "UV"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/9/settings/outputs/0/node",
+              "identity": {
+                "name": "UV Map.001",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02_branches/node_tree/nodes/9/settings/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02_branches",
+            "node": "UV Map.001",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/9",
+              "identity": {
+                "name": "UV Map.001"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/9/settings",
+              "identity": {
+                "name": "UV Map.001",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02_branches/node_tree/nodes/10/settings/inputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings/inputs/0",
+              "identity": {
+                "name": "Strength",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Strength"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings/inputs/0/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02_branches/node_tree/nodes/10/settings/inputs/1/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings/inputs/1",
+              "identity": {
+                "name": "Color",
+                "bl_idname": "NodeSocketColor",
+                "type": "RGBA",
+                "identifier": "Color"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings/inputs/1/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02_branches/node_tree/nodes/10/settings/internal_links/0/from_node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings/internal_links/0/from_node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02_branches/node_tree/nodes/10/settings/internal_links/0/from_socket/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings/internal_links/0/from_socket",
+              "identity": {
+                "name": "Strength",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Strength"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings/internal_links/0/from_socket/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02_branches/node_tree/nodes/10/settings/internal_links/0/to_node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings/internal_links/0/to_node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02_branches/node_tree/nodes/10/settings/internal_links/0/to_socket/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings/internal_links/0/to_socket",
+              "identity": {
+                "name": "Normal",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Normal"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings/internal_links/0/to_socket/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02_branches/node_tree/nodes/10/settings/outputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings/outputs/0",
+              "identity": {
+                "name": "Normal",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Normal"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings/outputs/0/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02_branches/node_tree/nodes/10/settings/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02_branches/node_tree/nodes/13/settings/outputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02_branches",
+            "node": "UV Map.002",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/13",
+              "identity": {
+                "name": "UV Map.002"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/13/settings",
+              "identity": {
+                "name": "UV Map.002",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/13/settings/outputs/0",
+              "identity": {
+                "name": "UV",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "UV"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/13/settings/outputs/0/node",
+              "identity": {
+                "name": "UV Map.002",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/island_tree_02_branches/node_tree/nodes/13/settings/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "island_tree_02_branches",
+            "node": "UV Map.002",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/13",
+              "identity": {
+                "name": "UV Map.002"
+              }
+            },
+            {
+              "path": "/island_tree_02_branches/node_tree/nodes/13/settings",
+              "identity": {
+                "name": "UV Map.002",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_bark/node_tree/nodes/4/settings/outputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_bark",
+            "node": "UV Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/4",
+              "identity": {
+                "name": "UV Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/4/settings",
+              "identity": {
+                "name": "UV Map",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/4/settings/outputs/0",
+              "identity": {
+                "name": "UV",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "UV"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/4/settings/outputs/0/node",
+              "identity": {
+                "name": "UV Map",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_bark/node_tree/nodes/4/settings/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_bark",
+            "node": "UV Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/4",
+              "identity": {
+                "name": "UV Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/4/settings",
+              "identity": {
+                "name": "UV Map",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_bark/node_tree/nodes/9/settings/outputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_bark",
+            "node": "UV Map.001",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/9",
+              "identity": {
+                "name": "UV Map.001"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/9/settings",
+              "identity": {
+                "name": "UV Map.001",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/9/settings/outputs/0",
+              "identity": {
+                "name": "UV",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "UV"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/9/settings/outputs/0/node",
+              "identity": {
+                "name": "UV Map.001",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_bark/node_tree/nodes/9/settings/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_bark",
+            "node": "UV Map.001",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/9",
+              "identity": {
+                "name": "UV Map.001"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/9/settings",
+              "identity": {
+                "name": "UV Map.001",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/inputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_bark",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/inputs/0",
+              "identity": {
+                "name": "Strength",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Strength"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/inputs/0/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/inputs/1/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_bark",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/inputs/1",
+              "identity": {
+                "name": "Color",
+                "bl_idname": "NodeSocketColor",
+                "type": "RGBA",
+                "identifier": "Color"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/inputs/1/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/internal_links/0/from_node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_bark",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/internal_links/0/from_node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/internal_links/0/from_socket/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_bark",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/internal_links/0/from_socket",
+              "identity": {
+                "name": "Strength",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Strength"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/internal_links/0/from_socket/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/internal_links/0/to_node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_bark",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/internal_links/0/to_node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/internal_links/0/to_socket/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_bark",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/internal_links/0/to_socket",
+              "identity": {
+                "name": "Normal",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Normal"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/internal_links/0/to_socket/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/outputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_bark",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/outputs/0",
+              "identity": {
+                "name": "Normal",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Normal"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/outputs/0/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_bark",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_bark/node_tree/nodes/13/settings/outputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_bark",
+            "node": "UV Map.002",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/13",
+              "identity": {
+                "name": "UV Map.002"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/13/settings",
+              "identity": {
+                "name": "UV Map.002",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/13/settings/outputs/0",
+              "identity": {
+                "name": "UV",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "UV"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/13/settings/outputs/0/node",
+              "identity": {
+                "name": "UV Map.002",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_bark/node_tree/nodes/13/settings/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_bark",
+            "node": "UV Map.002",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/13",
+              "identity": {
+                "name": "UV Map.002"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_bark/node_tree/nodes/13/settings",
+              "identity": {
+                "name": "UV Map.002",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/inputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_dead_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/inputs/0",
+              "identity": {
+                "name": "Strength",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Strength"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/inputs/0/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/inputs/1/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_dead_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/inputs/1",
+              "identity": {
+                "name": "Color",
+                "bl_idname": "NodeSocketColor",
+                "type": "RGBA",
+                "identifier": "Color"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/inputs/1/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/internal_links/0/from_node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_dead_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/internal_links/0/from_node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/internal_links/0/from_socket/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_dead_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/internal_links/0/from_socket",
+              "identity": {
+                "name": "Strength",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Strength"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/internal_links/0/from_socket/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/internal_links/0/to_node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_dead_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/internal_links/0/to_node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/internal_links/0/to_socket/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_dead_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/internal_links/0/to_socket",
+              "identity": {
+                "name": "Normal",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Normal"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/internal_links/0/to_socket/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/outputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_dead_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/outputs/0",
+              "identity": {
+                "name": "Normal",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Normal"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/outputs/0/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "pine_sapling_medium_dead_branches",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/pine_sapling_medium_dead_branches/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_branches/node_tree/nodes/4/settings/outputs/0/node/uv_map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_branches",
+            "node": "UV Map",
+            "old": "UVMap.001",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/4",
+              "identity": {
+                "name": "UV Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/4/settings",
+              "identity": {
+                "name": "UV Map",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/4/settings/outputs/0",
+              "identity": {
+                "name": "UV",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "UV"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/4/settings/outputs/0/node",
+              "identity": {
+                "name": "UV Map",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_branches/node_tree/nodes/4/settings/uv_map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_branches",
+            "node": "UV Map",
+            "old": "UVMap.001",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/4",
+              "identity": {
+                "name": "UV Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/4/settings",
+              "identity": {
+                "name": "UV Map",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_branches/node_tree/nodes/9/settings/outputs/0/node/uv_map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_branches",
+            "node": "UV Map.001",
+            "old": "UVMap.001",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/9",
+              "identity": {
+                "name": "UV Map.001"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/9/settings",
+              "identity": {
+                "name": "UV Map.001",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/9/settings/outputs/0",
+              "identity": {
+                "name": "UV",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "UV"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/9/settings/outputs/0/node",
+              "identity": {
+                "name": "UV Map.001",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_branches/node_tree/nodes/9/settings/uv_map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_branches",
+            "node": "UV Map.001",
+            "old": "UVMap.001",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/9",
+              "identity": {
+                "name": "UV Map.001"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/9/settings",
+              "identity": {
+                "name": "UV Map.001",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_branches/node_tree/nodes/10/settings/inputs/0/node/uv_map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap.001",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings/inputs/0",
+              "identity": {
+                "name": "Strength",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Strength"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings/inputs/0/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_branches/node_tree/nodes/10/settings/inputs/1/node/uv_map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap.001",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings/inputs/1",
+              "identity": {
+                "name": "Color",
+                "bl_idname": "NodeSocketColor",
+                "type": "RGBA",
+                "identifier": "Color"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings/inputs/1/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_branches/node_tree/nodes/10/settings/internal_links/0/from_node/uv_map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap.001",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings/internal_links/0/from_node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_branches/node_tree/nodes/10/settings/internal_links/0/from_socket/node/uv_map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap.001",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings/internal_links/0/from_socket",
+              "identity": {
+                "name": "Strength",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Strength"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings/internal_links/0/from_socket/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_branches/node_tree/nodes/10/settings/internal_links/0/to_node/uv_map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap.001",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings/internal_links/0/to_node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_branches/node_tree/nodes/10/settings/internal_links/0/to_socket/node/uv_map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap.001",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings/internal_links/0/to_socket",
+              "identity": {
+                "name": "Normal",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Normal"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings/internal_links/0/to_socket/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_branches/node_tree/nodes/10/settings/outputs/0/node/uv_map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap.001",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings/outputs/0",
+              "identity": {
+                "name": "Normal",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Normal"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings/outputs/0/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_branches/node_tree/nodes/10/settings/uv_map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_branches",
+            "node": "Normal Map",
+            "old": "UVMap.001",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/10/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_branches/node_tree/nodes/13/settings/outputs/0/node/uv_map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_branches",
+            "node": "UV Map.002",
+            "old": "UVMap.001",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/13",
+              "identity": {
+                "name": "UV Map.002"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/13/settings",
+              "identity": {
+                "name": "UV Map.002",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/13/settings/outputs/0",
+              "identity": {
+                "name": "UV",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "UV"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/13/settings/outputs/0/node",
+              "identity": {
+                "name": "UV Map.002",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_branches/node_tree/nodes/13/settings/uv_map",
+          "old": "UVMap.001",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_branches",
+            "node": "UV Map.002",
+            "old": "UVMap.001",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/13",
+              "identity": {
+                "name": "UV Map.002"
+              }
+            },
+            {
+              "path": "/tree_small_02_branches/node_tree/nodes/13/settings",
+              "identity": {
+                "name": "UV Map.002",
+                "bl_idname": "ShaderNodeUVMap",
+                "type": "UVMAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/inputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_trunk",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/inputs/0",
+              "identity": {
+                "name": "Strength",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Strength"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/inputs/0/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/inputs/1/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_trunk",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/inputs/1",
+              "identity": {
+                "name": "Color",
+                "bl_idname": "NodeSocketColor",
+                "type": "RGBA",
+                "identifier": "Color"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/inputs/1/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/internal_links/0/from_node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_trunk",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/internal_links/0/from_node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/internal_links/0/from_socket/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_trunk",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/internal_links/0/from_socket",
+              "identity": {
+                "name": "Strength",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Strength"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/internal_links/0/from_socket/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/internal_links/0/to_node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_trunk",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/internal_links/0/to_node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/internal_links/0/to_socket/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_trunk",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/internal_links/0/to_socket",
+              "identity": {
+                "name": "Normal",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Normal"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/internal_links/0/to_socket/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/outputs/0/node/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_trunk",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/outputs/0",
+              "identity": {
+                "name": "Normal",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Normal"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/outputs/0/node",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/tree_small_02_trunk/node_tree/nodes/6/settings/uv_map",
+          "old": "UVMap",
+          "new": "BotanicalUV",
+          "author": {
+            "material": "tree_small_02_trunk",
+            "node": "Normal Map",
+            "old": "UVMap",
+            "new": "BotanicalUV"
+          },
+          "identity_guards": [
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6",
+              "identity": {
+                "name": "Normal Map"
+              }
+            },
+            {
+              "path": "/tree_small_02_trunk/node_tree/nodes/6/settings",
+              "identity": {
+                "name": "Normal Map",
+                "bl_idname": "ShaderNodeNormalMap",
+                "type": "NORMAL_MAP"
+              }
+            }
+          ]
+        }
+      ],
+      "actual_before_sha256": "c83e69e4cee8c75b6a6463c5d961cd5eb42584148c48e4fe63aeb12a15c9cdbc",
+      "actual_after_sha256": "d60209d6019a07a3b445dbfc0a9df2ad76f3718b6da71df594103bf00d84aeaf"
+    },
+    "grass_specular": {
+      "authors": [
+        {
+          "material": "ContinuousSummer_Grass_Pilot",
+          "node": "Principled BSDF",
+          "socket": "Specular IOR Level",
+          "old": 0.5,
+          "new": 0.2800000011920929
+        }
+      ],
+      "paths": [
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/inputs/14/default",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/0/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/0",
+              "identity": {
+                "name": "Base Color",
+                "bl_idname": "NodeSocketColor",
+                "type": "RGBA",
+                "identifier": "Base Color"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/0/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/0/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/1/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/1",
+              "identity": {
+                "name": "Metallic",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Metallic"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/1/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/1/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/2/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/2",
+              "identity": {
+                "name": "Roughness",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Roughness"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/2/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/2/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/3/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/3",
+              "identity": {
+                "name": "IOR",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "IOR"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/3/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/3/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/4/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/4",
+              "identity": {
+                "name": "Alpha",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Alpha"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/4/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/4/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/5/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/5",
+              "identity": {
+                "name": "Thin Wall",
+                "bl_idname": "NodeSocketBool",
+                "type": "BOOLEAN",
+                "identifier": "Thin Wall"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/5/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/5/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/6/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/6",
+              "identity": {
+                "name": "Normal",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Normal"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/6/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/6/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/7/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/7",
+              "identity": {
+                "name": "Weight",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Weight"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/7/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/7/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/8/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/8",
+              "identity": {
+                "name": "Diffuse Roughness",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Diffuse Roughness"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/8/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/8/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/9/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/9",
+              "identity": {
+                "name": "Subsurface Weight",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Subsurface Weight"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/9/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/9/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/10/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/10",
+              "identity": {
+                "name": "Subsurface Radius",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Subsurface Radius"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/10/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/10/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/11/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/11",
+              "identity": {
+                "name": "Subsurface Scale",
+                "bl_idname": "NodeSocketFloatDistance",
+                "type": "VALUE",
+                "identifier": "Subsurface Scale"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/11/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/11/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/12/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/12",
+              "identity": {
+                "name": "Subsurface IOR",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Subsurface IOR"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/12/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/12/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/13/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/13",
+              "identity": {
+                "name": "Subsurface Anisotropy",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Subsurface Anisotropy"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/13/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/13/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/14/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/14/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/14/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/15/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/15",
+              "identity": {
+                "name": "Specular Tint",
+                "bl_idname": "NodeSocketColor",
+                "type": "RGBA",
+                "identifier": "Specular Tint"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/15/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/15/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/16/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/16",
+              "identity": {
+                "name": "Anisotropic",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Anisotropic"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/16/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/16/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/17/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/17",
+              "identity": {
+                "name": "Anisotropic Rotation",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Anisotropic Rotation"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/17/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/17/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/18/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/18",
+              "identity": {
+                "name": "Tangent",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Tangent"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/18/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/18/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/19/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/19",
+              "identity": {
+                "name": "Transmission Weight",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Transmission Weight"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/19/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/19/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/20/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/20",
+              "identity": {
+                "name": "Coat Weight",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Coat Weight"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/20/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/20/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/21/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/21",
+              "identity": {
+                "name": "Coat Roughness",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Coat Roughness"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/21/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/21/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/22/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/22",
+              "identity": {
+                "name": "Coat IOR",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Coat IOR"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/22/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/22/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/23/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/23",
+              "identity": {
+                "name": "Coat Tint",
+                "bl_idname": "NodeSocketColor",
+                "type": "RGBA",
+                "identifier": "Coat Tint"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/23/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/23/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/24/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/24",
+              "identity": {
+                "name": "Coat Normal",
+                "bl_idname": "NodeSocketVector",
+                "type": "VECTOR",
+                "identifier": "Coat Normal"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/24/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/24/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/25/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/25",
+              "identity": {
+                "name": "Sheen Weight",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Sheen Weight"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/25/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/25/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/26/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/26",
+              "identity": {
+                "name": "Sheen Roughness",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Sheen Roughness"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/26/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/26/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/27/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/27",
+              "identity": {
+                "name": "Sheen Tint",
+                "bl_idname": "NodeSocketColor",
+                "type": "RGBA",
+                "identifier": "Sheen Tint"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/27/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/27/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/28/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/28",
+              "identity": {
+                "name": "Emission Color",
+                "bl_idname": "NodeSocketColor",
+                "type": "RGBA",
+                "identifier": "Emission Color"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/28/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/28/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/29/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/29",
+              "identity": {
+                "name": "Emission Strength",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Emission Strength"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/29/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/29/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/30/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/30",
+              "identity": {
+                "name": "Thin Film Thickness",
+                "bl_idname": "NodeSocketFloatWavelength",
+                "type": "VALUE",
+                "identifier": "Thin Film Thickness"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/30/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/30/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/31/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/31",
+              "identity": {
+                "name": "Thin Film IOR",
+                "bl_idname": "NodeSocketFloat",
+                "type": "VALUE",
+                "identifier": "Thin Film IOR"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/31/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/inputs/31/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        },
+        {
+          "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/outputs/0/node/inputs/14/default_value",
+          "old": 0.5,
+          "new": 0.2800000011920929,
+          "author": {
+            "material": "ContinuousSummer_Grass_Pilot",
+            "node": "Principled BSDF",
+            "socket": "Specular IOR Level",
+            "old": 0.5,
+            "new": 0.2800000011920929
+          },
+          "identity_guards": [
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0",
+              "identity": {
+                "name": "Principled BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/outputs/0",
+              "identity": {
+                "name": "BSDF",
+                "bl_idname": "NodeSocketShader",
+                "type": "SHADER",
+                "identifier": "BSDF"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/outputs/0/node",
+              "identity": {
+                "name": "Principled BSDF",
+                "bl_idname": "ShaderNodeBsdfPrincipled",
+                "type": "BSDF_PRINCIPLED"
+              }
+            },
+            {
+              "path": "/ContinuousSummer_Grass_Pilot/node_tree/nodes/0/settings/outputs/0/node/inputs/14",
+              "identity": {
+                "name": "Specular IOR Level",
+                "bl_idname": "NodeSocketFloatFactor",
+                "type": "VALUE",
+                "identifier": "Specular IOR Level"
+              }
+            }
+          ]
+        }
+      ],
+      "actual_before_sha256": "3da7f987bda9e67a4ab460b9a257fac2b8fa97f5fd43ff2522281d34839ed5c5",
+      "actual_after_sha256": "16bd3124200436fe5e26770f4c3ade44d434866a24a9ce8d5bd62d2741043b85"
+    }
+  }
+}

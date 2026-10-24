@@ -1,12 +1,12 @@
 {
   "schema": "living_town.walkthrough.verification.v1",
-  "generated_utc": "2026-10-12T21:10:13.872466+00:00",
+  "generated_utc": "2026-10-24T05:50:53.311881+00:00",
   "status": "PASS",
   "checks": [
     {
-      "name": "duration_600_seconds",
+      "name": "duration_840_seconds",
       "passed": true,
-      "details": 600.0
+      "details": 840.0
     },
     {
       "name": "video_H264_yuv420p_1280x864",
@@ -14,14 +14,14 @@
       "details": null
     },
     {
-      "name": "video_24_fps",
+      "name": "video_18_fps",
       "passed": true,
-      "details": "24/1"
+      "details": "18/1"
     },
     {
-      "name": "video_14400_decoded_frames",
+      "name": "video_15120_decoded_frames",
       "passed": true,
-      "details": "14400"
+      "details": "15120"
     },
     {
       "name": "AAC_audio_present",
@@ -29,7 +29,7 @@
       "details": null
     },
     {
-      "name": "eleven_chapters_cover_600_seconds",
+      "name": "twelve_chapters_cover_840_seconds",
       "passed": true,
       "details": [
         {
@@ -40,7 +40,7 @@
           "end": 45000,
           "end_time": "45.000000",
           "tags": {
-            "title": "A town you can enter"
+            "title": "Town, woodland and coast"
           }
         },
         {
@@ -51,7 +51,7 @@
           "end": 100000,
           "end_time": "100.000000",
           "tags": {
-            "title": "Meet Aria and read the HUD"
+            "title": "Meet Aria in her upper home"
           }
         },
         {
@@ -62,7 +62,7 @@
           "end": 155000,
           "end_time": "155.000000",
           "tags": {
-            "title": "Walk the rooms and take the stairs"
+            "title": "Rooms, stairs and needs"
           }
         },
         {
@@ -73,7 +73,7 @@
           "end": 215000,
           "end_time": "215.000000",
           "tags": {
-            "title": "Use a real café fixture"
+            "title": "The actual cafe and street"
           }
         },
         {
@@ -81,76 +81,87 @@
           "time_base": "1/1000",
           "start": 215000,
           "start_time": "215.000000",
-          "end": 270000,
-          "end_time": "270.000000",
+          "end": 285000,
+          "end_time": "285.000000",
           "tags": {
-            "title": "Step outside and keep the resident visible"
+            "title": "Walk into the expanded town"
           }
         },
         {
           "id": 5,
           "time_base": "1/1000",
-          "start": 270000,
-          "start_time": "270.000000",
-          "end": 330000,
-          "end_time": "330.000000",
+          "start": 285000,
+          "start_time": "285.000000",
+          "end": 355000,
+          "end_time": "355.000000",
           "tags": {
-            "title": "Inspection: rooms and furnishing"
+            "title": "Use a new venue and its upper floor"
           }
         },
         {
           "id": 6,
           "time_base": "1/1000",
-          "start": 330000,
-          "start_time": "330.000000",
-          "end": 390000,
-          "end_time": "390.000000",
+          "start": 355000,
+          "start_time": "355.000000",
+          "end": 455000,
+          "end_time": "455.000000",
           "tags": {
-            "title": "Inspection: streets, elevations, and harbor"
+            "title": "Walk to the reserve bathhouse"
           }
         },
         {
           "id": 7,
           "time_base": "1/1000",
-          "start": 390000,
-          "start_time": "390.000000",
-          "end": 450000,
-          "end_time": "450.000000",
+          "start": 455000,
+          "start_time": "455.000000",
+          "end": 555000,
+          "end_time": "555.000000",
           "tags": {
-            "title": "Inspection: pond and planted routes"
+            "title": "Visit a detailed camping trailer"
           }
         },
         {
           "id": 8,
           "time_base": "1/1000",
-          "start": 450000,
-          "start_time": "450.000000",
-          "end": 505000,
-          "end_time": "505.000000",
+          "start": 555000,
+          "start_time": "555.000000",
+          "end": 665000,
+          "end_time": "665.000000",
           "tags": {
-            "title": "Return to life and enable autonomy"
+            "title": "Walk back from the reserve to town"
           }
         },
         {
           "id": 9,
           "time_base": "1/1000",
-          "start": 505000,
-          "start_time": "505.000000",
-          "end": 560000,
-          "end_time": "560.000000",
+          "start": 665000,
+          "start_time": "665.000000",
+          "end": 735000,
+          "end_time": "735.000000",
           "tags": {
-            "title": "Save, continue, and load"
+            "title": "Inspection: forest, bridges and horticulture"
           }
         },
         {
           "id": 10,
           "time_base": "1/1000",
-          "start": 560000,
-          "start_time": "560.000000",
-          "end": 600000,
-          "end_time": "600.000000",
+          "start": 735000,
+          "start_time": "735.000000",
+          "end": 805000,
+          "end_time": "805.000000",
           "tags": {
-            "title": "What the delivery proves"
+            "title": "Save, resume and resident agency"
+          }
+        },
+        {
+          "id": 11,
+          "time_base": "1/1000",
+          "start": 805000,
+          "start_time": "805.000000",
+          "end": 840000,
+          "end_time": "840.000000",
+          "tags": {
+            "title": "Complete town and scope"
           }
         }
       ]
@@ -158,7 +169,7 @@
     {
       "name": "measured_caption_sidecars_valid",
       "passed": true,
-      "details": 106
+      "details": 95
     },
     {
       "name": "full_video_audio_decode_no_errors",
@@ -168,26 +179,26 @@
     {
       "name": "decoded_audio_duration",
       "passed": true,
-      "details": 600.0213333333334
+      "details": 840.0213333333334
     },
     {
       "name": "decoded_audio_not_silent",
       "passed": true,
       "details": {
-        "samples": 14400512,
-        "duration_seconds": 600.0213333333334,
+        "samples": 20160512,
+        "duration_seconds": 840.0213333333334,
         "sample_rate": 24000,
-        "peak_amplitude": 27851,
-        "peak_dbfs": -1.4121828334625561,
-        "rms_dbfs": -18.444201988640476,
-        "nonzero_samples": 14381773,
+        "peak_amplitude": 27844,
+        "peak_dbfs": -1.4143661974193422,
+        "rms_dbfs": -20.415379155124857,
+        "nonzero_samples": 20119695,
         "full_scale_peak": false
       }
     },
     {
       "name": "decoded_audio_no_fullscale_peak",
       "passed": true,
-      "details": 27851
+      "details": 27844
     },
     {
       "name": "current_source_bound_capture",
@@ -203,43 +214,43 @@
   "passed": 13,
   "failed": 0,
   "output": {
-    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\LivingTown_Walkthrough.mp4",
-    "bytes": 245232169,
-    "sha256": "a1f97fdcc79e232784874c4ebd67c9b52a3ed98cc52982a9baf24872d10184d7"
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\LivingTown_Walkthrough.mp4",
+    "bytes": 528362448,
+    "sha256": "9c72fa15426706d76307fd1eebaec77404de3cbabb67c80e9928d83ecbf4e252"
   },
   "composition_report": {
-    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\composition_report.json",
-    "bytes": 7727,
-    "sha256": "5c524861b5c334a81bb10fcab5fdcb6c1cd91dc8bdeda0b67e141855ee03222c"
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\composition_report.json",
+    "bytes": 7121,
+    "sha256": "b658d4d5590a33cfae5901de0b39351b3565cbbfba075114ace2e847cb6bc21e"
   },
   "capture_report": {
-    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\walkthrough_report.json",
-    "bytes": 41907,
-    "sha256": "8084c954963f87f07cb5a432c7b1d73476efb58d60f31a469c7a29a9f710856c"
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\walkthrough_report.json",
+    "bytes": 214006,
+    "sha256": "f1d9e3d026f7189da354504e3fbf6f535d14162846e7821df717dce8ae5c1240"
   },
   "voice_report": {
-    "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\voice_report.json",
-    "bytes": 139918,
-    "sha256": "9facf6b38bc84a6a2b2827309b0cdb5c10d5d18e671b1c4f72990ecbc1aca0ab"
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\voice_report.json",
+    "bytes": 133169,
+    "sha256": "17b83a15b01239307bcafb86f3c765a8e41472c5b0eb6c02f9719f77017d76be"
   },
   "narration": {
     "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\docs\\town_walkthrough\\narration.json",
-    "bytes": 16116,
-    "sha256": "12fb27ecfc3421288554243e858c7f9094af86a3f5bcd03bd6f8946520bcae66"
+    "bytes": 13673,
+    "sha256": "9c3e3a7e41e53a5fd3968b9213f3b54ed121b16bb39cfdc057edc877a8208961"
   },
   "route": {
     "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\docs\\town_walkthrough\\route_plan.json",
-    "bytes": 11307,
-    "sha256": "c92282e0e4167cf2a2edc1fc96f5bcc5a3a10beb13700072e201ab949fcf6fdb"
+    "bytes": 11625,
+    "sha256": "30f560b986c095d09456aa3a4b03df76cc798e7413b5e1a151adf4ccaa9a1667"
   },
   "builder": {
     "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\tools\\build_town_walkthrough.py",
-    "bytes": 45349,
-    "sha256": "2a9ae48e88b12eab5d898c7cb74bcf22779254e22f99ab71273fdf2b4d9c4778"
+    "bytes": 45993,
+    "sha256": "43e1d016efd5e9935e783adc69f7ff0def99f22dd8f7a612ac9f4bf8916c516b"
   },
-  "source_glb_sha256": "b90b37e40f6f38e61b095a45671fed40008e9423dfef52ef7db74cb34cb0c00c",
-  "source_blend_sha256": "b7e3fb724d2056ba633c01c2b201728d5c978c34b41c0aaeb8e2cb9c8df19755",
-  "projection_sha256": "addae85c82d7dd68f2c5a233a8c6f9353ef702fabc643a4b098b6f6aef71c08a",
+  "source_glb_sha256": "d21e4f94d6d3a5c9599027e45ce919f0777a271b96bd2815c4b7856ad817a41a",
+  "source_blend_sha256": "3162c204689cdb7888a5e0d21bb5dde9be04a89ac6253ba03a88d7f5ddd86274",
+  "projection_sha256": "98146b008f130870d0067a7c1e0940f6ab373b5f255e5ba66ac24ca0ed48b3bc",
   "probe": {
     "streams": [
       {
@@ -260,24 +271,26 @@
         "display_aspect_ratio": "40:27",
         "pix_fmt": "yuv420p",
         "level": 32,
+        "color_range": "tv",
+        "color_space": "bt470bg",
         "chroma_location": "left",
         "field_order": "progressive",
         "refs": 4,
         "is_avc": "true",
         "nal_length_size": "4",
         "id": "0x1",
-        "r_frame_rate": "24/1",
-        "avg_frame_rate": "24/1",
-        "time_base": "1/12288",
+        "r_frame_rate": "18/1",
+        "avg_frame_rate": "18/1",
+        "time_base": "1/18432",
         "start_pts": 0,
         "start_time": "0.000000",
-        "duration_ts": 7372800,
-        "duration": "600.000000",
-        "bit_rate": "3164057",
+        "duration_ts": 15482880,
+        "duration": "840.000000",
+        "bit_rate": "4933359",
         "bits_per_raw_sample": "8",
-        "nb_frames": "14400",
-        "nb_read_frames": "14400",
-        "extradata_size": 47,
+        "nb_frames": "15120",
+        "nb_read_frames": "15120",
+        "extradata_size": 49,
         "disposition": {
           "default": 1,
           "dub": 0,
@@ -326,11 +339,11 @@
         "time_base": "1/24000",
         "start_pts": 0,
         "start_time": "0.000000",
-        "duration_ts": 14400000,
-        "duration": "600.000000",
-        "bit_rate": "101347",
-        "nb_frames": "14064",
-        "nb_read_frames": "14063",
+        "duration_ts": 20160000,
+        "duration": "840.000000",
+        "bit_rate": "93974",
+        "nb_frames": "19689",
+        "nb_read_frames": "19688",
         "extradata_size": 5,
         "disposition": {
           "default": 1,
@@ -371,10 +384,10 @@
         "time_base": "1/1000",
         "start_pts": 0,
         "start_time": "0.000000",
-        "duration_ts": 600000,
-        "duration": "600.000000",
-        "bit_rate": "6",
-        "nb_frames": "11",
+        "duration_ts": 840000,
+        "duration": "840.000000",
+        "bit_rate": "4",
+        "nb_frames": "12",
         "extradata_size": 63,
         "disposition": {
           "default": 0,
@@ -412,7 +425,7 @@
         "end": 45000,
         "end_time": "45.000000",
         "tags": {
-          "title": "A town you can enter"
+          "title": "Town, woodland and coast"
         }
       },
       {
@@ -423,7 +436,7 @@
         "end": 100000,
         "end_time": "100.000000",
         "tags": {
-          "title": "Meet Aria and read the HUD"
+          "title": "Meet Aria in her upper home"
         }
       },
       {
@@ -434,7 +447,7 @@
         "end": 155000,
         "end_time": "155.000000",
         "tags": {
-          "title": "Walk the rooms and take the stairs"
+          "title": "Rooms, stairs and needs"
         }
       },
       {
@@ -445,7 +458,7 @@
         "end": 215000,
         "end_time": "215.000000",
         "tags": {
-          "title": "Use a real café fixture"
+          "title": "The actual cafe and street"
         }
       },
       {
@@ -453,90 +466,101 @@
         "time_base": "1/1000",
         "start": 215000,
         "start_time": "215.000000",
-        "end": 270000,
-        "end_time": "270.000000",
+        "end": 285000,
+        "end_time": "285.000000",
         "tags": {
-          "title": "Step outside and keep the resident visible"
+          "title": "Walk into the expanded town"
         }
       },
       {
         "id": 5,
         "time_base": "1/1000",
-        "start": 270000,
-        "start_time": "270.000000",
-        "end": 330000,
-        "end_time": "330.000000",
+        "start": 285000,
+        "start_time": "285.000000",
+        "end": 355000,
+        "end_time": "355.000000",
         "tags": {
-          "title": "Inspection: rooms and furnishing"
+          "title": "Use a new venue and its upper floor"
         }
       },
       {
         "id": 6,
         "time_base": "1/1000",
-        "start": 330000,
-        "start_time": "330.000000",
-        "end": 390000,
-        "end_time": "390.000000",
+        "start": 355000,
+        "start_time": "355.000000",
+        "end": 455000,
+        "end_time": "455.000000",
         "tags": {
-          "title": "Inspection: streets, elevations, and harbor"
+          "title": "Walk to the reserve bathhouse"
         }
       },
       {
         "id": 7,
         "time_base": "1/1000",
-        "start": 390000,
-        "start_time": "390.000000",
-        "end": 450000,
-        "end_time": "450.000000",
+        "start": 455000,
+        "start_time": "455.000000",
+        "end": 555000,
+        "end_time": "555.000000",
         "tags": {
-          "title": "Inspection: pond and planted routes"
+          "title": "Visit a detailed camping trailer"
         }
       },
       {
         "id": 8,
         "time_base": "1/1000",
-        "start": 450000,
-        "start_time": "450.000000",
-        "end": 505000,
-        "end_time": "505.000000",
+        "start": 555000,
+        "start_time": "555.000000",
+        "end": 665000,
+        "end_time": "665.000000",
         "tags": {
-          "title": "Return to life and enable autonomy"
+          "title": "Walk back from the reserve to town"
         }
       },
       {
         "id": 9,
         "time_base": "1/1000",
-        "start": 505000,
-        "start_time": "505.000000",
-        "end": 560000,
-        "end_time": "560.000000",
+        "start": 665000,
+        "start_time": "665.000000",
+        "end": 735000,
+        "end_time": "735.000000",
         "tags": {
-          "title": "Save, continue, and load"
+          "title": "Inspection: forest, bridges and horticulture"
         }
       },
       {
         "id": 10,
         "time_base": "1/1000",
-        "start": 560000,
-        "start_time": "560.000000",
-        "end": 600000,
-        "end_time": "600.000000",
+        "start": 735000,
+        "start_time": "735.000000",
+        "end": 805000,
+        "end_time": "805.000000",
         "tags": {
-          "title": "What the delivery proves"
+          "title": "Save, resume and resident agency"
+        }
+      },
+      {
+        "id": 11,
+        "time_base": "1/1000",
+        "start": 805000,
+        "start_time": "805.000000",
+        "end": 840000,
+        "end_time": "840.000000",
+        "tags": {
+          "title": "Complete town and scope"
         }
       }
     ],
     "format": {
-      "filename": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\LivingTown_Walkthrough.mp4",
+      "filename": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\LivingTown_Walkthrough.mp4",
       "nb_streams": 3,
       "nb_programs": 0,
       "nb_stream_groups": 0,
       "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
       "format_long_name": "QuickTime / MOV",
       "start_time": "0.000000",
-      "duration": "600.000000",
-      "size": "245232169",
-      "bit_rate": "3269762",
+      "duration": "840.000000",
+      "size": "528362448",
+      "bit_rate": "5032023",
       "probe_score": 100,
       "tags": {
         "major_brand": "isom",
@@ -549,13 +573,13 @@
     }
   },
   "decoded_audio": {
-    "samples": 14400512,
-    "duration_seconds": 600.0213333333334,
+    "samples": 20160512,
+    "duration_seconds": 840.0213333333334,
     "sample_rate": 24000,
-    "peak_amplitude": 27851,
-    "peak_dbfs": -1.4121828334625561,
-    "rms_dbfs": -18.444201988640476,
-    "nonzero_samples": 14381773,
+    "peak_amplitude": 27844,
+    "peak_dbfs": -1.4143661974193422,
+    "rms_dbfs": -20.415379155124857,
+    "nonzero_samples": 20119695,
     "full_scale_peak": false
   },
   "qa_images": {
@@ -564,106 +588,115 @@
         "chapter": 1,
         "seconds": 22.5,
         "image": {
-          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_01.png",
-          "bytes": 895601,
-          "sha256": "eb06fb51499bedd215fd934e2e9e3fab9fd5ec38f3c1772423355ab0f5ae422a"
+          "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_01.png",
+          "bytes": 1465821,
+          "sha256": "32bbd2c50a560ae6e85423d133239e0fc8573d1f2c72fb5a4612ac5702b32895"
         }
       },
       {
         "chapter": 2,
         "seconds": 72.5,
         "image": {
-          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_02.png",
-          "bytes": 1067453,
-          "sha256": "cc2ba224bb7698aa3faeb5a9155d72081cf9992044fc139af3a7475cc544c7b3"
+          "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_02.png",
+          "bytes": 922805,
+          "sha256": "49a9621df4482aae7d4e6d765ecb16489d63047c3611cef90cdb8872d76812f8"
         }
       },
       {
         "chapter": 3,
         "seconds": 127.5,
         "image": {
-          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_03.png",
-          "bytes": 1134035,
-          "sha256": "a4ca22cc719fea799fe3ad2bc2c2e9baae568ae7d46f212401dc37220e79be53"
+          "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_03.png",
+          "bytes": 1064688,
+          "sha256": "f1b0b7c06bc5fb68337571e2aa50fd324f2475b54cf7961c0d722ae1a165a685"
         }
       },
       {
         "chapter": 4,
         "seconds": 185.0,
         "image": {
-          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_04.png",
-          "bytes": 1101048,
-          "sha256": "26c5cfb6cf58fb2cdd0a3299f5ab070749035ca7efc9047fe3b2be31ccc618a1"
+          "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_04.png",
+          "bytes": 1007318,
+          "sha256": "b9b1a23288cd5a366c87804cbd86a3a3a60ce4d4a85c55b1d2851478d2cdbce7"
         }
       },
       {
         "chapter": 5,
-        "seconds": 242.5,
+        "seconds": 250.0,
         "image": {
-          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_05.png",
-          "bytes": 1016967,
-          "sha256": "d3dba27baa0965911bc3be29a90d59e4560d7eb4f0bc58c0f88b3c5c69a43ff1"
+          "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_05.png",
+          "bytes": 566539,
+          "sha256": "d9334266d3b9a4e98ecc9a13d82a177af698ce98d77f0349b1bc10fb88282689"
         }
       },
       {
         "chapter": 6,
-        "seconds": 300.0,
+        "seconds": 320.0,
         "image": {
-          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_06.png",
-          "bytes": 1024016,
-          "sha256": "41a5f7f740d2f933ed3d52533297ce85c8cc2420c8e5e3de115d03d93882a029"
+          "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_06.png",
+          "bytes": 310785,
+          "sha256": "49f2a2167b208a71369d3ea6003c661e27e70badda2e052deb97c3a38a254575"
         }
       },
       {
         "chapter": 7,
-        "seconds": 360.0,
+        "seconds": 405.0,
         "image": {
-          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_07.png",
-          "bytes": 1290563,
-          "sha256": "1a1ee51c1a026b708f81d326ab96452953a81a6912f4126bac694366f85d2094"
+          "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_07.png",
+          "bytes": 777160,
+          "sha256": "ded8c373de748d3954331ccd67d89d43f783a1ea1784d02fb7de8c98d0c4b693"
         }
       },
       {
         "chapter": 8,
-        "seconds": 420.0,
+        "seconds": 505.0,
         "image": {
-          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_08.png",
-          "bytes": 1023334,
-          "sha256": "37e077242aaf72656adb90a9e0df9cf5632231871d0d2c8e20d6de75ef5e8f61"
+          "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_08.png",
+          "bytes": 669498,
+          "sha256": "f31f09db069b46fdc99e9432dd8a899a4bb7b9c29eccd3b5ba8da4dcdea50f2f"
         }
       },
       {
         "chapter": 9,
-        "seconds": 477.5,
+        "seconds": 610.0,
         "image": {
-          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_09.png",
-          "bytes": 926933,
-          "sha256": "fd9a1f26a8511fb227badd433bc809c9a4e79ab8bd500a0f916f6a969b465031"
+          "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_09.png",
+          "bytes": 1085549,
+          "sha256": "11b0534e1d80534db50f99ec2ece690e942548a30ad25c03160e1b564844785a"
         }
       },
       {
         "chapter": 10,
-        "seconds": 532.5,
+        "seconds": 700.0,
         "image": {
-          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_10.png",
-          "bytes": 993000,
-          "sha256": "24d6c512ee6789e42f804ea0c6b7d768e67878abb0014aa80f5ab9dfdd8915ed"
+          "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_10.png",
+          "bytes": 1647724,
+          "sha256": "c3fa563a768d9ae5f35c67349396c37592227d9340916688ea4595955183669f"
         }
       },
       {
         "chapter": 11,
-        "seconds": 580.0,
+        "seconds": 770.0,
         "image": {
-          "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\chapter_11.png",
-          "bytes": 1238274,
-          "sha256": "cf5d4c937db6d2ffe4a3607a4ea2cde4e3029e6380ed08d25c176bf7b6ac31b6"
+          "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_11.png",
+          "bytes": 796823,
+          "sha256": "32d156c2d504453da8ec512fbbdbbb1d7be6f012f46e1a63764c3dcc9275067f"
+        }
+      },
+      {
+        "chapter": 12,
+        "seconds": 822.5,
+        "image": {
+          "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\chapter_12.png",
+          "bytes": 1528784,
+          "sha256": "b19f7dcd394f481b798ca8a0ff1f85a2e23fcd42d5f75644233b50765fa4b3a1"
         }
       }
     ],
     "contact_sheet": {
-      "path": "C:\\Users\\yp\\.codex\\worktrees\\114e\\living-town\\build\\town_walkthrough\\full_v2\\qa\\contact_sheet.png",
-      "bytes": 1141755,
-      "sha256": "3edbdc6cf36d9cc7efea0da83d6a56c5db087048df4ff47c0c5cba6a9079ae3c"
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003\\qa\\contact_sheet.png",
+      "bytes": 1014103,
+      "sha256": "1912fb1e864656b2acdd0febf2ab957cf8ea1be51e192ae338a444f51bc67243"
     },
     "visually_reviewed": false,
     "note": "Actual encoded MP4 frames for human inspection; generation does not constitute visual acceptance."

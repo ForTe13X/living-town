@@ -262,6 +262,22 @@ var _portals := []              # spaces.json portals：[{id,kind,from:{space,fl
 var _interiors_data := {}       # interiors.json：space -> floor -> {label,floor,furniture[]}
 var _authored_spaces := {}      # receiver-owned portal authority; never restored from a save
 var _authored_portals := []     # exact current data/spaces.json graph; traversal reads only this copy
+# Derived membership only; permissions and hop dictionaries are resolved live.
+var _portal_outgoing_by_plane: Dictionary = {}
+var _portal_outgoing_source: Array = []
+var _portal_outgoing_size: int = -1
+var _portal_outgoing_valid: bool = false
+var _portal_outgoing_town3d: bool = false
+var _route_topology_paths: Dictionary = {} # derived physical paths; no actor/access verdicts
+# Derived ordered room membership for the verified Town3D receiver only.
+# Same-size plane/key-order edits must call _invalidate_room_plane_index().
+# Rectangles and privacy fields stay live; this never stores a room verdict.
+var _room_plane_cache: Dictionary = {}
+var _room_plane_source: Dictionary = {}
+var _room_plane_size: int = -1
+var _room_plane_revision: int = 0
+var _room_plane_built_revision: int = -1
+var _room_plane_valid: bool = false
 var _authored_agent_homes := {} # agent id -> {space,floor}, rebuilt from data/agents.json
 var _authored_agent_definitions := {} # data/agents.json plus opt-in validated authoring overlay; configuration only
 var _authored_interiors_data := {} # current interior collision source; never restored from a save
@@ -644,6 +660,9 @@ func install_world_profile(provider: RefCounted) -> bool:
 	return true
 
 func _load_data() -> void:
+	_invalidate_room_plane_index()
+	_invalidate_portal_outgoing_index()
+	_portal_outgoing_town3d = false
 	_authored_world_package_ref = {}
 	needs_def = _read_json("res://data/needs.json").get("needs", [])
 	world = _read_json("res://data/map.json")
@@ -747,6 +766,10 @@ func _load_data() -> void:
 	_authored_agent_definitions = authored_agents.duplicate(true)
 	_authored_spaces = (_spaces as Dictionary).duplicate(true)
 	_authored_portals = (_portals as Array).duplicate(true)
+	_invalidate_portal_outgoing_index()
+	# Restrict the measured optimization to the verified large-town profile.
+	# Legacy/base/coastal/world-package receivers retain the original scanner.
+	_portal_outgoing_town3d = world.has("nav_blockers") and ext != null and ext.has_method("save_identity") and String(ext.save_identity().get("id", "")) == "town3d"
 	_authored_agent_homes = {}
 	for raw_def in _as_arr(authored_agents.get("agents", [])) + _as_arr(authored_agents.get("affiliates", [])):
 		if not (raw_def is Dictionary):
@@ -787,6 +810,7 @@ func _load_data() -> void:
 ## 纯追加、不覆盖 map.json 手写房间。缺 buildings.json → 不编译 → 阶段1 逐字节不变(off 门)。
 ## 必须在 _load_data 里 objects 数组→字典转换【之前】调用（追加进数组，随后统一转字典/设区）。
 func _compile_buildings() -> void:
+	_invalidate_room_plane_index()
 	if _buildings_compiled:
 		return
 	var bdata := _read_json("res://data/buildings.json")
@@ -1129,6 +1153,8 @@ func _population_area_ids() -> Array:
 	return out
 
 func start_new(p_seed: int = 12345) -> void:
+	_invalidate_room_plane_index()
+	_invalidate_portal_outgoing_index()
 	emit_signal("world_reset")             # 新世界 → 通知 AIBackend 取消所有在飞请求 + 进新 epoch（旧回包作废）。CI 无监听=no-op。
 	seed_base = p_seed
 	tick_no = 0
@@ -1592,7 +1618,7 @@ func player_trace_status() -> Dictionary:
 		"entries": (player_trace.get("entries", []) as Array).size() if player_trace_available else 0,
 		"max_entries": PLAYER_TRACE_MAX_ENTRIES, "max_entries_per_tick": PLAYER_TRACE_MAX_ENTRIES_PER_TICK,
 		"max_payload_bytes": PLAYER_TRACE_MAX_PAYLOAD_BYTES,
-		"max_chat_bytes": PLAYER_TRACE_MAX_CHAT_BYTES, "max_save_bytes": PLAYER_TRACE_MAX_SAVE_BYTES,
+		"max_chat_bytes": PLAYER_TRACE_MAX_CHAT_BYTES, "max_save_bytes": save_byte_limit(),
 		"indexed_ticks": _player_trace_tick_index.size(), "error": player_trace_last_error}
 
 func add_player(pos: Vector2i = Vector2i(-1, -1)) -> Dictionary:
@@ -2421,7 +2447,7 @@ const SAVE_MAGIC := "LTSAVE"
 const SAVE_SCHEMA_LEGACY := 1
 const SAVE_SCHEMA := 2
 const SAVE_RUNTIME_HANDLES := ["backend", "ext", "decision_sink"]
-const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_indoor_job_cache", "_fisc_cache", "_diners_by_target", "_diners_tick", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_authored_agent_homes", "_authored_agent_definitions", "_authored_interiors_data", "_authored_world_package_ref", "_authored_solid_props", "_civic_fold_cache", "_civic_fold_size", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
+const SAVE_LOAD_DENY := ["desire_cfg", "_venue_cache", "_indoor_job_cache", "_fisc_cache", "_diners_by_target", "_diners_tick", "_agent_by_id", "_active_commitments", "_near_set", "_path_cache", "_nav_grids", "_player_pos", "_authored_spaces", "_authored_portals", "_portal_outgoing_by_plane", "_portal_outgoing_source", "_portal_outgoing_size", "_portal_outgoing_valid", "_portal_outgoing_town3d", "_route_topology_paths", "_room_plane_cache", "_room_plane_source", "_room_plane_size", "_room_plane_revision", "_room_plane_built_revision", "_room_plane_valid", "_authored_agent_homes", "_authored_agent_definitions", "_authored_interiors_data", "_authored_world_package_ref", "_authored_solid_props", "_civic_fold_cache", "_civic_fold_size", "lod_focus", "shadow_on", "shadow_trace", "backend", "ext", "decision_sink", "player_trace", "player_trace_available", "player_trace_last_error", "_player_trace_tick_index", "_player_trace_replay_active", "_player_trace_replay_expected",
 	"controlled_id", "_tone_bonus", "loaded_meta"]   # docs/190 生活模式：附身/语气/档头都是 View 或瞬时态，不改存档形状（旧档照读）
 const SAVE_CURRENT_BLOB_KEYS := ["magic", "schema", "game_version", "saved_tick", "saved_day", "seed", "meta", "active_commit_ids", "state"]
 
@@ -2442,6 +2468,19 @@ func _current_save_state_keys() -> Dictionary:
 			continue
 		keys[key] = true
 	return keys
+
+func save_byte_limit() -> int:
+	# Large verified authored worlds carry more immutable topology. Keep the
+	# ordinary 8 MiB state budget and a finite receiver-owned topology allowance;
+	# save metadata and incoming archives never select their own size limit.
+	var allowance: int = 0
+	if ext != null and ext.has_method("save_topology_allowance_bytes"):
+		allowance = clampi(int(ext.call("save_topology_allowance_bytes")), 0, 56 * 1024 * 1024)
+	return PLAYER_TRACE_MAX_SAVE_BYTES + allowance
+
+func save_encoded_file_bytes(blob: Dictionary) -> int:
+	# schema u32 + store_var's own u32 length prefix + encoded Variant payload.
+	return var_to_bytes(blob).size() + 8
 
 func save_game(path: String, meta := {}) -> bool:
 	if not meta is Dictionary:
@@ -2503,8 +2542,9 @@ func save_game(path: String, meta := {}) -> bool:
 	if shape_error != "":
 		push_error("save_game REFUSED — %s" % shape_error)
 		return false
-	if var_to_bytes(blob).size() + 4 > PLAYER_TRACE_MAX_SAVE_BYTES:
-		push_error("save_game REFUSED — bounded save size exceeded")
+	var encoded_bytes: int = save_encoded_file_bytes(blob)
+	if encoded_bytes > save_byte_limit():
+		push_error("save_game REFUSED — bounded save size exceeded: %d > %d" % [encoded_bytes, save_byte_limit()])
 		return false
 	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f == null:
@@ -2520,12 +2560,18 @@ func peek_save(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
 		return {}
 	var f := FileAccess.open(path, FileAccess.READ)
-	if f == null or f.get_length() < 8:
+	if f == null or f.get_length() < 8 or f.get_length() > save_byte_limit():
+		if f != null: f.close()
 		return {}
 	var sch := f.get_32()
 	if sch < SAVE_SCHEMA_LEGACY or sch > SAVE_SCHEMA:
 		f.close()
 		return {}
+	# Refuse forged length prefixes before get_var can allocate their payload.
+	if f.get_32() != f.get_length() - 8:
+		f.close()
+		return {}
+	f.seek(4)
 	var blob = f.get_var()
 	f.close()
 	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC or int(blob.get("schema", -1)) != sch or not (blob.get("state") is Dictionary):
@@ -2620,13 +2666,18 @@ func load_game(path: String) -> bool:
 	if not FileAccess.file_exists(path):
 		return false
 	var f := FileAccess.open(path, FileAccess.READ)
-	if f == null or f.get_length() < 8:
+	if f == null or f.get_length() < 8 or f.get_length() > save_byte_limit():
+		if f != null: f.close()
 		return false
 	var sch := f.get_32()
 	if sch < SAVE_SCHEMA_LEGACY or sch > SAVE_SCHEMA: # 未知过去/未来版本 → 拒绝，绝不猜格式
 		f.close()
 		push_warning("load_game: unsupported schema %d (supported %d..%d), refusing" % [sch, SAVE_SCHEMA_LEGACY, SAVE_SCHEMA])
 		return false
+	if f.get_32() != f.get_length() - 8:
+		f.close()
+		return false
+	f.seek(4)
 	var blob = f.get_var()
 	f.close()
 	if not (blob is Dictionary) or blob.get("magic") != SAVE_MAGIC or int(blob.get("schema", -1)) != sch:
@@ -3461,6 +3512,8 @@ func _scan_objects(v, path: String, out: Array) -> void:
 ## 反序列化后：agents[] 与 _agent_by_id / _active_commitments 已成【各自独立副本】——
 ## 必须重建成【同一引用】，否则经其一改状态不动另一处 → 续跑立刻漂（这就是全套硬门要抓的头号 bug）。
 func _rebuild_after_load(active_commit_ids: Array = []) -> void:
+	_invalidate_room_plane_index()
+	_invalidate_portal_outgoing_index()
 	_civic_fold_cache = {}
 	_civic_fold_size = -1
 	for ag in agents:                                # 记忆：从 items 数据重建 MemoryStream 对象
@@ -4183,6 +4236,7 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 	var urg := 100.0 - float(ag["needs"].get(nid, 100.0))
 	var best_score := -1.0e18
 	var best: Dictionary = {}
+	var route_context: Dictionary = {}
 	for id in world["objects"]:
 		var o: Dictionary = world["objects"][id]
 		var os := String(o.get("space", "town")); var of := String(o.get("floor", "outdoor"))
@@ -4218,7 +4272,11 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 				amt = int(adv.get("amount", 0)); dur = int(adv.get("duration", 0)); act = String(adv.get("action", "")); best_adv = adv
 		if amt <= 0:
 			continue
-		var hop := _route_next_hop(aspace, afloor, os, of, ag)
+		var hop: Dictionary
+		if _portal_outgoing_town3d:
+			hop = _journey_context_hop(route_context, aspace, afloor, os, of, ag)
+		else:
+			hop = _route_next_hop(aspace, afloor, os, of, ag)
 		if hop.is_empty():
 			continue
 		var d := _manh(ag["pos"], hop["from_pos"]) + int(hop.get("cost", 1)) * 3   # 估路程：到本层 portal 口 + 过 portal 成本
@@ -4228,7 +4286,7 @@ func _best_satisfier_journey(ag: Dictionary, nid: String, aspace: String, afloor
 			# 若仍按门口估、仍按 amount 比，最近的那口灶根本进不了候选，后面的本能过滤也就无从挑起。
 			# 实测（BackendGate K=2 seed 1）：酒店掌柜 coco hunger 22 从酒店出门，先是门口估（全镇的饭一样近），
 			# 改成真实距离后又被 amount 压住（馆子 70 × 急迫 > 咖啡馆 55，多走 35 格只扣 14 分）——两次都去了 58 格外的餐馆，触底。
-			d = int(_walk_cost(ag, {"target": String(id), "action": act}) + _full_seat_cost({"target": String(id), "action": act}))
+			d = int(_walk_cost(ag, {"target": String(id), "action": act}, route_context if _portal_outgoing_town3d else null) + _full_seat_cost({"target": String(id), "action": act}))
 		var pen: float = _w("obj_dist_penalty", 0.4) * (0.5 if is_visit else 1.0)
 		var score := urg * (float(amt) / 60.0) - float(d) * pen + (CAFE_VISIT_BONUS if is_visit else 0.0) + _company_pull(o, best_adv, String(ag["id"]))   # docs/209
 		# LT-14: a social outlet in another space must compete with nearby sleep when social is itself the lowest crisis need.
@@ -7200,7 +7258,7 @@ func _full_seat_cost(c: Dictionary) -> float:
 
 ## docs/210：到一个候选的【真实步行距离】估计——逐跳走 portal（到本层门口 + 过门成本×3 + 下一层从门到下一个门…），
 ## 最后加上目标平面里从门到对象的那一段。只给饥饿本能用（见上）。目标不明 ⇒ 按 0（不因估不出而被排除）。
-func _walk_cost(ag: Dictionary, c: Dictionary) -> float:
+func _walk_cost(ag: Dictionary, c: Dictionary, route_context: Variant = null) -> float:
 	var tgt := String(c.get("target", ""))
 	if not world["objects"].has(tgt):
 		return 0.0
@@ -7214,7 +7272,11 @@ func _walk_cost(ag: Dictionary, c: Dictionary) -> float:
 	for _i in 8:
 		if sp == to_s and fl == to_f:
 			break
-		var hop := _route_next_hop(sp, fl, to_s, to_f, ag)
+		var hop: Dictionary
+		if _portal_outgoing_town3d and route_context is Dictionary:
+			hop = _journey_context_hop(route_context, sp, fl, to_s, to_f, ag)
+		else:
+			hop = _route_next_hop(sp, fl, to_s, to_f, ag)
 		if hop.is_empty():
 			return INF
 		cost += float(_manh(pos, hop["from_pos"]) + int(hop.get("cost", 1)) * 3)
@@ -8654,7 +8716,58 @@ func _impt(self_ag: Dictionary, other: Dictionary, aff_delta: float, negative: b
 
 # ── 建筑/室内（docs/16 阶段1）：房间=独立 rooms dict 的矩形，_area_at 的孪生纯函数 ───────
 ## 返回 pos 所在房间 id（rooms 字典书写序=定序，首个命中；无则 ""）。rooms 是独立 dict，不与 areas 重叠 → 无插入序陷阱。
+## Internal authored-membership contract, matching the portal index contract:
+## clear after same-size plane-field, room-id or dictionary-order mutation.
+## Owned compilation/load/reset paths call this; identity/size changes self-detect.
+func _invalidate_room_plane_index() -> void:
+	_room_plane_revision += 1
+	_room_plane_cache = {}
+	_room_plane_source = {}
+	_room_plane_size = -1
+	_room_plane_built_revision = -1
+	_room_plane_valid = false
+
+func _room_ids_for_plane(space: String, floor: String) -> Array:
+	var rooms: Dictionary = world.get("rooms", {})
+	if not _room_plane_valid or not is_same(_room_plane_source, rooms) \
+			or _room_plane_size != rooms.size() or _room_plane_built_revision != _room_plane_revision:
+		_room_plane_cache = {}
+		_room_plane_source = rooms
+		_room_plane_size = rooms.size()
+		_room_plane_built_revision = _room_plane_revision
+		_room_plane_valid = true
+	var by_floor: Dictionary = _room_plane_cache.get(space, {})
+	if not by_floor.has(floor):
+		var ids: Array = []
+		# One cold scan per queried plane/revision preserves exact global order,
+		# including missing-space and missing-floor wildcard rows in that order.
+		for id in rooms:
+			var room: Dictionary = rooms[id]
+			if room.has("space") and String(room["space"]) != space:
+				continue
+			if room.has("floor") and String(room["floor"]) != floor:
+				continue
+			ids.append(id)
+		by_floor[floor] = ids
+		_room_plane_cache[space] = by_floor
+	return by_floor[floor]
+
 func _room_at(pos: Vector2i, space: String = "town", floor: String = "outdoor") -> String:
+	if not _portal_outgoing_town3d:
+		return _room_at_scan(pos, space, floor)
+	for id in _room_ids_for_plane(space, floor):
+		var room: Dictionary = world["rooms"][id]
+		# Read current metadata/bounds, never a cached hit or copied room record.
+		if room.has("space") and String(room["space"]) != space:
+			continue
+		if room.has("floor") and String(room["floor"]) != floor:
+			continue
+		var r: Array = world["rooms"][id].get("rect", [0, 0, 0, 0])
+		if pos.x >= int(r[0]) and pos.x < int(r[0]) + int(r[2]) and pos.y >= int(r[1]) and pos.y < int(r[1]) + int(r[3]):
+			return id
+	return ""
+
+func _room_at_scan(pos: Vector2i, space: String = "town", floor: String = "outdoor") -> String:
 	for id in world.get("rooms", {}):
 		var room: Dictionary = world["rooms"][id]
 		if room.has("space") and String(room["space"]) != space:
@@ -9064,14 +9177,57 @@ func _v2i(a) -> Vector2i:
 	var arr := _as_arr(a)
 	return Vector2i(int(arr[0]), int(arr[1])) if arr.size() >= 2 else Vector2i.ZERO
 
+## Clear derived membership after authored graph installation or any future in-place
+## endpoint/bidirectionality/order edit. Access/job/capability verdicts are never cached.
+func _invalidate_portal_outgoing_index() -> void:
+	_route_topology_paths = {}
+	_portal_outgoing_by_plane = {}
+	_portal_outgoing_source = []
+	_portal_outgoing_size = -1
+	_portal_outgoing_valid = false
+
+func _append_portal_outgoing(space: String, floor: String, portal: Dictionary) -> void:
+	if not _portal_outgoing_by_plane.has(space):
+		_portal_outgoing_by_plane[space] = {}
+	if not _portal_outgoing_by_plane[space].has(floor):
+		_portal_outgoing_by_plane[space][floor] = []
+	_portal_outgoing_by_plane[space][floor].append(portal)
+
+func _ensure_portal_outgoing_index() -> void:
+	if _portal_outgoing_valid and is_same(_portal_outgoing_source, _authored_portals) and _portal_outgoing_size == _authored_portals.size():
+		return
+	_route_topology_paths = {}
+	_portal_outgoing_by_plane = {}
+	for p in _authored_portals:
+		var fr: Dictionary = p.get("from", {})
+		var to: Dictionary = p.get("to", {})
+		var from_space := String(fr.get("space", ""))
+		var from_floor := String(fr.get("floor", ""))
+		var to_space := String(to.get("space", ""))
+		var to_floor := String(to.get("floor", ""))
+		_append_portal_outgoing(from_space, from_floor, p)
+		# The scanner's forward-if/reverse-elif emits a same-plane bidirectional
+		# edge once, using its forward endpoint. Keep that exact membership/order.
+		if bool(p.get("bidirectional", false)) and (to_space != from_space or to_floor != from_floor):
+			_append_portal_outgoing(to_space, to_floor, p)
+	_portal_outgoing_source = _authored_portals
+	_portal_outgoing_size = _authored_portals.size()
+	_portal_outgoing_valid = true
+
 ## 从 (space,floor) 出发能走的 portal（含双向反向边）：[{from_pos(本层格),to_space,to_floor,to_pos,cost}]。spaces.json 顺序=确定序。
 ## access="owner" 的 portal（如咖啡馆私人楼梯）只有该主人的 home_space 能走；access="staff" 必须匹配显式 job title 列表。
 ## ag 缺省(空)=不设访问门(渲染/校验用)；带 ag 走访问门(导航/决策用)。
-func _portals_from(space: String, floor: String, ag: Dictionary = {}) -> Array:
+func _portals_from(space: String, floor: String, ag: Dictionary = {}, only_portal: Variant = null) -> Array:
 	var out: Array = []
 	# Runtime traversal reads only the receiver-owned authored graph.  The saved `_portals`
 	# snapshot may describe a legacy world, but it can never grant access.
-	for p in _authored_portals:
+	var candidates: Array = _authored_portals
+	if _portal_outgoing_town3d:
+		_ensure_portal_outgoing_index()
+		candidates = _portal_outgoing_by_plane.get(space, {}).get(floor, [])
+	for p in candidates:
+		if only_portal != null and not is_same(p, only_portal):
+			continue
 		var fr: Dictionary = p.get("from", {})
 		var to: Dictionary = p.get("to", {})
 		var access := String(p.get("access", ""))
@@ -9101,6 +9257,29 @@ func _portals_from(space: String, floor: String, ag: Dictionary = {}) -> Array:
 ## 从 (fromS,fromF) 到 (toS,toF) 的【下一跳 portal】（BFS，FIFO+portal 文件序 → 确定）。同层→{}。不可达→{}。
 ## 带 ag → BFS 只走该 agent 有权限的 portal（顾客路不到阿丽的 owner-only 2F → 那床对顾客"不可达"→ 不会去睡）。
 func _route_next_hop(fromS: String, fromF: String, toS: String, toF: String, ag: Dictionary = {}) -> Dictionary:
+	if fromS + "/" + fromF == toS + "/" + toF:
+		return {}
+	if not _portal_outgoing_town3d:
+		return _route_next_hop_uncached(fromS, fromF, toS, toF, ag)
+	_ensure_portal_outgoing_index()
+	var path: Array = _route_topology_path(fromS, fromF, toS, toF)
+	if path.is_empty():
+		return _route_next_hop_uncached(fromS, fromF, toS, toF, ag)
+	var first: Dictionary = {}
+	for step: Dictionary in path:
+		# Exact raw portal identity, not a value-matched later parallel edge.
+		# All original owner/staff/guest/unknown-access checks execute afresh.
+		var live: Array = _portals_from(step["from_space"], step["from_floor"], ag, step["portal"])
+		if live.size() != 1:
+			return _route_next_hop_uncached(fromS, fromF, toS, toF, ag)
+		var hop: Dictionary = live[0]
+		if String(hop["to_space"]) != step["to_space"] or String(hop["to_floor"]) != step["to_floor"]:
+			return _route_next_hop_uncached(fromS, fromF, toS, toF, ag)
+		if first.is_empty():
+			first = hop
+	return first
+
+func _route_next_hop_uncached(fromS: String, fromF: String, toS: String, toF: String, ag: Dictionary = {}) -> Dictionary:
 	var start := fromS + "/" + fromF
 	var goal := toS + "/" + toF
 	if start == goal:
@@ -9684,3 +9863,83 @@ func build_replay_trace(trace: Array) -> Dictionary:
 	for rec in trace:
 		m["%d:%s" % [int(rec["tick"]), String(rec["agent"])]] = rec
 	return m
+
+
+## Ignored prototype: one synchronous query tree, no cross-call/cache fields.
+## FIFO plus authored portal order gives each destination exactly the first hop
+## of the existing target-specific BFS. Permission predicates stay live here.
+func _journey_route_first_hops(fromS: String, fromF: String, ag: Dictionary = {}) -> Dictionary:
+	var start := fromS + "/" + fromF
+	var q: Array = [start]
+	var visited := {start: true}
+	var first_hops: Dictionary = {}
+	while not q.is_empty():
+		var node: String = q.pop_front()
+		var pr := node.split("/")
+		for hop in _portals_from(pr[0], pr[1], ag):
+			var nb := String(hop["to_space"]) + "/" + String(hop["to_floor"])
+			if not visited.has(nb):
+				visited[nb] = true
+				# Independent values: callers cannot mutate a sibling destination,
+				# another query, or receiver-owned authored endpoint dictionaries.
+				first_hops[nb] = (hop if node == start else first_hops[node]).duplicate(true)
+				q.append(nb)
+	return first_hops
+
+func _journey_context_hop(context: Dictionary, fromS: String, fromF: String, toS: String, toF: String, ag: Dictionary) -> Dictionary:
+	# Private contract: context belongs to ONE synchronous best-satisfier call,
+	# ONE fixed actor and fixed permission state. Never retain/share across calls,
+	# actors, ticks, topology changes or permission mutations.
+	var source := fromS + "/" + fromF
+	if not context.has(source):
+		context[source] = _journey_route_first_hops(fromS, fromF, ag)
+	# No returned mutable dictionary aliases even the call-local tree.
+	return (context[source].get(toS + "/" + toF, {}) as Dictionary).duplicate(true)
+
+## BEGIN_ROUTE_TOPOLOGY_HELPERS_001
+## Physical ordered topology only. Even unknown access edges remain in this
+## superset; every exact raw edge must pass the ORIGINAL live access resolver.
+func _route_topology_path(fromS: String, fromF: String, toS: String, toF: String) -> Array:
+	var start: String = fromS + "/" + fromF
+	var goal: String = toS + "/" + toF
+	if not _route_topology_paths.has(start):
+		var queue: Array = [start]
+		var parent: Dictionary = {start: ""}
+		var via: Dictionary = {}
+		while not queue.is_empty():
+			var node: String = queue.pop_front()
+			var plane: PackedStringArray = node.split("/")
+			var candidates: Array = _portal_outgoing_by_plane.get(plane[0], {}).get(plane[1], [])
+			for portal: Dictionary in candidates:
+				var fr: Dictionary = portal.get("from", {})
+				var to: Dictionary = portal.get("to", {})
+				var destination: Dictionary
+				if String(fr.get("space", "")) == plane[0] and String(fr.get("floor", "")) == plane[1]:
+					destination = to
+				elif bool(portal.get("bidirectional", false)) and String(to.get("space", "")) == plane[0] and String(to.get("floor", "")) == plane[1]:
+					destination = fr
+				else:
+					continue
+				var next_space: String = String(destination.get("space", ""))
+				var next_floor: String = String(destination.get("floor", ""))
+				var neighbor: String = next_space + "/" + next_floor
+				if not parent.has(neighbor):
+					parent[neighbor] = node
+					via[neighbor] = {"portal":portal, "from_space":plane[0], "from_floor":plane[1],
+						"to_space":next_space, "to_floor":next_floor}
+					queue.append(neighbor)
+		var paths: Dictionary = {}
+		for target_plane: String in parent:
+			if target_plane == start:
+				continue
+			var path: Array = []
+			var cursor: String = target_plane
+			while cursor != start:
+				path.push_front(via[cursor])
+				cursor = String(parent[cursor])
+			paths[target_plane] = path
+		_route_topology_paths[start] = paths
+	# Missing/unreachable is conservatively handled by the unchanged BFS, never
+	# cached as an actor permission or persistent no-route verdict.
+	return _route_topology_paths[start].get(goal, [])
+## END_ROUTE_TOPOLOGY_HELPERS_001

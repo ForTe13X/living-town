@@ -28,8 +28,8 @@ import wave
 from datetime import datetime, timezone
 
 ROOT = Path(__file__).resolve().parents[1]
-DURATION = 600
-FPS = 24
+DURATION = 840
+FPS = 18
 SAMPLE_RATE = 24000
 FRAME_COUNT = DURATION * FPS
 ENDPOINT = "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1"
@@ -122,12 +122,12 @@ def media_duration(info: dict) -> float:
 def load_plan(args: argparse.Namespace) -> tuple[dict, dict, list[dict]]:
     narration, route = load_json(args.narration), load_json(args.route)
     segments = narration.get("segments", [])
-    if len(segments) != 22 or len(route.get("chapters", [])) != 11:
-        raise ValueError("Expected the reviewed 22 paragraphs and 11 chapters")
+    if len(segments) != 24 or len(route.get("chapters", [])) != 12:
+        raise ValueError("Expected the reviewed 24 paragraphs and 12 chapters")
     if narration.get("planned_duration_seconds") != DURATION or route.get("duration_seconds") != DURATION:
-        raise ValueError("This builder requires the reviewed 600-second route")
+        raise ValueError("This builder requires the reviewed 840-second route")
     if route.get("fps") != FPS:
-        raise ValueError("Route must use 24 FPS")
+        raise ValueError("Route must use 18 FPS")
     previous = -1.0
     ids = set()
     chapters = route["chapters"]
@@ -137,7 +137,7 @@ def load_plan(args: argparse.Namespace) -> tuple[dict, dict, list[dict]]:
             raise ValueError("Route chapters must cover the timeline without gaps")
         chapter_cursor = float(chapter["end_seconds"])
     if chapter_cursor != DURATION:
-        raise ValueError("Route chapters do not reach 600 seconds")
+        raise ValueError("Route chapters do not reach 840 seconds")
     for seg in segments:
         if not all(k in seg for k in ("start", "end", "chapter", "title", "text", "notes")):
             raise ValueError("Narration segment fields are incomplete")
@@ -409,7 +409,7 @@ def build_voice_wav(args: argparse.Namespace, takes: list[dict]) -> Path:
             zeros(output, DURATION * SAMPLE_RATE - position)
         with wave.open(str(temporary), "rb") as check:
             if check.getnframes() != DURATION * SAMPLE_RATE:
-                raise ValueError("Narration WAV is not exactly 600 seconds")
+                raise ValueError("Narration WAV is not exactly 840 seconds")
         os.replace(temporary, path)
     except Exception:
         temporary.unlink(missing_ok=True)
@@ -449,7 +449,7 @@ def capture_contract(args: argparse.Namespace) -> tuple[dict, int]:
     if report.get("status") != "PASS" or report.get("preview", True) or not report.get("route_complete"):
         raise ValueError("Require a completed PASS full route, not a preview or failed recording")
     if report.get("fps") != FPS or report.get("expected_tour_frames") != FRAME_COUNT:
-        raise ValueError("Capture report is not the 600-second/24-FPS route")
+        raise ValueError("Capture report is not the 840-second/18-FPS route")
     if report.get("direct_agent_writes") is not False:
         raise ValueError("Capture must explicitly report no direct agent writes")
     if not report.get("checks") or report.get("failure_count") != 0:
@@ -459,10 +459,24 @@ def capture_contract(args: argparse.Namespace) -> tuple[dict, int]:
         raise ValueError("Capture must report one consistent non-negative integer boot-frame offset")
     sources = {"harness_sha256": ROOT / "game/scripts/town_walkthrough.gd",
                "route_plan_sha256": args.route, "projection_sha256": ROOT / "game/data/town3d/projection.json",
-               "source_glb_sha256": ROOT / "game/assets/town3d/living_town_game.glb"}
+               "profile_sha256": ROOT / "game/data/town3d/profile.json",
+               "stage_manifest_sha256": ROOT / "game/assets/town3d/stage_manifest.json",
+               "characters_manifest_sha256": ROOT / "game/data/town3d/characters.json"}
     for key, path in sources.items():
         if not report.get(key) or sha(path) != report[key]:
             raise ValueError(f"Capture source is stale or unbound: {key}")
+    stage = load_json(ROOT / "game/assets/town3d/stage_manifest.json")
+    profile = load_json(ROOT / "game/data/town3d/profile.json")
+    for relative,digest in profile.get("presentation_source_hashes",{}).items():
+        source=(ROOT/relative).resolve()
+        if not source.is_relative_to(ROOT) or sha(source)!=digest:
+            raise ValueError("Presentation code changed after the recorded profile freeze: "+relative)
+    if stage.get("schema") != "living_town.game_stage.v2" or report.get("source_glb_sha256") != stage.get("source_asset_set_sha256"):
+        raise ValueError("Capture does not bind the exact upgraded whole-town asset set")
+    for asset in stage.get("assets", []):
+        path = ROOT / "game/assets/town3d" / asset["file"]
+        if not path.is_file() or sha(path) != asset["sha256"]:
+            raise ValueError("Recorded visual chunk changed: " + asset["file"])
     if any(not bool(check.get("passed", False)) for check in report.get("checks", [])):
         raise ValueError("Capture contains a failed route check")
     return report, offsets[0]
@@ -515,9 +529,9 @@ def normalized_narration(args: argparse.Namespace) -> tuple[Path, dict]:
     filt = ("loudnorm=I=-16:TP=-1.5:LRA=11:linear=true:print_format=json"
             f":measured_I={measured['input_i']}:measured_TP={measured['input_tp']}"
             f":measured_LRA={measured['input_lra']}:measured_thresh={measured['input_thresh']}"
-            f":offset={measured['target_offset']},apad=whole_dur=600")
+            f":offset={measured['target_offset']},apad=whole_dur={DURATION}")
     run([args.ffmpeg, "-y", "-hide_banner", "-threads", "2", "-i", str(source), "-vn", "-af", filt,
-         "-t", "600", "-ar", str(SAMPLE_RATE), "-ac", "1", "-c:a", "pcm_s16le", str(target)],
+         "-t", str(DURATION), "-ar", str(SAMPLE_RATE), "-ac", "1", "-c:a", "pcm_s16le", str(target)],
         args.outdir / "logs/loudnorm_apply.log")
     return target, {"method": "separate two-pass measured loudnorm", "target_i_lufs": -16,
                     "target_true_peak_dbfs": -1.5, "target_lra": 11,
@@ -570,44 +584,36 @@ def phase_compose(args: argparse.Namespace) -> dict:
         raise ValueError("Voice phase is missing or stale; regenerate it")
     for name, record in voice["assets"].items():
         check_binding(record, name)
-    raw_info = probe(args.raw, args.ffprobe)
+    if args.raw.suffix.lower() != ".avi":
+        raise ValueError("Upgraded gameplay accepts the actual Godot AVI recording only")
+    raw_info = probe(args.raw, args.ffprobe, count_frames=True)
     video = stream_of(raw_info, "video")
     if not video or (video.get("width"), video.get("height")) != (1280, 768):
-        raise ValueError("Raw game capture must retain the complete 1280x768 HUD frame")
+        raise ValueError("Raw game capture must retain the complete1280x768HUD frame")
     rate = video.get("avg_frame_rate", video.get("r_frame_rate", "0/1"))
     num, den = (int(x) for x in rate.split("/"))
-    if den == 0 or abs(num / den - FPS) > 0.001 or media_duration(raw_info) + 0.05 < DURATION + offset / FPS:
-        raise ValueError("Raw capture does not contain the reported 24-FPS boot prefix plus 600s route")
-    timeline = None
-    if video.get("codec_name") == "theora":
-        if video.get("time_base") != "1/24":
-            raise ValueError("Theora packet proof requires the MovieWriter 1/24 time base")
-        packet_result = subprocess.run([args.ffprobe, "-v", "error", "-select_streams", "v:0",
-            "-show_packets", "-show_entries", "packet=pts,duration,size", "-of", "json", str(args.raw)],
-            capture_output=True, text=True, encoding="utf-8", timeout=120, check=True)
-        packet_table = json.loads(packet_result.stdout)
-        timeline = theora_repeat_timeline(packet_table["packets"])
-        if timeline["packet_count"] < offset + FRAME_COUNT:
-            raise ValueError("Actual Theora packets do not cover the complete recorded route")
-        packet_path = args.outdir / "raw_video_packets.json"
-        write_json(packet_path, packet_table)
-        timeline["packet_table"] = binding(packet_path)
+    decoded = int(video.get("nb_read_frames", 0))
+    if den == 0 or abs(num / den - FPS) > 0.001 or decoded < offset + FRAME_COUNT:
+        raise ValueError("AVI is missing actual18FPS boot/route frames; no synthetic padding is allowed")
+    timeline = {"format":"Godot AVI", "decoded_frames":decoded, "required_frames":offset+FRAME_COUNT,
+                "padding_frames":0, "repeated_or_invented_frames":False,
+                "trim_policy":"Exact recorded frame range, with original PTS; no FPS reconstruction or tpad"}
     normalized, loudness = normalized_narration(args)
     bed = args.outdir / "game_bed.wav"
     bed_stats = None
     audible = False
     if stream_of(raw_info, "audio"):
         run([args.ffmpeg, "-y", "-hide_banner", "-v", "error", "-threads", "2", "-i", str(args.raw), "-vn",
-             "-af", f"atrim=start={offset / FPS:.9f}:duration=600,asetpts=PTS-STARTPTS,apad=whole_dur=600",
-             "-t", "600", "-ar", str(SAMPLE_RATE), "-ac", "1", "-c:a", "pcm_s16le", str(bed)],
+             "-af", f"atrim=start={offset / FPS:.9f}:duration={DURATION},asetpts=PTS-STARTPTS,apad=whole_dur={DURATION}",
+             "-t", str(DURATION), "-ar", str(SAMPLE_RATE), "-ac", "1", "-c:a", "pcm_s16le", str(bed)],
             args.outdir / "logs/game_bed_decode.log")
         bed_stats = wav_stats(bed)
         audible = ((bed_stats["rms_dbfs"] is not None and bed_stats["rms_dbfs"] > -75) or
                    (bed_stats["peak_dbfs"] is not None and bed_stats["peak_dbfs"] > -55))
     metadata = args.outdir / "chapters.ffmetadata"
     metadata.write_text(metadata_text(route, narration), encoding="utf-8")
-    filters = (f"[0:v]{movie_timeline_trim(offset, trailing_repeats=timeline['trailing_repeat_packets'] if timeline else 0)},"
-               "scale=1280:768:flags=lanczos,pad=1280:864:0:0:color=0x111722,"
+    filters = (f"[0:v]trim=start_frame={offset}:end_frame={offset + FRAME_COUNT},setpts=PTS-STARTPTS,"
+               "scale=1280:768:flags=lanczos:out_range=tv,pad=1280:864:0:0:color=0x111722,"
                "subtitles=filename=narration.ass[v]")
     command = [args.ffmpeg, "-y", "-hide_banner", "-threads", "2", "-i", str(args.raw), "-i", str(normalized)]
     if audible:
@@ -619,8 +625,8 @@ def phase_compose(args: argparse.Namespace) -> dict:
     metadata_index = 3 if audible else 2
     command += ["-f", "ffmetadata", "-i", str(metadata), "-filter_complex", filters, "-map", "[v]",
                 "-map", "[a]" if audible else "1:a:0", "-map_metadata", str(metadata_index),
-                "-map_chapters", str(metadata_index), "-frames:v", str(FRAME_COUNT), "-t", "600",
-                "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p", "-threads:v", "6",
+                "-map_chapters", str(metadata_index), "-frames:v", str(FRAME_COUNT), "-t", str(DURATION),
+                "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p", "-color_range", "tv", "-threads:v", "6",
                 "-filter_complex_threads", "2", "-c:a", "aac", "-b:a", "160k", "-ar", str(SAMPLE_RATE),
                 "-movflags", "+faststart", str(args.output)]
     (args.outdir / "composition_filters.txt").write_text(filters + "\n", encoding="utf-8")
@@ -690,25 +696,25 @@ def phase_verify(args: argparse.Namespace) -> dict:
     checks = []
     def check(name: str, passed: bool, details: object = None) -> None:
         checks.append({"name": name, "passed": bool(passed), "details": details})
-    check("duration_600_seconds", abs(media_duration(info) - DURATION) <= 0.1, media_duration(info))
+    check("duration_840_seconds", abs(media_duration(info) - DURATION) <= 0.1, media_duration(info))
     check("video_H264_yuv420p_1280x864", bool(video) and video.get("codec_name") == "h264" and
           video.get("pix_fmt") == "yuv420p" and (video.get("width"), video.get("height")) == (1280, 864))
     rate = video.get("avg_frame_rate", "0/1") if video else "0/1"
     num, den = (int(x) for x in rate.split("/"))
-    check("video_24_fps", den != 0 and abs(num / den - FPS) < 0.00001, rate)
-    check("video_14400_decoded_frames", bool(video) and int(video.get("nb_read_frames", 0)) == FRAME_COUNT,
+    check("video_18_fps", den != 0 and abs(num / den - FPS) < 0.00001, rate)
+    check("video_15120_decoded_frames", bool(video) and int(video.get("nb_read_frames", 0)) == FRAME_COUNT,
           video.get("nb_read_frames") if video else None)
     check("AAC_audio_present", bool(audio) and audio.get("codec_name") == "aac")
     chapters = info.get("chapters", [])
     expected = route["chapters"]
-    chapter_ok = len(chapters) == 11
+    chapter_ok = len(chapters) == 12
     if chapter_ok:
         for actual, planned in zip(chapters, expected):
             title = next(s["title"] for s in narration["segments"] if s["chapter"] == planned["index"])
             chapter_ok &= (abs(float(actual["start_time"]) - planned["start_seconds"]) <= 0.02 and
                            abs(float(actual["end_time"]) - planned["end_seconds"]) <= 0.02 and
                            actual.get("tags", {}).get("title") == title)
-    check("eleven_chapters_cover_600_seconds", chapter_ok, chapters)
+    check("twelve_chapters_cover_840_seconds", chapter_ok, chapters)
     captions = load_json(args.outdir / "captions.json").get("cues", [])
     cue_ok, prior = bool(captions), 0.0
     for cue in captions:
@@ -756,7 +762,7 @@ def parse_args() -> argparse.Namespace:
                                           "compose": "Trim real capture, normalize/mix audio, encode MP4",
                                           "verify": "Decode/hash/check MP4 and extract human QA frames"}[phase])
         child.add_argument("--outdir", type=Path, default=ROOT / "build/town_walkthrough/full")
-        child.add_argument("--raw", type=Path, default=ROOT / "build/town_walkthrough/full/capture.ogv")
+        child.add_argument("--raw", type=Path, default=ROOT / "build/town_walkthrough/full/capture.avi")
         child.add_argument("--report", type=Path, default=ROOT / "build/town_walkthrough/full/walkthrough_report.json")
         child.add_argument("--output", type=Path, default=Path("LivingTown_Walkthrough.mp4"))
         child.add_argument("--narration", type=Path, default=ROOT / "docs/town_walkthrough/narration.json")

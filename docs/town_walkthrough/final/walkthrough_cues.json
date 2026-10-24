@@ -1,0 +1,265 @@
+{
+	"captures": [
+		{
+			"chapter": 1,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/01_complete_town_and_woodland.png",
+			"sha256": "c8f2f6791b2e8ca28397a3f07f4d393057d3f1ad306ea61f58bf6a0cf9cc7efe",
+			"tick": 90,
+			"tour_frame": 651,
+			"tour_seconds": 36.1666666666667
+		},
+		{
+			"chapter": 2,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/02_Aria_refined_character_upper_home.png",
+			"sha256": "1fbf7e4a210f60717652ab6544c926070f836bb9a91df87a7c797b89c7198a10",
+			"tick": 90,
+			"tour_frame": 1452,
+			"tour_seconds": 80.6666666666667
+		},
+		{
+			"chapter": 2,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/02b_expandable_activity_and_wishes.png",
+			"sha256": "0f92663b571a58bda537a257bfd20dbc6ec8f92d12fa167f1f9913441bfab829",
+			"tick": 90,
+			"tour_frame": 1460,
+			"tour_seconds": 81.1111111111111
+		},
+		{
+			"chapter": 3,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/03_actual_stair_arrival.png",
+			"sha256": "432f5f0e005f0ec8b8703bd90736d9df290e308204e741ca4932fe9e2d4cc493",
+			"tick": 108,
+			"tour_frame": 1960,
+			"tour_seconds": 108.888888888889
+		},
+		{
+			"chapter": 3,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/fixture_menu_cafe1f_table.png",
+			"sha256": "39268ff536626ac27eee8d5eac899e12c80d43e24244987bb9c79f52448ff610",
+			"tick": 109,
+			"tour_frame": 2328,
+			"tour_seconds": 129.333333333333
+		},
+		{
+			"chapter": 4,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/fixture_menu_cafe1f_counter.png",
+			"sha256": "aab253fbb165c92b0d6eb1730706f8e45f3c2ab921b564a2290cf02db84e3771",
+			"tick": 153,
+			"tour_frame": 2802,
+			"tour_seconds": 155.666666666667
+		},
+		{
+			"chapter": 4,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/04_cafe_action_and_street_threshold.png",
+			"sha256": "52cdeb190f4e1a2731bfa3bdbcac99f64241ab1a865fbea24808e36730b2a58c",
+			"tick": 192,
+			"tour_frame": 3196,
+			"tour_seconds": 177.555555555556
+		},
+		{
+			"chapter": 5,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/05_actual_expansion_venue_arrival.png",
+			"sha256": "57e050f2c38a9c63e28cfa04c4f34f77a9cbe28ea6dac27a5a35400caaad6841",
+			"tick": 327,
+			"tour_frame": 4408,
+			"tour_seconds": 244.888888888889
+		},
+		{
+			"chapter": 6,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/fixture_menu_upgrade_Expansion_D09_Orchard_Lane_Loop_R12_L00_Rear_Room_A01_dining_table.png",
+			"sha256": "5b28626100e9f3845007c32ce3d5dd63b4a8064493b2cc7f9c73f86ac131d5ea",
+			"tick": 407,
+			"tour_frame": 5136,
+			"tour_seconds": 285.333333333333
+		},
+		{
+			"chapter": 6,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/06_actual_expansion_upper_interior.png",
+			"sha256": "c7b656ebf6a840d60bddf6bea22b51d466d4321980aa7f869c0078510943d547",
+			"tick": 458,
+			"tour_frame": 5643,
+			"tour_seconds": 313.5
+		},
+		{
+			"chapter": 7,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/fixture_menu_upgrade_Reserve_Bathhouse_L00_Wash_West_Washbasin_0.png",
+			"sha256": "8b3735ee7e8b4ae9e96f6f10b5488ff8e8ff11e8abd52cf2712257a6ca27b672",
+			"tick": 557,
+			"tour_frame": 7311,
+			"tour_seconds": 406.166666666667
+		},
+		{
+			"chapter": 7,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/07_actual_reserve_bathhouse_action.png",
+			"sha256": "a76e1980316c381cd64ac52bea67122d9820cbe68fdf1b1439f309353d9303d8",
+			"tick": 577,
+			"tour_frame": 7508,
+			"tour_seconds": 417.111111111111
+		},
+		{
+			"chapter": 8,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/fixture_menu_upgrade_Reserve_Trailer_N06_L00_Private_Bathroom_Handwash.png",
+			"sha256": "bab3d9f719f038410a7df063986faceb4c7ecd555e950387e1730e33692e8be8",
+			"tick": 649,
+			"tour_frame": 9129,
+			"tour_seconds": 507.166666666667
+		},
+		{
+			"chapter": 8,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/08_actual_trailer_interior_and_use.png",
+			"sha256": "6b5b769af506f438191e4bfd9d1677ab7b872ea7fb1e7dc501a79e568ff69a91",
+			"tick": 664,
+			"tour_frame": 9298,
+			"tour_seconds": 516.555555555556
+		},
+		{
+			"chapter": 9,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/09_actual_return_from_reserve_to_core.png",
+			"sha256": "7982348678e54ffa5e4663bdd09d737abdfb0264d858329a5b71f9cbb7477a90",
+			"tick": 825,
+			"tour_frame": 11188,
+			"tour_seconds": 621.555555555556
+		},
+		{
+			"chapter": 10,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/10_inspection_ravine_bridge_forest.png",
+			"sha256": "6170b8642a81aa06477986aac8acc9961b83d287219871577a6cf504945710d3",
+			"tick": 912,
+			"tour_frame": 12369,
+			"tour_seconds": 687.166666666667
+		},
+		{
+			"chapter": 10,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/11_inspection_stone_stair_topography.png",
+			"sha256": "4e83c16663ba030529abf8fbce2daa09a18d213b76f4903c84ade1b9e002d283",
+			"tick": 912,
+			"tour_frame": 12765,
+			"tour_seconds": 709.166666666667
+		},
+		{
+			"chapter": 10,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/12_inspection_pond_horticulture.png",
+			"sha256": "636c851161d0f88c6f8b1531eb298910da35c3e658289bcdbabbfb568c02ebaa",
+			"tick": 912,
+			"tour_frame": 13143,
+			"tour_seconds": 730.166666666667
+		},
+		{
+			"chapter": 11,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/13_restored_actual_resident_life.png",
+			"sha256": "e925fb00b540b8ed6943a580840d072d8fa3f2f2f164d9b503a30b4e7d82144e",
+			"tick": 1005,
+			"tour_frame": 14403,
+			"tour_seconds": 800.166666666667
+		},
+		{
+			"chapter": 12,
+			"file": "F:\\Living Town\\2026-10-20_Refined_Town\\gameplay\\full_h002_003/14_complete_upgraded_playable_town.png",
+			"sha256": "2516f99b353059f99297e7c2884493bbe0df4e23081e267b071d2c0fe4d8f17f",
+			"tick": 1015,
+			"tour_frame": 15033,
+			"tour_seconds": 835.166666666667
+		}
+	],
+	"chapters": [
+		{
+			"actual_start_seconds": 0.0,
+			"architectural_inspection": true,
+			"index": 1,
+			"planned_start_seconds": 0.0,
+			"title": "Town, woodland and coast",
+			"tour_frame": 0
+		},
+		{
+			"actual_start_seconds": 45.0,
+			"architectural_inspection": false,
+			"index": 2,
+			"planned_start_seconds": 45.0,
+			"title": "Meet Aria in her upper home",
+			"tour_frame": 810
+		},
+		{
+			"actual_start_seconds": 100.0,
+			"architectural_inspection": false,
+			"index": 3,
+			"planned_start_seconds": 100.0,
+			"title": "Rooms, stairs and needs",
+			"tour_frame": 1800
+		},
+		{
+			"actual_start_seconds": 155.0,
+			"architectural_inspection": false,
+			"index": 4,
+			"planned_start_seconds": 155.0,
+			"title": "The actual cafe and street",
+			"tour_frame": 2790
+		},
+		{
+			"actual_start_seconds": 215.0,
+			"architectural_inspection": false,
+			"index": 5,
+			"planned_start_seconds": 215.0,
+			"title": "Walk into the expanded town",
+			"tour_frame": 3870
+		},
+		{
+			"actual_start_seconds": 285.0,
+			"architectural_inspection": false,
+			"index": 6,
+			"planned_start_seconds": 285.0,
+			"title": "Use a new venue and its upper floor",
+			"tour_frame": 5130
+		},
+		{
+			"actual_start_seconds": 355.0,
+			"architectural_inspection": false,
+			"index": 7,
+			"planned_start_seconds": 355.0,
+			"title": "Walk to the reserve bathhouse",
+			"tour_frame": 6390
+		},
+		{
+			"actual_start_seconds": 455.0,
+			"architectural_inspection": false,
+			"index": 8,
+			"planned_start_seconds": 455.0,
+			"title": "Visit a detailed camping trailer",
+			"tour_frame": 8190
+		},
+		{
+			"actual_start_seconds": 555.0,
+			"architectural_inspection": false,
+			"index": 9,
+			"planned_start_seconds": 555.0,
+			"title": "Walk back from the reserve to town",
+			"tour_frame": 9990
+		},
+		{
+			"actual_start_seconds": 665.0,
+			"architectural_inspection": true,
+			"index": 10,
+			"planned_start_seconds": 665.0,
+			"title": "Inspection: forest, bridges and horticulture",
+			"tour_frame": 11970
+		},
+		{
+			"actual_start_seconds": 735.0,
+			"architectural_inspection": false,
+			"index": 11,
+			"planned_start_seconds": 735.0,
+			"title": "Save, resume and resident agency",
+			"tour_frame": 13230
+		},
+		{
+			"actual_start_seconds": 805.0,
+			"architectural_inspection": true,
+			"index": 12,
+			"planned_start_seconds": 805.0,
+			"title": "Complete town and scope",
+			"tour_frame": 14490
+		}
+	],
+	"fps": 18,
+	"movie_boot_frames_to_trim": 239,
+	"schema": "living_town.walkthrough.cues.v1"
+}

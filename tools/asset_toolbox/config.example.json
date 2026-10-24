@@ -1,0 +1,24 @@
+{
+  "repo": "C:/path/to/living-town",
+  "runtimes": {
+    "python": "C:/path/to/python.exe",
+    "blender": "D:/Program Files/Blender/blender.exe",
+    "godot": "C:/path/to/Godot_console.exe",
+    "powershell": "C:/Program Files/PowerShell/7/pwsh.exe",
+    "ffmpeg": "C:/path/to/ffmpeg.exe",
+    "ffprobe": "C:/path/to/ffprobe.exe"
+  },
+  "inputs": {
+    "source_blend": "${repo}/build/town_generation/territory_v6/scene/expanded_town.blend",
+    "expansion": "${repo}/build/town_generation/territory_v6",
+    "pbr": "F:/Asset Sources/scanned_pbr_v3",
+    "botanical_library": "F:/Asset Sources/botanical_prototypes.blend",
+    "botanical_sources": "F:/Asset Sources/botanical",
+    "terrain_sources": "F:/Asset Sources/terrain",
+    "concept": "F:/Asset References/approved_concept.png",
+    "character_textures": "F:/Asset Sources/character_pbr",
+    "asset": "F:/Reviewed Assets/example.glb",
+    "hero": "F:/Reviewed Assets/hero",
+    "edge_deps": "${repo}/build/town_walkthrough/python_deps"
+  }
+}

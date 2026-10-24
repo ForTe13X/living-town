@@ -1,0 +1,42 @@
+{
+  "schema": "living_town.terrain_sources.v1",
+  "license": "CC0-1.0",
+  "license_url": "https://polyhaven.com/license",
+  "credit": "Powered by Poly Haven",
+  "assets": {
+    "rough_linen": {
+      "asset_url": "https://polyhaven.com/a/rough_linen",
+      "dimensions_mm": [
+        270.7081392676629,
+        271.29998803138733
+      ],
+      "metadata_sha256": {
+        "info": "3e8a37e561a7d553d891f4585f848d0fc0f60184d7326a4666f544f45c5988e8",
+        "files": "7d281ef0bcdcb1f2c9d89fc846b96bfeb220137db1af96805e7dd08d7e1500f2"
+      }
+    }
+  },
+  "files": [
+    {
+      "path": "rough_linen/diff.jpg",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rough_linen/rough_linen_diff_2k.jpg",
+      "source_md5": "1287d4d1183c511e4adc55b8d006d763",
+      "bytes": 3607181,
+      "sha256": "e71016e08dfebea1dd4e8a2a675e3b617a889a782af782f1abb795906f4db1b4"
+    },
+    {
+      "path": "rough_linen/nor_gl.jpg",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rough_linen/rough_linen_nor_gl_2k.jpg",
+      "source_md5": "facad45539d3011e197bd87562ba1679",
+      "bytes": 3849356,
+      "sha256": "c5733ad50cfe0f90c546f3d4076590c1c78a4fd1a83c967cc9c92dc8175b99e6"
+    },
+    {
+      "path": "rough_linen/arm.jpg",
+      "source_url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rough_linen/rough_linen_arm_2k.jpg",
+      "source_md5": "e78a9e39e81a973cba797adfd83f9d88",
+      "bytes": 5194705,
+      "sha256": "c5f29705fc1843c15f48ca187bec1d8b61bccb5859cbbf9a8b793eb172f0593b"
+    }
+  ]
+}

@@ -838,7 +838,14 @@ for scene in $CI_SCENES_ALL; do
 done
 for scene in $CI_SCENES; do
   SCENE_T0=$SECONDS
-  if [ "$scene" = civic_player_journey_test ]; then
+  TOWN_BRIDGE_V2=0
+  if [ "$scene" = town_bridge_test ] && "$PY" -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1],encoding="utf-8-sig")).get("schema")=="living_town.game_stage.v2" else 1)' game/assets/town3d/stage_manifest.json; then
+    # Current staged town has151 buildings; retain the v1 gate for v1 stages.
+    TOWN_BRIDGE_V2=1
+    TOWN_BRIDGE_REPORT="$(cd "$LT_LOG" && pwd)/town_upgrade_runtime.json"
+    echo "  town_bridge_test selects town_upgrade_integration_test (v2 stage)"
+    "$GODOT" --headless --path game res://scenes/town_upgrade_integration_test.tscn -- "--report=$TOWN_BRIDGE_REPORT" >"$LT_LOG/$scene.log" 2>&1
+  elif [ "$scene" = civic_player_journey_test ]; then
     "$GODOT" --headless --path game "res://scenes/$scene.tscn" -- --seed 7 --agents 12 --backend logic --life-as ben --warmup-tick 7202 >"$LT_LOG/$scene.log" 2>&1
   elif [[ "$scene" = player_touch_test || "$scene" = p1v_warehouse_observatory_test || "$scene" = c1_locked_ortho_test ]]; then
     # These scenes exercise Main's observer shortcuts directly. Use their
@@ -852,8 +859,13 @@ for scene in $CI_SCENES; do
   if [ $code -eq 0 ]; then ok "$scene ($((SECONDS-SCENE_T0))s)"; else tail -8 "$LT_LOG/$scene.log"; bad "$scene (exit $code, $((SECONDS-SCENE_T0))s)"; fi
   case "$scene" in
     town_bridge_test)
-      grep -Eq '^TOWN_BRIDGE_LOGICAL PASS checks=[1-9][0-9]* failures=0$' "$LT_LOG/$scene.log" \
-        && ok "$scene terminal marker" || bad "$scene missing/failing terminal marker"
+      if [ "$TOWN_BRIDGE_V2" -eq 1 ]; then
+        grep -Eq '^town_upgrade_integration_test: PASS \(0 failures\) report=' "$LT_LOG/$scene.log" \
+          && ok "$scene v2 terminal marker" || bad "$scene missing/failing v2 terminal marker"
+      else
+        grep -Eq '^TOWN_BRIDGE_LOGICAL PASS checks=[1-9][0-9]* failures=0$' "$LT_LOG/$scene.log" \
+          && ok "$scene terminal marker" || bad "$scene missing/failing terminal marker"
+      fi
       scan "$scene" "$LT_LOG/$scene.log"
       ;;
     # m2_test 是【负例测试】：故意把畸形 JSON 喂给 AIBackend.parse_decision 验证它拒收，

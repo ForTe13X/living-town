@@ -16,6 +16,7 @@ const GOLD := Color(0.80, 0.64, 0.36, 0.95)
 const GOLD_DIM := Color(0.55, 0.44, 0.26, 0.85)
 const PARCH := Color(0.95, 0.87, 0.66)
 const MUTED := Color(0.66, 0.64, 0.58)
+const TownLook = preload("res://scripts/ui/TownHudStyle.gd")
 const BAD := Color(0.95, 0.55, 0.48)
 const LIFE_TICK := 0.5              # 秒/tick @1×：TICKS_PER_DAY=240 ⇒ 一天 2 分钟
 const SPEEDS := [1.0, 2.0, 4.0]
@@ -126,6 +127,10 @@ var _need_val := {}
 var _speed_btns: Array = []
 var _will_btn: Button
 var _prompt: Label
+var _town_resident_card: Panel
+var _town_wants_toggle: Button
+var _town_wants_expanded := false
+var _town_keys: Label
 var _toast: Label
 var _toast_t := 0.0
 # 菜单
@@ -154,6 +159,7 @@ var _walk_on := false
 var _walk_dest := Vector2i.ZERO
 var _walk_goal: Dictionary = {}     # {kind: none|use|say|portal, …}；到了就执行
 var _walk_steps := 0
+var _walk_step_budget := 160
 var _move_keys: Dictionary = {}
 const WALK_MAX_STEPS := 160
 # 每日愿望（Sims 的 wants）：纯 View 状态，从 Sim 信号与快照判定完成，不写 Sim
@@ -203,6 +209,11 @@ func setup(m: Node2D) -> void:
 	_toast = _mk_label(_layer, 17, Vector2(340, 50), Vector2(600, 30), PARCH)
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_toast.visible = false
+	if _town_resident_card != null:
+		_toast.add_theme_font_size_override("font_size",14)
+		_toast.add_theme_stylebox_override("normal",TownLook.panel(true))
+		_toast.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_layout_town_hud()
 	Sim.world_reset.connect(func(): call_deferred("_after_reset"))
 	Sim.social_event.connect(_on_social_event)
 	Sim.life_action_done.connect(_on_action_done)
@@ -594,6 +605,13 @@ func _walk_to(dest: Vector2i, goal: Dictionary = {}) -> void:
 	_walk_dest = dest
 	_walk_goal = goal
 	_walk_steps = 0
+	_walk_step_budget = WALK_MAX_STEPS
+	# Expanded metric profiles can contain genuine trips longer than160cells.
+	# Only the immutable profile supplies this view-side safety budget; Sim still
+	# chooses every step and rejects blocked destinations through its usual path.
+	if Sim.ext != null and Sim.ext.has_method("travel_step_budget"):
+		var resident: Dictionary = Sim.controlled()
+		_walk_step_budget = maxi(WALK_MAX_STEPS, int(Sim.ext.call("travel_step_budget", str(resident.get("space", "town")), str(resident.get("floor", "outdoor")))))
 	_move_cd = 0.0
 
 func _walk_stop() -> void:
@@ -621,7 +639,7 @@ func _walk_tick() -> void:
 	_walk_steps += 1
 	if r == "arrived":
 		_arrive()
-	elif r == "blocked" or _walk_steps > WALK_MAX_STEPS:
+	elif r == "blocked" or _walk_steps > _walk_step_budget:
 		_show_toast("走不过去")
 		_walk_stop()
 
@@ -984,6 +1002,7 @@ func _open_modal(entry: Dictionary) -> void:
 	if String(entry.get("kind", "")) == "agent":
 		_request_approaches(String(entry["id"]))
 	_rebuild_modal()
+	main.call("_update_status")
 
 func _close_modal() -> void:
 	if not _modal_open:
@@ -997,6 +1016,7 @@ func _close_modal() -> void:
 	_ai_pending = false
 	Sim.running = _modal_was_running
 	_sync_speed_btns()
+	main.call("_update_status")
 
 func _request_approaches(tid: String) -> void:
 	var me := Sim.get_agent(pid)
@@ -1360,6 +1380,9 @@ func _dur_text(ticks: int) -> String:
 
 # ── HUD ──────────────────────────────────────────────────────────────────────
 func _build_hud() -> void:
+	if main.get("_town_hud") != null:
+		_build_town_hud()
+		return
 	_hud = Control.new()
 	_hud.size = DESIGN
 	_hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1477,6 +1500,151 @@ func _build_hud() -> void:
 	_prompt.add_theme_stylebox_override("normal", ps)
 	_prompt.visible = false
 
+## A compact presentation of the same LifeMode status. Input, camera, selection
+## and action menus continue through the existing methods and public Sim API.
+func _build_town_hud() -> void:
+	_hud = Control.new()
+	_hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hud.visible = false
+	_layer.add_child(_hud)
+	_town_resident_card = Panel.new()
+	_town_resident_card.name = "TownResidentCard"
+	_town_resident_card.size = Vector2(304,224)
+	_town_resident_card.add_theme_stylebox_override("panel",TownLook.panel())
+	_town_resident_card.mouse_filter = Control.MOUSE_FILTER_STOP
+	_hud.add_child(_town_resident_card)
+	var card: Panel = _town_resident_card
+	_portrait = TextureRect.new()
+	_portrait.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_portrait.position = Vector2(12,10)
+	_portrait.size = Vector2(44,44)
+	_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(_portrait)
+	_name_l = _mk_label(card,20,Vector2(66,9),Vector2(128,25),TownLook.LINEN)
+	_mood_l = _mk_label(card,13,Vector2(194,13),Vector2(98,22),TownLook.ACCENT)
+	_mood_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_mood_l.mouse_filter = Control.MOUSE_FILTER_PASS
+	_sub_l = _mk_label(card,13,Vector2(66,36),Vector2(226,20),TownLook.MUTED)
+	_sub_l.clip_text = true
+	_sub_l.mouse_filter = Control.MOUSE_FILTER_PASS
+	_doing_l = _mk_label(card,14,Vector2(12,64),Vector2(280,22),TownLook.LINEN)
+	_doing_l.clip_text = true
+	_doing_l.mouse_filter = Control.MOUSE_FILTER_PASS
+	var progress := ColorRect.new()
+	progress.color = Color(0.30,0.42,0.40,0.45)
+	progress.position = Vector2(12,88)
+	progress.size = Vector2(280,3)
+	progress.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(progress)
+	_doing_fill = ColorRect.new()
+	_doing_fill.color = TownLook.ACCENT
+	_doing_fill.position = progress.position
+	_doing_fill.size = Vector2(0,3)
+	_doing_fill.set_meta("meter_width",280.0)
+	_doing_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(_doing_fill)
+	for index: int in range(NEED_ORDER.size()):
+		var nid: String = NEED_ORDER[index]
+		var y: float = 98+index*18
+		var label := _mk_label(card,13,Vector2(12,y-2),Vector2(42,20),TownLook.MUTED)
+		label.text = NEED_ZH[nid]
+		var background := ColorRect.new()
+		background.position = Vector2(58,y+4)
+		background.size = Vector2(190,7)
+		background.color = Color(0.34,0.46,0.43,0.35)
+		background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card.add_child(background)
+		var meter := ColorRect.new()
+		meter.position = background.position
+		meter.size = Vector2(0,7)
+		meter.set_meta("meter_width",190.0)
+		meter.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		card.add_child(meter)
+		_need_fill[nid] = meter
+		_need_val[nid] = _mk_label(card,13,Vector2(258,y-2),Vector2(32,20),TownLook.LINEN)
+	_speed_btns = [] # One shared clock toolbar in Main; keyboard bindings are unchanged.
+	_will_btn = Button.new()
+	_will_btn.position = Vector2(12,196)
+	_will_btn.size = Vector2(280,22)
+	_will_btn.text = "自主：关"
+	_will_btn.tooltip_text = "F 自主 / Free will：让这位居民自己决定接下来做什么。"
+	TownLook.button(_will_btn,_fnt,13)
+	_will_btn.pressed.connect(func(): _set_free_will(not free_will))
+	card.add_child(_will_btn)
+	_mood_panel = Panel.new()
+	_mood_panel.visible = false
+	_hud.add_child(_mood_panel)
+	_mood_parts_l = _mk_label(_mood_panel,13,Vector2.ZERO,Vector2(280,50),TownLook.MUTED)
+	_wants_panel = Panel.new()
+	_wants_panel.size = Vector2(272,94)
+	_wants_panel.add_theme_stylebox_override("panel",TownLook.panel())
+	_wants_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_hud.add_child(_wants_panel)
+	_town_wants_toggle = Button.new()
+	_town_wants_toggle.position = Vector2(8,6)
+	_town_wants_toggle.size = Vector2(256,24)
+	_town_wants_toggle.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	TownLook.button(_town_wants_toggle,_fnt,14)
+	_town_wants_toggle.pressed.connect(_toggle_town_wants)
+	_wants_panel.add_child(_town_wants_toggle)
+	_wants_l = RichTextLabel.new()
+	_wants_l.bbcode_enabled = true
+	_wants_l.add_theme_font_override("normal_font",_fnt)
+	_wants_l.add_theme_font_size_override("normal_font_size",14)
+	_wants_l.position = Vector2(12,36)
+	_wants_l.size = Vector2(248,50)
+	_wants_l.scroll_active = true
+	_wants_l.mouse_filter = Control.MOUSE_FILTER_STOP
+	_wants_panel.add_child(_wants_l)
+	_town_keys = _mk_label(_hud,13,Vector2.ZERO,Vector2(520,22),TownLook.LINEN)
+	_town_keys.text = "WASD 走动 · E 互动 · Tab 换目标 · 空格 暂停"
+	_town_keys.tooltip_text = "WASD / 点地走动；E互动；Tab换目标；Q放下；R人际；F自主；C换人；0暂停；1/2/3速度；H近况；Shift+H愿望；F5存档；F8读档。"
+	var hint_style := TownLook.panel()
+	hint_style.shadow_size = 0
+	hint_style.set_corner_radius_all(5)
+	hint_style.content_margin_left = 8
+	hint_style.content_margin_right = 8
+	hint_style.content_margin_top = 0
+	hint_style.content_margin_bottom = 0
+	_town_keys.add_theme_stylebox_override("normal",hint_style)
+	_town_keys.mouse_filter = Control.MOUSE_FILTER_PASS
+	_town_keys.visible = not touch
+	_prompt = _mk_label(_layer,16,Vector2.ZERO,Vector2(260,26),TownLook.LINEN)
+	_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_prompt.add_theme_stylebox_override("normal",TownLook.panel(true))
+	_prompt.hide()
+	if touch: _build_touch()
+	get_viewport().size_changed.connect(_layout_town_hud)
+	_layout_town_hud()
+
+func _toggle_town_wants() -> void:
+	_town_wants_expanded = not _town_wants_expanded
+	_layout_town_hud()
+	_refresh_wants()
+
+func _layout_town_hud() -> void:
+	if _town_resident_card == null: return
+	var viewport: Vector2 = main.call("_vp")
+	_hud.size = viewport
+	_town_resident_card.position = Vector2(maxf(12,viewport.x-316),maxf(220,viewport.y-236))
+	var top: float = (122 if bool(main.get("_player_mode")) else 100) if viewport.x < 1000 else 66
+	_wants_panel.position = Vector2(12,top)
+	_wants_panel.size.y = 184 if _town_wants_expanded else 94
+	_wants_l.size.y = _wants_panel.size.y-44
+	_town_keys.position = Vector2(maxf(12,(viewport.x-470)*0.5) if viewport.x >= 1100 else 12,viewport.y-28)
+	_town_keys.size.x = minf(470,viewport.x-24) if viewport.x >= 1100 else 210
+	_town_keys.text = "WASD 走动 · E 互动 · Tab 换目标 · 空格 暂停" if viewport.x >= 1100 else "E 互动 · 空格 暂停"
+	if _toast != null:
+		var narrow: bool = viewport.x < 1000
+		var toast_width: float = minf(520,viewport.x-(316 if narrow else 24))
+		var toast_x: float = viewport.x-toast_width-12 if narrow else (viewport.x-toast_width)*0.5
+		_toast.position = Vector2(toast_x,(108 if bool(main.get("_player_mode")) else 86) if narrow else 66)
+		_toast.size = Vector2(toast_width,46)
+	var town_hud: Node = main.get("_town_hud")
+	if town_hud != null: town_hud.call("layout")
+
 ## 触屏控件：左下浮动摇杆 + 底部一排大按钮（互动 / 我 / 人际 / 放下 / 缩放）。按钮与键盘走同一批函数。
 ## 尺寸按实机算：设计分辨率 1280×768 在 2688×1216（520dpi）上 ≈0.49dp/设计像素 ⇒ 大按钮 ≈ 40dp。
 func _build_touch() -> void:
@@ -1516,7 +1684,7 @@ func _refresh_hud() -> void:
 	for nid in NEED_ORDER:
 		var v := float(needs.get(nid, 100.0))
 		var f: ColorRect = _need_fill[nid]
-		f.size.x = 252.0 * clampf(v / 100.0, 0.0, 1.0)
+		f.size.x = float(f.get_meta("meter_width",252.0)) * clampf(v / 100.0, 0.0, 1.0)
 		f.color = Color(0.49, 0.80, 0.42) if v >= 55.0 else (Color(0.93, 0.76, 0.33) if v >= 28.0 else Color(0.92, 0.38, 0.32))
 		(_need_val[nid] as Label).text = "%d" % int(round(v))
 	var job := String(st.get("job", ""))
@@ -1538,7 +1706,7 @@ func _refresh_hud() -> void:
 	if _walk_on and d.is_empty():
 		txt = "走过去…" if String(_walk_goal.get("kind", "none")) == "none" else "走过去，然后%s" % String(_walk_goal.get("action", VERB_ZH.get(String((_walk_goal.get("ap", {}) as Dictionary).get("verb", "")), "进门")))
 	_doing_l.text = txt
-	_doing_fill.size.x = (372.0 - 100.0) * clampf(frac, 0.0, 1.0)
+	_doing_fill.size.x = float(_doing_fill.get_meta("meter_width",272.0)) * clampf(frac, 0.0, 1.0)
 	_check_state_wants(st)
 	if _wants_day != Sim.day:
 		_roll_wants()
@@ -1555,6 +1723,11 @@ func _refresh_hud() -> void:
 		var h := 30.0 if lines.size() <= 2 else 50.0
 		_mood_panel.size = Vector2(372, h)
 		_mood_panel.position = Vector2(DESIGN.x - 380.0, DESIGN.y - 258.0 - h - 6.0)
+	if _town_resident_card != null:
+		_mood_panel.hide()
+		_mood_l.tooltip_text = "\n".join(lines)
+		_sub_l.tooltip_text = _sub_l.text
+		_doing_l.tooltip_text = _doing_l.text
 	_sync_speed_btns()
 
 func _doing_text(d: Dictionary) -> String:
@@ -1787,6 +1960,23 @@ func _refresh_wants() -> void:
 			prog = " (%d/%d)" % [mini(int(w["n"]), int(w["count"])), int(w["count"])]
 		s += ("\n[color=#9be38a]√ %s[/color]" % String(w["text"])) if bool(w["done"]) else ("\n[color=#f2dca8]· %s%s[/color]  [color=#7d786c]+%d[/color]" % [String(w["text"]), prog, int(w["pts"])])
 	_wants_l.text = s
+	if _town_wants_toggle != null:
+		var done: int = 0
+		var next_wish: String = "今日愿望已完成。"
+		for wish: Dictionary in _wants:
+			if bool(wish.get("done",false)): done += 1
+		for wish: Dictionary in _wants:
+			if not bool(wish.get("done",false)):
+				next_wish = "· " + str(wish["text"])
+				if str(wish.get("type","")) == "social" and int(wish.get("count",0)) > 1:
+					next_wish += " (%d/%d)" % [mini(int(wish.get("n",0)),int(wish["count"])),int(wish["count"])]
+				break
+		_town_wants_toggle.text = "今日愿望 %d/%d [Shift+H] %s" % [done,_wants.size(),"−" if _town_wants_expanded else "+"]
+		_wants_l.tooltip_text = _wants_l.get_parsed_text()
+		_town_wants_toggle.tooltip_text = "满足感 %d · 点击%s全部愿望与志向进度" % [_score,"收起" if _town_wants_expanded else "展开"]
+		if not _town_wants_expanded:
+			var aspiration: String = "志向 · %s %d/%d" % [str(_asp.get("name","")),mini(_asp_progress(),int(_asp.get("goal",1))),int(_asp.get("goal",1))] if not _asp.is_empty() else "照顾自己，也认识小镇。"
+			_wants_l.text = "[color=#c4d9ca]%s[/color]\n%s" % [aspiration,next_wish]
 
 # ── 小工具 ───────────────────────────────────────────────────────────────────
 ## 「打开互动菜单」这个动作在当前设备上怎么说。
@@ -1809,6 +1999,10 @@ func _portrait_tex(id: String) -> Texture2D:
 	return at
 
 func _style(bg: Color, border: Color, radius: int, shadow: int) -> StyleBoxFlat:
+	if _town_resident_card != null:
+		var town_style := TownLook.panel(bg == INK_HI)
+		if border == BAD: town_style.border_color = BAD
+		return town_style
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = bg
 	sb.border_color = border
@@ -1821,6 +2015,9 @@ func _style(bg: Color, border: Color, radius: int, shadow: int) -> StyleBoxFlat:
 	return sb
 
 func _style_btn(b: Button, fs: int) -> void:
+	if _town_resident_card != null:
+		TownLook.button(b,_fnt,fs)
+		return
 	b.add_theme_font_override("font", _fnt)
 	b.add_theme_font_size_override("font_size", fs)
 	b.add_theme_stylebox_override("normal", _style(INK, GOLD_DIM, 5, 0))

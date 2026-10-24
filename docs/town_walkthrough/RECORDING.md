@@ -1,109 +1,107 @@
-# Record and compose the actual game walkthrough
+# Record the expanded town in actual gameplay
 
-The recording is the editable game's real `Main`/`LifeMode` view. The harness directs public selection, mouse/key input, legal stairs and doors, fixture use, a social attempt, autonomy, and save/load. Architectural tours change camera and local covers only. They are explicitly labelled inspection and do not imply resident traversal. The complete route is 600 seconds at 24 FPS, or 14,400 tour frames.
+The current route is **840 seconds (14:00), 18 FPS, 15,120 actual tour frames**. Record Godot MovieWriter **AVI** with a **44,100 Hz** capture mix rate: exactly 2,450 audio samples per video frame. The finished movie has 12 chapters and 24 measured Edge TTS paragraphs.
 
-The authoring script, `tools/build_town_walkthrough.py`, has three explicit phases. Importing it or requesting help does not synthesize speech, launch Godot, or run a media process. Delivery evidence records technical verification and a separate actual encoded-frame review by the recording owner or agent. Human audio listening remains separately identified as pending unless a real listening report is supplied. Script readiness alone is not recording evidence.
+The completed Full3 capture passed **64/64** actual input/action checks. Its corrected encoded movie passed **13/13** technical checks: 840.0 seconds, 15,120 decoded frames, 12 chapters, H.264/yuv420p with limited TV range, AAC and complete decode. The exact movie is 528,362,448 bytes, SHA-256 `9c72fa15426706d76307fd1eebaec77404de3cbabb67c80e9928d83ecbf4e252`. Twenty-four verified cached normal-rate Edge TTS takes supply 95 measured subtitle cues. Actual sampled visual review passed its declared scope with P2 limitations; audio review is technical only, with no recorded human listening. Preserve the exact reports/cache used; those results do not promise byte-identical future service output.
 
-## Inputs and prerequisites
+The source harness instantiates the product's real `Main.tscn`, `LifeMode`, and authoritative `Sim`. It demonstrates the core cafe, expanded district, reserve bathhouse, detailed camping trailer, a walked return to the core, and F5/F8 continuity. Labelled architecture inspections change presentation state only. They do not establish resident traversal of the inspected bridges, stairs, or planting.
 
-Use Python 3.11 or later, `ffmpeg`/`ffprobe` on PATH (FFmpeg must include libx264, AAC, libass subtitles, and loudnorm), and `edge-tts==7.2.8`. Edge TTS requires network access; playback of the finished movie does not. The project currently installs the Python dependency into the ignored `build/town_walkthrough/python_deps` directory. To reproduce that dependency setup deliberately:
+## Prepare and freeze the exact runtime
+
+Run commands from the repository root. Use Python 3.11 or later, FFmpeg/ffprobe with H.264, AAC, libass and loudnorm, and the configured Godot 4.6.2 engine. The existing voice setup uses `edge-tts==7.2.8` in the ignored `build/town_walkthrough/python_deps` directory:
 
 ```powershell
 python -m pip install --target build/town_walkthrough/python_deps edge-tts==7.2.8
 ```
 
-The current [narration.json](narration.json) contains 22 normal-rate `en-US-AriaNeural` paragraphs. An initial longer paragraph actually measured 21.768 seconds against a 19-second window. The shorter revision keeps the same ten-minute route and must still pass measurement for every take. [route_plan.json](route_plan.json) supplies the eleven chapter windows; [chapter_outline.md](chapter_outline.md) explains the capture contract.
+Edge TTS requires network access during synthesis; local playback and the logic game backend work offline. The builder supports the process-local migrated endpoint and records its configuration. It does not edit the installed library. Requesting Python module help does not launch Godot or synthesize narration.
 
-Complete the intended source merge and freeze before the full capture. Do not record an earlier worktree and promote its footage to the new source. Keep the preview and full output directories separate, and run the heavy stages serially. A MovieWriter recording proves the recorded frames and actions, not real-time hardware performance.
+Before capturing:
 
-## Actual game capture
+1. Finalize the native town chunks and all character exports. Stage and compile the complete v2 runtime using [PLAYABLE_INTEGRATION.md](../../tools/town_upgrade/PLAYABLE_INTEGRATION.md), retaining the explicit pre-upgrade profile snapshot.
+2. Freeze `Main.gd`, `TownModel3D.gd`, `WorldView3D.gd`, `TownWorldProfile.gd`, `TownCharacter3D.gd`, `LifeMode.gd`, `Sim.gd`, and the HUD scripts under `game/scripts/ui/` **before** the final profile compilation. The compiled profile records their SHA-256 values. Freeze the director, [route_plan.json](route_plan.json), [narration.json](narration.json), and media builder for the accepted recording and composition.
+3. Import and verify the exact staged runtime serially. The new logical integration arm is `res://scenes/town_upgrade_integration_test.tscn`. Its report covers topology, legal fixtures, access, long actual stepwise travel, and deterministic save/load; it does not replace GPU/input evidence.
+4. Confirm `game/project.godot` has `movie_writer/mix_rate=44100` under `[editor]`. Use a real display/GPU renderer for MovieWriter, not `--headless`.
 
-The preferred entry is the supervised [record-town-walkthrough.ps1](../../tools/record-town-walkthrough.ps1) launcher. It invokes the editable source harness, applies the serial engine limits, and preserves the actual town3d quicksave. It verifies the backup hash, restores the prior save in a finally block, or removes only the checked recording save if no prior save existed. The recording save is retained separately and `save_guard.json` records restoration and report validation.
+The full recording binds the profile/projection, exact staged chunk set, character manifest, director, and route. Composition rejects changed bound sources and presentation code changed after profile compilation. Recompile and repeat the affected verification/capture after a runtime change. Do not certify the expanded town with historical core-only reports.
 
-```powershell
-./tools/record-town-walkthrough.ps1 -Godot "C:/path/to/Godot_v4.6.2-stable_win64.exe" `
-  -Preview -OutputDir build/town_walkthrough/preview_v2
-# After the preview is accepted, record the full route serially:
-./tools/record-town-walkthrough.ps1 -Godot "C:/path/to/Godot_v4.6.2-stable_win64.exe" `
-  -OutputDir build/town_walkthrough/full
-```
+## Record preview, then the full route
 
-The launcher refuses to overwrite existing capture/report evidence; choose a fresh output directory for a rerun and pass that directory to the composition phases. Voice assets alone do not prevent the full capture. It independently parses fresh JSON and requires the correct schema, mode, complete frame/time counts, route completion, nonempty boolean passing checks, and zero failures. An operating-system exit code alone is insufficient.
-
-For advanced manual capture, the source harness is `res://scenes/town_walkthrough.tscn`. The stock release template does not support the alternative command-line test-scene entry. Manual launch bypasses the save guard and supervision; preserve the actual quicksave and apply the same serial limits yourself. The equivalent engine invocation is:
+Prefer the supervised launcher. It preserves the existing `town3d_quicksave.dat`, verifies the backup, restores the prior save in its `finally` block, and retains `save_guard.json` plus the recording save. It validates the fresh director report independently of the engine exit code.
 
 ```powershell
-$townGodot = 'C:/path/to/Godot_v4.6.2-stable_win64.exe'
-$townFull = [IO.Path]::GetFullPath('build/town_walkthrough/full')
-New-Item -ItemType Directory -Force -Path $townFull | Out-Null
-$townRaw = Join-Path $townFull 'capture.ogv'
-& $townGodot --path game --windowed --resolution 1280x768 `
-  --fixed-fps 24 --write-movie $townRaw `
-  res://scenes/town_walkthrough.tscn -- `
-  --town3d --backend logic --agents 12 --no-player --seed 7 `
-  --walkthrough-dir $townFull
+$townGodot = 'C:/path/to/Godot_v4.6.2-stable_win64_console.exe'
+$townPreview = 'D:/TownRuns/preview_001'
+$townFull = 'D:/TownRuns/full_001'
+
+./tools/record-town-walkthrough.ps1 -Godot $townGodot -Preview -Agents 60 -OutputDir $townPreview
+# Inspect the preview before starting the full, serial recording.
+./tools/record-town-walkthrough.ps1 -Godot $townGodot -Agents 60 -OutputDir $townFull
 ```
 
-The supervised launcher's limits and actual source/engine invocation belong in the capture evidence. The harness invokes the existing town3d F5/F8 namespace; use the launcher's backup/restore guard for that actual user directory rather than assuming an unsupported alternate-user-data flag provides isolation.
+Choose fresh output directories for retries; the launcher refuses to overwrite capture/report evidence. The preview is 90 seconds, 18 FPS, and 1,620 tour frames. It compresses or skips long journeys and uses the existing public 8x shortcut for the short café-action chapter, including the walked approach before its 24-tick use. The actual clock setting is checked after input. It is a framing/startup check, not full-route acceptance.
 
-Before the tour starts, the current harness selects Aria through the public LifeMode API, uses the real speed-key input, and waits until at least 90 simulation ticks have advanced. It then pauses and calls begin_select() to restore the resident selector. This establishes morning light without assigning the clock or relocating residents. All of this pre-roll is inside the reported boot-frame prefix, before the fixed ten-minute tour; composition trims it rather than shifting the narration. The route pauses after the meal so long inspection sections do not drift into night. In the full closing chapter, ordinary speed key 4 and live simulation waiting target the following morning, bounded by 578 seconds, then key 0 pauses the clock. `closing_real_clock_wait` records the target and actual ticks; verify the actual morning result in the capture rather than treating a camera/light override as evidence.
+The launcher passes `--single-threaded-scene --disable-vsync --windowed --resolution 1280x768 --fixed-fps 18 --write-movie <absolute>/capture.avi`, the source scene `res://scenes/town_walkthrough.tscn`, then user arguments `--town3d --backend logic --agents 60 --no-player --seed 7 --walkthrough-dir <absolute>`. `-Agents` is configurable from12to120; the explicit/default60 produces62actual residents in this profile. Older captures used `-Agents 12` and 14 actual residents. The accepted full recording uses the same62-resident population as the current ordinary-framerate checks. Keep engine/render/export stages serialized under the coordinator's supervisor. A release executable's normal-entry smoke run is separate from this source test-scene capture.
 
-Wait for engine exit and MovieWriter finalization. The full `walkthrough_report.json` must report `PASS`, `preview: false`, `route_complete: true`, zero failures, 24 FPS, 14,400 expected tour frames, and `direct_agent_writes: false`. It records the actual boot prefix as `movie_boot_frames_to_trim`; the builder also accepts the equivalent `movie_boot_frame_offset` if present and rejects conflicting values. Video trimming uses exact frame indices, and captured game audio uses the corresponding offset divided by 24.
+Before the timed tour, public LifeMode selection, actual speed-key input and live waiting establish at least 90 simulation ticks of morning. The harness pauses and restores the resident selector without assigning the clock or moving Aria. This setup remains in the recorded boot prefix. The 840-second tour starts afterward; composition removes exactly the reported prefix.
 
-The builder checks the current harness, route, projection, and staged GLB SHA-256 values against the capture report. Changed source requires a fresh recording. It also binds the raw OGV and report hashes into composition evidence. A successful preview is useful for route debugging but is deliberately rejected as the full input.
+Wait for normal engine exit and AVI finalization under the supervisor's time/file-size bounds. Preserve shutdown failures and their logs; an incomplete file is not accepted. The full `walkthrough_report.json` must contain:
 
-## Phase 1: measured voice and captions
+- `status: PASS`, `preview: false`, `route_complete: true`, zero failures and nonempty, passing boolean checks;
+- `fps: 18`, `expected_tour_frames: 15120`, `tour_frames_elapsed: 15120`, and 840 seconds elapsed;
+- `direct_agent_writes: false`, actual input/action receipts and source-bound framebuffer PNGs;
+- a consistent integer `movie_boot_frames_to_trim` (or its accepted equivalent `movie_boot_frame_offset`).
+
+The report must show actual expanded-town travel and reserve use, including the walked return. A camera pan, selected scene, visible furnishing, or menu alone does not prove completion. The resident-follow camera shows the journeys; labelled inspection shots remain separate.
+
+## Generate measured narration and subtitles
 
 ```powershell
-python tools/build_town_walkthrough.py voice --outdir build/town_walkthrough/full
+python tools/build_town_walkthrough.py voice --outdir $townFull
 ```
 
-Synthesis is sequential, with at most three attempts per paragraph and bounded stream timeouts/backoff. The process-local endpoint shim assigns `edge_tts.communicate.WSS_URL` to `wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1`, using the installed library's public trusted-client token as `Ocp-Apim-Subscription-Key`. This follows the endpoint migration in [upstream edge-tts PR 491](https://github.com/rany2/edge-tts/pull/491), inspected on 2026-10-12. The change is confined to this process; installed library files are not edited or vendored. `voice_report.json` records the version, endpoint, shim scope, and reference. The installed endpoint can be selected explicitly with `--endpoint installed` when appropriate.
+Use the current 24 normal-rate `en-US-AriaNeural` segments. Synthesis is sequential, with bounded retries/timeouts. The request cache includes text, voice, rate, WordBoundary mode, endpoint and library version. Verified matching takes are reused; changing a paragraph invalidates that paragraph's request. `--refresh-voice` regenerates takes, while `--respect-proxy` retains proxy settings when required.
 
-The cache key includes text, voice, rate, WordBoundary mode, endpoint, and edge-tts version. Cached MP3 and timing sidecars are reused only after their hashes and request match. `--refresh-voice` requests new takes; editing one paragraph changes only that paragraph's key. Direct network access is the default used by the successful local probe; `--respect-proxy` retains proxy environment settings if needed.
+Every take is measured with ffprobe and must fit its own editorial window. An overrun fails; no take is clipped, accelerated, or pushed into the next paragraph. Real gaps become silence in an exactly **840-second, mono, signed-16-bit, 24 kHz** narration WAV. This composition rate is distinct from MovieWriter's 44,100 Hz capture rate.
 
-Every take is measured with ffprobe. Any duration exceeding its paragraph window fails the phase. No take is clipped, silently sped up, or pushed into the next paragraph. After the duration gate, each MP3 is decoded with two FFmpeg threads and streamed into a mono, signed-16-bit, 24 kHz WAV. Zero samples fill the real gaps. The result is exactly 600 seconds; the builder does not hold the whole PCM file in memory.
+Actual Edge TTS WordBoundary data produces `captions.json`, SRT and ASS. Missing or mismatched words fail rather than receiving guessed timing. Captions use at most two lines, 54 characters per line and 90 characters per cue. Keep the complete 1280 × 768 game frame and append the 96-pixel subtitle matte, giving a 1280 × 864 output. Caption timing comes from measured speech, not chapter boundaries.
 
-Actual `WordBoundary` offsets and durations produce the SRT and ASS. Original punctuation is aligned back to the source text; missing or mismatched words fail instead of receiving guessed timings. Cues target about five seconds and at most 90 characters, split into no more than two lines. The ASS uses Arial 25, bottom-center alignment, side margins 48, and bottom margin 18 on a 1280 × 864 canvas.
+The accepted composition reused all 24 verified cached takes. The pond paragraph uses the actual714–734.5 second window; its719-second active-caption frame shows the pond. Text and cached take bytes were retained when retiming; new timing requires fresh voice/subtitle bindings and encoded verification.
 
-Outputs include `voice_cache/`, `narration.wav`, `narration.ass`, `narration.srt`, `captions.json`, and `voice_report.json`. Check the measured take durations before starting full composition. The generated voices and word metadata are cached evidence, not a guarantee that a future service request will produce identical audio.
+Retain `voice_cache/`, `voice_report.json`, `narration.wav`, `narration.ass`, `narration.srt` and `captions.json`. Service output need not be byte-identical on a future request; the accepted cache/report binds the actual takes used.
 
-## Phase 2: compose the final MP4
+## Compose and verify the MP4
 
 ```powershell
-python tools/build_town_walkthrough.py compose `
-  --raw build/town_walkthrough/full/capture.ogv `
-  --report build/town_walkthrough/full/walkthrough_report.json `
-  --outdir build/town_walkthrough/full
+python tools/build_town_walkthrough.py compose --outdir $townFull `
+  --raw "$townFull/capture.avi" --report "$townFull/walkthrough_report.json"
+
+python tools/build_town_walkthrough.py verify --outdir $townFull `
+  --raw "$townFull/capture.avi" --report "$townFull/walkthrough_report.json"
 ```
 
-This phase rejects stale narration assets, preview/failed capture reports, changed bound sources, or an incomplete raw capture. It trims the actual boot frames, keeps the complete 1280 × 768 game image, and appends a 96-pixel dark subtitle matte below it. The bottom HUD is preserved. Captions burn into that matte using the measured ASS sidecar. Eleven chapter markers cover the whole 600-second timeline.
+Current composition accepts **AVI only**. It decodes/counts the actual raw frames, checks the 18 FPS cadence and sufficient boot-plus-tour frames, then trims the exact recorded range. There is **no video padding, trailing-picture repair, synthetic frame reconstruction, or conversion of an incomplete recording into a complete tour**. Captured game audio is trimmed by the same boot offset divided by 18.
 
-Godot's Theora capture contains zero-byte packets that repeat the previous picture. The builder checks every packet timestamp and duration before reconstructing 24 FPS, restores only the proven trailing repeat packets, and then trims the boot prefix by frame index. The accepted capture contains 14,709 contiguous packets, including 51 trailing repeats; its 307-frame prefix leaves the complete 14,400-frame tour. The packet table and reconstruction recipe are hash-bound in the composition report. Two FFmpeg regression tests in `tools/tests/test_town_walkthrough_timing.py` cover sparse frames and actual Theora repeat packets, including rejection of broken cadence.
+The builder burns measured subtitles beneath the unchanged HUD and writes 12 contiguous chapter markers across 840 seconds. A separate two-pass loudnorm targets -16 LUFS and -1.5 dB true peak. A non-silent real game bed is reduced and ducked under narration; an absent/silent track is honestly labelled narration-only. No invented music or effects are added.
 
-Narration normalization is a separate measured two-pass loudnorm operation, targeting -16 LUFS and -1.5 dB true peak. The actual trimmed game audio is decoded and measured. A non-silent bed is reduced and sidechain-ducked under narration, with a final limiter. A silent or absent capture track produces honestly labelled narration-only audio. The tool adds no invented music or game sounds. The report records the measured game-bed RMS/peak and thresholds, allowing a sparse track to be reviewed rather than advertised as music.
+The default `LivingTown_Walkthrough.mp4` uses H.264/yuv420p, **limited TV range**, 1280×864,18 FPS, 15,120 frames, AAC audio and faststart. The current builder explicitly converts video with `scale=1280:768:flags=lanczos:out_range=tv` and supplies `-pix_fmt yuv420p -color_range tv` to FFmpeg. Both conversion and metadata matter: the earlier full-range `yuvj420p` encode was rejected and retained separately, not relabeled as a pass. `composition_report.json` binds input/output hashes, trimming, filters, audio measurements and command arguments. `verification_report.json` rehashes those inputs, probes and fully decodes the output, checks 840 seconds ±0.1, all 12 chapters, captions, frame count and measured audio integrity.
 
-Encoding uses H.264, yuv420p, CRF 20, medium preset, six video encoder threads, AAC 160 kbps, and faststart. The default output is `build/town_walkthrough/full/LivingTown_Walkthrough.mp4`. `composition_report.json` binds source/report/audio/caption/output hashes, exact trimming, filter recipe, command arguments, loudness measurements, and audio mode. Encoding completion is separate from final technical verification, actual encoded-frame inspection, and any later human listening acceptance.
+Verification normally extracts actual encoded midpoint frames into `qa/chapter_01.png` through `qa/chapter_12.png` and a contact sheet. Extraction alone leaves these images marked **not visually reviewed**. For the accepted Full3 movie, actual review covered all 12 chapter PNGs individually, the contact sheet, three active-caption frames at 25/83/719 seconds and six sparse strips containing30 one-FPS samples. Active captions are readable beneath the game/HUD; the pond caption matches its visible context. No complete 18 FPS playback or full-film motion acceptance is implied.
 
-## Phase 3: technical verification and actual encoded-frame review
+Decoded final audio spans 840.021 seconds, RMS -20.415 dBFS and peak -1.414 dBFS with no full-scale PCM sample. Human listening for pronunciation, clarity, pacing and perceptual sync was **not recorded**. Keep technical audio validity, sampled visual review and any future listening review distinct; never turn measured levels into a listening claim. Record all reviews against the exact movie/image hashes.
 
-```powershell
-python tools/build_town_walkthrough.py verify `
-  --raw build/town_walkthrough/full/capture.ogv `
-  --report build/town_walkthrough/full/walkthrough_report.json `
-  --outdir build/town_walkthrough/full
-```
+Before packaging, archive the current completed report/cues and reviewed PNGs at the paths required by [PLAYABLE_INTEGRATION.md](../../tools/town_upgrade/PLAYABLE_INTEGRATION.md). The Windows executable/PCK requires its own exact normal-entry runtime proof. Counts and verdicts come from the new reports, not from this guide. The route demonstrates selected interactions; every decorative object and every modeled room is not claimed as player-traversed.
 
-Verification rehashes bound inputs and output, probes the actual MP4, counts decoded frames, and requires 600 seconds ±0.1, 24 FPS, 14,400 frames, H.264/yuv420p at 1280 × 864, an AAC track, all eleven contiguous chapters, and valid caption sidecars. It fully decodes the movie with FFmpeg error checking, streams decoded PCM to calculate RMS and peak, rejects a silent narration result or full-scale peak, and records the output SHA-256. The decode error scan and measured audio are retained in logs and `verification_report.json`.
+## Failure handling and archival recordings
 
-By default, verification extracts one actual encoded frame from the midpoint of each chapter into `qa/chapter_01.png` through `qa/chapter_11.png`, plus `qa/contact_sheet.png`. `--no-qa-images` skips only that optional extraction. These generated frames are explicitly marked **not visually reviewed**. Technical PASS does not establish visual review or human listening. An agent may separately open the actual encoded frames and inspect caption layout; that review must bind the exact final MP4 and image hashes. Human audio listening remains pending unless performed and recorded.
+Each phase writes bounded command logs and a failure JSON on error. Repair an overlong take, failed action, stale source binding or incomplete capture, then rerun the appropriate stage. Keep rejected evidence labelled and separate. Do not change a report to PASS or patch missing gameplay with repeated frames.
 
-The recording owner or agent should open the actual encoded chapter frames and inspect the stair/meal sequence, counter menu and completion, exterior gold silhouette, room inspection labels, pond banks, social response, autonomy, and F5/F8 restoration. Record observed visual readability and truthful event narration with the exact movie/report/image hashes. The audio report separately records decode integrity, duration, RMS and peak. Human listening for voice clarity, pacing, pronunciation, and perceived sync is a recommended follow-up and must remain marked pending until actually performed; never infer listening acceptance from technical measurements or image inspection.
+Earlier ten-minute **600-second / 24 FPS / 14,400-frame OGV/Theora** recordings and their packet-reconstruction receipts are **archival evidence of the previous core-only runtime**. The historical timing regression tests retain that narrow reconstruction behavior. It is not the current capture format or compose path, and those old media/test counts do not certify the expanded town. The current Full3 AVI/action and corrected MP4 technical reports are complete and source-bound. Sampled visual acceptance has the explicit limits above; human listening/full-film playback acceptance is not recorded.
 
-The walkthrough demonstrates selected places and outcomes. It does not make every one of the 753 decorative assemblies interactive. Only explicitly mapped functional objects participate in gameplay; use the current compiled profile for their exact count. The source logical suite has 36 passing checks, the actual GPU suite has 28, and the current hosted regression report records 35 passing legacy scenes. The earlier 11 selected regressions remain historical evidence. The Windows package has separate normal boot/render proof. No general balance, collision/navmesh, streaming/LOD, population scale, or hardware-performance certification follows from this recording.
+## Accepted Full3 identities and review limits
 
-## Paths and failure handling
+The actual input/action report is `f1d9e3d026f7189da354504e3fbf6f535d14162846e7821df717dce8ae5c1240`; final encoded verification is `e3abee4f3dbd10deb61af89932160cc28f253235b6f348639ac16171196a7215`; measured voice report is `17b83a15b01239307bcafb86f3c765a8e41472c5b0eb6c02f9719f77017d76be`. The independent image review is `36c1a4d473441fb436c2c9cdf8a62d1c898e90a864d2193c70f7e9f3f138a0f9`. See [current walkthrough evidence](README.md) and [the release proof index](https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/LivingTown_Refinement_Proof_Index.json) for the bound source/asset/profile/movie identities and public-retrieval records.
 
-Every phase accepts `--raw`, `--report`, `--outdir`, `--output`, `--narration`, `--route`, `--ffmpeg`, `--ffprobe`, and `--edge-deps`. Relative `--output` paths resolve inside `--outdir`; other paths resolve from the invoking directory. The defaults keep full capture inputs and deliverables under `build/town_walkthrough/full`, while dependencies remain under `build/town_walkthrough/python_deps`.
+Known P2 findings are dark evening/night detail, sparse venue/amenity/pond dressing, a truncated internal-looking place label and real need depletion on return/resume. The recording does not establish a balanced-needs success, all-room decoration, all-character portrait fidelity or complete concept match. Architecture/terrain camera inspection stays explicitly separate from resident use/traversal.
 
-Arguments are passed directly to subprocesses without a shell. Each phase writes bounded command logs and a separate failure JSON on an error. An overlong take requires a wording/timing revision and voice rerun; an invalid source binding requires a new source-matched recording. Do not waive a failure by changing a report to PASS. Freeze the final tool, script, route, and source before the accepted run, then preserve the measured cache and reports beside the movie.
+The current GIF is 30.0 seconds/120 frames/640×384/4 FPS/infinite loop, no audio, SHA-256 `b68f52e7aef6f6c39fd02247db23491142d9fdface9a06aee030951eb1c91e24`. It samples six 5-second movie intervals, removes only the appended subtitle matte and remains at the existing first-screen image path. Its decoded/palette samples were reviewed; this is not a full-motion viewing claim.

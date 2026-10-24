@@ -1,0 +1,34 @@
+{
+  "schema": "living_town.asset_toolbox.recipe.v1",
+  "name": "Godot static render cache: full builder and independent resource readback",
+  "required_runtimes": ["powershell", "godot"],
+  "required_inputs": [],
+  "source_paths": [
+    "${repo}/tools/build-town-render-cache.ps1",
+    "${repo}/tools/run-godot-supervised.ps1",
+    "${repo}/tools/town_upgrade/build_static_render_cache.gd",
+    "${repo}/game/scripts/TownModel3D.gd",
+    "${repo}/game/scripts/TownStaticBatch3D.gd",
+    "${repo}/game/scripts/TownRayIndex3D.gd",
+    "${repo}/game/project.godot"
+  ],
+  "stages": [
+    {
+      "id": "cache",
+      "kind": "command",
+      "phase": "engine_consumer",
+      "depends_on": [],
+      "inputs": ["${repo}/game/assets/town3d"],
+      "argv": [
+        "${runtime.powershell}", "-NoProfile", "-File", "${repo}/tools/build-town-render-cache.ps1",
+        "-Godot", "${runtime.godot}", "-Output", "${iteration}/cache", "-ReceiptRoot", "${iteration}/supervisor"
+      ],
+      "outputs": ["${iteration}/cache", "${iteration}/supervisor"],
+      "checks": [
+        {"file": "${iteration}/cache/cache_build_report.json", "pointer": "/status", "equals": "PASS_ACTUAL_FULL_BUILDER_RESOURCE_READBACK"}
+      ],
+      "effects": ["workspace_write"],
+      "timeout_seconds": 1260
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "schema": "living_town.asset_toolbox.recipe.v1",
+  "name": "Optional GLB consumer: actual GPU import/framebuffer, separate art review",
+  "required_runtimes": [
+    "godot"
+  ],
+  "required_inputs": [
+    "asset",
+    "concept"
+  ],
+  "source_paths": [
+    "${repo}/tools/asset_refinement/godot_preview/main.gd",
+    "${repo}/tools/asset_refinement/godot_preview/Main.tscn",
+    "${repo}/tools/asset_refinement/godot_preview/project.godot"
+  ],
+  "stages": [
+    {
+      "id": "preview",
+      "kind": "command",
+      "phase": "engine_consumer",
+      "depends_on": [],
+      "inputs": [],
+      "argv": [
+        "${runtime.godot}",
+        "--path",
+        "${repo}/tools/asset_refinement/godot_preview",
+        "--single-threaded-scene",
+        "--",
+        "--asset=${input.asset}",
+        "--capture=${iteration}/preview.png",
+        "--report=${iteration}/preview.json"
+      ],
+      "outputs": [
+        "${iteration}/preview.png",
+        "${iteration}/preview.json"
+      ],
+      "checks": [
+        {
+          "file": "${iteration}/preview.json",
+          "pointer": "/status",
+          "equals": "PASS"
+        }
+      ],
+      "effects": [
+        "workspace_write"
+      ],
+      "timeout_seconds": 600
+    },
+    {
+      "id": "engine-art-review",
+      "kind": "review",
+      "phase": "visual_review",
+      "depends_on": [
+        "preview"
+      ],
+      "inputs": [],
+      "artifacts": [
+        "${iteration}/preview.png",
+        "${input.concept}"
+      ],
+      "criteria": [
+        "Inspect the actual consumer frame for shading/alpha/scale/texture drift against the native and concept. A visual import test does not establish gameplay, collisions, navigation or performance."
+      ]
+    }
+  ]
+}
