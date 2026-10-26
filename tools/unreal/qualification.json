@@ -1,0 +1,33 @@
+{
+  "scope": "Qualified native MCP bootstrap and parameterized repository launcher; asset/gameplay quality remains separate",
+  "engine_version": "5.8.4",
+  "engine_changelist": 58902052,
+  "original_actual_run": "unreal_mcp_bootstrap_actual_v1_004",
+  "original_actual_report_sha256": "3d8e082cae5e84886e5a63fadcb47199c7a61e961a755c348bbd9a8ffae902ce",
+  "original_actual_schema_map_sha256": "5e849b991ca0f3a28972faedd4946bdc2987b17c16781c3ff894b562be69287a",
+  "original_actual_toolsets_described": 19,
+  "original_controlled_job_exit": 92,
+  "original_root_and_descendants_reaped": true,
+  "original_hardware": "D3D12 SM6 offscreen",
+  "asset_import_qualified_by_bootstrap": false,
+  "gameplay_or_final_art_qualified": false,
+  "repository_actual_run": {
+    "evidence_directory": "unreal_repository_bootstrap_actual_v1_001",
+    "report_sha256": "08fc531e56fd1befddb1d95bd0312eabd65523af2526af69860ab3ef5bfb0a2d",
+    "schema_map_sha256": "5e849b991ca0f3a28972faedd4946bdc2987b17c16781c3ff894b562be69287a",
+    "toolsets_described": 19,
+    "owned_root_pid": 30316,
+    "controlled_job_exit": 92,
+    "root_and_descendants_reaped": true,
+    "hardware": "AMD Radeon8060S D3D12 SM6 offscreen",
+    "source_and_private_guards_passed": true,
+    "canonical_source_test_checks": 64,
+    "scope_excludes": [
+      "asset import",
+      "gameplay",
+      "final art",
+      "Lumen/Nanite qualification",
+      "frame performance"
+    ]
+  }
+}

@@ -6,6 +6,8 @@ Residents work, eat, make friends, and remember promises, rumors, and disputes. 
 
 [中文](README.md) · [Development notes](docs/README.md)
 
+Development now targets **Unreal Engine 5.8 / C++**. The native café passes actual walking, lease and ledger save/load tests; full-town migration and visual refinement continue. [Current scope and evidence](docs/active-town-roadmap.md). The Godot walkthrough below preserves the previous edition.
+
 [![Refined town in actual gameplay: neighborhoods, interiors, reserve and resident life](docs/media/town3d-walkthrough.gif)](https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/LivingTown_Walkthrough.mp4)
 
 A 30-second silent GIF excerpt. Click for the **14-minute in-engine walkthrough** with Edge TTS narration and subtitles. The full game image is retained above a separate caption band.

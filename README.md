@@ -6,6 +6,8 @@
 
 [English](README_EN.md) · [设计与开发记录](docs/README.md)
 
+当前开发目标已转为 **Unreal Engine 5.8 / C++**。原生咖啡馆已通过真实行走、租赁与账本存读测试；全镇迁移和美术精修继续推进。[当前进度与验证范围](docs/active-town-roadmap.md)。下方 Godot 导览保留为上一版参考。
+
 [![精修小镇实机导览：街区、分层室内、保护区与居民生活](docs/media/town3d-walkthrough.gif)](https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/LivingTown_Walkthrough.mp4)
 
 30 秒无声 GIF 精选；点击预览观看带 Edge TTS 配音与字幕的 **14 分钟实机导览**。保留完整游戏画面，字幕位于额外的下方色带。

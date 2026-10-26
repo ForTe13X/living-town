@@ -1,0 +1,13 @@
+# Qualified project/config/source inputs are byte-bound to build receipts.
+# Preserve their original bytes across Windows and other checkouts.
+LivingTown.uproject -text
+Config/** -text
+Source/** -text
+Content/** -text
+*.md text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+*.uasset binary
+*.umap binary
+*.ubulk binary
+*.uexp binary
