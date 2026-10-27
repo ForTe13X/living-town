@@ -1,0 +1,183 @@
+{
+  "schema": "living_town.hosted_runtime_refresh_audit.v1",
+  "review_date": "2026-10-27",
+  "source_run_id": 40582042993,
+  "job_id": 122463710384,
+  "artifact_id": 12770901926,
+  "artifact_archive_bytes": 39872152,
+  "artifact_archive_sha256": "c864c7fa2c76c2c9677d869ca7cd5fbd9619eda06c350c12135eb632acaddb59",
+  "artifact_metadata_digest_matches_download": true,
+  "artifact_download_method": "GitHub connector: fetch_workflow_run_artifacts metadata, then download_workflow_artifact reusable ZIP file reference.",
+  "reviewed_pr_head": "c2f594340b4012c009c598b89be23eb56f910ec4",
+  "reviewed_event_sha": "d624569893036813d6f1ad731b23fa054d1aea8c",
+  "event_tree_equals_PR_head_tree": true,
+  "reviewed_event_tree": "5d4d21ad7adb3c5f93a26d1a82d9e4e5ff7818c3",
+  "positive_manifest_verified_entries": 88,
+  "negative_manifest_verified_entries": 10,
+  "all_recorded_hashes_match": true,
+  "artifact_manifest_sha256": {
+    "visual-artifacts.sha256": "d1be24d9c933ce6143898e641f81d75e7efc1abc3799e025f619edfe56c89576",
+    "visual-negative-evidence/artifacts.sha256": "9132eda36de368e91bd3dbfbbbf964c182faf6137ee0735bc6177f965013bcb4"
+  },
+  "positive_verdict": "VISUAL_CANARY verdict=pass rc=0 png_count=75 runtime_errors=0",
+  "negative_verdict": "VISUAL_NEGATIVE verdict=caught_expected_daynight_fault shot_rc=0 assert_rc=1 a1=1 a2=1 gate=1 runtime_errors=0",
+  "inline_identical_floor_negative": "Expected B-only failure at0.0000; companion frames and metadata preserved, all six recorded controls true.",
+  "required_runtime_lines": {
+    "RUNNER_IMAGE ": "RUNNER_IMAGE os=ubuntu24 version=20261026.354.1 arch=X64",
+    "GODOT_ARCHIVE ": "GODOT_ARCHIVE sha256=30e6b6d141f0cd5bebd629ad1d0ef1324e60091bb20662d026b402ba58c59937",
+    "GODOT_BINARY ": "GODOT_BINARY sha256=5a806b2b385279d9607094d33e946ed828e9606df4cb46d258ca27468dc5c1c9 version=4.6.2.stable.official.71f334935",
+    "PYTHON ": "PYTHON version=3.11.17 pillow=11.3.0",
+    "VISUAL_PACKAGE libgl1=": "VISUAL_PACKAGE libgl1=1.7.0-1build1",
+    "VISUAL_PACKAGE libgl1-mesa-dri=": "VISUAL_PACKAGE libgl1-mesa-dri=25.2.8-0ubuntu0.24.04.4",
+    "VISUAL_PACKAGE libglx-mesa0=": "VISUAL_PACKAGE libglx-mesa0=25.2.8-0ubuntu0.24.04.4",
+    "VISUAL_PACKAGE mesa-utils=": "VISUAL_PACKAGE mesa-utils=9.0.0-2",
+    "VISUAL_PACKAGE xauth=": "VISUAL_PACKAGE xauth=1:1.1.2-1build1",
+    "VISUAL_PACKAGE xvfb=": "VISUAL_PACKAGE xvfb=2:21.1.12-1ubuntu1.9",
+    "OpenGL vendor string: ": "OpenGL vendor string: Mesa",
+    "OpenGL renderer string: ": "OpenGL renderer string: llvmpipe (LLVM 20.1.2, 256 bits)",
+    "OpenGL version string: ": "OpenGL version string: 4.5 (Compatibility Profile) Mesa 25.2.8-0ubuntu0.24.04.4"
+  },
+  "policy_only_runtime_value_changes": [
+    "RUNNER_IMAGE "
+  ],
+  "existing_profiles_preserved": true,
+  "reviewed_runtime_profile_count": 4,
+  "png_comparison": {
+    "png_files_compared": 77,
+    "all_byte_identical_to_committed_reviewed_hashes": true,
+    "prior_receipt": "analysis/p1z/hosted-runtime-profile-review-2026-10-20.json",
+    "prior_receipt_sha256": "0f0b5d6d7279135b03b4605e84b294b901f15bbbe68a6064e86807f680fdf309"
+  },
+  "representative_images_inspected": [
+    "visual-gate/vg_noon.png",
+    "visual-gate/vg_night.png",
+    "visual-gate/season/winter_night.png",
+    "visual-gate/forest/noon/grove-coverage.png",
+    "visual-gate/floor/rt_cafe_2f.png",
+    "visual-gate/vg_player_east_ocean.png",
+    "visual-negative-evidence/negative-night.png"
+  ],
+  "representative_image_sha256": {
+    "visual-gate/vg_noon.png": "a0ebc5b099095a5fb7469b5d18c29482288f537eecdae27abb6067f19c6bebf6",
+    "visual-gate/vg_night.png": "874313786b34b25cbed3a479e4b68933370f67b5dde15ec6cb484c5ca2dbfb0e",
+    "visual-gate/season/winter_night.png": "7fe275a36687e6645033db061fbe17b698ebe4cc917c8dbc00e4d317f7ea8c09",
+    "visual-gate/forest/noon/grove-coverage.png": "096490ac35f3e0211bf6abf77da218316231d209450967b0e7fe55582235bfa9",
+    "visual-gate/floor/rt_cafe_2f.png": "9e37c6c26d50130412f15bed8bc636101430d63a830909ffa7b63a3ab19027cb",
+    "visual-gate/vg_player_east_ocean.png": "a6ac33040f89952ee94393e744105004c943feace2d14c25fa92313d95a805f1",
+    "visual-negative-evidence/negative-night.png": "e494683a1ccc8a8ed0554d71393502c4899309641d3266cf178a2ebca9eb90a6"
+  },
+  "visual_sample_observations": [
+    "Noon town retains warm daylight; night town retains blue modulation and warm lamps.",
+    "Winter-night and grove-coverage overlay remain coherent with their declared fixtures.",
+    "Cafe2F has its distinct bedroom/study plan and portal state; harbor/player frame retains the east-ocean carrier.",
+    "Injected night negative is visibly daylight-colored while lamps are active; detector log catches exactly A1 andA2."
+  ],
+  "source_anchor_reference": "c2f594340b4012c009c598b89be23eb56f910ec4",
+  "source_anchors_sha256": {
+    "analysis/p1z/hosted_visual_runtime_policy.json": "809b720a20f612206cdc5baa4fbf88d8cd9bd14f556f66a55e2d56e89554c421",
+    "tools/assert_hosted_visual_required.py": "f4121cd415b0b5530dcc8b080cdda939538ff194706cbc22950d5fc893d86250",
+    "tools/tests/test_hosted_visual_required.py": "9d19aa207108e6697b2c1f09cd9c53a254fdbeb66986cabb77a16eec051ad746",
+    ".github/workflows/ci.yml": "19aaab5c0b39b6de64766b23821a54134f86b775e4e63b4bc095371e064bac76",
+    "tools/visual_gate.sh": "06131de2192387fe2ed6e4e55bf6143184532e4e2e54db7ff9b1ac4b93899dc7",
+    "tools/visual_canary_negative.sh": "32d7294976b1a1e5f4d9d05000d856b04e60898ec2a9efef76e14916da81dd2a",
+    "tools/prepare_visual_canary_negative.py": "af00e2297cf91eebb83c5edf64e4f60af3e23f4c02df36726aaaaf56989ad09f",
+    "tools/visual_daynight_prereq.py": "b43d1015d44f25ef3ae802c7245fa422c11496d64573234bdcb7d51df14d72fd",
+    "tools/assert_daynight.py": "d5829024751eaa8966e4ca7f8ca69718aff9d5d6d5f86ba60abb34e68c7c5e72",
+    "tools/assert_floor_roundtrip.py": "fa510d563f8a6eb7414eccceeceff578c28ac7fc116e8328a1c821e847e45046",
+    "tools/assert_cafe_2f.py": "729b97a829534908408adab8e2cb08788dcba0e6c83150d480d134c5a47a1eb3",
+    "tools/assert_cafe_interior_density.py": "4a07da996f8836221742aee61bca4ffdef4a2a8accdd4f4197de1fa5b4055cbb",
+    "tools/assert_east_ocean_carrier.py": "596dd9523d03a889a95610d2ba30d127b02a9fa586468d3101a9fc29e322d8a0",
+    "tools/assert_space_roundtrip.py": "451ff4bae62c3545000af8892a5ac4bcf0582fa66a3ebedcbbfc2a624c1616d4",
+    "tools/assert_p1i_warehouse.py": "751b6754f63ded4ec6e4ce5e9134ce83e23b96dc7df994c5650b5a00ca9eba90",
+    "tools/assert_p1o_manifest_authority.py": "c0c7a68ee47e9bf54b30cda2968a60509fb3ab598baa48defe5d03610a29e7bb",
+    "tools/assert_interior_shell.py": "bca3b21e47de320889080530b7b0ae5314c5a3ab4384f48f650c80ef0cf21668",
+    "tools/assert_furniture_role.py": "cce1dff3d3344aa304c2be8fe39d9c3e1cfc65a13f119785355ecbc915bbdbae",
+    "tools/assert_tree_stand.py": "4f481d677252a5539e7938505f10ecf26a6f0dfb0eaf76333d819d896daf7072",
+    "tools/pond.py": "30b826564ae3d87b915023f3e3bd82ad3540526845aa1c60cb0c4e0b68bb1715",
+    "analysis/af2/assert_season.py": "e57c47f53d70ac2eac80c8b6d4582f4bc64513ee21e5786ab029527aab229b0a",
+    "analysis/af2/forest_sample_policy.json": "d9ccdce7e1d6d82ef455a447f40ba5dc59d61a9098f5516231273e99b7fd1c2d",
+    "analysis/ai1/assert_precip.py": "436dc29743cdd9bfd4ccf08c2027ffd47327f6ec75347d05cde6f4ed97bacd47",
+    "game/scripts/Main.gd": "8c7cf4b48251a43a49cdfa1c8f8a394107ff590510725bfab102112e8f1721e3",
+    "game/project.godot": "b5ce60f2f0d0eaaea5992ab0ee0cb038299ae67e385f11bda2b51dd6a6393959",
+    "game/data/map.json": "5a51c6d68b744a6f0f9f8df62647b6bda17c71d6768ed325bf2ec9ce6072699c",
+    "tools/vg_shoot.sh": "b2054bfe0b7245eb092ad18d9f77d5067cb70203fed350c8efb81fb2651703b6",
+    "tools/space_roundtrip.sh": "15aea8b47f9962d0b73ca9eea5f9d7939f7609d2d11240623973e3bf73aa99f3",
+    "tools/ciede2000.py": "c6fc5e4764caba9d54d8171733a533916b649c1542ab004901c165abc0d4e12e",
+    "tools/ci.sh": "6bb977ae99dea9796cf356e9799a17b3ebd3d720c423b01a41addc03ce632520",
+    "game/bench/golden_digests.json": "6a77a4334efcc9b467b2b1b699dfc53bd263d5bfb429d50f674e457cb8a9d218",
+    "game/bench/modelpath_anchor.json": "44800bf7439812b3bfb7fb9833a7abf6a97d0c9a931ee7e0bc7ad943d19968b6",
+    "tools/gate_complement_ledger.json": "08441201a0bfec8819d3775c648a2af2a53d7c3e13c1fb5e423a8ec241ef0ab8",
+    "tools/gate_complement_guard.py": "4e2edc0071db1817a31b95b4c6df67d8166ea850dffb8ae50be23ae84f857378"
+  },
+  "source_anchor_changes_since_previous_review": [
+    "analysis/p1z/hosted_visual_runtime_policy.json"
+  ],
+  "archived_game_subtree_sha1": "111c9f1aaaeb9b0d0ee175b90af1aa48004c0cf1",
+  "archived_game_subtree_equals_prior_reviewed_head": true,
+  "reviewed_gate_source_unchanged_from_previous_review": true,
+  "source_anchor_scope": "Committed hosted event/PR-head blobs only; unrelated pre-existing dirty working-tree files are not used as proof.",
+  "checker_source_sha256": "f4121cd415b0b5530dcc8b080cdda939538ff194706cbc22950d5fc893d86250",
+  "checker_validation": {
+    "actual_artifact_original_policy": {
+      "rc": 1,
+      "stdout": "",
+      "stderr": "HOSTED_VISUAL_REQUIRED FAIL runtime: no complete reviewed profile matched\nHOSTED_VISUAL_REQUIRED FAIL runtime: nearest reviewed profile=ubuntu24-20261018.339.1\nHOSTED_VISUAL_REQUIRED FAIL runtime: 'RUNNER_IMAGE ' expected exactly once as 'RUNNER_IMAGE os=ubuntu24 version=20261018.339.1 arch=X64'; found ['RUNNER_IMAGE os=ubuntu24 version=20261026.354.1 arch=X64']\n"
+    },
+    "actual_artifact_exact_added_profile": {
+      "rc": 0,
+      "stdout": "HOSTED_VISUAL_REQUIRED PASS positive=pass negative=caught_expected_daynight_fault runtime=reviewed profile=ubuntu24-20261026.354.1\n",
+      "stderr": ""
+    },
+    "actual_a2_missing_refused": {
+      "rc": 1,
+      "stdout": "",
+      "stderr": "HOSTED_VISUAL_REQUIRED FAIL negative: unexpected tooth receipt caught_expected_daynight_fault 0 1 1 0 1 0\n"
+    },
+    "actual_positive_skip_refused": {
+      "rc": 1,
+      "stdout": "",
+      "stderr": "HOSTED_VISUAL_REQUIRED FAIL positive: nonpassing verdict=skip rc=77\nHOSTED_VISUAL_REQUIRED FAIL positive: empty PNG set\n"
+    },
+    "duplicate_runner_refused": {
+      "rc": 1,
+      "stdout": "",
+      "stderr": "HOSTED_VISUAL_REQUIRED FAIL runtime: no complete reviewed profile matched\nHOSTED_VISUAL_REQUIRED FAIL runtime: nearest reviewed profile=ubuntu24-20261018.339.1\nHOSTED_VISUAL_REQUIRED FAIL runtime: 'RUNNER_IMAGE ' expected exactly once as 'RUNNER_IMAGE os=ubuntu24 version=20261018.339.1 arch=X64'; found ['RUNNER_IMAGE os=ubuntu24 version=20261026.354.1 arch=X64', 'RUNNER_IMAGE os=ubuntu24 version=20261026.354.1 arch=X64']\n"
+    },
+    "unreviewed_runner_refused": {
+      "rc": 1,
+      "stdout": "",
+      "stderr": "HOSTED_VISUAL_REQUIRED FAIL runtime: no complete reviewed profile matched\nHOSTED_VISUAL_REQUIRED FAIL runtime: nearest reviewed profile=ubuntu24-20261018.339.1\nHOSTED_VISUAL_REQUIRED FAIL runtime: 'RUNNER_IMAGE ' expected exactly once as 'RUNNER_IMAGE os=ubuntu24 version=20261018.339.1 arch=X64'; found ['RUNNER_IMAGE os=ubuntu24 version=20261027.unreviewed arch=X64']\n"
+    },
+    "unreviewed_arch_refused": {
+      "rc": 1,
+      "stdout": "",
+      "stderr": "HOSTED_VISUAL_REQUIRED FAIL runtime: no complete reviewed profile matched\nHOSTED_VISUAL_REQUIRED FAIL runtime: nearest reviewed profile=ubuntu24-20261018.339.1\nHOSTED_VISUAL_REQUIRED FAIL runtime: 'RUNNER_IMAGE ' expected exactly once as 'RUNNER_IMAGE os=ubuntu24 version=20261018.339.1 arch=X64'; found ['RUNNER_IMAGE os=ubuntu24 version=20261026.354.1 arch=X86']\n"
+    },
+    "new_runner_unreviewed_xvfb_refused": {
+      "rc": 1,
+      "stdout": "",
+      "stderr": "HOSTED_VISUAL_REQUIRED FAIL runtime: no complete reviewed profile matched\nHOSTED_VISUAL_REQUIRED FAIL runtime: nearest reviewed profile=ubuntu24-20261026.354.1\nHOSTED_VISUAL_REQUIRED FAIL runtime: 'VISUAL_PACKAGE xvfb=' expected exactly once as 'VISUAL_PACKAGE xvfb=2:21.1.12-1ubuntu1.9'; found ['VISUAL_PACKAGE xvfb=unreviewed']\n"
+    },
+    "existing_15_policy_tests": {
+      "rc": 0,
+      "stdout": "",
+      "stderr": "test_candidate_fail_and_skip_are_nonpassing_verdicts (test_hosted_visual_required.HostedVisualRequiredTests.test_candidate_fail_and_skip_are_nonpassing_verdicts) ... ok\ntest_cross_profile_field_mix_is_not_accepted (test_hosted_visual_required.HostedVisualRequiredTests.test_cross_profile_field_mix_is_not_accepted) ... ok\ntest_duplicate_identical_runtime_identity_fails (test_hosted_visual_required.HostedVisualRequiredTests.test_duplicate_identical_runtime_identity_fails) ... ok\ntest_duplicate_policy_json_keys_are_rejected (test_hosted_visual_required.HostedVisualRequiredTests.test_duplicate_policy_json_keys_are_rejected) ... ok\ntest_duplicate_profiles_and_names_are_malformed (test_hosted_visual_required.HostedVisualRequiredTests.test_duplicate_profiles_and_names_are_malformed) ... ok\ntest_each_complete_reviewed_profile_passes (test_hosted_visual_required.HostedVisualRequiredTests.test_each_complete_reviewed_profile_passes) ... ok\ntest_empty_png_set_and_runtime_error_fail (test_hosted_visual_required.HostedVisualRequiredTests.test_empty_png_set_and_runtime_error_fail) ... ok\ntest_legacy_single_profile_policy_remains_supported (test_hosted_visual_required.HostedVisualRequiredTests.test_legacy_single_profile_policy_remains_supported) ... ok\ntest_missing_positive_receipt_fails (test_hosted_visual_required.HostedVisualRequiredTests.test_missing_positive_receipt_fails) ... ok\ntest_missing_runtime_receipt_and_duplicate_identity_fail (test_hosted_visual_required.HostedVisualRequiredTests.test_missing_runtime_receipt_and_duplicate_identity_fail) ... ok\ntest_not_run_and_wrong_negative_shape_fail (test_hosted_visual_required.HostedVisualRequiredTests.test_not_run_and_wrong_negative_shape_fail) ... ok\ntest_partial_profile_cannot_silently_drop_identity (test_hosted_visual_required.HostedVisualRequiredTests.test_partial_profile_cannot_silently_drop_identity) ... ok\ntest_profile_requires_bound_review_metadata (test_hosted_visual_required.HostedVisualRequiredTests.test_profile_requires_bound_review_metadata) ... ok\ntest_reviewed_positive_and_expected_negative_pass (test_hosted_visual_required.HostedVisualRequiredTests.test_reviewed_positive_and_expected_negative_pass) ... ok\ntest_rolling_runtime_drift_fails_separately (test_hosted_visual_required.HostedVisualRequiredTests.test_rolling_runtime_drift_fails_separately) ... ok\n\n----------------------------------------------------------------------\nRan 15 tests in 2.156s\n\nOK\n"
+    }
+  },
+  "proposed_policy_sha256": "7f8b4d3fbfee6cd30e130446d5a214c41d62da20895ce78de4cea7b012fa5b58",
+  "policy_path": "analysis/p1z/hosted_visual_runtime_policy.json",
+  "run_url": "https://github.com/ForTe13X/living-town/actions/runs/40582042993",
+  "job_failed_only_final_runtime_enforcement": true,
+  "other_eight_jobs_passed": true,
+  "no_visual_goldens_or_detector_thresholds_changed": true,
+  "no_workflow_or_required_gate_change": true,
+  "scope": "One exact hosted raster profile for the archived2D canary. Unreal remains primary. No Unreal art/runtime/FPS/cook qualification or successful post-policy CI is implied.",
+  "engines_launched": false,
+  "canonical_owned_paths": [
+    "analysis/p1z/hosted_visual_runtime_policy.json",
+    "analysis/p1z/hosted-runtime-review-2026-10-27.json",
+    "analysis/p1z/hosted-visual-required-policy.md"
+  ],
+  "review_evidence_directory": "F:\\Living Town\\2026-10-20_Refined_Town\\hosted_runtime_review_2026_10_27",
+  "existing_CRLF_policy_and_doc_line_endings_preserved": true
+}
