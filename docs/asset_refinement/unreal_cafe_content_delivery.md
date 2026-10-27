@@ -21,9 +21,17 @@ $editor = Join-Path $EngineRoot 'Engine/Binaries/Win64/UnrealEditor.exe'
 $project = Join-Path $ProjectRoot 'LivingTown.uproject'
 if (!(Test-Path -LiteralPath $editor -PathType Leaf) -or !(Test-Path -LiteralPath $project -PathType Leaf)) { throw 'Supply the qualified UE installation and matching fresh native project.' }
 $mapUrl = $manifest.map + '?game=/Script/LivingTownNative.LivingTownCafeGameMode'
-& $editor $project $mapUrl '-game' '-NoLiveCoding' '-DisablePlugins=AndroidFileServer'
+& $editor $project $mapUrl '-game' '-NoLiveCoding' `
+  '-DisablePlugins=AndroidFileServer,ModelContextProtocol,EditorToolset,ToolsetRegistry' `
+  '-DisablePython' '-notraceserver' '-ini:Engine:[ConsoleVariables]:TEDS.Enable=0'
 ```
 
 This recipe does not execute the editor or auto-change configuration. The native GameMode creates exactly289 café components and Ben; do not add a second editor venue or preview pawn. WASD/mouse look and native lease/end/save-ledger/load-ledger controls remain real runtime code. The review shot's down12 control look was transient; ordinary launch uses the native binding spawn rotation and free mouse look, not a saved artificial pose.
 
-The first source/build/content combination still needs a fresh owned normal-play validation before being labelled runnable delivery. Source data are preserved even when art remains provisional. This record does not relabel the café slice as the complete town or claim a packaged-game framerate.
+These process-local controls avoid installed editor-authoring startup in uncooked game mode. The installed Python plugin otherwise scans mounted editor-tool content whose reflected classes are unavailable in game mode; TEDS otherwise starts without its editor-only UI purposes. The controls disable those flows, retain the project's renderer settings, and leave the installed engine and global configuration unchanged. They are part of the qualified local launch recipe, not a change to the source project's editor authoring setup.
+
+The current combination is verified on this host: source digest 714bf85459d1667641fa82253056d7ada09407528ed7202c4be50d71335b8a94, native build receipt 9118799315478865ea6d9d406431133632d290eabd7f160b4ab59ffc22efe54f and content ZIP 6e25d7cb801a0f409a1170a782a528fbf79ddd2420d734af3df9ed123be4af64. Fresh normal-game actual003 reaches the native GameMode, all 289 venue parts and prepared physical scene, shows the actual HUD/player PNG on Radeon 8060S D3D12/SM6, logs zero warnings/errors/MCP activity and exits through the bounded seconds path. All owned processes are reaped. This qualifies initial uncooked loading on this host; material residency, walking performance, cooking and other installations remain separate checks.
+
+The original actual003 supervisor report remains FAIL because it incorrectly required one persistent crash-monitor analytics file; that run leaves zero new persistent profile files. Corrected observer replay002 independently passes 13 guards and preserves the original failed report bytes. It verifies the saved runtime observations, actual owned monitor identity/session, exact global INI census and six independently demonstrated background-writer paths, removing no profile path. It claims neither unavailable monitor-store counters/MD5 nor natural monitor exit. The corrected observer passes 33 CPU fixtures and launches no new engine. Evidence: native_cafe_normal_game_actual_v1_003 and native_cafe_normal_game_observer_replay_actual_v1_002/OBSERVER_REPLAY_QUALIFICATION.json under F:/Living Town/2026-10-20_Refined_Town; replay receipt SHA379f7ae80e5708b46ab794f2d34d812d7b956cc7e579122bc53e1df1d47e7ffa.
+
+Source data are preserved while art remains provisional. This is a runnable local café foundation, not the complete town or a packaged-game framerate result.
