@@ -1,0 +1,64 @@
+{
+  "oracle_status": "source-derived expectations; not an executed Godot oracle or compiled C++ result",
+  "source_terms": {
+    "property_id": "cafe_ground_commercial_v1",
+    "owner": "aria",
+    "space_id": "cafe",
+    "floor_id": "1f",
+    "interaction_id": "cafe1f_counter",
+    "fee": 4,
+    "duration": 720
+  },
+  "new_pilot_opening": {
+    "aria": 12,
+    "ben": 12
+  },
+  "initial_design": "isolated future versioned UE cafe lease pilot; not an old62resident save migrated by omission",
+  "source_derived_expectations": {
+    "grant": {
+      "ben": 8,
+      "aria": 16,
+      "pay_id": 1,
+      "lease_id": 2,
+      "operator": "ben",
+      "end_tick": 720
+    },
+    "duplicate": {
+      "extra_payments": 0,
+      "extra_events": 0
+    },
+    "end": {
+      "ben": 8,
+      "aria": 16,
+      "operator": "aria",
+      "refund": 0
+    },
+    "private_upstairs": {
+      "portal_override": false,
+      "private_access_granted": false
+    },
+    "expiry": {
+      "719": "ben",
+      "720": "aria",
+      "additional_payment": 0
+    }
+  },
+  "required_negative_cases": [
+    "unfunded consent",
+    "wrong plane/reach",
+    "same request different action",
+    "orphan payment",
+    "changed payment amount",
+    "changed event order",
+    "wrong title/profile provenance",
+    "early expiry",
+    "failed load leaves live state exact"
+  ],
+  "offline_oracle_sources": [
+    "game/scripts/property_registry_test.gd",
+    "game/scripts/property_integration_test.gd",
+    "game/scripts/PropertyRegistry.gd",
+    "game/scripts/Ledger.gd",
+    "game/scripts/Sim.gd:7965"
+  ]
+}

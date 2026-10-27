@@ -46,6 +46,29 @@
         "OpenGL renderer string: ": "OpenGL renderer string: llvmpipe (LLVM 20.1.2, 256 bits)",
         "OpenGL version string: ": "OpenGL version string: 4.5 (Compatibility Profile) Mesa 25.2.8-0ubuntu0.24.04.4"
       }
+    },
+    {
+      "name": "ubuntu24-20261023.334.3",
+      "source_run_id": 40417538860,
+      "reviewed_pr_head": "a6c0a752fd979e3c2cf41f0d4fe71c7370f81cc3",
+      "reviewed_event_sha": "44b31c068a6ffb56e5430c7a2c5c18c55456bdf9",
+      "reviewed_artifact_id": 12697720949,
+      "reviewed_artifact_sha256": "027f496110fce2b62eb5ff61404db14c5fc50fde138728e5bfca62f7ce5f5e99",
+      "required_lines": {
+        "RUNNER_IMAGE ": "RUNNER_IMAGE os=ubuntu24 version=20261023.334.3 arch=X64",
+        "GODOT_ARCHIVE ": "GODOT_ARCHIVE sha256=30e6b6d141f0cd5bebd629ad1d0ef1324e60091bb20662d026b402ba58c59937",
+        "GODOT_BINARY ": "GODOT_BINARY sha256=5a806b2b385279d9607094d33e946ed828e9606df4cb46d258ca27468dc5c1c9 version=4.6.2.stable.official.71f334935",
+        "PYTHON ": "PYTHON version=3.11.17 pillow=11.3.0",
+        "VISUAL_PACKAGE libgl1=": "VISUAL_PACKAGE libgl1=1.7.0-1build1",
+        "VISUAL_PACKAGE libgl1-mesa-dri=": "VISUAL_PACKAGE libgl1-mesa-dri=25.2.8-0ubuntu0.24.04.4",
+        "VISUAL_PACKAGE libglx-mesa0=": "VISUAL_PACKAGE libglx-mesa0=25.2.8-0ubuntu0.24.04.4",
+        "VISUAL_PACKAGE mesa-utils=": "VISUAL_PACKAGE mesa-utils=9.0.0-2",
+        "VISUAL_PACKAGE xauth=": "VISUAL_PACKAGE xauth=1:1.1.2-1build1",
+        "VISUAL_PACKAGE xvfb=": "VISUAL_PACKAGE xvfb=2:21.1.12-1ubuntu1.9",
+        "OpenGL vendor string: ": "OpenGL vendor string: Mesa",
+        "OpenGL renderer string: ": "OpenGL renderer string: llvmpipe (LLVM 20.1.2, 256 bits)",
+        "OpenGL version string: ": "OpenGL version string: 4.5 (Compatibility Profile) Mesa 25.2.8-0ubuntu0.24.04.4"
+      }
     }
   ]
 }

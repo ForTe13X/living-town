@@ -1,0 +1,80 @@
+{
+  "schema": "living_town.native_source_adoption.v1",
+  "module": "LivingTownNative",
+  "qualified_engine": "UE5.8.4/58902052",
+  "qualified_boundary_test": "LivingTown.Native.CafeLeaseBoundary",
+  "qualified_automation_receipt_sha256": "aeb2980f91859022fc2dc4dded6f1ee748d57742dc48d5e73fc49d27e6ad87e3",
+  "qualified_test_scope": "1engine test;92source-derived assertion invocations;12negative save cases;1024capacity commands; no gameplay actor binding",
+  "files": [
+    {
+      "canonical_source": "unreal/Source/LivingTown.Target.cs",
+      "qualified_source_relative": "Source/LivingTownNative.Target.cs",
+      "qualified_sha256": "964de9e5949a9339b80d94df1fbe08ab56bd789c1979565009b4ccced98cf0bd",
+      "canonical_sha256": "f0d00a649e4e7ce81db7590e30a97f7ffe1e648bf3fe6a86c0a02a02568f56fe",
+      "mechanical_target_class_rename_only": true
+    },
+    {
+      "canonical_source": "unreal/Source/LivingTownEditor.Target.cs",
+      "qualified_source_relative": "Source/LivingTownNativeEditor.Target.cs",
+      "qualified_sha256": "30fe8f034833304c46cd3c86402ada5fae6bd163d78d015ac66a9edc1a501719",
+      "canonical_sha256": "c39d46753c9faaca76b6d6c2b8dd63326783c341a2d6d49135cf88a421719ce6",
+      "mechanical_target_class_rename_only": true
+    },
+    {
+      "canonical_source": "unreal/Source/LivingTownNative/LivingTownNative.Build.cs",
+      "qualified_source_relative": "Source/LivingTownNative/LivingTownNative.Build.cs",
+      "qualified_sha256": "2498c07f6f4ff0e5e53e593a515b5322577d0335244b2e8c32431ca361fa6f97",
+      "canonical_sha256": "2498c07f6f4ff0e5e53e593a515b5322577d0335244b2e8c32431ca361fa6f97",
+      "mechanical_target_class_rename_only": false
+    },
+    {
+      "canonical_source": "unreal/Source/LivingTownNative/Private/LivingTownLeaseSubsystem.cpp",
+      "qualified_source_relative": "Source/LivingTownNative/Private/LivingTownLeaseSubsystem.cpp",
+      "qualified_sha256": "89270f42d26b19b4c8f8fe3f3bb7dcec36477b3c3cedd6fd009760ebdbe8b5db",
+      "canonical_sha256": "89270f42d26b19b4c8f8fe3f3bb7dcec36477b3c3cedd6fd009760ebdbe8b5db",
+      "mechanical_target_class_rename_only": false
+    },
+    {
+      "canonical_source": "unreal/Source/LivingTownNative/Private/LivingTownNative.cpp",
+      "qualified_source_relative": "Source/LivingTownNative/Private/LivingTownNative.cpp",
+      "qualified_sha256": "e2ccf41011b6f8d37c50f867056e70c1b7b13dee80898b6af6be94078f4a503f",
+      "canonical_sha256": "e2ccf41011b6f8d37c50f867056e70c1b7b13dee80898b6af6be94078f4a503f",
+      "mechanical_target_class_rename_only": false
+    },
+    {
+      "canonical_source": "unreal/Source/LivingTownNative/Public/LivingTownLeaseSubsystem.h",
+      "qualified_source_relative": "Source/LivingTownNative/Public/LivingTownLeaseSubsystem.h",
+      "qualified_sha256": "43e10befe2d3e87865a6ff11fcc2b5a6f17513321a2df79dda79ad9240e3b8e0",
+      "canonical_sha256": "43e10befe2d3e87865a6ff11fcc2b5a6f17513321a2df79dda79ad9240e3b8e0",
+      "mechanical_target_class_rename_only": false
+    },
+    {
+      "canonical_source": "unreal/Source/LivingTownNative/ThirdParty/LeaseKernel.hpp",
+      "qualified_source_relative": "Source/LivingTownNative/ThirdParty/LeaseKernel.hpp",
+      "qualified_sha256": "942eb43c7b822da17c4949b08aa890d65324cd6d0e31bafa5d5104440641a8ac",
+      "canonical_sha256": "942eb43c7b822da17c4949b08aa890d65324cd6d0e31bafa5d5104440641a8ac",
+      "mechanical_target_class_rename_only": false
+    },
+    {
+      "canonical_source": "unreal/Source/LivingTownNative/Private/Tests/LivingTownLeaseBoundaryTest.cpp",
+      "qualified_source_relative": "Source/LivingTownNative/Private/Tests/LivingTownLeaseBoundaryTest.cpp",
+      "qualified_sha256": "b9ea329e03c64d0af6557daabde428a9133d1788010839c5483b3e076ad16b5a",
+      "canonical_sha256": "b9ea329e03c64d0af6557daabde428a9133d1788010839c5483b3e076ad16b5a",
+      "mechanical_target_class_rename_only": false
+    },
+    {
+      "canonical_source": "unreal/Source/LivingTownNative/ThirdParty/PILOT_CASES.json",
+      "qualified_source_relative": "SourceBindings/PILOT_CASES.json",
+      "qualified_sha256": "b5a0df51f0bb7fd1a04196d8fe1118df75b9de275b881faad71ac014c00ecf4c",
+      "canonical_sha256": "b5a0df51f0bb7fd1a04196d8fe1118df75b9de275b881faad71ac014c00ecf4c",
+      "mechanical_target_class_rename_only": false
+    },
+    {
+      "canonical_source": "unreal/Source/LivingTownNative/ThirdParty/PilotWorldBinding.json",
+      "qualified_source_relative": "SourceBindings/PilotWorldBinding.json",
+      "qualified_sha256": "9b7866e037be2bf9f2757c1201a572b466402eb4c0f3dc5b510c0166301bbcfc",
+      "canonical_sha256": "9b7866e037be2bf9f2757c1201a572b466402eb4c0f3dc5b510c0166301bbcfc",
+      "mechanical_target_class_rename_only": false
+    }
+  ]
+}
