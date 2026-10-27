@@ -4,5 +4,6 @@ public class LivingTownMaterialInspection : ModuleRules {
   PCHUsage=PCHUsageMode.NoPCHs; bUseUnity=false;
   PublicDependencyModuleNames.AddRange(new string[]{"Core","CoreUObject","Engine"});
   PrivateDependencyModuleNames.Add("Json");
+  PrivateDependencyModuleNames.Add("LivingTownNative");
  }
 }
