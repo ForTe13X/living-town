@@ -10,4 +10,8 @@ Export the source GLB and textures, retaining the Studio asset identity and gene
 
 The new family needs its own skeleton, weights, named clips and measured deformation. The current native cafe consumer can bind a matching idle/walk BlendSpace; use, eating and sleeping presentation remain additional work. Existing avatar material counts, UVs, bones and animation proofs do not transfer to this family. Logical resident identity stays separate from mesh, skeleton and appearance.
 
-No 3D model, PBR set, animation or engine acceptance is claimed by this concept. Follow the [staged asset workflow](../../staged_asset_pipeline.md) through actual mesh and runtime review.
+The [source model review](../../character_cafe_worker_source_v001.md) records the archived 3D candidate, measured maps, actual GPU images and specific visual defects. Final model, motion and engine acceptance remain pending. Follow the [staged asset workflow](../../staged_asset_pipeline.md) through refinement and runtime review.
+
+![Rear garment construction reference](reference_rear_v001.png)
+
+The [rear reference and generation record](rear_provenance_v001.json) clarify the front-only apron: a narrow waist strap crosses the shirt, while navy trousers remain visible across the rear seat and legs. It also establishes softer hair shapes. This is a construction reference, not a calibrated turntable or proof of a repaired model.

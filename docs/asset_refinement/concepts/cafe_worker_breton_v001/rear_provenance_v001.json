@@ -1,0 +1,50 @@
+{
+  "schema": "living_town.character_rear_reference.v1",
+  "appearance_family": "cafe_worker_breton_v001",
+  "status": "CONSTRUCTION_REFERENCE_SELECTED_NOT_MESH_ACCEPTANCE",
+  "generator": {
+    "tool": "built-in image_gen",
+    "mode": "edit",
+    "prompt": "Create exactly one full-body rear-view character construction reference for Living Town. INPUT 1 is the authoritative selected FRONT concept: preserve the same adult male Breton seaside cafe worker, natural human proportions, body silhouette, chestnut hair, cream linen work shirt rolled to forearms, muted navy trousers, brown leather low work shoes, and terracotta FRONT BIB apron. INPUT 2 is an actual flawed rear mesh render: use only for camera/pose registration, and CORRECT its garment error. The rear MUST show the cream shirt back above waist and complete navy trousers from waistband down, including believable seat and two trouser back pockets. The terracotta apron is a front panel only: it wraps slightly at the hip sides but does NOT cover the rear seat or rear thighs, does NOT form a skirt or rear fabric panel. A narrow terracotta horizontal waist strap passes around the rear waist; tied knot and tails are at the front as in INPUT1 and are not visible from behind. Apron neck loop visible just below back collar. Legs clearly separate, natural trouser folds and stitching. Hair: soft natural chestnut locks with subtle strand detail, no rigid ridged spikes. Hands: natural anatomically shaped fully separate five digits, relaxed extended fingers. Pose matches selected front's neutral A pose, both feet flat, arms slightly away, palms facing forward so dorsum of hands visible from rear. Camera exactly rear-facing full body, near orthographic, no head turn or perspective tilt. Entire head/hands/shoes inside frame with modest margins; pale warm gray uniform studio backdrop, even soft neutral light, no dramatic shadows. Refined stylized realism, physically believable woven cloth/leather/skin, restrained summer palette matching INPUT1. One fully clothed figure only. No text, labels, watermark, extra views, inset, collage, props or scene. This is a coherent rear reference for multiview 3D reconstruction, not a change in identity or costume.",
+    "input_images": [
+      {
+        "role": "authoritative front identity, wardrobe, palette",
+        "repository_file": "reference_front.png",
+        "sha256": "5c54987ab21f00401ca5807041e4bc2243cd9a97578371f280dbea3a456c89d8"
+      },
+      {
+        "role": "flawed rear mesh camera/pose reference; rear garment explicitly corrected",
+        "local_file": "F:/Living Town/2026-10-20_Refined_Town/character_fresh_mesh_review_actual_v1_002/Rear/Rear.png"
+      }
+    ]
+  },
+  "image": {
+    "file": "reference_rear_v001.png",
+    "sha256": "adde894b0483b74f9893b914624c060fb59c9670f5f5d43d94ee276891317632",
+    "bytes": 1811784,
+    "width": 1024,
+    "height": 1536,
+    "mode": "RGB",
+    "resized_or_reencoded": false
+  },
+  "review": {
+    "accepted_scope": "Defines rear shirt, narrow waist strap, visible trouser seat and legs, front-only apron and softer hair direction.",
+    "limitations": [
+      "Generated concept is not a measured turntable or camera-calibrated multiview pair.",
+      "Actual repaired mesh, UVs, PBR channels, hands and deformation still require review.",
+      "Existing source has not been edited or promoted."
+    ]
+  },
+  "rights": {
+    "provenance": "Built-in image generation using project front concept and actual project source review; source provider lineage retained separately.",
+    "cc0_claimed": false
+  },
+  "qualifications": {
+    "geometry": false,
+    "pbr": false,
+    "rig": false,
+    "actions": false,
+    "runtime": false,
+    "final_art": false
+  }
+}

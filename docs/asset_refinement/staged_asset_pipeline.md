@@ -55,6 +55,7 @@ Existing repository entry points:
 - [Retexture preservation](../../tools/town_upgrade/tripo_refinement.py): decoded GLB geometry/UV/skin/clip comparisons, with material changes and visual review explicitly separated.
 - [Character candidate inspection](../../tools/asset_refinement/inspect_character_candidate.py): read-only geometry, rest bounds, PBR/image, skin and channel-used animation facts for a declared appearance family. Original bytes stay intact; 8K PNG/JPEG diagnostics use bounded strips, and larger images explicitly defer pixel facts. A facts report does not qualify art, actions or engine use.
 - [Fresh Breton cafe-worker concept](concepts/cafe_worker_breton_v001/README.md): selected front reference, full prompt and provenance for a new character family.
+- [Cafe-worker source review](character_cafe_worker_source_v001.md): measured source geometry/maps, actual GPU views and the visible defects held for refinement before rigging.
 - [Native C++ town pilot](unreal_native_town_streaming.md): actual import/readback evidence and pending world/performance checks.
 
 The current Unreal target consumes engine-agnostic source assets through explicit engine adapters. A model becomes eligible for the final walkthrough after its relevant stage reviews and playable/visual checks, including actual performance observations, are complete.

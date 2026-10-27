@@ -3,7 +3,7 @@
   "appearance_family": "cafe_worker_breton_v001",
   "role": "cafe_worker",
   "logical_resident_assignment": null,
-  "status": "GENERATION_REFERENCE_SELECTED_3D_NOT_YET_GENERATED",
+  "status": "GENERATION_REFERENCE_SELECTED",
   "generator": {
     "tool": "built-in image_gen",
     "mode": "generate",
