@@ -53,7 +53,6 @@ Existing repository entry points:
 - [Asset toolbox](../ASSET_TOOLBOX.md): recipe-driven authoring and evidence inventory.
 - [Offline workflow customization](../../tools/asset_refinement/workflows.py): pinned workflow layout preparation; model execution and rights are separate checks.
 - [Retexture preservation](../../tools/town_upgrade/tripo_refinement.py): decoded GLB geometry/UV/skin/clip comparisons, with material changes and visual review explicitly separated.
-- [Complete town and instances](unreal_town_instance_pipeline.md): source assembly and shared placement provenance.
 - [Native C++ town pilot](unreal_native_town_streaming.md): actual import/readback evidence and pending world/performance checks.
 
 The current Unreal target consumes engine-agnostic source assets through explicit engine adapters. A model becomes eligible for the final walkthrough after its relevant stage reviews and playable/visual checks, including actual performance observations, are complete.
