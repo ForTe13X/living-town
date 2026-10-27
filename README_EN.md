@@ -14,6 +14,8 @@ A 30-second silent GIF excerpt. Click for the **14-minute in-engine walkthrough*
 
 [Full walkthrough (MP4,14:00)](https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/LivingTown_Walkthrough.mp4) · [Chapters, downloads, and recording evidence](docs/town_walkthrough/README.md) · [Original pixel tour archive](docs/249-gameplay-tour.md)
 
+[Staged 3D asset workflow](docs/asset_refinement/staged_asset_pipeline.md): concept and scale → 3D candidate → topology/UVs → PBR texture/bake → rig/motion → runtime assets → engine measurements. Each handoff is reviewed, with room to reconstruct and replace older assets.
+
 **Blender 3D town: ** the compiled profile covers 151 buildings, 263 floors, 1,582 room zones, 2,089 furnishing assemblies, and 784 new legal fixture bindings, using 11 town GLB chunks and 25 rigged character models. The ordinary runtime measurement includes 62 residents. Access still follows resident, door, and floor permissions.
 [14-minute narrated tour, chapters and downloads](docs/town_walkthrough/README.md) · [Run guide and spatial contract](docs/town_bridge/README.md).
 Large runtime assets use a checksum-bound [release manifest](docs/town_walkthrough/ASSET_RELEASE.md). On Windows, use `./tools/run-town3d.ps1`; use `-Legacy` for the original pixel map. Five model/input ZIPs, the optional Blender working file and this recording have actual local verification records. **Release status: Locally checksum-bound current version; public retrieval is recorded separately in the proof index.**
