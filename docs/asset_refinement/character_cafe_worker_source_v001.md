@@ -33,3 +33,15 @@ The source height is approximately 0.97946 glTF units; physical stature is unqua
 Six actual GPU images cover front, three-quarter, rear, face and both hands. The initial multi-view process completed the front image and failed with an out-of-memory error on the next render. Five fresh, single-view processes subsequently completed and reaped successfully, with sampled private memory below 5.09 GB each and a 6 GiB hard job limit. Each selected Radeon 8060S HIP with CPU ray-tracing disabled; this is authoring evidence, not game performance or a system-stability guarantee. The failed attempt remains recorded.
 
 No new resident appearance, skeleton, clips, engine binding or qualification flags have been promoted. Continue through the [staged asset pipeline](staged_asset_pipeline.md).
+
+## Local material correction
+
+![Same-camera lower-orbital material diagnostic](concepts/cafe_worker_breton_v001/review_face_orbital_v001.png)
+
+Source-map sampling found ordinary skin basecolor beneath the bright lower-eye crescents, but very low roughness: the sampled right lower-orbital vertices had median roughness 17/255, compared with 99/255 nearby. A feathered local mesh attribute now raises roughness to at least 0.38 and suppresses metallic response in those skin bands. The same camera, lighting, 1280-square resolution and 64-sample HIP render remove the broad pale crescents. Eye-opening anatomy, iris clarity and the other geometry defects remain under review.
+
+The diagnostic affects 2,658 vertices (1,394 at full weight); it is a local spatial mask, not a complete anatomical segmentation. Position, topology, corner normals, UV and packed-image hashes match before and after. Source Blend size, modification time and hash are unchanged. A new derivative Blend preserves the original separately. The successful worker took 24.641 seconds, exited with code zero, reaped its owned processes and peaked at 5,533,831,168 sampled private bytes under the 6 GiB limit.
+
+This correction currently uses a Blender point attribute and shader nodes. A portable PBR export still needs an explicit bake and UV/texture review; an ordinary GLB export is not proof that the correction transfers.
+
+The repository [Blender diagnostic script](../../tools/asset_refinement/blender_orbital_skin_diagnostic.py) reproduces the correction from the explicitly hashed source review in a fresh output directory. Its separate hardware run completed in 24.141 seconds with unchanged source and mesh/map invariants, exited with code zero and reaped all owned processes. It is specific to this source family and runs under an external resource supervisor; it does not supervise other applications.
