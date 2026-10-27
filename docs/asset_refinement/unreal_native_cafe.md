@@ -1,8 +1,8 @@
 # Native café projection
 
-The adopted C++ source passes the first actual café walk/lease/end/ledger journey. It does not complete the town, full-world saves, final art or the broader simulation roadmap. Default GameMode activation remains deferred until the qualified asset closure is packaged with a reviewed lit presentation map. The successful journey uses an isolated project and private configuration.
+The adopted C++ source passes the first actual café walk/lease/end/ledger journey. It does not complete the town, full-world saves, final art or the broader simulation roadmap. The content closure and a readable software-Lumen map are prepared; fresh normal-game startup remains the delivery gate. Global default GameMode activation stays deferred. The successful journey uses an isolated project and private configuration.
 
-LivingTownNative contains the character, controller, venue, HUD and projection subsystem. The existing lease subsystem and frozen portable kernel remain the sole lease-state writer with their original bytes. LivingTownMaterialInspection is editor-only and contains graph inspection plus explicit motion-asset derivative authoring. InputCore and the engine's bundled static OpenSSL support the runtime code.
+LivingTownNative contains the character, controller, venue, HUD and projection subsystem. The lease subsystem remains the sole lease-state writer around the byte-exact frozen portable kernel. Its loader additionally rejects a restored active lease whose clock has reached its end. LivingTownMaterialInspection is editor-only and contains graph inspection plus explicit motion-asset derivative authoring. InputCore and the engine's bundled static OpenSSL support the runtime code.
 
 The adapter requires a strict fourteen-field Content/LivingTown/CafeProjectionBinding.json, exactly 289 source IDs (8534–8822), exact floor/counter membership and matching full native render-buffer hashes/collision GUIDs. Ben needs his actual skeletal visual, hand bone and same-skeleton idle/walk BlendSpace. Runtime sampling must return the correct idle/walk weights at zero, half and full walking speed. Missing interpolation data refuses before possession and resolver installation.
 
@@ -12,7 +12,7 @@ F5/F9 saves/loads the café ledger. Its outer journal binds the physical scene, 
 
 ## Actual validation
 
-The adopted sources match native_cafe_runtime_integration_build_actual_v1_002: UE 5.8.4 / MSVC 14.44 builds both editor modules in 71.28 seconds. Hardware test004 passes these four tests with zero test/engine warnings or errors in 24.34 seconds:
+The original runtime integration build002 compiles both editor modules with UE 5.8.4 / MSVC 14.44 in 71.28 seconds. Hardware test004 passes these four tests with zero test/engine warnings or errors in 24.34 seconds; the latest source/build qualification is recorded below:
 
 - LivingTown.Native.CafeLeaseBoundary
 - LivingTown.Native.CafeBindingRefusals
@@ -35,7 +35,15 @@ Evidence under F:/Living Town/2026-10-20_Refined_Town:
 - native_cafe_runtime_source_adoption_actual_v1_001/ADOPTION_RECEIPT.json
 - native_cafe_runtime_adoption_host_tests_actual_v1_001/REPORT.json
 
-Build/stage commands are in [the Unreal README](../../unreal/README.md). The qualified binding remains in native_cafe_runtime_binding_actual_v1_002; it is not fabricated into canonical content. Asset packaging and permanent authoring-recipe integration remain open.
+Build/stage commands are in [the Unreal README](../../unreal/README.md). The qualified binding remains in native_cafe_runtime_binding_actual_v1_002; it is not fabricated into canonical content. The [content delivery tool](unreal_cafe_content_delivery.md) packs, verifies and restores the closed asset set. Permanent authoring-recipe integration remains open.
+
+## Current source and startup fixes
+
+Source digest `714bf85459d1667641fa82253056d7ada09407528ed7202c4be50d71335b8a94` includes the compact HUD and two review fixes. Loading an active lease now rejects clocks at or beyond its end before swapping state; the regression compares clock, event count, digest and balances after refusal and retains genuine pre-expiry and expiry-event round trips. The frozen kernel is unchanged. Ordinary editor startup skips the authoring telemetry bootstrap when its owned output directory is absent; explicit automation requires an existing absolute directory before registering tools.
+
+The matching native_cafe_review_fixes_build_actual_v1_001 build passes in 71.828 seconds; BUILD_RECEIPT.json SHA-256 is `9118799315478865ea6d9d406431133632d290eabd7f160b4ab59ffc22efe54f`. Actual authority run005 passes all four native tests and eleven SHA-256 known-answer comparisons in 24.328 seconds with zero warnings/errors. The three-file canonical adoption then passes 60 host source/staging checks. Actual Lumen capture003 uses this same build and passes its material/resource/player-frame qualification. All source/configuration/private archive/original editor guards pass and owned processes are reaped. The earlier walked journey remains separate evidence; these review fixes do not constitute another walking run.
+
+The content packer also binds the selected map's successful native bootstrap to the advertised source digest and exact build receipt. A mismatched map/build pair refuses before packing; nine CPU tests cover the tool, including that refusal. The ZIP contains assets and provenance only. Native modules and the qualified Unreal installation are supplied separately. A normal-game launch from a fresh restored project is still required before calling that combination runnable delivery.
 
 ## Startup observation
 
@@ -51,7 +59,7 @@ These are one fresh private-DDC editor observation each with the same 289 source
 
 ## Instrumented café baseline and presentation
 
-The current-provider native idle capture002 records 611 real editor/PIE frames over 10.209 world seconds on Radeon8060S D3D12/SM6 at1014×550. Raw frame p50/p95 is16.6668/16.67245ms; GameThreadTime is6.3945/7.5406ms; GPUTime is2.2651/2.4673ms. One frame exceeds33.333ms and none exceed50ms. Render/RHI timing columns and all samples remain in the raw CSV. These thread times overlap and are never added. The35MB local trace and1.24MB CSV total36.1MB. This is an instrumented idle editor workload with globalGI0, not a full-town, walking, packaged-game or improvement measurement. The near60Hz pacing needs separate interpretation; Windows battery-presence logic in this installed editor is a source-backed lead, not a confirmed runtime CVar finding.
+The current-provider native idle capture002 records 611 real editor/PIE frames over 10.209 world seconds on Radeon8060S D3D12/SM6 at1014×550. Raw frame p50/p95 is16.6668/16.67245ms; GameThreadTime is6.3945/7.5406ms; GPUTime is2.2651/2.4673ms. One frame exceeds33.333ms and none exceed50ms. Render/RHI timing columns and all samples remain in the raw CSV. These thread times overlap and are never added. The35MB local trace and1.24MB CSV total36.1MB. This is an instrumented idle editor workload with globalGI0, not a full-town, walking, packaged-game or improvement measurement. Source inspection attributes the near60Hz editor pacing to this installed engine's battery-presence cap: Windows reports battery present even on AC, and the actual Lumen runs observe r.DontLimitOnBattery=0 and r.VSyncEditor=0. No global pacing or power setting is changed.
 
 Actual lighting capture001 exposes a white-clipped world and is rejected. Capture002 uses explicit Manual physical-camera exposure atEV13.5 and is readable but dark; final art remains rejected. A compact cached C++ HUD and an actual controller pitch of-12degrees improve the presentation in capture004. Font legibility and duplicate-hint refinements pass actual capture005; the tested three-file display-cache/HUD update is adopted with a matching71.28s build and60host staging checks. Authority, old status text and the default GameMode remain unchanged. All real captures preserve original assets/configuration and reap owned processes; original editor19740 remains untouched. Saved lighting002 also retains a positional-Rotator sun-axis error, now disclosed in actual readback; its correction belongs to a new lighting derivative.
 
@@ -65,4 +73,6 @@ Ben's eleven-part visual imports on one seventeen-bone skin with seven source cl
 
 Earlier failures remain preserved: the generic engine SHA hook crashes; the initial stronger walking test detects fixed-pose sliding; raw BlendSpace samples lack runtime interpolation; and automatic input/plugin configuration writes violate staged-byte guards. The new editor helper duplicates/resamples only the named new motion asset, while runtime code only validates existing data. Its first compile also exposes a local Serialize name hidden by UObject::Serialize; the narrowly renamed helper compiles in the qualified build. No test threshold or source-geometry requirement is weakened to turn those failures into passes.
 
-Final character/interior art, a lit presentation map, cooked shipping collision, off-camera/all-clip behavior, full-town streaming and simulation, narration, GIF replacement, PR and merge remain open.
+Software-Lumen captures002 and003 use a new map derivative with corrected sun pitch/yaw, actual down12 controller look and manual physical EV11.5 exposure. The actual material census matches all289 components:283 opaque meshes have distance fields; the six source-translucent glass meshes are explicitly ineligible, preserving their source materials. All eleven eligible critical meshes have distance fields. Trial001's original twelve-piece rule and parser failure remain failed evidence. Its replacement uses reflected resolved material modes and the installed engine's translucent exclusion, without weakening opaque coverage. Root inspected the actual capture003 player PNG and accepts a bounded readable café daylight baseline; character and interior materials still need final art work. Single instrumented Lumen GPU events establish execution only, not sustained performance.
+
+Final character/interior art, cooked shipping collision, off-camera/all-clip behavior, normal restored-project startup, full-town streaming and simulation, narration and GIF replacement remain open. PR90 delivers a bounded native foundation rather than completion of the active town goal.

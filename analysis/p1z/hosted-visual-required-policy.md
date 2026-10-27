@@ -30,8 +30,8 @@ Checkout and artifact-upload failures also remain red.
 
 `hosted_visual_runtime_policy.json` records complete reviewed runtime profiles:
 image, Godot archive and binary, Python/Pillow, six apt packages, and Mesa GLX
-identity. Schema v2 currently contains exactly two profiles reviewed from runs
-`39399019945` and `39402759057` (previous refresh `38254349222`; original
+identity. Schema v2 currently contains exactly three profiles reviewed from runs
+`39399019945`, `39402759057` and `40417538860` (previous refresh `38254349222`; original
 promotion `37122904593`). The final checker requires every listed receipt line
 exactly once, with the whole receipt matching one complete profile. It does
 not combine accepted values from different profiles. If GitHub supplies an
@@ -145,3 +145,11 @@ new evidence. The two negative controls do not prove targeted mutant
 coverage for every LT-02–LT-05 detector family. A16 civic-phase projection
 evidence is open and is not claimed by this promotion. No golden, ModelPath,
 or complement anchor is rebaked, and no branch protection is changed here.
+
+## October 26 exact hosted runner qualification
+
+[PR #90 run 40417538860](https://github.com/ForTe13X/living-town/actions/runs/40417538860) used runner image `20261023.334.3`. Artifact `12697720949`, archive SHA-256 `027f496110fce2b62eb5ff61404db14c5fc50fde138728e5bfca62f7ce5f5e99`, binds branch head `a6c0a752fd979e3c2cf41f0d4fe71c7370f81cc3` and actual merge-event checkout `44b31c068a6ffb56e5430c7a2c5c18c55456bdf9`. The event tree equals the PR head tree. All 88 positive and 10 negative manifest entries match. The positive canary passes with 75 PNGs and zero scanned runtime errors; the same-runtime negative catches exactly A1+A2, while the inline identical-floor negative retains its B-only failure. All 77 PNGs match the hashes in the committed October 20 review, and representative actual frames were independently inspected.
+
+Only the runner image differs from the nearest approved profile. The complete thirteen-line profile retains the exact Godot archive/binary, Python/Pillow, six packages and Mesa identities. The two previous profiles remain intact. The unchanged checker passes the real artifact under the new exact profile and still rejects malformed negative controls, skipped positives, duplicate identities and unreviewed runtime combinations. All fifteen existing policy tests pass against the proposed three-profile policy. No workflow, detector threshold, golden, ModelPath anchor, complement ledger or branch-protection setting is changed. The [review receipt](hosted-runtime-review-2026-10-26.json) records provenance, source anchors and replay results.
+
+This qualifies that exact hosted raster runtime for the archived 2D suite. A fresh successful workflow remains required after adopting the policy update; the earlier red run is not final CI proof or Unreal acceptance.

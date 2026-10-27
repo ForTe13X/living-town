@@ -333,6 +333,12 @@ bool ULivingTownLeaseSubsystem::LoadNewPilotJournal(const FString& Json, FString
             (!Events.empty() && Clock < Events.back().tick) ||
             Candidate->Kernel.events().size() + (Candidate->Kernel.lease().active ? 1U : 0U) > MaximumJournalEvents)
             return Fail(TEXT("journal_replay_mismatch"));
+        // The native clock writer records expiry before committing a clock at
+        // or beyond the lease end. A changed clock must not restore an active
+        // kernel lease while its public operator has already reverted to owner.
+        const auto RestoredLease = Candidate->Kernel.lease();
+        if (RestoredLease.active && Clock >= RestoredLease.end)
+            return Fail(TEXT("journal_expired_active_lease_clock"));
         Candidate->Clock = Clock;
         Candidate->Session = Session;
         State = MoveTemp(Candidate); // one atomic writer; no live fields changed before complete validation
