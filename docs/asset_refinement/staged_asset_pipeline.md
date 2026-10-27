@@ -53,6 +53,7 @@ Existing repository entry points:
 - [Asset toolbox](../ASSET_TOOLBOX.md): recipe-driven authoring and evidence inventory.
 - [Offline workflow customization](../../tools/asset_refinement/workflows.py): pinned workflow layout preparation; model execution and rights are separate checks.
 - [Retexture preservation](../../tools/town_upgrade/tripo_refinement.py): decoded GLB geometry/UV/skin/clip comparisons, with material changes and visual review explicitly separated.
+- [Character candidate inspection](../../tools/asset_refinement/inspect_character_candidate.py): read-only geometry, rest bounds, PBR/image, skin and channel-used animation facts for a declared appearance family. Original bytes stay intact; 8K PNG/JPEG diagnostics use bounded strips, and larger images explicitly defer pixel facts. A facts report does not qualify art, actions or engine use.
 - [Fresh Breton cafe-worker concept](concepts/cafe_worker_breton_v001/README.md): selected front reference, full prompt and provenance for a new character family.
 - [Native C++ town pilot](unreal_native_town_streaming.md): actual import/readback evidence and pending world/performance checks.
 
