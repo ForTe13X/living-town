@@ -8,12 +8,13 @@ This is an opt-in pilot. The driver defaults to disabled, all new qualification 
 
 - Root, unit and mesh loads retain their streamable handles. Dependency closure and support reference counts keep shared units alive until their last consumer leaves.
 - World ownership, weak callbacks, request tokens and an epoch reject stale completions after cancellation, restart or teardown.
-- The pilot permits at most two concurrent incoming units and four component creations per frame. Static meshes and ISM groups have no per-object tick. Loading radii use hysteresis.
+- The pilot permits at most two concurrent incoming units. Registration, collision changes, visibility changes and destruction share a budget of four component operations per tick, serviced across units. Static meshes and ISM groups have no per-object tick. Loading radii use hysteresis.
+- Arrival and retirement advance incrementally. Departing geometry stays while the demanded cohort is incomplete or the active driver has no focus. Reacquisition restores surviving component slots without duplicates. Explicit stop cancels requests and drains even without a focus; driver loss also drains. Geometry belongs to a separate world actor so destroying the driver cannot bypass this budget.
 - Full native mesh identity is checked when an immutable loaded asset is first installed. The cache also checks lighting/collision GUIDs and material paths, slots and blend modes. It is invalidated on release. It does not promise to detect arbitrary in-place editor mutations without identity changes.
 - Original float64 placement matrices are retained alongside qualified native transforms. Shear, reflection, invalid matrices, unsupported ownership and reserved café source IDs refuse.
 - An incoming failure stops new work and retains already resident units until explicit stop/teardown. It does not silently substitute missing geometry.
 
-Creation counts alone do not bound shader compilation, a large mesh hash, physics registration, final visibility changes or a burst of component destruction. Actual frame timings and loading observations are still needed.
+The operation budget counts lifecycle policies rather than every internal engine call. It does not bound milliseconds, shader compilation, mesh hashing, a large registration or teleport landing safety. World/subsystem teardown remains a synchronous cleanup exception. Actual town frame timings and loading observations are still needed.
 
 ## Editor readback
 
@@ -21,9 +22,13 @@ The editor-only `LivingTownTownSliceReadbackLibrary` exports closed LOD0 buffers
 
 Unreal's installed Python wrapper returns `None` for a C++ false result when output parameters exist. A successful `ExportTownSliceMeshes` returns `(receipt_json, error)` with its Boolean stripped. A failed Python call cannot expose the native Error output through this signature. Consumers must save raw return diagnostics before parsing and must not assume a three-item tuple.
 
+The new tile-authoring and Westwood-material helpers instead return JSON strings with explicit status/error/readback fields. Tile authoring is restricted to the frozen pilot plan and fresh staging paths. Its preview entries are editor-only, non-ticking and non-colliding; the driver and qualification flags remain disabled. They require an editor view with Game View off and do not establish a playable world. The material helper inspects constant-input semantics and can clear only four named overrides on the marked new Westwood derivative. Compilation establishes neither its shader output nor visual quality.
+
 ## Evidence and remaining work
 
-The adopted 51-input native source cut has SHA-256 `9c2ab0d7824b17b2517f2c8ea5d99f388ec3722f633072ea620beccfda60a83d`. It compiled successfully with UE 5.8.4/58902052, MSVC 14.44.35229 and SDK 22621. Eight native automation tests passed: the four existing café authority tests plus tile matrix, demand, metadata and unit boundaries. Eleven native SHA known-answer cases also passed. The canonical source exactly matches that compiled cut, and 60 bootstrap/source/receipt checks pass against its actual build receipt.
+The adopted 56-input native source cut has SHA-256 `f5b0b23d11c630b328631196e5e424d72f0a2bd9ad775c13b639370618f810ba`. It compiled successfully with UE 5.8.4/58902052, MSVC 14.44.35229 and SDK 22621 in 114.875 seconds. The canonical source matches that actual build receipt, and all 60 bootstrap/source/receipt checks pass against it.
+
+Nine native automation tests passed in a separate hardware run: the four existing café authority tests, tile matrix/demand/metadata/unit boundaries and `LivingTown.Native.TileLifecycleBudgetWorld`. The new test observes real transient world/components with a one-operation budget through arrival, cohort hold, partial retirement, reacquisition, cancellation, driver loss and cleanup. It uses synthetic primitives, so it does not qualify imported production assets or frame times. Eleven native SHA known-answer cases also passed; the run had zero errors, warnings or skipped tests.
 
 An actual assets-only hardware D3D12/SM6 run imported and saved all 1,488 outdoor definitions and exported their native buffers in 240.704 seconds. It used the Radeon 8060S, peaked at 11,196,723,200 bytes aggregate RSS, preserved bound source/config/private data and reaped its owned process tree. This measures editor authoring, not game startup or sustained FPS.
 
