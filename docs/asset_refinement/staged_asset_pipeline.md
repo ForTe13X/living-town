@@ -48,6 +48,10 @@ The adapters keep inputs, outputs, tool/model versions, relevant settings, prove
 
 Blender handles native inspection, cleanup, UVs, baking, rig work and portable export. Image generation supplies concepts and reviewable raster candidates. Tripo or another specialist can provide individual generation/remesh/texture/rig stages after its actual interface, entitlement and output preservation are verified. The pipeline can substitute a tool at a handoff without replacing the town's source model or simulation authority.
 
+Choose the implementation per stage. Unreal is the primary runtime: use its static-mesh LODs, instancing, material evaluation, collision, CharacterMovement and measured loading/rendering where those serve the result. Blender remains available for connected topology, UV and surface authoring, baking and portable asset review. Existing procedural meshes, layouts and adapters may be replaced when a better native result is demonstrated. Engine-specific authored derivatives retain their source identities and a portable asset handoff; engine neutrality does not require identical editor implementations.
+
+The saved reserve cell already uses vanilla Unreal instanced components and native near/far LODs without the custom streamer. The character's [encoded confidence-normal helper](encoded_normal_material.md) uses native material evaluation while retaining original geometry and maps. Neither result enables unqualified full-town runtime flags. Editor captures, game journeys and measured performance remain separate checks, so a native feature is selected for its demonstrated behavior rather than its name.
+
 Existing repository entry points:
 
 - [Asset toolbox](../ASSET_TOOLBOX.md): recipe-driven authoring and evidence inventory.

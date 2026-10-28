@@ -120,3 +120,21 @@ All 31 prototypes preserve source positions, UVs, material assignment, normals a
 Root reviewed both walking views. Canopy coverage is fuller, but final art is rejected: coarse far-tree triangles appear at walking distance, understory remains sparse, and the soil repeats. Source/camera projection traces the large gray sheets to the far pine variant's bark triangles, including a roughly 1.88 m edge only 16.47 m from the camera. This is a source geometry problem. Its detailed counterpart has 15,787 triangles versus 7,656, with no bark faces exceeding 1.5 m edges. A native near/far LOD trial is being prepared rather than attributing the sheets to a texture defect.
 
 Evidence is `native_forest_instancing_actual_v1_002` for saved authoring and `native_forest_instancing_actual_v1_003` for diagnostic cold reopen/views. Author takes **74.250 seconds**, peaking at **10,756,816,896 private bytes**; Review takes **90.609 seconds**, peaking at **13,925,343,232 bytes**. Sources and saved packages remain unchanged and owned processes are reaped. These are editor preparation costs, with final art, wind, navigation, gameplay and frame-time qualification still open.
+
+## Native tree LOD and clustered groundcover
+
+| Forced far pine geometry | Automatic native near LOD |
+| --- | --- |
+| ![Coarse bark planes reproduced with far LOD](evidence/native_pine_mid_forced_far_v001.png) | ![Near LOD removes the bark sheets](evidence/native_pine_mid_auto_v001.png) |
+
+`native_forest_pine_lod_actual_v1_001` replaces one owned pine prototype with a two-level native static mesh: the detailed 15,787-triangle source at LOD0 and its original 7,656-triangle counterpart at LOD1. Nine placements use the derivative. All 363 transforms and 31 component material lists remain unchanged. The near source passes the full native LOD0 array comparison, while LOD1 has copy/settings/count readback rather than an independent raw GPU-array export. Cold reopening produces Auto, ForcedNear and ForcedFar comparisons; Auto and ForcedNear remove the large gray planes, while ForcedFar reproduces them. Root selects this bounded geometry repair. Author takes **49.313 seconds / 4,605,308,928 peak private bytes**; Review takes **66.437 seconds / 12,417,515,520 bytes**. It does not establish final forest quality or a whole-town LOD policy.
+
+| Original understory | Source-masked clusters |
+| --- | --- |
+| ![Sparse woodland floor](evidence/native_woodland_mid_baseline_v002.png) | ![Irregular grass, fern and herb drifts](evidence/native_woodland_mid_groundcover_v002.png) |
+
+`native_woodland_groundcover_actual_v1_002` adds **2,000 grounded placements in 48 irregular drifts**, grouped into seven vanilla instanced mesh components. The saved cell has **2,363 instances / 38 components**, with its original 363 transforms preserved. Three grass forms, two fern forms and two low herb forms reuse source assets. Point selection protects authored paths, clearings, coast, fixtures, building/entrance envelopes and reserve pads. Source mask sampling and barycentric terrain queries determine placement, with no flat-height fallback.
+
+This map explicitly registers the reviewed stable-tangent grass derivative for the 11 existing grass placements and new grass groups. Original positions, normals, UVs, indices and material semantics remain exact; the tangent lineage changes deliberately. The original two-failure comparison remains failed. Cold reopen checks the declared derivative, all points and original transforms, then captures matched Near/Mid views and editor frame/memory samples. Species cull ends are 48–76 m; no smooth material fade or additional LOD chain is claimed. No new C++, custom streamer or PCG graph is needed for this bounded placement pass.
+
+Root selects the added clustered coverage, with final reserve art held: yellow lawn-like soil, ground variation, plant composition and the distant environment need further work. The **96.563-second** review peaks at **12,660,002,816 private bytes**. Its warmed Slate callbacks and engine frame counter describe this editor trial; they do not establish game FPS, presented frames or GPU timing. No full-reserve migration, navigation or runtime performance acceptance follows. The v001 runner-state mismatch remains a separate failed attempt before map authoring.
