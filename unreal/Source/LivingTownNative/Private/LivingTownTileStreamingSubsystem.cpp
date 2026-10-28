@@ -1,4 +1,5 @@
 #include "LivingTownTileStreamingSubsystem.h"
+#include "LivingTownMaterialUsage.h"
 #include "LivingTownTileDriver.h"
 #include "LivingTownCafeProjectionSubsystem.h"
 #include "LivingTownCafeGeometryLibrary.h"
@@ -267,8 +268,8 @@ void ULivingTownTileStreamingSubsystem::RequestMeshes(const FString& Id,uint64 R
 void ULivingTownTileStreamingSubsystem::OnMeshes(const FString& Id,uint64 RequestEpoch,uint64 Token)
 {check(IsInGameThread());if(!AcceptCompletion(Id,RequestEpoch,Token)||Requests[Id].Phase!=EPhase::Meshes)return;Requests[Id].Phase=EPhase::Installing;}
 
-// The native hash/material/collision identity inspector below remains byte-exact
-// to9c2. Lifecycle work does not weaken imported-asset qualification.
+// Native hash/material/collision identity qualification is retained. The
+// per-entry usage gate additionally refuses unprepared instanced materials.
 bool ULivingTownTileStreamingSubsystem::ValidateLoadedGeometry(const FLivingTownTileGeometry& G,UStaticMesh* Mesh,bool& bWaiting,FString& Error)
 {
     bWaiting=false;
@@ -282,6 +283,10 @@ bool ULivingTownTileStreamingSubsystem::ValidateLoadedGeometry(const FLivingTown
     {
         const UMaterialInterface* Material=Slot.MaterialInterface.Get();
         if(!Material){Error=TEXT("tile_native_material_missing");return false;}
+        // Check every install, before the mesh identity cache can return. A
+        // mesh shared by Static and Instanced entries needs different usage.
+        if(G.Kind==ELivingTownTileEntryKind::Instanced&&
+           !LivingTownMaterials::ValidateInstancedUsage(Material,G.EntryId,Key,Observed.MaterialPaths.Num(),Error))return false;
         Observed.MaterialPaths.Add(FSoftObjectPath(Material));
         Observed.MaterialSlotNames.Add(Slot.MaterialSlotName.ToString());
         Observed.MaterialBlendModes.Add(uint8(Material->GetBlendMode()));

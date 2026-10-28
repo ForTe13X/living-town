@@ -186,3 +186,33 @@ The first 36,000-frame ordinary-game pilot preserves all 116 saved inputs and re
 The long tails need investigation before any eight-run comparison. There are **847 intervals above 33.33 ms**. Overlapping thread/GPU timings are not added, and the inverse of the median interval is not presented as display FPS. The run uses offscreen rendering, so these CPU waits alone do not establish visible presentation stutter or its cause.
 
 Root also finds lower bark detail in the pilot's early image. The raw row corresponding to screenshot frame 500 contains **312.0664 MB pending texture data**, versus zero in the accepted smoke's screenshot row. The later retained window has no pending texture data, but that cannot qualify the earlier image. A further diagnostic must capture after streaming readiness and compare normal windowed presentation with the same offscreen scene. Evidence is `native_forest_game_balanced_actual_v1_001/Pilot_Groundcover_Near`; its capture PASS is preserved while visual/performance acceptance and the full batch remain held.
+
+## Texture-ready visible and offscreen diagnostic
+
+![Texture-ready native game image; final forest composition remains held](evidence/native_forest_visible_ready_v001.png)
+
+Two fresh game runs now capture at frame 4500, bracketed by native texture inventories. All **35 source-bound textures** have their allowed source dimensions, current mip dimensions at least their wanted dimensions, and zero budget bias. Throughout the image window, pending texture data is zero and desired-loaded percentage is 100. Root reviews both late images and confirms the foreground bark detail is restored. This qualifies the ready capture; it does not force every distant texture to its full source resolution.
+
+The normal visible arm and matched offscreen arm preserve the same 116 package files, camera, instances, quality-3 settings, Full-HD resolution, uncapped controls and GPU instrumentation. Their command difference is the offscreen flag. The visible arm also verifies an owned, visible, nonminimized 1920 × 1080 client window. Each retains 5,000 engine-frame intervals after the probes:
+
+| Actual observation | Visible window | Offscreen |
+| --- | ---: | ---: |
+| Retained duration | 69.322 s | 62.238 s |
+| End-frame interval p99 | 21.765 ms | 544.090 ms |
+| RHI thread p99 | 2.108 ms | 551.737 ms |
+| GPU median / p95 | 10.857 / 14.842 ms | 10.255 / 15.482 ms |
+| Intervals above 33.33 ms | 1 | 119 |
+
+This ordered diagnostic pair associates the large CPU/RHI tails with the offscreen presentation path. It does not isolate the engine's internal cause, count physically displayed frames, or establish a balanced optimization gain. Installed D3D12 source disables the swapchain for offscreen mode but retains common frame-event paths, so a blanket claim that offscreen skips all pacing is unsupported. Player-oriented profiling will use a normal visible window; full-town movement, startup and Blender navigation remain separate work.
+
+Both owned processes exit normally and preserve source/configuration bytes. The visible session takes **155.344 seconds / 9,021,759,488 peak private bytes**; offscreen takes **135.703 seconds / 7,556,030,464 bytes**. These peaks include loading and shutdown, so they are not a steady-state feature-memory comparison. Evidence is `native_forest_game_pilot_diagnosis_actual_v1_001`; root's decision is `root_native_review_acceptance_v1_001/forest_present_ROOT_VISUAL_REVIEW_v001.json`. The eight-case batch and final reserve art remain held.
+
+## Runtime safeguard against unprepared instanced materials
+
+Canonical source now checks each effective material's native `InstancedStaticMeshes` usage before installing an instanced entry. The check precedes mesh-cache reuse, so a mesh accepted earlier for an ordinary static component cannot bypass the instanced requirement. Refusal names the entry, mesh, slot, interface and base material, and requests an authored/saved/cold-reopened content correction. Static and deferred-door entries keep their existing policy. The gate reads the interface's effective flags, including Unreal 5.8 material-instance overrides, and retains the engine's special-material exception. It does not enable flags, compile shaders, dirty assets or substitute a default material.
+
+The exact adopted **60-input source digest** is `21652d00827261744d9356e82a70dffbd028579163c876a85f4c46072884e062`. Its actual native build passes in **132.953 seconds / 3,860,844,544 peak private bytes**. A hardware automation run passes **all ten native tests**, including the nine existing lifecycle/authority tests and `LivingTown.Native.TileMaterialUsage`, plus eleven native SHA known-answer cases. It takes **48.797 seconds / 4,046,127,104 private bytes**, with zero test/engine warnings or errors and all owned processes reaped. An independent four-file review finds no actionable issue in this scope.
+
+The new synthetic test checks static-to-instanced cache reuse, missing/present/revoked usage, material-instance overrides in both directions, unchanged flags after refusal, missing material and the special-engine-material exception. Synthetic cached receipts do not qualify production geometry, saved content, shader completeness or a rendered image. The earlier actual eleven-material cold/game proof remains separate. Current callers use mesh slots without component overrides; a future override path must validate its effective material too.
+
+Root adopts only the four reviewed and tested source files; their canonical native input digest matches the build exactly. All runtime-enable flags remain false. Evidence is `native_ism_runtime_guard_execution_build_actual_v1_001`, `native_ism_guard_tests_actual_v1_001`, and `native_ism_runtime_guard_adoption_actual_v1_001/ADOPTION_RECEIPT.json` under the existing F-drive root. This change does not adopt the separate café-authoring/avatar source experiments or qualify a Shipping build.

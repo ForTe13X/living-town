@@ -118,6 +118,7 @@ private:
     bool ValidateLoadedGeometry(const FLivingTownTileGeometry& Geometry,UStaticMesh* Mesh,bool& bWaiting,FString& Error);
 #if WITH_DEV_AUTOMATION_TESTS
     friend struct FLivingTownTileLifecycleTestAccess;
+    friend struct FLivingTownTileMaterialUsageTestAccess;
     // No reflected API or release-build path. Requires an isolated transient
     // automation world and synthetic engine primitives, never imported assets.
     TFunction<UPrimitiveComponent*(AActor*,const FString&,int32)> AutomationFactory;
