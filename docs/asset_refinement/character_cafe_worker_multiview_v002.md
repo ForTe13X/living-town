@@ -115,6 +115,10 @@ The reviewed frames show distinct leg/arm poses and readable clothing. The end/s
 
 Seven isolated native assets now import and reopen successfully. The separate Unreal review observes **48 samples over 0.7956 seconds** with naturally advancing animation time and distinct limb poses; it injects no manual time or bone updates. The 61 source joints are present, and native LOD0 has 10,707 vertices, including four additional tangent splits. Native animation length is 2.366667 seconds, whereas the portable clip's first-to-last-key span is 2.333333 seconds; identical timeline duration is not claimed. The review completes in **53.484 seconds**, peaks at **5,587,161,088 private bytes**, preserves sources and reaps its processes. Evidence is `character_v002_walk_native_intake_actual_v1_002`. Dark studio lighting and editor overlays prevent final presentation acceptance; this is editor playback, not a player-character replacement or game-performance result.
 
+![Readable native walking review with original character materials](evidence/cafe_worker_v002_native_walk_readable_v004.png)
+
+A later review uses native atmosphere/skylight, a camera-side diagnostic fill, explicit directional-light priorities, Game View and cleared selection. Both distinct-pose frames are now readable, with no light-priority warning or selected-object overlays. Root accepts this limited native lighting baseline. The same seven assets and original character materials remain unchanged; the floor's stretched checker is diagnostic scenery, and skin/hair/garment art stays held. `character_v002_walk_native_intake_actual_v1_004` completes in **53.313 seconds** with **5,482,799,104 peak private bytes**, then restores camera, show flags, selection, background throttle and actor inventory before reaping. The constrained face-normal candidate below is not yet applied in this native frame.
+
 ## Constrained face normal refinement
 
 ![Matched face shading with explicit projection confidence](evidence/cafe_worker_v002_confidence_face_v001.png)
