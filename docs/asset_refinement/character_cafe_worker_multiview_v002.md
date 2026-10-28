@@ -241,4 +241,14 @@ A later read-only review fits all **10,707 actual posed vertices** inside the ce
 
 `native_body_review_actual_v1_002/Reload` passes in **87.453 seconds / 6,201,470,976 peak private bytes**, reusing the exact 19 packages without authoring, importing, recompiling or saving assets. Seven images include source/candidate pairs and a stable baseline return: RGB8 mean absolute difference **0.0544**, p95 **1**. Exact restoration follows **47 observed frames**. The first attempt remains failed before any image because the settings class lacks a Python symbol; the retry reads the exact existing native CDO/property through supported reflection. Root decision is `root_native_review_acceptance_v1_001/complete_body035_ROOT_VISUAL_REVIEW_v001.json`.
 
+The extracted [complete-character framing utility](character_framing.md) now lives in the repository. Thirteen synthetic tests pass on Python 3.11 and 3.12; a separate host replay exactly matches all seven original pose/fit records and 42 before/after capture states. This validates the extraction against retained receipts. The new module itself still needs binding and execution in any native adapter that adopts it.
+
 Hair silhouette, eye/hand anatomy, animation/contact and the dark apron-hem notch remain open. The notch is an observed appearance issue, not established missing topology: the ongoing source audit finds opaque brown triangle hits there. No geometry is filled on that assumption. The black review background supplies no floor-contact evidence.
+
+| Lit hem close-up | Isolated BaseColor control |
+| --- | --- |
+| ![Dark cloth fold in native lighting](evidence/cafe_worker_v002_hem_lit_v001.png) | ![Brown cloth surface visible without lighting](evidence/cafe_worker_v002_hem_unlit_v001.png) |
+
+The same geometry shows brown folded cloth in the isolated Unlit control. Strength 0.35 does not remove the dark fold under the original lighting. Source analysis finds opaque brown triangle hits at all 77 inspected dark pixels, with no low-poly boundary at that hem. Seam splits limit source/native UV identity claims. These observations do not justify filling a supposed hole; lighting, normal response, occlusion and shape finish need separate assessment. The combined Unlit setup does not isolate one lighting cause.
+
+`native_hem_control_actual_v1_001/Reload` passes four views in **73.407 seconds / 6,137,229,312 peak private bytes**, preserving all 19 packages without original recompilation, import, save or repair. The returned baseline has RGB8 mean absolute difference **0.0636**; state restoration and owned-process cleanup pass. Root decision is `root_native_review_acceptance_v1_001/hem_ROOT_DIAGNOSTIC_REVIEW_v001.json`. Final garment finish remains open.
