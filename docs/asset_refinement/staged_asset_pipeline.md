@@ -70,3 +70,15 @@ Existing repository entry points:
 - [Portable normal-image derivative](append_normal_image.md): calibrated native normal output carried through core glTF, with exact old BIN/JSON preservation and matched portable review.
 
 The current Unreal target consumes engine-agnostic source assets through explicit engine adapters. A model becomes eligible for the final walkthrough after its relevant stage reviews and playable/visual checks, including actual performance observations, are complete.
+
+## Closed toolset source preflight
+
+Copied Python toolset wrappers can register successfully while retaining an old class docstring. Two actual preview attempts stopped before their first method because that native description differed from the registration adapter's declared `DESC`. The underlying saved assets were unchanged.
+
+Run the [source description check](../../tools/unreal/toolset_source.py) before freezing or launching such an adapter, substituting its real source path and class name:
+
+```powershell
+python -B tools/unreal/toolset_source.py --source path/to/review_tools.py --class-name CafeEntranceVisualTools
+```
+
+This reads the literal module description and cleaned class docstring through Python's AST, without importing Unreal or executing the source. It rejects mismatches, missing/ambiguous declarations and unsupported dynamic descriptions. Its result binds the inspected file's bytes and SHA-256. Native registration, exact tool schemas, source guards and actual rendering remain separate requirements. Eight host tests pass; replay against both failed wrappers rejects them, while the source of the successful native avatar review passes. No earlier failed engine report is relabeled.
