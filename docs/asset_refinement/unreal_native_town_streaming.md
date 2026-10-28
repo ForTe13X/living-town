@@ -160,3 +160,29 @@ The repair now saves eleven owned material derivatives with native `InstancedSta
 The fresh **1920 × 1080** ordinary game reports all eleven usage flags, no material fallback and the expected camera, culls and **38 components / 2,363 instances**. Root reviews the actual image and selects the restored bark, leaf, grass and fern material behavior. `native_ism_material_usage_actual_v1_003` Author takes **57.844 seconds / 9,981,337,600 peak private bytes**, cold Review **18.844 seconds / 4,518,481,920 bytes**, and game smoke **22.610 seconds / 6,912,442,368 bytes**. All owned processes are reaped. Original editor auto-usage changes in memory are recorded separately from unchanged package bytes.
 
 The 900-frame smoke validates the real consumer; it is not a balanced frame-cost comparison. Its native CSV remains at Unreal's actual owned user-directory location, with GPU timing and warmup/lag boundaries recorded. Final reserve art remains held for the yellow lawn-like ground, plant composition and distant context. This repair does not enable the full-town driver or qualify whole-town performance. Root's bounded visual receipt is `root_native_review_acceptance_v1_001/ism_material_game_ROOT_VISUAL_REVIEW.json`.
+
+## Coordinated entrance revision
+
+The next native entrance assembly replaces the door's solid upper backing with a true glazed aperture, relocates the fascia and lettering, and raises the canopy with its connected support. It retains the radius-28 cm / half-height-95 cm movement profile. Actual saved and reopened geometry passes the portal, glazing-ray, closing-envelope, sign-height and floor/capsule checks. A separate root CPU replay reproduces both native comparisons and rejects five deliberate changes to position, UV, normal, tangent handedness and the handle transform. The earlier host comparison remains failed: its decimal rounding key crossed a boundary after valid native float32 narrowing. The replacement guard compares the declared float32 transform exactly, together with the other vertex attributes.
+
+The revised assembly also completes the ordinary-game exit journey with **281 guide points and 959 moving observations**, zero observer frame gaps, natural CharacterMovement and animation, and the new binding's journal provenance. The native automation test succeeds without warnings or errors. This run takes **75.480 seconds** including startup and exit; first test-observed readiness is **64.707 seconds** after launch. Actual resolution remains **888 × 500** with the three-core limit, so this is a physical gameplay check rather than a Full-HD or full-town performance result.
+
+Three further native close views preserve all source packages and restore the exact temporary viewport/door state. The interior reveal no longer has reversed floating lettering, and the canopy support connects coherently. Root still rejects final façade art: the canopy/front valance visibly obscures the upper portion of the café lettering. Although native geometry confirms the door aperture, its milky pane also needs an appearance review. Fitting the lettering within the fascia's vertical bounds does not prove it is visible from the street; the next revision must account for actual camera occlusion and upper-window proportions.
+
+Evidence under the existing F-drive root is `native_cafe_exit_repair_actual_v1_006` for saved/reopened geometry, `native_cafe_exit_qualification_recovery_actual_v1_001` and `root_cafe_architecture_recovery_verification_v1_001` for strict CPU replay, `native_cafe_exit_repair_actual_v1_007/Game` for actual gameplay, and `native_cafe_entrance_visual_review_actual_v1_002/Review` for the three close views. The root decision is `root_native_review_acceptance_v1_001/cafe_architecture_ROOT_VISUAL_REVIEW_v002.json`. This external source experiment is still separate from canonical authoring-source adoption and the new 61-joint avatar's fit qualification.
+
+## Longer foliage measurement: capture valid, comparison held
+
+The first 36,000-frame ordinary-game pilot preserves all 116 saved inputs and records 32,000 frames after its native warmup boundary. Their summed frame intervals are **404.092 seconds**, matching the native event-wall duration within **0.000466 seconds**. The actual image is 1920 × 1080, quality settings are 3, screen percentage is 100, the GPU is Radeon 8060S D3D12/SM6, and all eleven instanced material flags remain true without fallback messages. The session takes **471.968 seconds** and peaks at **8,015,851,520 private bytes**. This is an uncooked development run of the fixed cell, with full CPU affinity and two shader workers.
+
+| Retained native timing | Median | p95 | p99 |
+| --- | ---: | ---: | ---: |
+| GPU | 10.333 ms | 15.740 ms | 17.417 ms |
+| Game thread | 1.601 ms | 2.679 ms | 4.144 ms |
+| Engine end-frame interval | 2.089 ms | 3.743 ms | 506.168 ms |
+| Render thread | 2.079 ms | 3.361 ms | 579.666 ms |
+| RHI thread | 0.852 ms | 1.409 ms | 510.264 ms |
+
+The long tails need investigation before any eight-run comparison. There are **847 intervals above 33.33 ms**. Overlapping thread/GPU timings are not added, and the inverse of the median interval is not presented as display FPS. The run uses offscreen rendering, so these CPU waits alone do not establish visible presentation stutter or its cause.
+
+Root also finds lower bark detail in the pilot's early image. The raw row corresponding to screenshot frame 500 contains **312.0664 MB pending texture data**, versus zero in the accepted smoke's screenshot row. The later retained window has no pending texture data, but that cannot qualify the earlier image. A further diagnostic must capture after streaming readiness and compare normal windowed presentation with the same offscreen scene. Evidence is `native_forest_game_balanced_actual_v1_001/Pilot_Groundcover_Near`; its capture PASS is preserved while visual/performance acceptance and the full batch remain held.
