@@ -30,6 +30,12 @@ The user explicitly permits replacing weaker implementations with stronger nativ
 
 ## Work in progress
 
+### 2026-10-28 native collision, coverage and character checkpoint
+
+The first native exterior subset now saves and independently reopens with source-preserving collision derivatives. A 10.733 m exterior corridor passes actual floor/overlap/sweep queries in both editors; the café exit hits the lintel, threshold and low awning. A fitted character profile and floor-following route must pass a real CharacterMovement journey before expansion is called playable. The current native plan references only 16 of the complete source's 6,701 explicitly tagged tree placements, and 476 of 23,475 understory placements. Coverage is therefore a separate migration task from adding vegetation density. A reusable source-ID report now maps this gap by source stage, category and 64 m cell. See the [native town evidence](asset_refinement/unreal_native_town_streaming.md).
+
+The new 61-joint café worker now imports and advances naturally in Unreal, with distinct observed limb poses; lighting and garment/surface quality remain open. A constrained target-basis normal bake visibly smooths the face while preserving original normal sampling outside its confidence mask. Root accepts this limited shading improvement; neck artifacts and hair protrusions remain. The map/mask recipe still needs portable/native material integration. See the [character evidence](asset_refinement/character_cafe_worker_multiview_v002.md). Native editor features may replace weaker custom machinery, with portable source assets retained and actual quality/performance comparisons deciding adoption.
+
 ### 2026-10-27 native asset and Tripo checkpoint
 
 The native town definition rebuild saves 1,740 packages and verifies 93 materials, 153 texture roles, 71 source images and 38 texture transforms. Fresh typed authoring and a separate hardware editor reopen the new 1,858 preview packages plus 16 terrain-context packages. Sunlit plaster is visible; sparse planting, repeated ground, cool shadows and camera obstruction remain art work. The two original basis holds and actual runtime/collision/performance checks remain open. See the [native town evidence](asset_refinement/unreal_native_town_streaming.md).

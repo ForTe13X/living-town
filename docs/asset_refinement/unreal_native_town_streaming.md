@@ -93,3 +93,18 @@ A separate editor reopened the new 1,858 preview packages plus 16 saved terrain-
 The sunlit creperie wall now reads warm cream with visible fine plaster grain, a pink sign and white lettering. Shadowed aerial walls still appear cool. That contrast does not prove all scalar/function defaults or identify a shading defect. The additional Unlit frame was nearly solid white and cannot diagnose BaseColor. A lamp and awning crossbar obstruct the close view; it remains a material checkpoint rather than a finished camera composition. Sparse planting, repeated ground patterns and overall palette/context refinement remain visible work.
 
 The 210.203-second Radeon D3D12/SM6 review peaked at 15,413,551,104 aggregate private bytes, with no monitor errors or handled-ensure/error log patterns. Evidence is `native_town_rebuilt_view_actual_v1_002`, using the exact saved Author packages from v001. The earlier whole v001 attempt remains failed because its capture-label helper omitted the new walking label; its successful authoring, partial image and cleanup evidence are preserved. The resumed review prevalidates labels and saves raw responses before parsing. Runtime streaming, collision, navigation, sustained frame time, final art and walkthrough acceptance remain pending.
+
+## Migration coverage and first exterior collision result
+
+The [coverage report tool](../../tools/unreal/native_town_coverage.py) compares unique source identities, retaining repeated references caused by split native chunks without inflating the count. Against the complete 58,233-placement assembly, the current typed plan references **4,366 placements**. Explicit vegetation tags give:
+
+| Tagged source category | Complete source | Referenced by native plan |
+| --- | ---: | ---: |
+| Trees | 6,701 | 16 |
+| Understory | 23,475 | 476 |
+
+This is a migration-scope gap, separate from foliage density and material quality. Untagged street trees are outside these category counts. A source reference alone does not prove that every triangle of a split placement is saved or rendered. The report also groups vegetation by 64 m cells using transformed glTF X/Z bounds centres, providing a practical starting point for expanding reserve coverage. It does not measure canopy area, appearance or frame rate. Evidence is `native_town_coverage_actual_v1_001/COVERAGE.json`; three CPU regression tests cover split references, null source metadata and invalid source identities.
+
+A separate saved exterior subset now contains 26 exact placements and 16 owned collision-mesh derivatives. Unreal cooks their source triangles with explicit double-sided collision; original render buffers and source packages remain preserved. Both authoring and independent fresh reopening pass the **10.733 m exterior subcorridor** floor, overlap and capsule-sweep checks at radius 28 cm / half-height 95 cm. The unchanged café exit fails in both runs: actual hits identify the lintel, threshold/plinth and low awning. These observations do not execute CharacterMovement's full step solver. The next trial must fit the character profile to measured posed bounds and follow actual floors around the awning, or explicitly rebuild the portal if necessary.
+
+Evidence is `native_static_exterior_route_actual_v1_002`: both owned editors exit cleanly, sources and original collision identities remain preserved, and the full-town driver stays disabled. The first attempt failed before launching an editor because two proven identical source records target the same staging JSON. v002 permits only that exact dual-provenance copy and retains all other overwrite refusals. No game journey, full-town collision or FPS qualification follows from the successful exterior query.
