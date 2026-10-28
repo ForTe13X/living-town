@@ -1,4 +1,4 @@
-"""Synthetic, path-independent controls for complete-vertex camera framing."""
+"""CI-discovered, path-independent controls for complete-vertex camera framing."""
 import copy
 import json
 import math

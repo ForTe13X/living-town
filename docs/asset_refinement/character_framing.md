@@ -27,7 +27,7 @@ API changes are an explicit `expected_vertex_count` keyword on `fit` and `verify
 Synthetic tests run without external assets or absolute paths:
 
 ```text
-python -B -m unittest discover -s tools/tests -p test_character_framing.py
+python -B -m unittest discover -s tools/tests -p test_asset_refinement_character_framing.py
 ```
 
-The preparation also contains a separate, non-repository replay against all seven retained body poses/fits and 21 capture receipts. On the tested Windows Python 3.11 and 3.12 runtimes, the proposal reproduces every stored world-coordinate, camera and projection result exactly, covering 42 before/after capture states. No geometry fixture is shipped here. That CPU replay does not mean this new module has run in the native editor; adapters must bind and qualify the adopted bytes before making that claim.
+The test filename matches the existing CI `test_*refinement*.py` discovery pattern. The preparation also contains a separate, non-repository replay against all seven retained body poses/fits and 21 capture receipts. On the tested Windows Python 3.11 and 3.12 runtimes, the utility reproduces every stored world-coordinate, camera and projection result exactly, covering 42 before/after capture states. No geometry fixture is shipped here. That CPU replay does not mean this new module has run in the native editor; adapters must bind and qualify the adopted bytes before making that claim.
