@@ -58,6 +58,7 @@ Existing repository entry points:
 - [Cafe-worker source review](character_cafe_worker_source_v001.md): measured source geometry/maps, actual GPU views and the visible defects held for refinement before rigging.
 - [Native C++ town pilot](unreal_native_town_streaming.md): actual import/readback evidence and pending world/performance checks.
 - [Custom Unreal texture policy](unreal_texture_import_policy.md): tested source-sized texture import for fresh definition pipelines, retaining their existing mesh and material settings.
+- [Typed Unreal material-default readback](unreal_material_function_readback.md): actual function-input values and literal preview connections, with effective shader behavior reviewed separately.
 - [Half-timber living-room candidate](interior_living_room_v001.md): matched furniture/finish views, portable output and independent saved-artifact reopening.
 - [Tripo Unreal receiving bridge](tripo_unreal_bridge.md): actual native start/status/stop evidence, the separate Studio handshake and detail-asset intake checks.
 - [Two-view cafe-worker source](character_cafe_worker_multiview_v002.md): actual Tripo detailed-geometry/PBR request, preserved original, measured maps and pending close review.
