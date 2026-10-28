@@ -2,7 +2,7 @@
 
 The 2026-10-24 goal is **active**. The user explicitly included the broader remaining roadmap, alongside production-quality characters, everyday action animation, interior variety and terrain materials. On 2026-10-25 the user added gradual migration to Unreal Engine through Epic's native MCP support, using the installed `D:/Dev/UE_5.8`, then explicitly made that migration the higher priority with Godot ultimately abandoned. The preceding release is a recoverable baseline; it does not complete this goal.
 
-Baseline: merged PR89, tree `5b9a29608df9d0e9f5d3e3ffa1b745fb4b3236fd`. The local equivalent is commit `27911940`. Work proceeds on `codex/character-surfaces-actions`. Preserve the existing README showcase until a new verified walkthrough replaces it.
+Released baseline: merged PR89, tree `5b9a29608df9d0e9f5d3e3ffa1b745fb4b3236fd`. The local equivalent is commit `27911940`. Migration and asset work proceeds on `codex/native-town-streaming` in PR91. Preserve the existing README showcase until a new verified walkthrough replaces it.
 
 ## Required outcomes
 
@@ -27,6 +27,14 @@ Baseline: merged PR89, tree `5b9a29608df9d0e9f5d3e3ffa1b745fb4b3236fd`. The loca
 | Gradual Unreal migration | Installed UE 5.8.4 and native experimental ModelContextProtocol/ToolsetRegistry plugins; portable Blender/glTF source assets | Establish a separate reproducible project and actual local MCP connection. Import and inspect qualified assets with correct units, coordinates, materials, collisions and LODs. Migrate a usable gameplay slice with state/payment/save parity before expanding. Evaluate Nanite, Lumen, streaming, instancing and PCG against measured quality, startup, frame and memory costs. Preserve the current playable reference and engine-agnostic asset sources during the transition. |
 
 ## Work in progress
+
+### 2026-10-27 native asset and Tripo checkpoint
+
+The native town definition rebuild saves 1,740 packages and verifies 93 materials, 153 texture roles, 71 source images and 38 texture transforms. Fresh typed authoring and a separate hardware editor reopen the new 1,858 preview packages plus 16 terrain-context packages. Sunlit plaster is visible; sparse planting, repeated ground, cool shadows and camera obstruction remain art work. The two original basis holds and actual runtime/collision/performance checks remain open. See the [native town evidence](asset_refinement/unreal_native_town_streaming.md).
+
+One new [two-view cafe-worker source](asset_refinement/character_cafe_worker_multiview_v002.md) completed through Tripo H3.1 with texture3.5 for 60 API credits. It contains 1,969,262 triangles, three actual 4K PBR maps and no skin/clips. Six HIP views show improved clothing and open rear-apron construction. Lateral source views and plane sections establish five separated digits on both hands; deformation is still untested. A localized lower-eyelid material bake now has a portable GLB and an independent texture-only preservation pass. Hair-tip repair remains under visual review. Final topology/UV/bake, rigging, action/contact clips and roster replacement remain open.
+
+The [living-room candidate](asset_refinement/interior_living_room_v001.md) passed isolated native import/reopening and matched exposure review; EV11 is a provisional baseline. Strict original array comparison found UV welding and singular generated tangent failures. A new explicit source derivative now passes all 85 native meshes: exact positive-face position/UV/material correspondence, provided tangent basis and effective vertex color. The 16 omitted faces are exactly source zero-area triangles. The original failed comparison and v004 review failure remain preserved; separate v006 review reopens the repaired assets and completes both EV11 frames. Source `COLOR1` is redundant opaque white and identical to `COLOR0`, permitting only a documented consumer equivalence. Material-function defaults/routes, native room/anchor adoption, collision, routes and final art remain open. No row in the required-outcomes table is closed by these bounded asset checks.
 
 ### 2026-10-26 migration and surface checkpoint
 
