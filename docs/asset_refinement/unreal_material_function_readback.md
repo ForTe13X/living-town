@@ -28,3 +28,5 @@ Retained evidence under the delivery root:
 - `Probe/TYPED_FUNCTION_INPUT_DEFAULTS.json`, `ACTUAL_LITERAL_CONSUMER_GRAPH.json` and before/after guards within that probe directory.
 
 The [room derivative](interior_living_room_v001.md) consumes these facts for its separate material-route review. The reader itself makes no acceptance decision.
+
+A later exact-texture export session reads the four print materials' actual root output names, tangent-space flags and default normal settings. Supported `TextureExporterPNG` exports Source mip zero, not cooked GPU data. The actual one-texel RGBA8 source is `(127,127,254,255)`, with normal compression, sRGB false and green flip false. Its linear uncompressed RG example has a 0.318-degree residual from ideal Z. Those actual source facts and the explicit cooked-data boundary are retained in `native_default_normal_export_actual_v1_001/Probe/NORMAL_SOURCE_PIXEL_ANALYSIS.json`; no general shader-pixel qualification is inferred.

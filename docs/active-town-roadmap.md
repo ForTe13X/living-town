@@ -4,6 +4,8 @@ The 2026-10-24 goal is **active**. The user explicitly included the broader rema
 
 Released baseline: merged PR89, tree `5b9a29608df9d0e9f5d3e3ffa1b745fb4b3236fd`. The local equivalent is commit `27911940`. Migration and asset work proceeds on `codex/native-town-streaming` in PR91. Preserve the existing README showcase until a new verified walkthrough replaces it.
 
+The user explicitly permits replacing weaker implementations with stronger native Unreal or Blender workflows. Choose the tool by the result: prioritize Unreal for scene assembly, collision/navigation, runtime materials, LODs/instancing and profiling; use Blender for source mesh/UV/bake/rig work where it serves better. Preserve portable authored sources and simulation authority, while allowing engine-specific presentation and optimization adapters. Reproducing legacy implementation details is not a requirement.
+
 ## Required outcomes
 
 | Requirement | Existing foundation | Remaining work and required evidence |
