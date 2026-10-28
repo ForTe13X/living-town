@@ -207,9 +207,26 @@ Both original EV13 views retain the red native cached-lighting clipping warning.
 | GPU median / p95, ms | 10.676 / 14.419 | 10.679 / 13.970 |
 | Frames over 33.33 ms | 1 | 1 |
 
-Each game records 10,000 frames, retaining the final 5,000 after all texture probes and screenshots. Frame 4,500 captures are bracketed by actual mip readbacks: all **35 textures** meet current/wanted/source dimensions, zero budget bias, pending streaming 0 and desired-loaded 100%. Both runs retain all **2,363 instances**, camera, LOD and lighting settings. Normal exits and source/configuration/process guards pass. This is one ordered pair with uncontrolled caches; its similar timings do not establish a performance change, presented FPS or whole-town performance. Texture probes may perturb earlier execution and do not prove an absolute asynchronous-shader-job count.
+Each game records 10,000 frames, retaining the final 5,000 after all texture probes and screenshots. Frame 4,500 captures are bracketed by actual mip readbacks: all **35 foliage/vendor textures** meet their source-bound current/wanted/allowed-dimension checks, zero budget bias, pending streaming 0 and desired-loaded 100%. A later inventory audit finds that this subset omits ten terrain macro/photo/mask maps. The old pair therefore does not qualify those ground maps' mip quality. Both runs retain all **2,363 instances**, camera, LOD and lighting settings. Normal exits and source/configuration/process guards pass. This is one ordered pair with uncontrolled caches; its similar timings do not establish a performance change, presented FPS or whole-town performance. Texture probes may perturb earlier execution and do not prove an absolute asynchronous-shader-job count.
 
 Root sees a browner, smoother soil composition, but holds final floor art for closer detail review. The black distant horizon remains unfinished context. Evidence is `native_woodland_floor_material_actual_v1_002` and `native_woodland_floor_game_actual_v1_001`; root decision is `root_native_review_acceptance_v1_001/woodland_floor_ROOT_REVIEW_v001.json`. A naming check also records DDC paths 102–112 characters long: within the installed 119-character limit, but future preparations must enforce the conservative 100-character cap before launch.
+
+## Walking-height leaf and soil detail
+
+| Context | Leaf-dominant source | Selected height-blend candidate |
+| --- | --- | --- |
+| A | ![Source leaf detail in context A](evidence/native_woodland_height_A_baseline_v001.png) | ![Height-based leaf and soil islands in context A](evidence/native_woodland_height_A_candidate_v001.png) |
+| B | ![Source leaf detail in context B](evidence/native_woodland_height_B_baseline_v001.png) | ![Height-based leaf and soil islands in context B](evidence/native_woodland_height_B_candidate_v001.png) |
+
+The closer review finds that the earlier smooth soil mix softens photographed leaf detail too much. Relative-height blending now keeps distinct leaf, moss and stone patches while adding coherent soil variation. Root reviews all ten fixed EV11 images: source, smooth mix, soil only, height blend and source return in each context. The height blend is the selected local material candidate. Lighting, vegetation composition and the finished reserve remain open.
+
+The matching two 2K grayscale height maps retain their original 16-bit pixels through native import and cold reopening, with actual `PF_G16` platform data. The original photo maps and 3.001 m / 3.15 m repeats remain intact. The assets are [CC0 from Poly Haven](https://polyhaven.com/license). Relative height controls the material mixture; this pass changes no terrain elevation, geometry, collision, placement or coverage.
+
+The completed material has 13 samplers and 574 reported pixel-shader instructions in this editor configuration; those counts do not establish runtime GPU cost. Authoring and independent review pass in **100.969 / 194.313 seconds**, peaking at **7,361,224,704 / 8,040,304,640 private bytes**. Original packages and native state remain preserved. Baseline-return RGB8 mean absolute differences are **0.665 / 0.549**, with p95 **2** in both contexts. All owned processes are reaped.
+
+Earlier stopped trials remain failed. The continuation reuses the two valid saved textures and soil material, authors only the missing height material, and verifies the two added native texture-cache references/GUIDs against their actual texture objects. Cold graph, sampler-role, pixel and platform-format checks precede mesh loading. Evidence is `native_woodland_height_blend_actual_v1_003`; root selection is `root_native_review_acceptance_v1_001/woodland_height_ROOT_VISUAL_REVIEW_v001.json`.
+
+Ordinary-game readiness and performance for this material remain pending. The complete source-bound inventory is **45 baseline / 47 height-candidate textures**, including the ten terrain maps omitted by the historical 35-entry foliage inventory. Both new height textures need fresh game mip/format observations; cold reopening alone does not qualify their walking-view residency. Final selection for the game and portable delivery remain separate steps.
 
 ## Longer foliage measurement: capture valid, comparison held
 
@@ -231,7 +248,7 @@ Root also finds lower bark detail in the pilot's early image. The raw row corres
 
 ![Texture-ready native game image; final forest composition remains held](evidence/native_forest_visible_ready_v001.png)
 
-Two fresh game runs now capture at frame 4500, bracketed by native texture inventories. All **35 source-bound textures** have their allowed source dimensions, current mip dimensions at least their wanted dimensions, and zero budget bias. Throughout the image window, pending texture data is zero and desired-loaded percentage is 100. Root reviews both late images and confirms the foreground bark detail is restored. This qualifies the ready capture; it does not force every distant texture to its full source resolution.
+Two fresh game runs now capture at frame 4500, bracketed by native texture inventories. All **35 source-bound foliage/vendor textures** have their allowed source dimensions, current mip dimensions at least their wanted dimensions, and zero budget bias. This inventory excludes the ten terrain maps discussed above. Throughout the image window, pending texture data is zero and desired-loaded percentage is 100. Root reviews both late images and confirms the foreground bark detail is restored. This qualifies the ready foliage capture; it does not force every distant texture to its full source resolution.
 
 The normal visible arm and matched offscreen arm preserve the same 116 package files, camera, instances, quality-3 settings, Full-HD resolution, uncapped controls and GPU instrumentation. Their command difference is the offscreen flag. The visible arm also verifies an owned, visible, nonminimized 1920 × 1080 client window. Each retains 5,000 engine-frame intervals after the probes:
 
