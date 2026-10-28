@@ -187,6 +187,30 @@ That game run records **1,208 moving frames**, p95/p99 intervals **10.495 / 12.3
 
 Evidence is `native_cafe_canopy_material_resume_actual_v1_001` and `native_cafe_canopy_material_visual_actual_v1_002`; root selection is `root_native_review_acceptance_v1_001/cafe_canopy_glass_ROOT_VISUAL_REVIEW_v003.json`. These remain external authoring experiments, separate from canonical recipe adoption, full-town rollout and new-avatar integration.
 
+## Woodland floor material and visible game comparison
+
+| Existing leaf-dominant floor | Soil-and-leaf candidate |
+| --- | --- |
+| ![Baseline late native Full-HD game image](evidence/native_woodland_floor_game_baseline_v001.png) | ![Candidate late native Full-HD game image](evidence/native_woodland_floor_game_candidate_v001.png) |
+
+A native material clone adds coherent soil/leaf blend variation at 12 m and 37 m while retaining the licensed photo maps, physical 3.001 m / 3.15 m repeats, eligibility/slope formulas and original coverage. A component material override preserves the floor mesh's full native buffers and collision GUID, all actor/instance transforms, LOD/collision policy, lights and post-process state. The 41% planning-grid gap lies mostly outside the selected mesh and is not filled. Original 116 packages remain unchanged; only one material and two owned maps are saved.
+
+Independent cold reopening and four EV11/13 views pass. The first attempt remains failed because its census stringifies Rotators with memory addresses; the continuation freshly reads exact numeric pitch/yaw/roll, reuses its valid material/baseline packages and creates only the missing candidate map. Native checks change only the two terrain material-path fields. Author and Review take **127.218 / 148.688 seconds**, peaking at **14,332,342,272 / 13,764,079,616 private bytes**, and reap all owned processes.
+
+Both original EV13 views retain the red native cached-lighting clipping warning. Installed source gives the default cache exposure usable range as approximately EV−8 to12. A separate local cache-range qualification is needed for EV13; the warning is not hidden and these views are not final lighting evidence. The ordinary-game pair above retains saved EV11 and the original cache setting.
+
+| Visible 1920 × 1080, quality 3 | Baseline | Candidate |
+| --- | ---: | ---: |
+| Retained native frames | 5,000 | 5,000 |
+| Retained native seconds | 67.759 | 67.624 |
+| Frame median / p99, ms | 13.251 / 21.065 | 13.297 / 20.720 |
+| GPU median / p95, ms | 10.676 / 14.419 | 10.679 / 13.970 |
+| Frames over 33.33 ms | 1 | 1 |
+
+Each game records 10,000 frames, retaining the final 5,000 after all texture probes and screenshots. Frame 4,500 captures are bracketed by actual mip readbacks: all **35 textures** meet current/wanted/source dimensions, zero budget bias, pending streaming 0 and desired-loaded 100%. Both runs retain all **2,363 instances**, camera, LOD and lighting settings. Normal exits and source/configuration/process guards pass. This is one ordered pair with uncontrolled caches; its similar timings do not establish a performance change, presented FPS or whole-town performance. Texture probes may perturb earlier execution and do not prove an absolute asynchronous-shader-job count.
+
+Root sees a browner, smoother soil composition, but holds final floor art for closer detail review. The black distant horizon remains unfinished context. Evidence is `native_woodland_floor_material_actual_v1_002` and `native_woodland_floor_game_actual_v1_001`; root decision is `root_native_review_acceptance_v1_001/woodland_floor_ROOT_REVIEW_v001.json`. A naming check also records DDC paths 102–112 characters long: within the installed 119-character limit, but future preparations must enforce the conservative 100-character cap before launch.
+
 ## Longer foliage measurement: capture valid, comparison held
 
 The first 36,000-frame ordinary-game pilot preserves all 116 saved inputs and records 32,000 frames after its native warmup boundary. Their summed frame intervals are **404.092 seconds**, matching the native event-wall duration within **0.000466 seconds**. The actual image is 1920 × 1080, quality settings are 3, screen percentage is 100, the GPU is Radeon 8060S D3D12/SM6, and all eleven instanced material flags remain true without fallback messages. The session takes **471.968 seconds** and peaks at **8,015,851,520 private bytes**. This is an uncooked development run of the fixed cell, with full CPU affinity and two shader workers.
