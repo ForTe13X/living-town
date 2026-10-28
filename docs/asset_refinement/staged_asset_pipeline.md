@@ -58,5 +58,6 @@ Existing repository entry points:
 - [Cafe-worker source review](character_cafe_worker_source_v001.md): measured source geometry/maps, actual GPU views and the visible defects held for refinement before rigging.
 - [Native C++ town pilot](unreal_native_town_streaming.md): actual import/readback evidence and pending world/performance checks.
 - [Custom Unreal texture policy](unreal_texture_import_policy.md): tested source-sized texture import for fresh definition pipelines, retaining their existing mesh and material settings.
+- [Half-timber living-room candidate](interior_living_room_v001.md): matched furniture/finish views, portable output and independent saved-artifact reopening.
 
 The current Unreal target consumes engine-agnostic source assets through explicit engine adapters. A model becomes eligible for the final walkthrough after its relevant stage reviews and playable/visual checks, including actual performance observations, are complete.
