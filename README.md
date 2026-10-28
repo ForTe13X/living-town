@@ -14,6 +14,8 @@
 
 [完整导览（MP4，14:00）](https://github.com/ForTe13X/living-town/releases/download/town-refinement-2026-10-23/LivingTown_Walkthrough.mp4) · [章节、下载与录制证据](docs/town_walkthrough/README.md) · [原像素版演示存档](docs/249-gameplay-tour.md)
 
+[分阶段 3D 资产流程](docs/asset_refinement/staged_asset_pipeline.md)：概念与比例 → 模型候选 → 拓扑与 UV → PBR 纹理与烘焙 → 骨骼动画 → 运行资产 → 引擎实测。每个阶段独立评审，允许重建和替换旧资产。
+
 **Blender 3D 小镇**：当前空间配置包含 151 栋建筑、263 层室内、1,582 个房间分区、2,089 组家具设施与 784 个新增合法交互绑定，使用 11 个城镇 GLB 分块和 25 个带骨骼角色模型；普通运行实测覆盖 62 位居民。进入区域仍遵循居民、门和楼层权限。
 [14 分钟配音导览、章节与下载](docs/town_walkthrough/README.md) · [运行与空间契约](docs/town_bridge/README.md)。
 大型运行素材通过带校验和的 [Release 清单](docs/town_walkthrough/ASSET_RELEASE.md) 分发。Windows 使用 `./tools/run-town3d.ps1`；原像素地图使用 `-Legacy`。五个模型/输入 ZIP、可选 Blender 工作文件及本版录屏均有实际校验记录。**发布状态：本版文件以本地校验和绑定，公共回读记录见证据索引**。

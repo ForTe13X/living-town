@@ -30,8 +30,8 @@ Checkout and artifact-upload failures also remain red.
 
 `hosted_visual_runtime_policy.json` records complete reviewed runtime profiles:
 image, Godot archive and binary, Python/Pillow, six apt packages, and Mesa GLX
-identity. Schema v2 currently contains exactly three profiles reviewed from runs
-`39399019945`, `39402759057` and `40417538860` (previous refresh `38254349222`; original
+identity. Schema v2 currently contains exactly four profiles reviewed from runs
+`39399019945`, `39402759057`, `40417538860` and `40582042993` (previous refresh `38254349222`; original
 promotion `37122904593`). The final checker requires every listed receipt line
 exactly once, with the whole receipt matching one complete profile. It does
 not combine accepted values from different profiles. If GitHub supplies an
@@ -153,3 +153,13 @@ or complement anchor is rebaked, and no branch protection is changed here.
 Only the runner image differs from the nearest approved profile. The complete thirteen-line profile retains the exact Godot archive/binary, Python/Pillow, six packages and Mesa identities. The two previous profiles remain intact. The unchanged checker passes the real artifact under the new exact profile and still rejects malformed negative controls, skipped positives, duplicate identities and unreviewed runtime combinations. All fifteen existing policy tests pass against the proposed three-profile policy. No workflow, detector threshold, golden, ModelPath anchor, complement ledger or branch-protection setting is changed. The [review receipt](hosted-runtime-review-2026-10-26.json) records provenance, source anchors and replay results.
 
 This qualifies that exact hosted raster runtime for the archived 2D suite. A fresh successful workflow remains required after adopting the policy update; the earlier red run is not final CI proof or Unreal acceptance.
+
+## October 27 exact hosted runner qualification
+
+[PR #91 run 40582042993](https://github.com/ForTe13X/living-town/actions/runs/40582042993) records `RUNNER_IMAGE os=ubuntu24 version=20261026.354.1 arch=X64`. The GitHub artifact metadata and downloaded 39,872,152-byte archive both bind artifact `12770901926` to SHA-256 `c864c7fa2c76c2c9677d869ca7cd5fbd9619eda06c350c12135eb632acaddb59`. Reviewed PR head `c2f594340b4012c009c598b89be23eb56f910ec4` and merge-event checkout `d624569893036813d6f1ad731b23fa054d1aea8c` have identical trees. The committed archived game subtree and detector sources match the previous review; unrelated dirty working-tree files are excluded from this proof.
+
+All 88 positive and 10 negative manifest entries verify. The positive receipt passes with 75 PNGs and zero scanned runtime errors. The day/night mutant catches exactly A1+A2 with successful capture and zero scanned runtime errors; the inline identical-floor mutant still fails only B at 0.0000. All 77 PNG hashes match the committed October 20 review. Actual noon/night, winter-night, grove-coverage, cafe 2F, harbor/player and injected-night images were inspected from this artifact. The [review receipt](hosted-runtime-review-2026-10-27.json) records the bindings, sample observations and checker replays.
+
+Only the exact runner-image line differs. The new complete thirteen-line profile retains Godot archive/binary hashes, Python/Pillow, six package versions and Mesa identities, and preserves all three prior profiles. The unchanged checker accepts the real artifact with the added profile, while malformed negatives, skipped positives, duplicate identities, unreviewed runner/architecture and unreviewed Xvfb still fail. All fifteen existing policy tests pass with four profiles. No workflow, verdict check, detector threshold, golden, anchor or branch-protection change is included.
+
+This maintains CI for the archived 2D canary; Unreal remains the primary presentation/runtime direction. The original run remains red, and a fresh successful workflow after adoption is required. This evidence does not qualify Unreal materials, performance, asset quality or a cooked build.

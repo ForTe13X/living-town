@@ -12,4 +12,6 @@ public:
  static UObject* ReadRerouteDeclaration(UObject* Expression);
  UFUNCTION(BlueprintPure, Category="LivingTown|Inspection")
  static FString ReadStaticSwitches(UObject* Material);
+ UFUNCTION(BlueprintPure, Category="LivingTown|Inspection")
+ static FString ReadFunctionInputDefault(UObject* Expression);
 };

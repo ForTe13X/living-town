@@ -1,0 +1,45 @@
+{
+  "schema": "living_town.fresh_character_concept.v1",
+  "appearance_family": "cafe_worker_breton_v001",
+  "role": "cafe_worker",
+  "logical_resident_assignment": null,
+  "status": "GENERATION_REFERENCE_SELECTED",
+  "generator": {
+    "tool": "built-in image_gen",
+    "mode": "generate",
+    "prompt": "Create exactly ONE full-body front-view game-character reference, one person only, for a high-quality image-to-3D character pipeline. Subject: a friendly adult male Breton seaside café worker, about 28, natural realistic human proportions and natural-sized head, relaxed neutral expression, warm hazel-brown eyes, short softly layered chestnut-brown hair with believable separate locks, clean-shaven face, subtle natural skin color and fine pores. Art direction: refined stylized realism, calm French coastal summer, physically believable fabric and anatomy with tasteful simplified shapes; excellent small-scale game readability, restrained warm palette. Outfit: cream woven linen-cotton work shirt with open collar and sleeves neatly rolled to forearms, muted navy straight trousers, warm terracotta/ochre work apron reaching the knees with a believable neck strap and waist ties, two functional patch pockets, worn brown leather low work shoes with distinct sole. Clothing fully covers torso and legs. Show seams, stitching, restrained folds and fabric grain, no plastic sheen. Pose: symmetric neutral A-pose, arms about 30 degrees out from torso, palms generally forward, fingers naturally extended and clearly separated, both feet flat and slightly apart; hands and shoes fully visible. Camera: exactly front-facing full body, near-orthographic, no tilt, no foreshortening; centered figure fills most height with modest empty margins. Background: uniform pale warm gray studio backdrop, no ground props, no pedestal, no scene, minimal contact shadow. Even neutral diffuse lighting supports the skin and material colors without dramatic baked-in shadows or rim lighting. No tools, tray, cup, accessories, text, labels, watermark, border, collage, extra figures or extra limbs. Make face, hands, garment layers and hair convincing enough for a new production character source, not a toy or mannequin.",
+    "input_images": []
+  },
+  "image": {
+    "file": "reference_front.png",
+    "sha256": "5c54987ab21f00401ca5807041e4bc2243cd9a97578371f280dbea3a456c89d8",
+    "bytes": 1895379,
+    "width": 1024,
+    "height": 1536,
+    "mode": "RGB",
+    "resized_or_reencoded": false
+  },
+  "review": {
+    "scope": "Front silhouette, palette, clothing and natural proportions are suitable as a generation reference.",
+    "limitations": [
+      "Single front view does not define hidden back/side geometry.",
+      "Fine fingers, garment separation, facial quality and hair require actual mesh review.",
+      "Image lighting is a visual reference, not a PBR material set."
+    ]
+  },
+  "rights": {
+    "provenance": "Generated for the project with the built-in image generation tool; no third-party image reference used.",
+    "cc0_claimed": false
+  },
+  "qualification": {
+    "geometry": false,
+    "topology_uv": false,
+    "pbr": false,
+    "rig": false,
+    "idle_walk": false,
+    "use_eat_sleep": false,
+    "engine_runtime": false,
+    "final_art": false
+  },
+  "existing_family_modified": false
+}
