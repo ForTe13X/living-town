@@ -167,9 +167,25 @@ The next native entrance assembly replaces the door's solid upper backing with a
 
 The revised assembly also completes the ordinary-game exit journey with **281 guide points and 959 moving observations**, zero observer frame gaps, natural CharacterMovement and animation, and the new binding's journal provenance. The native automation test succeeds without warnings or errors. This run takes **75.480 seconds** including startup and exit; first test-observed readiness is **64.707 seconds** after launch. Actual resolution remains **888 × 500** with the three-core limit, so this is a physical gameplay check rather than a Full-HD or full-town performance result.
 
-Three further native close views preserve all source packages and restore the exact temporary viewport/door state. The interior reveal no longer has reversed floating lettering, and the canopy support connects coherently. Root still rejects final façade art: the canopy/front valance visibly obscures the upper portion of the café lettering. Although native geometry confirms the door aperture, its milky pane also needs an appearance review. Fitting the lettering within the fascia's vertical bounds does not prove it is visible from the street; the next revision must account for actual camera occlusion and upper-window proportions.
+Three further native close views preserve all source packages and restore the exact temporary viewport/door state. The interior reveal no longer has reversed floating lettering, and the canopy support connects coherently. Root rejects that revision's façade art: the canopy/front valance obscures the upper café lettering, and its milky pane still needs an appearance review. The later local revision below addresses those two holds. Fitting lettering within the fascia's vertical bounds alone does not prove visibility from the street.
 
 Evidence under the existing F-drive root is `native_cafe_exit_repair_actual_v1_006` for saved/reopened geometry, `native_cafe_exit_qualification_recovery_actual_v1_001` and `root_cafe_architecture_recovery_verification_v1_001` for strict CPU replay, `native_cafe_exit_repair_actual_v1_007/Game` for actual gameplay, and `native_cafe_entrance_visual_review_actual_v1_002/Review` for the three close views. The root decision is `root_native_review_acceptance_v1_001/cafe_architecture_ROOT_VISUAL_REVIEW_v002.json`. This external source experiment is still separate from canonical authoring-source adoption and the new 61-joint avatar's fit qualification.
+
+## Native canopy and glazing refinement
+
+![Readable café sign between two window-bay awnings](evidence/cafe_entrance_front_native_v003.png)
+
+Two 2.4 m side-window awnings now leave a 4.5 m central entrance/sign gap. Connected support ties and tabs retain upper-window and closing clearances. The four CPU camera checks find all 2,336 front-letter triangles unobscured. The new native Thin Translucent door material replaces the milky appearance with a clear view into the interior. Root selects this local assembly improvement after reviewing all three actual native views. Strong exposure still pales the fascia; side-window glazing, overall lighting, façade finish and complete town context remain open.
+
+| Interior reveal | Connected awning support |
+| --- | --- |
+| ![Open doorway and clean inside reveal](evidence/cafe_entrance_inside_native_v003.png) | ![Connected brace, tie and tab](evidence/cafe_entrance_brace_native_v003.png) |
+
+Material assignment preserves the pane's rendered positions, indices, normals, tangents, UVs and section ranges exactly. Its collision cooking GUID changes after native `SetMaterial` rebuilds physics, so the qualification binds the actual new GUID and separately checks the unchanged collision policy and physical queries. The earlier compound-assert failure retains its failed status; its lost operands cannot prove the same cause retroactively. Original geometry/material/map packages remain unchanged. Author and independent reopen pass in **121.657 / 88.031 seconds**, followed by a fresh normal-game journey using the unchanged R28/H95 movement profile.
+
+That game run records **1,208 moving frames**, p95/p99 intervals **10.495 / 12.318 ms**, and first observer readiness at **62.966 seconds**. Its actual **888 × 500**, three-core, offscreen uncooked subset does not establish Full-HD, presented FPS, full-town performance or packaged startup. The three later native close views take **161.297 seconds**, with exact temporary state restoration and no asset saves. A preceding close-view attempt fails before any method because of mismatched toolset descriptions; the [source preflight](staged_asset_pipeline.md#closed-toolset-source-preflight) prevents that metadata error before future launches.
+
+Evidence is `native_cafe_canopy_material_resume_actual_v1_001` and `native_cafe_canopy_material_visual_actual_v1_002`; root selection is `root_native_review_acceptance_v1_001/cafe_canopy_glass_ROOT_VISUAL_REVIEW_v003.json`. These remain external authoring experiments, separate from canonical recipe adoption, full-town rollout and new-avatar integration.
 
 ## Longer foliage measurement: capture valid, comparison held
 

@@ -194,3 +194,17 @@ Explicit native evaluation records **561 key/blend poses** with all 10,707 posed
 The successful review-only process takes **58.812 seconds / 6,469,951,488 peak private bytes**, reuses the saved packages and pose evidence, and captures the three views above. One restoration application followed by read-only observation at **30 actual engine frames** verifies exact viewport, CDO, AA/streaming settings, selection and actor restoration. Earlier whole-review and private-cache-path failures stay failed. Source/package guards pass and owned processes are reaped. Evidence is `native_character_runtime_replacement_actual_v1_001/Author`, `native_character_runtime_replacement_recovery_actual_v1_001`, and `native_avatar_review_actual_v1_003/Reload` under the existing F-drive root. The root decision is `root_native_review_acceptance_v1_001/avatar_cold_ROOT_VISUAL_REVIEW_v003.json`.
 
 Root selects the saved asset/material/socket/sampler stage only. Hair edges and pale patches, eyes, neck shading, fabric finish, continuous motion, ground contact, final art and Game integration remain held. The black preview background supplies no contact evidence.
+
+## Controlled native surface diagnosis
+
+| Original EV11 lighting | Same material at EV13 |
+| --- | --- |
+| ![Washed-out original portrait](evidence/cafe_worker_v002_surface_lit_ev11_v001.png) | ![Exposure comparison, with remaining hair and neck defects](evidence/cafe_worker_v002_surface_lit_ev13_v001.png) |
+
+Seven matched native views hold the idle pose, camera and source assets while comparing EV11–14, a flat tangent normal, an unlit BaseColor control and the original baseline return. EV12–13 preserve more face and brown-hair color; EV14 is too dark for this presentation. The unchanged-EV11 flat-normal control reduces harsh face, neck and hair breakup, while also removing intended fine relief. It is diagnostic, not a selected replacement material. Hair protrusions, eyes, fabric finish and remaining neck defects still need refinement.
+
+![Flat-normal diagnostic at unchanged EV11](evidence/cafe_worker_v002_surface_flat_normal_ev11_v001.png)
+
+Actual material-function consumer readback confirms blue to Metallic and green to Roughness. The return frame is visually stable, with mean absolute RGB8 difference **0.0746** and p95 **1**. The unlit EV0 image is nearly white and supplies no readable albedo evidence; its underlying control needs correction before attributing surface defects to BaseColor. Original maps are not darkened to compensate exposure. The cards document rendered values without claiming photographic calibration.
+
+`native_surface_diag_actual_v1_002/Reload` takes **109.219 seconds**, peaks at **6,214,639,616 private bytes**, preserves all original packages and restores viewport, CDO, AA/streaming, actors and selection after **51 observed engine frames**. No assets are imported or saved; owned processes are reaped. The root diagnosis is `root_native_review_acceptance_v1_001/character_surface_ROOT_DIAGNOSIS_v001.json`. The earlier metadata-discovery failure remains failed. Final art, continuous contact and Game adoption remain open.
