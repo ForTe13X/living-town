@@ -208,3 +208,25 @@ Seven matched native views hold the idle pose, camera and source assets while co
 Actual material-function consumer readback confirms blue to Metallic and green to Roughness. The return frame is visually stable, with mean absolute RGB8 difference **0.0746** and p95 **1**. The unlit EV0 image is nearly white and supplies no readable albedo evidence; its underlying control needs correction before attributing surface defects to BaseColor. Original maps are not darkened to compensate exposure. The cards document rendered values without claiming photographic calibration.
 
 `native_surface_diag_actual_v1_002/Reload` takes **109.219 seconds**, peaks at **6,214,639,616 private bytes**, preserves all original packages and restores viewport, CDO, AA/streaming, actors and selection after **51 observed engine frames**. No assets are imported or saved; owned processes are reaped. The root diagnosis is `root_native_review_acceptance_v1_001/character_surface_ROOT_DIAGNOSIS_v001.json`. The earlier metadata-discovery failure remains failed. Final art, continuous contact and Game adoption remain open.
+
+The isolated follow-up makes the BaseColor control readable. It disables the owned lights and atmosphere, bloom and lens flare, and uses zero exposure bias. EV0 shows brown hair and readable skin/clothing without white clipping; EV2 gives the expected darker response. Both control changes are retained, so this does not isolate a single cause of the earlier whiteout. The diffuse card is black, while the 0.18 emissive card measures approximately RGB8 **99.8 / 31.3** at EV0/EV2. These values do not establish photographic calibration.
+
+| Isolated BaseColor, EV0 | Flat-normal diagnostic, EV13 |
+| --- | --- |
+| ![Readable native albedo without scene lighting contamination](evidence/cafe_worker_v002_surface_isolated_albedo_v001.png) | ![Normal response comparison at matched EV13](evidence/cafe_worker_v002_surface_flat_normal_ev13_v001.png) |
+
+At matched EV13 the original encoded normal alone worsens facial breakup relative to the reviewed confidence blend. The flat-normal view reduces pale hair ridges and neck breakup, but also removes intended relief. The next refinement uses explicit moderate normal strength rather than repainting the albedo or replacing all normals with flat values. Hair silhouette spikes, eye anatomy, physical material finish and contacts remain separate work.
+
+`native_surface_follow_actual_v1_001/Reload` passes in **96.297 seconds / 6,134,849,536 peak private bytes**, with no imports or asset saves. The returned EV13 baseline has mean absolute RGB8 difference **0.00001375**, p95 **0**, and exact temporary-state restoration after **46 observed engine frames**. Root reviewed all six views; its decision is `root_native_review_acceptance_v1_001/character_surface_isolated_ROOT_DIAGNOSIS_v001.json`. Original source packages and the earlier invalid control remain unchanged.
+
+### Saved moderate-strength candidates
+
+| Reviewed confidence normal | Strength 0.35 derivative |
+| --- | --- |
+| ![Native EV13 baseline](evidence/cafe_worker_v002_strength_close_baseline_v001.png) | ![Reduced hair and neck normal breakup](evidence/cafe_worker_v002_strength_close_035_v001.png) |
+
+Two explicit native material derivatives retain the source PBR graph, maps, UVs, confidence blend and single green conversion, then apply `normalize(lerp(float3(0,0,1), normalize(reviewedNormal), strength))` at strengths **0.35 / 0.6**. Independent reopening checks each saved material's actual class, skeletal usage and whole graph before loading a mesh. Original 17 packages and mesh material slots remain unchanged; preview assignments use temporary component overrides.
+
+Root selects **0.35 as a bounded face/hair/neck improvement**: pale ridges and harsh breakup are reduced while relief and source color remain. The 0.6 candidate retains stronger ridges. Visible shirt/apron detail is softened, but the [body comparison is cropped at the crown and feet](evidence/cafe_worker_v002_strength_body_035_cropped_v001.png). These views cannot approve the entire character. A separate front/three-quarter/back review must fit all native posed vertices within the frame. Hair silhouette, eyes, hands, the apron hem hole and physical contact remain open.
+
+`native_normal_s_actual_v1_001` passes Author in **54.047 seconds / 5,804,150,784 peak private bytes** and cold Reload in **63.000 seconds / 5,864,562,688 bytes**. Root reviews all seven final images. The baseline return is stable, with RGB8 mean absolute difference **0.0656**, p95 **1**, and exact state restoration after **50 observed frames**. Processes are reaped and source assets remain unchanged. Empty compile diagnostics alone do not prove a nonnull native material resource; saved/cold graph checks, the loading barrier, actual rendering and engine-log guards provide the recorded evidence. Root decision is `root_native_review_acceptance_v1_001/normal_strength_ROOT_VISUAL_REVIEW_v001.json`; Game adoption and final art remain held.
