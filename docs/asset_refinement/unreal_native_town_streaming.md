@@ -64,6 +64,8 @@ The review completed both captures and restored all 61 component override arrays
 
 ![Surrounding source terrain fills the downward view](evidence/native_town_context_mid_ev12_v001.png)
 
+The subsequent [custom import-policy test](unreal_texture_import_policy.md) located the actual defect in the town's freshly constructed generic pipeline. The configured glTF pipeline already allows these images. The tested helper now enables the custom pipeline explicitly while preserving its single-stack geometry settings and `IMPORT_AS_MATERIALS` mode; all five fixture materials passed actual graph checks and fresh reopening. A complete town rebuild with that producer remains required.
+
 A render-only context review reused 16 saved packages and the independently verified 261,103 positive terrain faces. One singular source tangent has an explicitly named orthogonal-basis derivative; all other geometry, UVs and PBR inputs are unchanged. The three transient context actors are checked with an inclusive world census because the editor's listing API excludes transient actors. Both original actor lists and the exact viewport/background settings were restored, sources stayed unchanged, and all owned processes were reaped. The run completed in 190.594 seconds with 15,502,528,512 peak aggregate private bytes and no handled-ensure log patterns.
 
 The surrounding land fills the former black gap. Surface repetition, sparse vegetation and the original wall bindings remain visible in this separate context-only frame. This establishes landscape coverage for this camera, not finished reserve art, full-town planning, collision, streaming or FPS.
