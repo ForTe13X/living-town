@@ -71,6 +71,7 @@ Existing repository entry points:
 - [Portable native normal strength](portable_normal_strength.md): the selected 0.35 shader baked into a preserved idle/walk bundle, with actual matched Blender GPU views.
 - [Complete-character framing](character_framing.md): host camera math over every native posed render vertex, with explicit projection assumptions and separate native adapter qualification.
 - [Native root alignment](native_root_correction.md): an opt-in Unreal player correction using actual blend weights, with tested pose preservation and explicit remaining motion/contact gates.
+- [Native cafe-worker 110](native_worker110.md): the compiled runtime strategy, preserved source assets, actual author/cold reopen and pending natural Game checks.
 
 The current Unreal target consumes engine-agnostic source assets through explicit engine adapters. A model becomes eligible for the final walkthrough after its relevant stage reviews and playable/visual checks, including actual performance observations, are complete.
 
