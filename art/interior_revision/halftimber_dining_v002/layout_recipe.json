@@ -1,0 +1,118 @@
+{
+  "schema": "living_town.halftimber_dining_layout.v2",
+  "status": "ACTUAL_NATIVE_AUTHOR_AND_INDEPENDENT_COLD_POSE_VERIFIED_GAMEPLAY_ADOPTION_PENDING",
+  "building_id": "lot_12_halftimber",
+  "room_id": "lot_12_halftimber_L00_Kitchen_Dining",
+  "fixture_id": "lot_12_halftimber_L00_Kitchen_Dining_A01_dining_table",
+  "coordinate_system": "Right-handed building-local metres; X/Y plan, Z up",
+  "finished_floor_local_z_m": 0.38,
+  "baseline_portable": {
+    "retained_filename": "interior_native_source_derivative_actual_v1_001/Portable/IR001_Halftimber_LivingRoom.glb",
+    "bytes": 94072692,
+    "sha256": "c57eb56f0f48d3d1892cf46d04739457b8c94977c18f30e8a945ea809180ab71",
+    "already_contains_IR001_living_room_visual_moves": true
+  },
+  "source_center_xy_m": [
+    -2.417866,
+    1.17
+  ],
+  "candidate_center_xy_m": [
+    -1.85,
+    2.6
+  ],
+  "delta_building_m": [
+    0.567866,
+    1.43,
+    0.0
+  ],
+  "rotation_degrees_unchanged": 90,
+  "affected_independent_root_nodes": [
+    {
+      "node_index": 27,
+      "source_object_name": "lot_12_halftimber_L00_Kitchen_Dining_A01_dining_table_Linen"
+    },
+    {
+      "node_index": 28,
+      "source_object_name": "lot_12_halftimber_L00_Kitchen_Dining_A01_dining_table_Oak"
+    },
+    {
+      "node_index": 29,
+      "source_object_name": "lot_12_halftimber_L00_Kitchen_Dining_A01_dining_table_Purposeful_table_ceramic_and_linen_Ink"
+    },
+    {
+      "node_index": 30,
+      "source_object_name": "lot_12_halftimber_L00_Kitchen_Dining_A01_dining_table_Purposeful_table_ceramic_and_linen_Linen"
+    },
+    {
+      "node_index": 31,
+      "source_object_name": "lot_12_halftimber_L00_Kitchen_Dining_A01_dining_table_Purposeful_table_ceramic_and_linen_White"
+    }
+  ],
+  "all_five_nodes_receive_same_translation": true,
+  "stools_are_part_of_oak_mesh_node_28_not_new_objects": true,
+  "candidate_seat_centers_building_xy_m": [
+    [
+      -1.49,
+      2.6
+    ],
+    [
+      -2.21,
+      2.6
+    ]
+  ],
+  "native_isolated_building_local_adapter": {
+    "metres_to_UE_cm": [
+      "x*100",
+      "-y*100",
+      "z*100"
+    ],
+    "actor_delta_cm": [
+      56.7866,
+      -143,
+      0
+    ],
+    "mesh_vertices_already_baked_in_building_local_frame": true,
+    "do_not_reapply_fixture_center_or_building_world_transform_in_isolated_scene": true
+  },
+  "glTF_Y_up_node_translation_m": [
+    0.567866,
+    0,
+    -1.43
+  ],
+  "candidate_footprint_xy_m": [
+    -2.425,
+    2.1,
+    -1.275,
+    3.1
+  ],
+  "source_plan_clearances_m": {
+    "west_wall_to_assembly_envelope": 0.637865845756401,
+    "counter_front_to_assembly_envelope": 0.85,
+    "east_edge_to_door_approach_keepout": 0.947865,
+    "rear_unseated_end_to_room_boundary": 0.2499997287394385
+  },
+  "rear_unseated_end_is_a_through_route": false,
+  "retained_portable_candidate": {
+    "retained_filename": "native_interior_dining_move_prepare_v1_001/Portable/IR002_Halftimber_DiningLayout.glb",
+    "bytes": 94072868,
+    "sha256": "3fb5e9dff167c54f0e311c6a1bcea90ddacf2e036732ae55dadc7858e1981afa",
+    "only_five_root_node_translations_changed": true,
+    "large_GLb_not_distributed_in_this_recipe": true,
+    "all_other_JSON_semantics_preserved": true,
+    "all_BIN_and_embedded_image_bytes_preserved": true,
+    "mesh_accessor_binary_bytes_preserved": true,
+    "material_JSON_semantics_preserved": true
+  },
+  "unchanged": [
+    "living_room_group",
+    "room_partitions",
+    "openings",
+    "stair",
+    "floor_geometry",
+    "mesh_vertices_indices_UVs_tangents",
+    "materials",
+    "review_lighting"
+  ],
+  "gameplay_seat_contact_approach_collision_navigation_adopted": false,
+  "new_material_lighting_decoration_FPS_or_whole_home_acceptance": false
+}

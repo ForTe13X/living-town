@@ -1,0 +1,124 @@
+{
+  "schema": "living_town.halftimber_fixture_anchor_deltas.v2",
+  "status": "METADATA_ONLY_EXTERNAL_ACTION_BINDINGS_NOT_ADOPTED",
+  "building_id": "lot_12_halftimber",
+  "source_world_from_building_local_4x4": [
+    [
+      0.9337461173020496,
+      -0.3579360116324523,
+      0.0,
+      -40.45
+    ],
+    [
+      0.3579360116324523,
+      0.9337461173020496,
+      0.0,
+      -10.76
+    ],
+    [
+      0.0,
+      0.0,
+      1.0,
+      2.196772207105743
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "source_world_unit": "metre",
+  "original_IR001_anchor_delta_baseline": "Original town fixture/action data before the IR001 visual refinement; do not apply twice to already-shifted data",
+  "original_IR001_fixture_deltas": [
+    {
+      "fixture_id": "lot_12_halftimber_L00_Living_Room_A00_sofa",
+      "delta_building_local_m": [
+        0,
+        -0.59,
+        0
+      ],
+      "delta_source_world_m": [
+        0.21118224686314685,
+        -0.5509102092082092,
+        0
+      ],
+      "facing_building_local_XY": [
+        1,
+        0
+      ],
+      "rotation_preserved": true,
+      "required_for_external_seat_contact_interaction_and_action_frames": true
+    },
+    {
+      "fixture_id": "lot_12_halftimber_L00_Living_Room_A01_coffee_table",
+      "delta_building_local_m": [
+        0,
+        -0.59,
+        0
+      ],
+      "delta_source_world_m": [
+        0.21118224686314685,
+        -0.5509102092082092,
+        0
+      ],
+      "facing_building_local_XY": [
+        1,
+        0
+      ],
+      "rotation_preserved": true,
+      "required_for_external_seat_contact_interaction_and_action_frames": true
+    },
+    {
+      "fixture_id": "lot_12_halftimber_L00_Living_Room_A02_bookshelf",
+      "delta_building_local_m": [
+        0,
+        0.085,
+        0
+      ],
+      "delta_source_world_m": [
+        -0.03042456098875845,
+        0.07936841997067422,
+        0
+      ],
+      "facing_building_local_XY": [
+        1,
+        0
+      ],
+      "rotation_preserved": true,
+      "required_for_external_seat_contact_interaction_and_action_frames": true
+    }
+  ],
+  "new_dining_delta_baseline": "IR001/c57eb56f geometry and original dining fixture center[-2.417866,1.17]",
+  "new_dining_fixture_delta": {
+    "fixture_id": "lot_12_halftimber_L00_Kitchen_Dining_A01_dining_table",
+    "delta_building_local_m": [
+      0.567866,
+      1.43,
+      0.0
+    ],
+    "delta_source_world_m": [
+      0.018394176013438887,
+      1.5385166389236051,
+      0.0
+    ],
+    "facing_rotation_degrees_preserved": 90,
+    "affected_node_indices": [
+      27,
+      28,
+      29,
+      30,
+      31
+    ],
+    "required_scope": [
+      "both_stool_seat_centers",
+      "contact_frames",
+      "standing_approaches",
+      "use_action_frames",
+      "all_table_dressing_nodes"
+    ]
+  },
+  "required_consumer_policy": "Bind a known source/version, translate every anchor in the fixture exactly once, preserve facing, then prove actual approach/reach/sit/use. This file executes nothing.",
+  "external_kernel_UE_Godot_or_other_engine_bindings_updated": false,
+  "physical_gameplay_route_or_sit_acceptance": false
+}
