@@ -26,6 +26,7 @@ Large runtime assets use a checksum-bound [release manifest](docs/town_walkthrou
 
 ## Latest changes
 
+- Added a native Unreal asset family and playback adapter for the 61-bone cafe worker. The C++ build, eleven foundation tests, 110 cm/s asset authoring and independent cold reopen pass, preserving source geometry, UVs, skin and full clips. Natural walking, foot/counter contact, gameplay framing and performance remain under review. [Pipeline and evidence](docs/asset_refinement/native_worker110.md).
 - Reworked the 3D life-mode HUD with a compact five-need resident card, top clock controls, and separate expandable activity and wishes panels. Actual input and screen checks passed at two window sizes. [HUD and presentation checks](docs/town_bridge/HUD_REVIEW.md).
 - Added a reusable [asset refinement toolbox](docs/ASSET_TOOLBOX.md): JSON recipes compose native authoring, PBR/UV checks, export, Godot and recording evidence. Iterations retain source/output bindings, while technical results and art reviews remain separate.
 - Ordered room indexing and portal-path reuse preserve live permission checks, the original fallback and save semantics. A 62-resident, 90-tick paired oracle retained identical state and event chains. Ordinary 1280×768 Mobile/Vulkan measurements now show about 30.1 FPS outdoors at 1× and 24.2 FPS at 4×; spikes remain. The 18 FPS film setting is separate. [Performance and limits](docs/town_bridge/PERFORMANCE.md).
