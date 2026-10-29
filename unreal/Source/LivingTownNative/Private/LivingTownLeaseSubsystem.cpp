@@ -1,5 +1,8 @@
 #include "LivingTownLeaseSubsystem.h"
 #include "../ThirdParty/LeaseKernel.hpp"
+#include "../ThirdParty/CafePropertyBackend.hpp"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -22,7 +25,7 @@ Pilot::Kernel Opening() { return Pilot::Kernel(Terms(), {{"aria", 12, 12}, {"ben
 bool Keys(const FJsonObject& O, std::initializer_list<const TCHAR*> Expected)
 {
     if (O.Values.Num() != static_cast<int32>(Expected.size())) return false;
-    for (const TCHAR* Key : Expected) if (!O.Values.Contains(Key)) return false;
+    for (const TCHAR* Key : Expected) if (!O.HasField(FStringView(Key))) return false;
     return true;
 }
 
@@ -195,6 +198,11 @@ struct ULivingTownLeaseSubsystem::FState
 void ULivingTownLeaseSubsystem::FStateDeleter::operator()(FState* Pointer) const { delete Pointer; }
 ULivingTownLeaseSubsystem::ULivingTownLeaseSubsystem() : State(new FState()) {}
 ULivingTownLeaseSubsystem::~ULivingTownLeaseSubsystem() = default;
+bool ULivingTownLeaseSubsystem::ShouldCreateSubsystem(UObject* Outer) const
+{
+    return Super::ShouldCreateSubsystem(Outer) && living_town::cafe_property_backend::Select(
+        FParse::Param(FCommandLine::Get(), TEXT("LivingTownCafePropertyV2"))) == living_town::cafe_property_backend::Backend::LegacyV1;
+}
 void ULivingTownLeaseSubsystem::Deinitialize()
 {
     InteractionResolver = nullptr;

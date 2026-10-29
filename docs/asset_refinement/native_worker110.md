@@ -16,7 +16,7 @@ The optional [viewport recorder](../../unreal/Source/LivingTownNative/Public/Liv
 
 ## Actual evidence
 
-The adopted **71-input** source digest is `393ffc42efddfd29e480cf10f1f8654de74874fa6834e948eacb00806df46818`. Three existing consumer/binding files change, five files are added, and the other 63 native inputs remain exact.
+The original asset-adoption **71-input** source digest is `393ffc42efddfd29e480cf10f1f8654de74874fa6834e948eacb00806df46818`. Three existing consumer/binding files change, five files are added, and the other 63 native inputs remain exact.
 
 | Boundary | Actual result |
 | --- | --- |
@@ -33,4 +33,14 @@ Independent replay confirms the **556,788-byte** decoded UV/basis export, legacy
 
 Retained evidence under `F:\Living Town\2026-10-20_Refined_Town` is `native_worker110_build_actual_v1_001`, `native_worker110_tests_actual_v1_001`, `native_worker110_tests_recovery_v1_001` and `native_worker110_assets_actual_v1_002`. The saved 21-file manifest SHA is `ceebfbeb6434081e2c32e40633a5c6812ec80d64a055f28be3de8109e50529f2`; selective code adoption is recorded in `root_native_review_acceptance_v1_001/native71_SOURCE_ADOPTION_v001/ADOPTION.json`.
 
-Natural movement, physical fit, foot/floor and hand/counter contact, complete-body runtime framing, qualified Game binding, final art and performance remain open. The next development preview observes those behaviors in the real cafe geometry, retains defects and leaves production qualification separate.
+## Natural movement and camera follow-up
+
+The active player now uses Unreal's `AlwaysTickPoseAndRefreshBones` policy while a player controller possesses the configured new worker. Gameplay palm and body transforms stay current when the camera cannot see the mesh. Unpossession and EndPlay restore the previous policy; legacy visuals, AI and unpossessed workers retain their existing behavior.
+
+The camera now aims at the new worker's capsule centre. The previous 45 cm upward offset cropped the body when spring-arm collision shortened the boom. A controlled native preview records **171 natural idle/walk/stop samples with zero 3% body-framing failures**, compared with 45 failures in the earlier 168-sample run. The actual boom spans 223.072–300 cm. Animation advances naturally, without manual animation ticks, pose/time replacement or actor position changes.
+
+![Controlled native cafe worker preview with the revised camera aim](evidence/cafe_worker110_controlled_camera0_stopped_v001.png)
+
+Three distinct GPU viewport captures observe **882×462** pixels; requested Full HD is not assumed. The scene uses three temporary diagnostic lights and explicit exposure compensation. Door occlusion, backlighting, outside context and final lighting remain open. Recorded stance-group floor gaps are 1.00–2.57 cm on the left and 4.41–4.94 cm on the right; foot locking and contact art are not qualified.
+
+The matching C++ integration builds and passes twelve native foundation/selection tests plus eleven SHA known answers. The independent camera audit is `971050102d808ccbd9f46aab0ff0672418362a7c986d0bbc7abbbf43d17d453a`. The original motion/geometry/UV/skin/material sources remain intact. The [property scenario](unreal_native_cafe_property_v2.md) has separate authority/save evidence and uses the older qualified Ben appearance. New-worker physical binding, foot/counter contact, final art, full-town coverage and performance remain in progress.

@@ -11,6 +11,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/Controller.h"
 #include "Animation/BlendSpace.h"
 #include "Animation/BlendSpace1D.h"
 #include "Animation/AnimSequence.h"
@@ -110,7 +111,7 @@ bool ALivingTownCafeCharacter::ConfigureQualifiedBen(const FLivingTownCafeBindin
 
     GetMesh()->SetSkeletalMeshAsset(Visual);GetMesh()->SetRelativeTransform(B.MeshRelativeTransform);UseSocket=B.UseSocket;
     if(!GetMesh()->DoesSocketExist(FName(*UseSocket))){Error=TEXT("calibrated_Ben_hand_socket_missing");GetMesh()->SetSkeletalMeshAsset(nullptr);return false;}
-    GetCapsuleComponent()->SetCapsuleSize(B.CapsuleRadiusCm,B.CapsuleHalfHeightCm,true);GetCharacterMovement()->MaxWalkSpeed=B.WalkSpeedCmPerSecond;CameraArm->TargetArmLength=B.CameraArmCm;
+    GetCapsuleComponent()->SetCapsuleSize(B.CapsuleRadiusCm,B.CapsuleHalfHeightCm,true);GetCharacterMovement()->MaxWalkSpeed=B.WalkSpeedCmPerSecond;CameraArm->TargetArmLength=B.CameraArmCm;if(bWorker110)CameraArm->TargetOffset.Z=0.f; // Origin is capsule centre; keep full body framed during short boom collisions.
     IdleWalk=Motion;
     if(bWorker110)
     {
@@ -127,7 +128,36 @@ bool ALivingTownCafeCharacter::ConfigureQualifiedBen(const FLivingTownCafeBindin
         GetMesh()->SetAnimationMode(EAnimationMode::AnimationSingleNode);GetMesh()->PlayAnimation(IdleWalk,true);
     }
     if(!GetMesh()->GetSingleNodeInstance()){Error=TEXT("native_idle_walk_player_missing");return false;}
-    GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);GetMesh()->SetVisibility(true);bVisualQualified=true;SetActorTickEnabled(true);return true;
+    GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);GetMesh()->SetVisibility(true);bVisualQualified=true;bWorker110VisualQualified=bWorker110;SetActorTickEnabled(true);UpdatePossessedBonePolicy();return true;
+}
+void ALivingTownCafeCharacter::RestorePossessedBonePolicy()
+{
+    if(bPossessedBonePolicyApplied&&GetMesh())GetMesh()->VisibilityBasedAnimTickOption=static_cast<EVisibilityBasedAnimTickOption>(PreviousPossessedBonePolicy);
+    bPossessedBonePolicyApplied=false;
+}
+void ALivingTownCafeCharacter::UpdatePossessedBonePolicy()
+{
+    // Gameplay uses this active player's palm/socket and body bones even when occluded.
+    // Do not expand full bone evaluation to legacy visuals, AI or unpossessed workers.
+    RestorePossessedBonePolicy();
+    if(bVisualQualified&&bWorker110VisualQualified&&Controller&&Controller->IsPlayerController()&&GetMesh()&&Cast<ULivingTownRootCorrectedSingleNodeInstance>(GetMesh()->GetAnimInstance()))
+    {
+        PreviousPossessedBonePolicy=static_cast<uint8>(GetMesh()->VisibilityBasedAnimTickOption);
+        GetMesh()->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
+        bPossessedBonePolicyApplied=true;
+    }
+}
+void ALivingTownCafeCharacter::PossessedBy(AController* NewController)
+{
+    Super::PossessedBy(NewController);UpdatePossessedBonePolicy();
+}
+void ALivingTownCafeCharacter::UnPossessed()
+{
+    Super::UnPossessed();RestorePossessedBonePolicy();
+}
+void ALivingTownCafeCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    RestorePossessedBonePolicy();Super::EndPlay(EndPlayReason);
 }
 FVector ALivingTownCafeCharacter::InteractionHand()const{return bVisualQualified?GetMesh()->GetSocketLocation(FName(*UseSocket)):FVector::ZeroVector;}
 void ALivingTownCafeCharacter::Tick(float Delta)

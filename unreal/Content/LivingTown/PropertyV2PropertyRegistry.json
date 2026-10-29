@@ -1,0 +1,26 @@
+{
+  "schema": "living_town.property_registry.v1",
+  "implementation_status": "Candidate registry: kernel61 and directed Sim integration91 checks pass; LifeMode menu implemented. Walked/rendered UI journey, broader regression and whole feature acceptance remain pending. This file alone installs no lease or payment.",
+  "properties": [
+    {
+      "id": "cafe_ground_commercial_v1",
+      "label": "Cafe ground-floor commercial unit",
+      "space_id": "cafe",
+      "floor_id": "1f",
+      "model_building_id": "Main_cafe",
+      "authored_owner_room_id": "Main_cafe_L01_Owner_Kitchen",
+      "initial_owner": "aria",
+      "initial_title_provenance": "New commercial-unit title authored to Aria, bound to the existing same-building owner-residence record in the current compiled world. That private room is evidence of identity, not part of the commercial deed.",
+      "entry_portal_id": "p_cafe_door",
+      "interaction_id": "cafe1f_counter",
+      "excluded_private_floors": ["2f"],
+      "preserve_existing_access": true,
+      "resident_rent_integration": false,
+      "initial_listing": "lease",
+      "lease_fee": 4,
+      "lease_duration_ticks": 720,
+      "sale_price": 12,
+      "terms": "One prepaid commercial operating term, no deposit, recurring rent, automatic debit, refund or residential rights. Aria's authored initial listing may be used again after a recorded end; a buyer must explicitly list the unit anew. Public/staff access and the private upstairs remain governed by existing authored permissions."
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+name: Native property core
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'unreal/Source/LivingTownNative/ThirdParty/**'
+      - 'tools/tests/cafe_property_v2/**'
+      - '.github/workflows/native-property-core.yml'
+  pull_request:
+    paths:
+      - 'unreal/Source/LivingTownNative/ThirdParty/**'
+      - 'tools/tests/cafe_property_v2/**'
+      - '.github/workflows/native-property-core.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  portable-property:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Compile the engine-independent C++17 cases
+        run: |
+          mkdir -p "$RUNNER_TEMP/cafe-property-cases"
+          g++ -std=c++17 -O2 -Wall -Wextra tools/tests/cafe_property_v2/CafePropertyV2Cases.cpp -o "$RUNNER_TEMP/cafe-property-cases/cases"
+      - name: Verify payments, title, leases and replay
+        run: '"$RUNNER_TEMP/cafe-property-cases/cases" "$RUNNER_TEMP/cafe-property-cases"'
