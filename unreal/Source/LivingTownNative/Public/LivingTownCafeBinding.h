@@ -14,6 +14,25 @@ struct FLivingTownCafePartBinding
     bool bCounter = false;
 };
 
+class UBlendSpace;
+
+// V1 stays the default. V2 explicitly selects this reviewed physical appearance/motion family.
+enum class ELivingTownCafeMotionStrategy : uint8 { LegacySingleNode, CafeWorker110RootAligned };
+namespace LivingTownCafeWorker110
+{
+    inline constexpr TCHAR Strategy[] = TEXT("cafe_worker61_root_aligned_110_v1");
+    inline constexpr TCHAR MeshAsset[] = TEXT("/Game/LivingTown_UEPilot/CafeWorkerBen110_v001/SK_CafeWorkerBen110_v001.SK_CafeWorkerBen110_v001");
+    inline constexpr TCHAR MotionAsset[] = TEXT("/Game/LivingTown_UEPilot/CafeWorkerBen110_v001/BS_CafeWorkerIdleWalk110_v001.BS_CafeWorkerIdleWalk110_v001");
+    inline constexpr TCHAR IdleAsset[] = TEXT("/Game/LivingTown_UEPilot/CafeWorkerMultiviewV002_IdleOnlyTrial_v002/idle.idle");
+    inline constexpr TCHAR WalkAsset[] = TEXT("/Game/LivingTown_UEPilot/CafeWorkerMultiviewV002_WalkTrial_v001/walk.walk");
+    inline constexpr TCHAR MaterialAsset[] = TEXT("/Game/LivingTown_UEPilot/CharacterNormalStrength_v001/M_Normal035.M_Normal035");
+    inline constexpr TCHAR PalmSocket[] = TEXT("UsePalm_R");
+    inline FVector PalmLocalCm() { return FVector(-0.15806712908670584,-0.02671117545105517,3.367123100906613); }
+    inline FVector RootDeltaCm() { return FVector(-0.45119449496269226,10.242915153503418,0.0); }
+    // Policy only; asset identity, axis bounds, source samples and physical qualification stay separate.
+    LIVINGTOWNNATIVE_API bool HasUnfilteredUnscaled1DMotionPolicy(const UBlendSpace* Motion);
+}
+
 struct FLivingTownCafeBinding
 {
     FString PhysicalSceneSha256;
@@ -25,6 +44,10 @@ struct FLivingTownCafeBinding
     FString VisualAssetPath;
     FString IdleWalkBlendSpacePath;
     FString UseSocket;
+    ELivingTownCafeMotionStrategy MotionStrategy = ELivingTownCafeMotionStrategy::LegacySingleNode;
+    FString IdleAnimationPath;
+    FString WalkAnimationPath;
+    FVector IdleRootDeltaCm = FVector::ZeroVector;
     FTransform MeshRelativeTransform = FTransform::Identity;
     TArray<FLivingTownCafePartBinding> Parts;
     FVector SpawnFeetCm = FVector::ZeroVector;

@@ -83,14 +83,31 @@ bool FLivingTownCafeBinding::ReadQualifiedFile(const FString& Path,FLivingTownCa
     TSharedPtr<FJsonObject> O; if(!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json),O)||!O) return Fail(TEXT("invalid_binding_json"));
     if(!Keys(*O,{TEXT("format"),TEXT("version"),TEXT("status"),TEXT("physical_scene_sha256"),TEXT("source_projection_sha256"),TEXT("physical_qualification_sha256"),TEXT("visual_sha256"),TEXT("logical_identity"),TEXT("resident"),TEXT("movement"),TEXT("spawn"),TEXT("counter_use_point_cm"),TEXT("floor_bounds_cm"),TEXT("parts")})) return Fail(TEXT("unsupported_physical_binding_fields"));
     FString Format,Version,Status; FLivingTownCafeBinding B;
-    if(!Str(*O,TEXT("format"),Format)||Format!=TEXT("LivingTown.CafeProjectionBinding")||!Str(*O,TEXT("version"),Version)||Version!=TEXT("1")||!Str(*O,TEXT("status"),Status)||Status!=TEXT("UE_PHYSICAL_QUALIFIED")) return Fail(TEXT("physical_calibration_not_qualified"));
+    if(!Str(*O,TEXT("format"),Format)||Format!=TEXT("LivingTown.CafeProjectionBinding")||!Str(*O,TEXT("version"),Version)||(Version!=TEXT("1")&&Version!=TEXT("2"))||!Str(*O,TEXT("status"),Status)||Status!=TEXT("UE_PHYSICAL_QUALIFIED")) return Fail(TEXT("physical_calibration_not_qualified"));
     if(!Str(*O,TEXT("physical_scene_sha256"),B.PhysicalSceneSha256)||!Hash(B.PhysicalSceneSha256)||!Str(*O,TEXT("source_projection_sha256"),B.SourceProjectionSha256)||!Hash(B.SourceProjectionSha256)||!Str(*O,TEXT("physical_qualification_sha256"),B.PhysicalQualificationSha256)||!Hash(B.PhysicalQualificationSha256)||!Str(*O,TEXT("visual_sha256"),B.VisualSha256)||!Hash(B.VisualSha256)||!LivingTownCafeJournal::Sha256(Bytes,B.BindingFileSha256)) return Fail(TEXT("invalid_physical_provenance"));
     const FJsonObject* Identity=Object(*O,TEXT("logical_identity")); FString Space,Floor,Interaction,Property,Model;
     if(!Identity||!Keys(*Identity,{TEXT("space_id"),TEXT("floor_id"),TEXT("interaction_id"),TEXT("property_id"),TEXT("model_asset_id")})||!Str(*Identity,TEXT("space_id"),Space)||Space!=TEXT("cafe")||!Str(*Identity,TEXT("floor_id"),Floor)||Floor!=TEXT("1f")||!Str(*Identity,TEXT("interaction_id"),Interaction)||Interaction!=TEXT("cafe1f_counter")||!Str(*Identity,TEXT("property_id"),Property)||Property!=TEXT("cafe_ground_commercial_v1")||!Str(*Identity,TEXT("model_asset_id"),Model)||Model!=TEXT("Main_cafe_L00_Public_Room_A00_cafe_counter")) return Fail(TEXT("wrong_logical_to_physical_counter_identity"));
     const FJsonObject* Resident=Object(*O,TEXT("resident")); const FJsonObject* MeshTransform=Resident?Object(*Resident,TEXT("mesh_transform")):nullptr;
-    if(!Resident||!Keys(*Resident,{TEXT("id"),TEXT("skeletal_mesh"),TEXT("idle_walk_blendspace"),TEXT("use_socket"),TEXT("mesh_transform")})||!Str(*Resident,TEXT("id"),B.ResidentId)||B.ResidentId!=TEXT("ben")||!Str(*Resident,TEXT("skeletal_mesh"),B.VisualAssetPath)||!GameAsset(B.VisualAssetPath)||!Str(*Resident,TEXT("idle_walk_blendspace"),B.IdleWalkBlendSpacePath)||!GameAsset(B.IdleWalkBlendSpacePath)||!Str(*Resident,TEXT("use_socket"),B.UseSocket,128)||!MeshTransform||!Transform(*MeshTransform,B.MeshRelativeTransform)) return Fail(TEXT("qualified_Ben_visual_or_motion_binding_missing"));
+    const bool bWorker110=Version==TEXT("2");
+    const bool ResidentKeys=Resident&&(bWorker110
+        ?Keys(*Resident,{TEXT("id"),TEXT("skeletal_mesh"),TEXT("idle_walk_blendspace"),TEXT("use_socket"),TEXT("mesh_transform"),TEXT("motion_strategy"),TEXT("idle_animation"),TEXT("walk_animation"),TEXT("idle_root_delta_cm")})
+        :Keys(*Resident,{TEXT("id"),TEXT("skeletal_mesh"),TEXT("idle_walk_blendspace"),TEXT("use_socket"),TEXT("mesh_transform")}));
+    if(!Resident||!ResidentKeys||!Str(*Resident,TEXT("id"),B.ResidentId)||B.ResidentId!=TEXT("ben")||!Str(*Resident,TEXT("skeletal_mesh"),B.VisualAssetPath)||!GameAsset(B.VisualAssetPath)||!Str(*Resident,TEXT("idle_walk_blendspace"),B.IdleWalkBlendSpacePath)||!GameAsset(B.IdleWalkBlendSpacePath)||!Str(*Resident,TEXT("use_socket"),B.UseSocket,128)||!MeshTransform||!Transform(*MeshTransform,B.MeshRelativeTransform)) return Fail(TEXT("qualified_Ben_visual_or_motion_binding_missing"));
+    if(bWorker110)
+    {
+        FString Strategy;
+        if(!Str(*Resident,TEXT("motion_strategy"),Strategy)||Strategy!=LivingTownCafeWorker110::Strategy||
+            !Str(*Resident,TEXT("idle_animation"),B.IdleAnimationPath)||B.IdleAnimationPath!=LivingTownCafeWorker110::IdleAsset||
+            !Str(*Resident,TEXT("walk_animation"),B.WalkAnimationPath)||B.WalkAnimationPath!=LivingTownCafeWorker110::WalkAsset||
+            !VectorValue(Resident->TryGetField(TEXT("idle_root_delta_cm")),B.IdleRootDeltaCm)||
+            B.IdleRootDeltaCm!=LivingTownCafeWorker110::RootDeltaCm()||
+            B.VisualAssetPath!=LivingTownCafeWorker110::MeshAsset||B.IdleWalkBlendSpacePath!=LivingTownCafeWorker110::MotionAsset||B.UseSocket!=LivingTownCafeWorker110::PalmSocket)
+            return Fail(TEXT("unsupported_or_unqualified_worker110_family"));
+        B.MotionStrategy=ELivingTownCafeMotionStrategy::CafeWorker110RootAligned;
+    }
     const FJsonObject* Move=Object(*O,TEXT("movement")); double Radius,Half,Reach,Speed,Arm;
     if(!Move||!Keys(*Move,{TEXT("capsule_radius_cm"),TEXT("capsule_half_height_cm"),TEXT("reach_cm"),TEXT("walk_speed_cm_s"),TEXT("camera_arm_cm")})||!Number(*Move,TEXT("capsule_radius_cm"),Radius,12,45)||!Number(*Move,TEXT("capsule_half_height_cm"),Half,50,120)||Radius>=Half||!Number(*Move,TEXT("reach_cm"),Reach,25,160)||!Number(*Move,TEXT("walk_speed_cm_s"),Speed,60,500)||!Number(*Move,TEXT("camera_arm_cm"),Arm,100,450)) return Fail(TEXT("invalid_calibrated_movement_dimensions"));
+    if(bWorker110&&Speed!=110.)return Fail(TEXT("worker110_movement_axis_must_match"));
     B.CapsuleRadiusCm=float(Radius); B.CapsuleHalfHeightCm=float(Half); B.ReachCm=float(Reach); B.WalkSpeedCmPerSecond=float(Speed); B.CameraArmCm=float(Arm);
     const FJsonObject* Spawn=Object(*O,TEXT("spawn")); FVector Rotation=FVector::ZeroVector;
     if(!Spawn||!Keys(*Spawn,{TEXT("feet_cm"),TEXT("rotation_degrees")})||!VectorValue(Spawn->TryGetField(TEXT("feet_cm")),B.SpawnFeetCm)||!VectorValue(Spawn->TryGetField(TEXT("rotation_degrees")),Rotation)||!VectorValue(O->TryGetField(TEXT("counter_use_point_cm")),B.CounterUsePointCm)) return Fail(TEXT("invalid_calibrated_spawn_or_use_point"));
