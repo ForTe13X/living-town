@@ -1,0 +1,83 @@
+#ifndef LT_CLEFT_FLOOR_V002
+#define LT_CLEFT_FLOOR_V002
+// Engine consumer: source-world metres, canonical RH X east/Y north/Z up.
+// All photo Normal/ARM and Mask samples are RAW LINEAR; no automatic normal decode.
+// Color texture hardware sRGB->linear is required. All samplers are bilinear/trilinear
+// repeat except region mask: clamp, no mipmaps. No RGB-derived PBR; blend only the existing photo normals with the same layer weight.
+// Deterministic continuous value noise changes layer weight only; it never warps
+// photo UVs, changes albedo values, manufactures PBR maps, or changes eligibility.
+float LTWFHash(float2 q) { return frac(sin(dot(q,float2(127.1,311.7)))*43758.5453); }
+float LTWFNoise(float2 p) { float2 i=floor(p),f=frac(p); f=f*f*(3-2*f);
+ return lerp(lerp(LTWFHash(i),LTWFHash(i+float2(1,0)),f.x),
+             lerp(LTWFHash(i+float2(0,1)),LTWFHash(i+float2(1,1)),f.x),f.y); }
+
+struct WestWoodSurface { float3 BaseColor; float Roughness; float Metallic; float3 NormalSource; };
+
+float3 WestWoodNormal(float3 encodedGL, float3 N, float3 T, float3 B)
+{
+    float3 n = encodedGL * 2.0 - 1.0;
+    return normalize(T*n.x + B*n.y + N*n.z);
+}
+
+WestWoodSurface CleftFloorEvaluate(
+    float3 PsourceMetres, float3 SmoothNormalSource, float3 TrueNormalSource,
+    float3 MacroBaseColorLinear, float MacroRoughness, float MacroMetallic, float3 MacroNormalSource,
+    Texture2D Mask, SamplerState MaskClampNoMips,
+    Texture2D LeafColor, SamplerState LeafColorRepeat, Texture2D LeafNormal, SamplerState LeafNormalRepeat,
+    Texture2D LeafARM, SamplerState LeafARMRepeat,
+    Texture2D SoilColor, SamplerState SoilColorRepeat, Texture2D SoilNormal, SamplerState SoilNormalRepeat,
+    Texture2D SoilARM, SamplerState SoilARMRepeat,
+    Texture2D LeafHeight, SamplerState LeafHeightRepeat,
+    Texture2D SoilHeight, SamplerState SoilHeightRepeat)
+{
+    // PNG row0 is north. HLSL/image UV v grows down, unlike Blender UV v.
+    float2 regionUV=(PsourceMetres.xy-float2(-580,-265))/float2(270,470);
+    regionUV.y=1.0-regionUV.y;
+    float4 mask=Mask.SampleLevel(MaskClampNoMips,regionUV,0);
+    float grade=smoothstep(0.9659258262890683,0.9902680687415704,TrueNormalSource.z);
+    float alpha=1.0; // Entire explicitly assigned cleft floor section receives metric photo detail; no source atlas fallback.
+    // Authored woodland composition trial: brown soil pockets under intact leaf/moss
+    // litter. All original paths/clearings/feathers retain the original alpha exactly.
+    float composition = saturate(0.55 + 0.20*(2*LTWFNoise(PsourceMetres.xy/12.0)-1)
+                                     + 0.10*(2*LTWFNoise(PsourceMetres.xy/37.0)-1));
+    float2 leafUV=PsourceMetres.xy/float2(3.0009725093841553,3.0009801387786865);
+    float2 soilUV=PsourceMetres.xy/float2(3.1500000953674316,3.1500000953674316);
+    leafUV.y=1.0-leafUV.y; soilUV.y=1.0-soilUV.y;
+    // Artistic relative-height competition. Original G16 red data is linear.
+    // Percentile remaps equalize contrast only; these are NOT physical height units.
+    float leafH=saturate((LeafHeight.Sample(LeafHeightRepeat,leafUV).r-0.20969039444571599)/0.48581582360570685);
+    float soilH=saturate((SoilHeight.Sample(SoilHeightRepeat,soilUV).r-0.32066834515907533)/0.15927367055771724);
+    float heightCompetition=(soilH-leafH)+(2.0*composition-1.0);
+    float soil=max(mask.g,smoothstep(-0.06,0.06,heightCompetition));
+    soil=max(soil,1.0-smoothstep(0.7071067811865476,0.9659258262890683,TrueNormalSource.z)); // Exposed soil increases on steeper floor; rock section is unchanged.
+    float3 N=normalize(SmoothNormalSource);
+    float3 T=normalize(float3(N.z,0,-N.x)); float3 B=normalize(cross(N,T));
+    float3 leafC=LeafColor.Sample(LeafColorRepeat,leafUV).rgb;
+    float3 soilC=SoilColor.Sample(SoilColorRepeat,soilUV).rgb;
+    float3 leafN=WestWoodNormal(LeafNormal.Sample(LeafNormalRepeat,leafUV).rgb,N,T,B);
+    float3 soilN=WestWoodNormal(SoilNormal.Sample(SoilNormalRepeat,soilUV).rgb,N,T,B);
+    float3 leafARM=LeafARM.Sample(LeafARMRepeat,leafUV).rgb;
+    float3 soilARM=SoilARM.Sample(SoilARMRepeat,soilUV).rgb;
+    WestWoodSurface result;
+    result.BaseColor=lerp(leafC,soilC,soil);
+    result.Roughness=lerp(leafARM.g,soilARM.g,soil);
+    result.Metallic=lerp(leafARM.b,soilARM.b,soil);
+    result.NormalSource=normalize(lerp(leafN,soilN,soil));
+    // AO red remains unbound: do not multiply it into BaseColor or imply parity.
+    return result;
+}
+
+// Concrete UE5.8 import-frame adapter: identity source actor, import scale exactly100.
+// Verified installed GLTFCore/Private/GLTF/ConversionUtilities.h: ConvertVec3(x,y,z)=(x,z,y).
+// Native Blender canonical=(gltf.x,-gltf.z,gltf.y), so UE cm=(canonical.x,-canonical.y,canonical.z)*100.
+float3 WestWoodUEPositionToSourceMetres(float3 AbsoluteUEWorldCentimetres, float3 SourceOriginUECentimetres)
+{
+    float3 q=(AbsoluteUEWorldCentimetres-SourceOriginUECentimetres)*0.01; return float3(q.x,-q.y,q.z);
+}
+float3 WestWoodUENormalToSource(float3 n) { return normalize(float3(n.x,-n.y,n.z)); }
+float3 WestWoodSourceNormalToUE(float3 n) { return normalize(float3(n.x,-n.y,n.z)); }
+// If the imported actor has rotation/nonuniform scale, supply proven inverse source
+// affine for positions and the corresponding inverse-transpose for normals instead.
+// A guessed pivot, arbitrary actor scale or unreconciled world-origin rebase MUST fail binding.
+
+#endif

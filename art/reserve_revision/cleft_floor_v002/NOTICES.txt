@@ -1,0 +1,7 @@
+Photo inputs: CC0-1.0, Poly Haven, https://polyhaven.com/license
+Powered by Poly Haven.
+forest_leaves_02 — Rob Tuytel (All).
+forest_ground_04 — Rob Tuytel (Photography, Processing); Rico Cilliers (Minor adjustment).
+Original download URLs, SHA256, MD5, sizes and channel policies are in material_recipe.json.
+land_use_mask_rgba.png is project-authored layout data under the project license, not a Poly Haven photograph.
+No Epic engine source, vendor material functions, credentials or private project binaries are included.
