@@ -66,6 +66,7 @@ class LIVINGTOWNNATIVE_API ULivingTownLeaseSubsystem final : public UGameInstanc
 public:
     ULivingTownLeaseSubsystem();
     virtual ~ULivingTownLeaseSubsystem() override;
+    virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
     virtual void Deinitialize() override;
 
     // Intent carries no actor, amount, clock, owner or reach fields.

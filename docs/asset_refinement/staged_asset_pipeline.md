@@ -26,6 +26,8 @@ Static buildings, furniture and landscape assets pass directly from texture/bake
 | Engine checks | A real scene, playable use cases and hardware measurements | Loading, frame times, memory, transitions, interactions and teardown, alongside actual rendered inspection. |
 | Delivery | Tagged assets, source, manifests, narrated MP4 and GIF excerpt | A clean restore/import and the demonstrated journeys are reproducible; captions distinguish gameplay from architectural camera tours. |
 
+- [Native cafe property journey](unreal_native_cafe_property_v2.md): real source-bound role walks, conserved payments and separate-process save restoration; prototype art and performance remain under review.
+
 ## Asset families and replacement
 
 Each candidate belongs to an explicit asset family and revision. A fresh generated character, reconstructed house or new vegetation model can replace an older family after its own review. Earlier sources and receipts remain recoverable. Resident/gameplay identity is separate from the appearance asset.

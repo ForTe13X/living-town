@@ -1,0 +1,88 @@
+{
+  "schema": "living_town.native_cafe_property_v2_public_evidence.v1",
+  "qualified_scope": "one authored cafe title/prepaid lease; real public boundary and new-process load, no UI/art/FPS/full-town claim",
+  "source_native81_sha256": "fe57f36a82c140ff774aaf9c9c66be8f41d07f738a0e46761e7b619d4294208f",
+  "portable_core_sha256": "50adb86b5333436ff6af330ed02ca3b21b9aae0cc7f92c32d833dcdb61ec76ab",
+  "legacy_core_sha256": "942eb43c7b822da17c4949b08aa890d65324cd6d0e31bafa5d5104440641a8ac",
+  "portable16": {
+    "status": "PASS_PORTABLE_CPU_ONLY",
+    "cases": 16,
+    "checks": 1316,
+    "actual_receipt_sha256": "59187c6fa63e689524158a60fd942a36992402f3886e1b18abfdccccfb6d3dc9",
+    "canonical_include_adaptation_executed": true,
+    "canonical_include_adaptation_receipt_sha256": "0e9e68f92bcd8e4bdef7ab9d03d3e6b8e7fc17259825487a2ace13315443b2d5",
+    "canonical_include_adaptation_wall_seconds": 4.266
+  },
+  "actual_journey": {
+    "status": "PASS_SAME_PROCESS_ACTUAL_PUBLIC_BOUNDARY_JOURNEY_ONLY",
+    "wall_seconds": 75.656,
+    "samples": 190,
+    "walk_sample_counts": [
+      64,
+      62,
+      64
+    ],
+    "roles": [
+      "aria",
+      "ben",
+      "aria"
+    ],
+    "cash_before": [
+      12,
+      12
+    ],
+    "cash_after_sale": [
+      24,
+      0
+    ],
+    "cash_after_lease": [
+      20,
+      4
+    ],
+    "event_count": 7,
+    "source_build_receipt_sha256": "e47213ddac6c61f14bbc0dc34f47d1f071f2e6819d4491db0dce8db8c96507cc",
+    "actual_report_sha256": "e8d448ccedd368b45267fe12dfee1472fe8e9eeebc9f4beb83c8703d83e8a04c",
+    "independent_audit_sha256": "9ba5a54a8cd4bdebff73aeb72ff37876acff3947c8303310d514e7a125fc55b1",
+    "UI_keypress_claimed": false
+  },
+  "actual_cold_restore": {
+    "status": "PASS_NEW_PROCESS_PUBLIC_LOAD_SLOT_RESTORE_ONLY",
+    "wall_seconds": 58.015,
+    "source_build_receipt_sha256": "58a6b96e624caf83caf26a3e350452dcc26386a41d429847ed1a813b89ce33cb",
+    "actual_report_sha256": "bb91dec2972bad1461632ebc55d1755c8399fa7f96e323e9fe4071c96006e48f",
+    "independent_audit_sha256": "309c964b9cc65820777577908aab07a00a545e29ccc5b52320d8d34d76b68d42",
+    "producer_pid": 41700,
+    "cold_pid": 33212,
+    "seed": {
+      "owner": "aria",
+      "operator": "aria",
+      "coins": [
+        12,
+        12
+      ],
+      "events": 0
+    },
+    "restored": {
+      "owner": "ben",
+      "operator": "aria",
+      "coins": [
+        20,
+        4
+      ],
+      "events": 7,
+      "clock": 10,
+      "fraction_bits": "4604083120000466944"
+    },
+    "current_persona_and_transform_unchanged": true,
+    "slot_sha256": "742029949dca6bb6c2d418ee030ee9cd46e97b351b51fab5b59bd1e38801e4e7",
+    "slot_bytes": 3599,
+    "all_preservation_guards": true
+  },
+  "remaining": [
+    "final Aria avatar/contact art",
+    "keyboard journey and readable lit presentation",
+    "performance/full-town migration",
+    "broader property/recurring rent/business/cultivation/visitors/culture roadmap",
+    "new narrated walkthrough/GIF delivery"
+  ]
+}
