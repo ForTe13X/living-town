@@ -1,0 +1,104 @@
+{
+  "schema": "LivingTown.ReserveLandscapeBankAnchors.v1",
+  "height_raw_file": "Height505.r16",
+  "height_sha256": "2b5839619c03277cc4e73bb97e0d250661e9aec1efe5efe61850e5c16170b5cb",
+  "canonical_frame": "X east,Y north,Z up,metres; UE=(X,-Y,Z)*100 cm",
+  "source_gltf_sha256": "3f664cdb0a77882c0bfedafb0315f4c922c23b56bc8f49cb883df440e4baca75",
+  "source_binary_sha256": "e7229dd38ac819517f1bec074eca71d41e6a5017bad72ae41fd08c100c63c42a",
+  "source_anchor_facts_sha256": "0b9090700fc26b0434a5237010f615b288a0579a6acd541526dd55cded330879",
+  "source_fact_mode": "Barycentric upward terrain and rock-cap support; source-only anchor constraints.",
+  "anchors": [
+    {
+      "bank": "west",
+      "canonical_xyz_m": [
+        -363.79999,
+        118.97,
+        40.18910659835815
+      ],
+      "UE_xyz_cm": [
+        -36379.998999999996,
+        -11897.0,
+        4018.9106598358153
+      ],
+      "field_bilinear_height_m": 40.18936621152344,
+      "difference_m": 0.00025961316529077294
+    },
+    {
+      "bank": "west",
+      "canonical_xyz_m": [
+        -363.79999,
+        121.03,
+        40.32816733642578
+      ],
+      "UE_xyz_cm": [
+        -36379.998999999996,
+        -12103.0,
+        4032.8167336425777
+      ],
+      "field_bilinear_height_m": 40.328174805273434,
+      "difference_m": 7.46884765590039e-06
+    },
+    {
+      "bank": "west",
+      "canonical_xyz_m": [
+        -360.0,
+        120.0,
+        39.889793395996094
+      ],
+      "UE_xyz_cm": [
+        -36000.0,
+        -12000.0,
+        3988.9793395996094
+      ],
+      "field_bilinear_height_m": 39.890625,
+      "difference_m": 0.00083160400390625
+    },
+    {
+      "bank": "east",
+      "canonical_xyz_m": [
+        -334.0,
+        120.0,
+        39.889793395996094
+      ],
+      "UE_xyz_cm": [
+        -33400.0,
+        -12000.0,
+        3988.9793395996094
+      ],
+      "field_bilinear_height_m": 39.890625,
+      "difference_m": 0.00083160400390625
+    },
+    {
+      "bank": "east",
+      "canonical_xyz_m": [
+        -330.20001,
+        118.97,
+        39.19357731580736
+      ],
+      "UE_xyz_cm": [
+        -33020.001000000004,
+        -11897.0,
+        3919.357731580736
+      ],
+      "field_bilinear_height_m": 39.19312595703125,
+      "difference_m": -0.0004513587761110216
+    },
+    {
+      "bank": "east",
+      "canonical_xyz_m": [
+        -330.20001,
+        121.03,
+        39.85453131835938
+      ],
+      "UE_xyz_cm": [
+        -33020.001000000004,
+        -12103.0,
+        3985.4531318359377
+      ],
+      "field_bilinear_height_m": 39.85492283203126,
+      "difference_m": 0.00039151367187884034
+    }
+  ],
+  "maximum_bilinear_difference_m": 0.00083160400390625,
+  "bank_walkability_or_town_seams_qualified": false
+}
