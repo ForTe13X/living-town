@@ -69,6 +69,7 @@ Existing repository entry points:
 - [Portable material-image derivative](append_metallic_roughness_image.md): tested append-only metallic-roughness image replacement, retaining the original geometry/UV/normal and scene data.
 - [Portable normal-image derivative](append_normal_image.md): calibrated native normal output carried through core glTF, with exact old BIN/JSON preservation and matched portable review.
 - [Complete-character framing](character_framing.md): host camera math over every native posed render vertex, with explicit projection assumptions and separate native adapter qualification.
+- [Native root alignment](native_root_correction.md): an opt-in Unreal player correction using actual blend weights, with tested pose preservation and explicit remaining motion/contact gates.
 
 The current Unreal target consumes engine-agnostic source assets through explicit engine adapters. A model becomes eligible for the final walkthrough after its relevant stage reviews and playable/visual checks, including actual performance observations, are complete.
 
