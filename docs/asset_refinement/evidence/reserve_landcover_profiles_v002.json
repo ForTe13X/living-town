@@ -1,0 +1,267 @@
+{
+  "schema": "LivingTown.NativeLandcoverProfileEvidence.v2",
+  "status": "PASS_BOUNDED_FRESH_NATIVE_GUID_PROFILE_AUTHOR_AND_NEW_PROCESS_COLD140_ART_HELD",
+  "engine": {
+    "version": "5.8.4",
+    "changelist": 58902052,
+    "RHI": "hardware D3D12 SM6",
+    "GPU": "AMD Radeon(TM) 8060S Graphics"
+  },
+  "native_source": {
+    "baseline85_sha256": "c15343b2bb4fe827b6b5526b2d90a29c48ad3e641e465f0d6ea76645b49430d7",
+    "qualified85_sha256": "fe4af826a16d60948a4316ba1697eab8d0ecf7a3e7a299f004981434913fa522",
+    "changed_inputs": [
+      "LivingTownReserveLandcover.h",
+      "LivingTownReserveLandcover.cpp"
+    ],
+    "other83_inputs_exact": true,
+    "build_receipt": {
+      "sha256": "24f9f96390d8ce305f7ec8a37bbb42aa533f2fc105481a54a118073157444494",
+      "bytes": 23373
+    },
+    "build_audit": {
+      "sha256": "a079935ae4642a431dbd646ef4d08c632afce86e6bf773572d228dbc91b65f58",
+      "bytes": 4018
+    }
+  },
+  "native_automation": {
+    "tests": [
+      "LivingTown.ReserveLandcover.ClosedSourceFixture",
+      "LivingTown.ReserveLandcover.ProfileBoundary"
+    ],
+    "both_success_no_warnings_or_errors": true,
+    "actual_result": {
+      "sha256": "c3ef0e938d21449a09e9e097feefcb040cc74e8c9949a106eaaec5d7954bc292",
+      "bytes": 1533
+    },
+    "independent_audit": {
+      "sha256": "157c2322f74d5a3ce32550b290345b594ea71b8abb50da7d7b435065f9853d28",
+      "bytes": 3442
+    },
+    "legacy_fixed_Pond006_world_replayed_with_fe4": false,
+    "legacy_fixed_c153_world_evidence_retained_historically": true
+  },
+  "profile": {
+    "schema": "LivingTown.NativeLandcoverProfile.v2",
+    "raw_profile_sha256": "1f1703e83e4673b0c6856650068408c7a470038a3035b3e708c809f241935778",
+    "raw_profile_bytes": 2690,
+    "landscape_guid": "6E9A54714DEC1F04C0D8339CAB9071E3",
+    "edit_guid": "E1B73144492C666337F74B9A8301B841",
+    "native_source_ready_receipt_sha256": "613bda935af005b244e26c0872509aa2ba463592f03878a4ca90c6618f651e82",
+    "source136_manifest_sha256": "7b236281cdae0b531dc67364b7e9aed4b7b593a6655c374683b322dea74b8238",
+    "population_census_sha256": "dcfdd9ccd8bf83eb651841e9ccdcf84e9d7cd4913bea32050a69c3bdc34d5fb3",
+    "GUIDs_actual_native_creator_values_not_overrides": true,
+    "map_count": 1,
+    "samples_xy": [
+      505,
+      505
+    ],
+    "components_xy": [
+      4,
+      4
+    ],
+    "roles": [
+      "Meadow",
+      "WoodlandLitter",
+      "SteepRock",
+      "PondSoil"
+    ],
+    "population_case": "Actual229 only",
+    "repository_example_serialization": {
+      "line_ending": "LF",
+      "bytes": 2614,
+      "sha256": "08dc0e9b6f520dd7b6706ec708a59fe1ea5df3073afbe134b3acbc04d2a7a6cb",
+      "same_parsed_profile_as_actual_native_CRLF_case": true,
+      "native_world_case_raw_line_ending": "CRLF",
+      "actual_native_case_reproduced_by_writer_line_ending_crlf": true
+    }
+  },
+  "round_trip": {
+    "source_packages": 136,
+    "saved_and_cold_packages": 140,
+    "new_LayerInfo_packages": 4,
+    "protected_other135_source_packages_exact": true,
+    "saved140_manifest": {
+      "sha256": "0f02dc4606abbd328ccb1d7afec06ac2a339241cb10383783c63dba4b706f315",
+      "bytes": 70701
+    },
+    "cold_proof": {
+      "sha256": "5a6a954d56bdecf2b890aa7eac94e425688d2c75a75acf4c18aa6d4560e504ac",
+      "bytes": 1239
+    },
+    "weights_bytes_exact": 1020100,
+    "height_samples_exact": 255025,
+    "stock_Visibility_edit_merged_zero_unallocated": true,
+    "actual_inherited_compiled_terrain_IDs_match_all_allocations": true,
+    "actual_six_Texture_Source_RGB_arrays_exact_original_decode_and_lossless_PNG": true,
+    "source_229_scene_pond_sky_cameras_preserved": true,
+    "pond_native_collision_contacts": 171
+  },
+  "material": {
+    "preserved_stock_nodes": 268,
+    "source_photos": 12,
+    "explicit_photo_sample_nodes": 15,
+    "shared_native_RGBA_weight_vector": true,
+    "sampler_source": "SharedWrap",
+    "observed_child_combination_rows": 22,
+    "effective_variants": 6,
+    "maximum_samplers": 6,
+    "maximum_estimated_PS_texture_samples": 19,
+    "instruction_budget700": "HELD_UNAVAILABLE_ORDINARY_MEL_REPRESENTATIVES",
+    "GPU_or_uniform_FPS_gain_qualified": false
+  },
+  "sessions": {
+    "Source": {
+      "wall_seconds": 95.625,
+      "peak_RSS_bytes": 10373263360,
+      "peak_private_bytes": 11375075328,
+      "sample_count": 184,
+      "owned_root_waited": true,
+      "remaining_owned_pids": [],
+      "all_source_config_profile_binary_guards": true
+    },
+    "Author": {
+      "wall_seconds": 93.39100000000326,
+      "peak_RSS_bytes": 3684646912,
+      "peak_private_bytes": 5459918848,
+      "sample_count": 178,
+      "owned_root_waited": true,
+      "remaining_owned_pids": [],
+      "all_source_config_profile_binary_guards": true
+    },
+    "Cold": {
+      "wall_seconds": 60.094000000011874,
+      "peak_RSS_bytes": 3527409664,
+      "peak_private_bytes": 4893974528,
+      "sample_count": 113,
+      "owned_root_waited": true,
+      "remaining_owned_pids": [],
+      "all_source_config_profile_binary_guards": true
+    }
+  },
+  "captures": {
+    "Author": [
+      {
+        "view": "Shore",
+        "image_sha256": "d309537c5428542ea761aaf58cf7b48aae12313b1105bcb116a1d3d56f51cf38",
+        "width": 1014,
+        "height": 550,
+        "exact_native_pose_capture_pair": true
+      },
+      {
+        "view": "Across",
+        "image_sha256": "a0bb786393fbf5d7615a6857686414ffe422076891c254ae473ab8576a4203ae",
+        "width": 1014,
+        "height": 550,
+        "exact_native_pose_capture_pair": true
+      },
+      {
+        "view": "Overhead",
+        "image_sha256": "1b2c5041e42d919823be4547880db958edf04130ca308cbabaf0567840b72c82",
+        "width": 1014,
+        "height": 550,
+        "exact_native_pose_capture_pair": true
+      },
+      {
+        "view": "Woodland",
+        "image_sha256": "623a3b4a645ba666971ab11ed79d503c9e1129323e4344f5d2cd052329047e94",
+        "width": 1014,
+        "height": 550,
+        "exact_native_pose_capture_pair": true
+      },
+      {
+        "view": "Cliff",
+        "image_sha256": "525042054b6c7dcfd649e512f813f159e3f5a2111a471c1f09b3808e29209a89",
+        "width": 1014,
+        "height": 550,
+        "exact_native_pose_capture_pair": true
+      }
+    ],
+    "Review": [
+      {
+        "view": "Shore",
+        "image_sha256": "296205e22a7416a3e2d66dd30c257a182b2a1f78f869fe1524372144336678f8",
+        "width": 1014,
+        "height": 550,
+        "exact_native_pose_capture_pair": true
+      },
+      {
+        "view": "Across",
+        "image_sha256": "2ac8a2da1be0f0ef58d874ab75c51318c743dd31d05ee33006626967155d15f2",
+        "width": 1014,
+        "height": 550,
+        "exact_native_pose_capture_pair": true
+      },
+      {
+        "view": "Overhead",
+        "image_sha256": "f0166e70c1b6f2a32d0818d0fc5b01758edc7a6d9499a6d756bd37f31c4b214c",
+        "width": 1014,
+        "height": 550,
+        "exact_native_pose_capture_pair": true
+      },
+      {
+        "view": "Woodland",
+        "image_sha256": "ebf848f6f45eb78193c457bf9232440316f3f1b7028a2cfd6692863268aec5b3",
+        "width": 1014,
+        "height": 550,
+        "exact_native_pose_capture_pair": true
+      },
+      {
+        "view": "Cliff",
+        "image_sha256": "c827cafe8113649cb0550dd3245274614cd70842e91801a0705a7cb01374fa8f",
+        "width": 1014,
+        "height": 550,
+        "exact_native_pose_capture_pair": true
+      }
+    ]
+  },
+  "scope": {
+    "new_native_GUID_profile_world_case_qualified": true,
+    "profile_reader_population_qualification_claimed": false,
+    "full_one_shot_town_qualified": false,
+    "Actual729_qualified": false,
+    "Game_or_navigation_qualified": false,
+    "final_art_qualified": false,
+    "legacy_world_under_new_binary_qualified": false,
+    "art_holds": [
+      "meadow repetition/tan read",
+      "stepped shoreline",
+      "rough woodland materials",
+      "foliage-obstructed old Cliff camera"
+    ],
+    "source_art_is_006_not_later_meadow_cliff_derivative": true,
+    "private_scene_packages_photos_and_capture_harness_shipped_by_this_adoption": false,
+    "README_or_portable_rgba8_fixture_descriptor_or_existing_verifier_changed": false,
+    "default_runtime_flags": {
+      "bAssetsQualified": false,
+      "bCoordinatesQualified": false,
+      "bMaterialsQualified": false,
+      "bCollisionQualified": false
+    }
+  },
+  "DDC": {
+    "policy": "verified terminal private filesystem-DDC copy only; fresh process/private environment; no configuration or user-profile copy",
+    "source_to_Author_files": 1838,
+    "source_to_Author_bytes": 312712188,
+    "Author_to_cold_files": 2033,
+    "Author_to_cold_bytes": 314760503,
+    "donor_hashes_unchanged_after_each_child_stop": true,
+    "native_source_package_compiled_resource_texture_and_cold_proofs_bypassed": false,
+    "these_times_are_full_Editor_evidence_sessions_not_game_startup_measurements": true,
+    "causal_startup_or_FPS_comparison_claimed": false
+  },
+  "independent_audits": {
+    "Source": {
+      "sha256": "5e67c9e7781f138716821bc4e2a9b65ca9fcd287fe028f56e68c31075fa58fc5",
+      "bytes": 2801
+    },
+    "Author": {
+      "sha256": "4ac08cd5ab5e6ac716674bad00cc1d37fb62d580e199fa4d4e21f8ae20f9635d",
+      "bytes": 3427
+    },
+    "Cold": {
+      "sha256": "721618a7810019c1a3c88f6bb3079c6dd6297d5d6654cd4c94190b22e7874499",
+      "bytes": 3409
+    }
+  }
+}

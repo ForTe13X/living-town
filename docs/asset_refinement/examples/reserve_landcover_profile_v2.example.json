@@ -1,0 +1,76 @@
+{
+  "schema": "LivingTown.NativeLandcoverProfile.v2",
+  "mode": "owned_editor_preview_no_runtime_paint",
+  "map_path": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveLandscape_v001/L_ReserveLandscape_v001",
+  "landscape_actor_label": "LT_RESERVE_LANDSCAPE_v001",
+  "landscape_guid": "6E9A54714DEC1F04C0D8339CAB9071E3",
+  "edit_layer_guid": "E1B73144492C666337F74B9A8301B841",
+  "material_path": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveLandscape_v001/M_ReserveLandscape_v001.M_ReserveLandscape_v001",
+  "height": {
+    "project_relative_path": "Content/ReserveLandscapeSource_v001/Height505.r16",
+    "bytes": 510050,
+    "sha256": "2b5839619c03277cc4e73bb97e0d250661e9aec1efe5efe61850e5c16170b5cb"
+  },
+  "weights": {
+    "project_relative_path": "Content/ReserveLandcoverSource_v001/Landcover_Actual229_505_RGBA8.bin",
+    "bytes": 1020100,
+    "sha256": "d83c74821b884ad75a80a9efa278374fcfa3674f8a8cf40c27db3bd59ba69ad9",
+    "encoding": "uint8_interleaved_RGBA_no_header",
+    "per_vertex_sum": 255
+  },
+  "layout": {
+    "width": 505,
+    "height": 505,
+    "subsection_size_quads": 63,
+    "num_subsections": 2,
+    "component_count_xy": [
+      4,
+      4
+    ],
+    "origin_cm": [
+      -60000,
+      -22400,
+      4000
+    ],
+    "scale_xyz": [
+      100,
+      100,
+      25
+    ],
+    "row0": "minimum_UE_Y",
+    "rotation_pitch_yaw_roll": [
+      0,
+      0,
+      0
+    ]
+  },
+  "roles": [
+    {
+      "channel": 0,
+      "name": "Meadow",
+      "layer_info_path": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveBiomeProfile_v002/LI_Meadow_v001.LI_Meadow_v001"
+    },
+    {
+      "channel": 1,
+      "name": "WoodlandLitter",
+      "layer_info_path": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveBiomeProfile_v002/LI_WoodlandLitter_v001.LI_WoodlandLitter_v001"
+    },
+    {
+      "channel": 2,
+      "name": "SteepRock",
+      "layer_info_path": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveBiomeProfile_v002/LI_SteepRock_v001.LI_SteepRock_v001"
+    },
+    {
+      "channel": 3,
+      "name": "PondSoil",
+      "layer_info_path": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveBiomeProfile_v002/LI_PondSoil_v001.LI_PondSoil_v001"
+    }
+  ],
+  "visibility_policy": "exact_engine_singleton_zero_unallocated_edit_and_merged",
+  "source_scene": {
+    "lineage": "FreshNative_Actual229",
+    "manifest_sha256": "7b236281cdae0b531dc67364b7e9aed4b7b593a6655c374683b322dea74b8238",
+    "population_census_sha256": "dcfdd9ccd8bf83eb651841e9ccdcf84e9d7cd4913bea32050a69c3bdc34d5fb3"
+  },
+  "prerequisite_read_receipt_sha256": "613bda935af005b244e26c0872509aa2ba463592f03878a4ca90c6618f651e82"
+}
