@@ -1,0 +1,117 @@
+{
+  "schema": "LivingTown.FixedPondLandcoverEvidence.v1",
+  "scope": "Fixed-Pond006 native replay/diagnostics and portable source fixture; no generic scene generation or integrated729 support",
+  "native_source": {
+    "inputs": 85,
+    "sha256": "c15343b2bb4fe827b6b5526b2d90a29c48ad3e641e465f0d6ea76645b49430d7",
+    "compiler_receipt_sha256": "920bd51166b735fd7716ec2aecefa66d6c1571f509bb4786002913d61d9e3a07",
+    "engine": "Unreal5.8.4 CL58902052",
+    "source_delta": "3modified2added against83ad3d; HISM reader additive, Landcover fixed replay helper and RHI dependency"
+  },
+  "source_fixture": {
+    "schema": "LivingTown.ReserveLandcoverSource.v1",
+    "raw": "Landcover_Actual229_505_RGBA8.bin",
+    "width": 505,
+    "height": 505,
+    "channels": [
+      "Meadow",
+      "WoodlandLitter",
+      "SteepRock",
+      "PondSoil"
+    ],
+    "encoding": "uint8_interleaved_RGBA_no_header",
+    "row0": "minimum_UE_Y_maximum_canonical_Y",
+    "grid": {
+      "UE_X_cm": "-60000+100*column",
+      "UE_Y_cm": "-22400+100*row",
+      "canonical_metres": "[UE_X/100,-UE_Y/100,UE_Z/100]",
+      "height_encoding": "uint16_le",
+      "UE_Z_cm": "4000+(height_u16-32768)*25/128"
+    },
+    "per_vertex_sum": 255,
+    "sha256": "d83c74821b884ad75a80a9efa278374fcfa3674f8a8cf40c27db3bd59ba69ad9",
+    "byte_count": 1020100,
+    "height_source_sha256": "2b5839619c03277cc4e73bb97e0d250661e9aec1efe5efe61850e5c16170b5cb",
+    "scope": "Project-authored Actual229 ecological weights; fixedPond006 replayfixture, not integrated729 or finalart"
+  },
+  "author": {
+    "status": "PASS",
+    "seconds": 208.078,
+    "saved_packages": 136,
+    "new_assets": 10,
+    "saved_manifest_sha256": "b06558d3d2dee4a96652251c40ffcb9321df39f68f0e97bcd57fed89d33b8c4e",
+    "audit_sha256": "f0602afc6ddc779653b9353443fdf12afeb6391de88fd38181dae91bad139a1d",
+    "new_assets_detail": "6sourcephotoTextures+4LayerInfos; privateMaterial+Maparedeclaredchanges,124otherpackagesprotected"
+  },
+  "new_process_cold": {
+    "status": "PASS",
+    "seconds": 159.468,
+    "accepted_package_bytes_unchanged": 136,
+    "imports_or_saves": false,
+    "root_proof_sha256": "8421c212dae950c22d148b0ddb9ff01af87844a99cbb0b2f0c79b45043ddf292",
+    "independent_audit_sha256": "24716c3821229b9e989f125576b2c3953de5bc5107ba74d1abf5eda721acdeb8"
+  },
+  "data_and_material_checks": {
+    "all255025height_samples_unchanged": true,
+    "all1020100_edit_and_merged_weight_bytes_exact": true,
+    "Visibility": "exactengine singleton,zero andunallocated before/after/cold",
+    "all6originals_declaredRGB8_decode_losslessPNG_nativeSource_exact": true,
+    "stock_graph_nodes": 268,
+    "sourcephotoassets": 12,
+    "explicitphoto_samples": 15,
+    "nativeLayerBlend_nodes": 1,
+    "CPU_normal_controls": {
+      "flat": 45,
+      "directional": 175
+    },
+    "actual_unique_resource_variants": 6,
+    "actual_material_cost_rows": 22,
+    "maximum_samplers": 6,
+    "maximum_PS_estimated_texture_samples": 19,
+    "sampler_ceiling": 14,
+    "PS_estimated_fetch_ceiling": 22,
+    "instruction_budget": "700HELD: ordinaryMELrepresentativecount0isunavailable,notzeroCost",
+    "hardware_fetch_GPU_timing_or_uniform_variant_gain_qualified": false
+  },
+  "scene_preservation": {
+    "source_placements": 229,
+    "ISM_components": 30,
+    "pond_and_statics_sky_camera": true,
+    "all_owned_processes_reaped": true,
+    "source_configuration_binary_guards": true
+  },
+  "rendered_evidence": {
+    "Author_before": 5,
+    "Author_after": 5,
+    "cold_after": 5,
+    "actual_image_size": [
+      1014,
+      550
+    ],
+    "closed_native_pose_payloads": true,
+    "root_visual_acceptance": "FinalartHELD; source/datafunctionalonly"
+  },
+  "prerequisites": {
+    "map": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveLandscape_v001/L_ReserveLandscape_v001",
+    "material": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveLandscape_v001/M_ReserveLandscape_v001.M_ReserveLandscape_v001",
+    "LandscapeGuid": "43D98B784ED85B59DCB8E8A35B77809F",
+    "editLayerGuid": "ACD1BFF8470AC16A8FFF82965B8FD569",
+    "actual229_only": true,
+    "rejects_density500_actors": true,
+    "nativeCreate_uses_newGUIDs": "NewlycreatedLandscape is notautomaticallyvalidforthisfixedreplayhelper"
+  },
+  "not_delivered": [
+    "genericone-shotproducer",
+    "actual729landcoverintegration",
+    "finishedmeadow/shore/cliffart",
+    "alltownassembly",
+    "GameFPSorloadtimequalification",
+    "runtimepainting"
+  ],
+  "held_art": [
+    "meadowtan/repetition",
+    "steppedpondshore",
+    "oldCliffcamera foliageoccluded; norockappearanceproof",
+    "woodlandmaterialsrough"
+  ]
+}
