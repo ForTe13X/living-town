@@ -1,0 +1,330 @@
+{
+  "schema": "living_town.native81_forest_visible_capture.v1",
+  "status": "QUALIFIED_READY_CAPTURE_SINGLE_FIXED_GAME_CELL_ART_HELD",
+  "scope": "One static uncooked Development Game forest cell; no displayed FPS, whole-town, optimization, comparison or Shipping-startup claim.",
+  "run_id": "native_forest_native81_visible_actual_v1_001",
+  "audited_actual_pid": 42364,
+  "source": {
+    "native_input_count": 81,
+    "native_source_sha256": "fe57f36a82c140ff774aaf9c9c66be8f41d07f738a0e46761e7b619d4294208f",
+    "source_freeze_sha256": "de404109afe3a3d7e79b3733796f49d1f0449c8f41b92e20792d21395579bda3",
+    "actual_successful_build_receipt_sha256": "58a6b96e624caf83caf26a3e350452dcc26386a41d429847ed1a813b89ce33cb",
+    "preparation_sha256": "84c386a89e41719bed09f546bb9d9893b8e9d63ed31b43a03c2a424407b69ac9",
+    "actual_audit_sha256": "255f2f5a04eb953e56465b46120c7b3ac2e0b7c90a5140b9844e1006d28869d1",
+    "native_runtime_dll_bytes": 1785344,
+    "actually_loaded_native_runtime_dll_sha256": "0c2eea90cab5c4c32d4f6885ba33c688d6489cac04aae7183881ac032d3bea87",
+    "saved_source_and_staged_package_count": 124,
+    "saved_candidate_map_sha256": "1caeca357288f95cd5ddc1bd1e2472903ec96a3d36bf943f10c874d2467c795c"
+  },
+  "runtime": {
+    "engine": "5.8.4-58902052",
+    "configuration": "Development, uncooked UnrealEditor -game",
+    "world_type": "Game",
+    "map": "/Game/LivingTown_UEPilot/TownSlice_v003/WoodlandHeightGame_v001/L_Candidate",
+    "RHI": "D3D12",
+    "feature_level": "SM6",
+    "GPU": "AMD Radeon(TM) 8060S Graphics",
+    "full_cpu_affinity_logical_CPUs": 32,
+    "maximum_local_shader_workers": 2,
+    "quality_level_all_groups": 3,
+    "actual_screen_percentage": 100,
+    "dynamic_resolution_operation_mode": 0,
+    "VSync": 0,
+    "t_MaxFPS": 0,
+    "GetMaxTickRate": 0,
+    "smooth_frame_rate": false,
+    "fixed_frame_rate": false,
+    "RenderOffScreen": false,
+    "camera": {
+      "location_cm": [
+        -36160.0,
+        15280.0,
+        3012.450858
+      ],
+      "rotation_pitch_yaw_roll": [
+        3.802816,
+        36.869896,
+        -0.0
+      ],
+      "FOV": 60.0,
+      "saved_camera_actor": "CameraActor_0"
+    },
+    "instances": 2363,
+    "ISM_components": 38,
+    "material_ISM_usage_flags_passed": 11
+  },
+  "observer": {
+    "activation_flags": [
+      "LivingTownViewportCsv",
+      "LivingTownViewportCsvMap=/Game/LivingTown_UEPilot/TownSlice_v003/WoodlandHeightGame_v001/L_Candidate"
+    ],
+    "native_fields": [
+      "LTViewportWidth",
+      "LTViewportHeight",
+      "LTViewportGTFrame",
+      "LTViewportSamples"
+    ],
+    "retained_rows": 5000,
+    "every_retained_row_checked": true,
+    "native_viewport_extent": [
+      1920,
+      1080
+    ],
+    "samples_per_row": 1,
+    "first_GT_frame": 4999,
+    "last_GT_frame": 9998,
+    "actual_boundary_CSV_row0": 4999,
+    "scope": "Actual positive qualification on this matching Game map. World-tick viewport extent is not final backbuffer, intra-frame history or displayed-frame cadence."
+  },
+  "capture": {
+    "native_total_frame_rows": 10000,
+    "retained_frame_rows": 5000,
+    "native_retained_event_seconds": 67.34143600000002,
+    "retained_FrameTime_sum_seconds": 67.3419903,
+    "sum_minus_event_seconds": 0.0005542999999903486,
+    "native_total_boot_capture_seconds": 183.33626,
+    "actual_retained_boundary_offset_seconds": 115.994824,
+    "screenshot_capture_frame": 4500,
+    "actual_screenshot_CSV_row0": 4499,
+    "texture_probe_frames": [
+      [
+        4400,
+        4410
+      ],
+      [
+        4600,
+        4610
+      ]
+    ],
+    "all_readiness_image_and_diagnostic_probes_precede_retained_window": true,
+    "raw_closed_CSV_bytes": 19843761,
+    "raw_closed_CSV_sha256": "724c6ce80cc766ba36fb87f04a88971934f27bfea37b85f0e480c59f37b2747f",
+    "image": {
+      "file": "native_forest81_visible_height_ready_v001.png",
+      "bytes": 4880536,
+      "sha256": "d3f898a9865d136390c1c49aa59bc726cab9cf87843621fa903acff510673a8d",
+      "extent": [
+        1920,
+        1080
+      ],
+      "source": "Byte-exact actual native GPU screenshot; no image edits."
+    }
+  },
+  "texture_readiness": {
+    "complete_source_bound_roles": 47,
+    "baseline_roles": 45,
+    "added_height_roles": 2,
+    "old_foliage_vendor_subset": 37,
+    "historical_subset_omits_ten_terrain_maps": true,
+    "snapshots": [
+      {
+        "frames": [
+          4400,
+          4410
+        ],
+        "source_roles": 47,
+        "height_rows": [
+          {
+            "texture": "/Game/LivingTown_UEPilot/TownSlice_v003/WoodlandHeight_v001/T_LeafHeight_G16_v001.T_LeafHeight_G16_v001",
+            "current": [
+              2048,
+              2048
+            ],
+            "wanted": [
+              2048,
+              2048
+            ],
+            "format": "PF_G16",
+            "mips": 12
+          },
+          {
+            "texture": "/Game/LivingTown_UEPilot/TownSlice_v003/WoodlandHeight_v001/T_SoilHeight_G16_v001.T_SoilHeight_G16_v001",
+            "current": [
+              2048,
+              2048
+            ],
+            "wanted": [
+              2048,
+              2048
+            ],
+            "format": "PF_G16",
+            "mips": 12
+          }
+        ]
+      },
+      {
+        "frames": [
+          4600,
+          4610
+        ],
+        "source_roles": 47,
+        "height_rows": [
+          {
+            "texture": "/Game/LivingTown_UEPilot/TownSlice_v003/WoodlandHeight_v001/T_LeafHeight_G16_v001.T_LeafHeight_G16_v001",
+            "current": [
+              2048,
+              2048
+            ],
+            "wanted": [
+              2048,
+              2048
+            ],
+            "format": "PF_G16",
+            "mips": 12
+          },
+          {
+            "texture": "/Game/LivingTown_UEPilot/TownSlice_v003/WoodlandHeight_v001/T_SoilHeight_G16_v001.T_SoilHeight_G16_v001",
+            "current": [
+              2048,
+              2048
+            ],
+            "wanted": [
+              2048,
+              2048
+            ],
+            "format": "PF_G16",
+            "mips": 12
+          }
+        ]
+      }
+    ],
+    "around_image_readiness": {
+      "raw_rows0": [
+        4349,
+        4699
+      ],
+      "rows": 351,
+      "pending_MiB": 0,
+      "desired_loaded_percent": 100
+    },
+    "retained_pending_stream_in_MiB_max": 0,
+    "scope": "All47 source roles include constants and masks. Resident dimensions meet actual wanted dimensions with no budget bias; distant photo maps need not be full source resolution. Both G16 maps are actually2048x2048 current/wanted with12mips here.",
+    "forced_residency_pool_bias_LOD_changes": false
+  },
+  "timing_ms": {
+    "FrameTime": {
+      "samples": 5000,
+      "minimum_ms": 2.1739,
+      "median_ms": 13.2003,
+      "p95_ms": 17.996545000000005,
+      "p99_ms": 20.722674000000005,
+      "maximum_ms": 38.9939,
+      "mean_ms": 13.46839806,
+      "zero_samples": 0
+    },
+    "GameThreadTime": {
+      "samples": 5000,
+      "minimum_ms": 1.7444,
+      "median_ms": 3.3720499999999998,
+      "p95_ms": 4.15053,
+      "p99_ms": 4.6485610000000035,
+      "maximum_ms": 38.6573,
+      "mean_ms": 3.4096711600000003,
+      "zero_samples": 0
+    },
+    "RenderThreadTime": {
+      "samples": 5000,
+      "minimum_ms": 2.7378,
+      "median_ms": 13.13085,
+      "p95_ms": 18.17453,
+      "p99_ms": 21.022143000000003,
+      "maximum_ms": 27.6011,
+      "mean_ms": 13.4512532,
+      "zero_samples": 0
+    },
+    "GPUTime": {
+      "samples": 5000,
+      "minimum_ms": 8.3343,
+      "median_ms": 10.583100000000002,
+      "p95_ms": 14.4231,
+      "p99_ms": 17.633776,
+      "maximum_ms": 23.0765,
+      "mean_ms": 10.90337156,
+      "zero_samples": 0
+    },
+    "RHIThreadTime": {
+      "samples": 5000,
+      "minimum_ms": 0.8116,
+      "median_ms": 1.2983,
+      "p95_ms": 1.76875,
+      "p99_ms": 2.0164210000000002,
+      "maximum_ms": 2.6612,
+      "mean_ms": 1.32492878,
+      "zero_samples": 0
+    }
+  },
+  "engine_interval_tail_counts": {
+    "FrameTime_over_16_67_ms": 346,
+    "FrameTime_over_33_33_ms": 1
+  },
+  "owned_window": {
+    "status": "PASS_COARSE_NORMAL_VISIBLE_WINDOW_INTERVAL",
+    "timed_native_boundary_utc": "2026-10-29T10:34:31.918000+00:00",
+    "native_remaining_seconds": 67.34143600000002,
+    "excluded_alignment_margin_seconds_each_end": 1,
+    "timed_window_samples": 33,
+    "maximum_sampling_gap_seconds": 2.0426340103149414,
+    "late_shot_utc": "2026-10-29T10:34:24.588000+00:00",
+    "near_shot_good_samples": 3,
+    "nearest_shot_sample_seconds": 0.28021883964538574,
+    "scope": "Explicit UTC native log event + host UTC samples, coarse only. IsWindowVisible does not prove unobscured presentation or displayed-frame cadence. Dense world-tick viewport proof is separate.",
+    "all_session_samples": 90,
+    "all_session_good_visible_fullHD_samples": 81,
+    "actual_owned_root_PID_only": true
+  },
+  "resource": {
+    "sample_count": 360,
+    "wall_seconds": 187.60999999998603,
+    "peak_RSS_GiB": 2.8632278442382812,
+    "peak_private_GiB": 4.515270233154297,
+    "minimum_available_physical_GiB": 37.31983947753906,
+    "minimum_available_commit_GiB": 42.86967849731445,
+    "minimum_C_free_GiB": 2.949676513671875,
+    "actual_full_affinity_CPUs": 32,
+    "actual_local_SCW_pool": 2,
+    "maximum_declared_DDC_characters": 99,
+    "reap": {
+      "root_exit_code": 0,
+      "owned_root_waited": true,
+      "remaining_owned_pids": [],
+      "controlled_job_termination": true,
+      "includes_ShaderCompileWorker_descendants": true
+    }
+  },
+  "preservation": {
+    "prep84_exact": true,
+    "source81_digest_exact": true,
+    "recorded_source231_verified_now": true,
+    "staged124_exact": true,
+    "staged81_exact": true,
+    "overlays8_exact": true,
+    "original_source_and_profiles_pass_recorded": true,
+    "preexisting_UE_INI_bytes_pass_recorded": true,
+    "metadata_deltas_recorded_not_restored": 6
+  },
+  "material_shader_statistics": {
+    "reported_pixel_instructions": 574,
+    "samplers": 13,
+    "scope": "Existing editor shader statistics for selected HeightBlend material; this run does not isolate that material runtime cost."
+  },
+  "root_review": {
+    "actual_ready_capture_accepted": true,
+    "final_art_accepted": false,
+    "remaining_observed_art_holds": [
+      "Black distant horizon",
+      "Finite forest floor cutoff",
+      "Surrounding landscape and vegetation context density",
+      "Source tree asset quality"
+    ]
+  },
+  "limits": [
+    "One static forest cell, fixed Near camera, uncooked Development Game; no walking/character or whole-town frame result.",
+    "5000 engine end-frame intervals with dense world-tick extent; no per-frame displayed/Present cadence or final backbuffer claim.",
+    "GPU timing can lag CPU; RenderThreadTime can include waits. Distributions do not identify a causal bottleneck or optimization gain.",
+    "Probes/screenshot precede final5000 but observer and sampled host monitoring remain; no uninstrumented comparison.",
+    "47 means complete source-bound used-set roles including constants and masks, not47full-resolution streamed photographs. BothG16 are actually2048desired/resident here.",
+    "BootCapture includes startup/warmup;187.61s whole session is not shipping or pure loading duration. Metadata target120 is not observed120FPS.",
+    "Root visual review is separate from this read-only raw audit; final art remains unaccepted."
+  ],
+  "portable_tests_scope": "Thirteen CPU shape/refusal tests. The uninstrumented negative is a synthetic CSV fixture, not a repository rerun of an unavailable historical raw capture."
+}

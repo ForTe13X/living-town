@@ -1,0 +1,60 @@
+{
+  "schema": "living_town.reserve_context_continuity_recipe.v3",
+  "status": "ACTUAL_NATIVE_COLD_SOURCE_CONTINUITY_ONLY",
+  "source_assembly": {
+    "retained_filename": "offline_town_assembly_actual_v1_003/TownComplete.gltf",
+    "sha256": "e7a3acbb2a23afae0cbddfbb741d06210ca4c742fa02ad864b71963ab29a6607",
+    "mesh_index": 4854,
+    "mesh_name": "TOWN_STATIC_004620"
+  },
+  "coordinate_system": "Original glTF metres,+Y up; plan X/Z",
+  "centroid_selection_rectangle_xz_m": [
+    -448,
+    -192.9,
+    -256,
+    -0.9
+  ],
+  "subtract_exact_original_cleft_source_triangle_IDs": true,
+  "selection_and_original_corner_order_preserved": true,
+  "compact_unused_attributes_without_decimation": true,
+  "context_source_primitive_roles": [
+    {
+      "source_primitive": 0,
+      "role": "rock",
+      "triangles": 13472
+    },
+    {
+      "source_primitive": 2,
+      "role": "floor",
+      "triangles": 118142
+    },
+    {
+      "source_primitive": 3,
+      "role": "clearing",
+      "triangles": 3084
+    }
+  ],
+  "context_triangles": 134698,
+  "original_cell_terrain_triangles": 16786,
+  "combined_terrain_triangles": 151484,
+  "source_primitive1_absent_in_selection": true,
+  "material_only_cell_change": {
+    "terrain_component_slot": 2,
+    "triangles": 391,
+    "replacement": "Existing cleft_floor_v002 world-space leaf/soil material; same as slot1",
+    "new_sampler_or_layer_added_to_floor": false
+  },
+  "context_material_roles": {
+    "0": "Existing original rock",
+    "1": "Existing cleft_floor_v002",
+    "2": "Existing cleft_floor_v002"
+  },
+  "original_plant_instances": 229,
+  "new_plant_instances": 0,
+  "plant_transforms_and_native_cull_settings_unchanged": true,
+  "Near_Mid_and_Overview_plant_components_enabled": true,
+  "Ground_diagnostic_temporarily_hides_plants": true,
+  "lighting": "Same movable sun/fill/sky, actual atmosphere and physical EV13",
+  "heightfield_or_native_Landscape_implementation_claimed": false,
+  "rigid_steps_trenches_pale_facets_black_far_horizon_outer_density_final_art_Game_FPS_accepted": false
+}

@@ -226,7 +226,36 @@ The completed material has 13 samplers and 574 reported pixel-shader instruction
 
 Earlier stopped trials remain failed. The continuation reuses the two valid saved textures and soil material, authors only the missing height material, and verifies the two added native texture-cache references/GUIDs against their actual texture objects. Cold graph, sampler-role, pixel and platform-format checks precede mesh loading. Evidence is `native_woodland_height_blend_actual_v1_003`; root selection is `root_native_review_acceptance_v1_001/woodland_height_ROOT_VISUAL_REVIEW_v001.json`.
 
-Ordinary-game readiness and performance for this material remain pending. The complete source-bound inventory is **45 baseline / 47 height-candidate textures**, including the ten terrain maps omitted by the historical 35-entry foliage inventory. Both new height textures need fresh game mip/format observations; cold reopening alone does not qualify their walking-view residency. Final selection for the game and portable delivery remain separate steps.
+The editor selection alone did not qualify ordinary-game residency. The complete source-bound inventory is **45 baseline / 47 height-candidate textures**, including the ten terrain maps omitted by the historical 35-entry foliage inventory. The later native81 fixed-camera Game run below supplies fresh format, wanted/resident-mip and image evidence for all 47 roles. This remains a local material candidate; final game selection, portable delivery and reserve art stay open.
+
+## Native81 Full-HD game capture with all 47 texture roles
+
+![Actual texture-ready HeightBlend Game capture; horizon, context and tree art remain held](evidence/native_forest81_visible_height_ready_v001.png)
+
+One normal visible **1920 × 1080** Game run now qualifies the selected HeightBlend candidate with the complete source-bound texture inventory. The [sanitized evidence](evidence/native_forest81_visible_height_v001.json) binds the exact **81-input source digest** `fe57f36a82c140ff774aaf9c9c66be8f41d07f738a0e46761e7b619d4294208f`, successful build receipt `58a6b96e624caf83caf26a3e350452dcc26386a41d429847ed1a813b89ce33cb`, actual loaded native DLL and byte-exact native screenshot. All **124 source and staged package files**, 81 staged native inputs and recorded source/configuration guards remain exact. Earlier stopped trials and incomplete-inventory evidence above retain their original limits.
+
+The run uses the saved Near camera at FOV60, manual EV11, **2,363 instances / 38 ISM components**, quality 3, Radeon 8060S **D3D12/SM6**, full **32-logical-CPU affinity** and at most **two local shader workers**. Actual native getters report VSync 0, MaxFPS 0, no fixed/smoothed frame rate, GetMaxTickRate 0, screen percentage 100 and dynamic resolution disabled. All eleven instanced material usage flags pass without fallback. There is no offscreen flag, runtime Python observer or change to native runtime-enable defaults.
+
+The already-compiled `LivingTownViewportCsv` observer is positively qualified on the exact matching `/Game/LivingTown_UEPilot/TownSlice_v003/WoodlandHeightGame_v001/L_Candidate` **Game** world. It emits native width, height, game-thread frame and sample count. Every one of the final **5,000** CSV rows contains **1920 × 1080**, exactly one sample and consecutive GT frames **4999–9998**. The boundary is found from the actual GetMaxTickRate event at CSV row 4999; no assumed CSV-to-engine-frame offset is used. The [standalone verifier](../../tools/unreal/validate_viewport_csv.py) retains these strict checks. Its [13 portable CPU tests](../../tools/unreal/test_viewport_csv.py) include a synthetic uninstrumented negative; those tests do not claim to reopen an unavailable historical raw capture. This positive Game result does not qualify the separate offscreen PIE camera diagnostic, final backbuffer size, intra-frame history or physically displayed frames.
+
+The native frame-4500 screenshot precedes timing and is bracketed by texture/streaming readbacks at **4400/4410 and 4600/4610**. Both snapshots contain all **47** source roles, including macro, photo, mask and constant textures. Formats and mip counts match their source roles; resident dimensions meet native wanted dimensions with zero budget bias. Both new height maps are actually **PF_G16, 12 mips, current = wanted = 2048 × 2048** in this view. Across the 351-row image-readiness window, pending streaming is zero and desired-loaded percentage is 100; retained timing rows also have zero pending data. This does not require every distant photo map at full source resolution, and no forced residency, pool, mip-bias or LOD change is used.
+
+All texture probes, the screenshot and diagnostic getters precede the retained final 5,000 rows of a 10,000-row capture. The native retained event interval is **67.341436 seconds**, and summed engine end-frame intervals are **67.341990 seconds**, differing by 0.554 ms:
+
+| Actual native timing, ms | Median | p95 | p99 | Maximum |
+| --- | ---: | ---: | ---: | ---: |
+| Engine end-frame interval | 13.200 | 17.997 | 20.723 | 38.994 |
+| Game thread | 3.372 | 4.151 | 4.649 | 38.657 |
+| Render thread | 13.131 | 18.175 | 21.022 | 27.601 |
+| GPU | 10.583 | 14.423 | 17.634 | 23.077 |
+| RHI thread | 1.298 | 1.769 | 2.016 | 2.661 |
+
+There are **346 intervals above 16.67 ms** and **one above 33.33 ms**. No FrameTime-to-FPS conversion is made. GPU timestamps can lag CPU frames and render-thread counters can include waits; these distributions do not isolate a causal bottleneck or the selected material's cost. Its earlier **13 samplers / 574 pixel-shader instructions** remain editor statistics. This is one static uncooked development forest cell, with no new comparison, optimization-gain, walking-character, whole-town, Shipping-startup or loading-speed claim. The older visible/offscreen and small PIE captures are separate measurements.
+
+Actual owned-window readback has 33 good samples within the coarse retained interval, with a maximum 2.043-second gap, plus three good samples near the late image. Explicit UTC log events and host samples provide coarse alignment; `IsWindowVisible` does not prove an unobscured or physically presented frame. Dense world-tick viewport evidence and the actual 1920 × 1080 PNG are separate observations.
+
+The process exits normally and its owned tree is reaped after **187.610 seconds**, below the 360-second cap. Sampled aggregate private memory peaks at **4.515 GiB** and RSS at **2.863 GiB**; available physical and commit memory stay above the 24 GiB reserves. The longest declared DDC path is 99 characters, and the existing shared cache is retained. Whole-session duration includes startup, warmup and shutdown; it is not pure loading time. Root accepts this ready capture while keeping the **black horizon, finite floor cutoff, surrounding context density and source-tree quality** open as art work. No final reserve or walkthrough acceptance follows.
+
 
 ## Longer foliage measurement: capture valid, comparison held
 

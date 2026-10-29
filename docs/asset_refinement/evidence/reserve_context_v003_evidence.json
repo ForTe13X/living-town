@@ -1,0 +1,58 @@
+{
+  "schema": "living_town.public_reserve_context_evidence.v1",
+  "accepted_scope": "Clearing/floor material continuity and exact bounded surrounding source-terrain extension only",
+  "saved_package_files": 122,
+  "parent_package_files_preserved": 120,
+  "new_package_roots": 2,
+  "new_geometry_family": "Original-source compact context mesh; no decimation/rebuild of original cell",
+  "context_triangles": 134698,
+  "original_cell_terrain_triangles": 16786,
+  "combined_terrain_triangles": 151484,
+  "source_statics": 5,
+  "context_static_actors": 1,
+  "plant_ISM_components": 30,
+  "source_plant_instances": 229,
+  "new_plant_instances": 0,
+  "actual_cold_67_texture_policy_format_desired_mip_brackets": {
+    "captures": 8,
+    "before_after_brackets": 16,
+    "source_expectations_fixed_before_observation": true
+  },
+  "actual_camera_payload_PNG_custody_verified_captures": 8,
+  "saved_material_graph_and_Author_cold_final_scene_sky_transform_equivalence": true,
+  "saved122_manifest_sha256": "ae197c9709a0e32542e2efc2fcd0c2390b22fee7b9d8320ba7d3961a11b1b90d",
+  "independent_audit": {
+    "retained_filename": "native_reserve_cleft_context_cold_audit_v3_001/INDEPENDENT_AUDIT.json",
+    "sha256": "62883f914eef94661eff2d0c87c6f596b8bc911fc3bdeffd30053c812e9a2599",
+    "status": "PASS_INDEPENDENT_CPU_ACTUAL_CONTEXT_COLD_AUDIT"
+  },
+  "floor_shader_statistics_unchanged": {
+    "pixel_instructions": 531,
+    "samplers": 13,
+    "not_a_frame_time_measurement": true
+  },
+  "image": {
+    "repo_relative_path": "docs/asset_refinement/evidence/reserve_context_after_near_v003.png",
+    "native_source_retained_filename": "native_reserve_cleft_context_actual_v3_001/Review/After_Near.png",
+    "bytes": 991856,
+    "sha256": "035c0f620ab633b9337f837c9753dc2ca09b934e16a1f89753707581fac0ca48",
+    "byte_exact_native_PNG": true,
+    "plant_components_enabled_not_a_claim_all229_in_camera_frustum": true
+  },
+  "restoration": {
+    "later_native_frame_camera_background_and_plant_state_verified": true,
+    "owned_processes_reaped": true,
+    "source_packages_unchanged": true
+  },
+  "held": [
+    "rigid_step_trenches",
+    "pale_faceted_cliff_geometry",
+    "black_far_horizon",
+    "sparse_outer_context_vegetation",
+    "final_art",
+    "collision_navigation_Game",
+    "FPS_improvement",
+    "finished_reserve_or_town"
+  ],
+  "separate_native_Landscape_new_source_family_under_study": "No Landscape implementation or qualified output is established by this evidence."
+}

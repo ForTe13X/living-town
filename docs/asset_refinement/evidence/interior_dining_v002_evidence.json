@@ -1,0 +1,75 @@
+{
+  "schema": "living_town.public_dining_layout_evidence.v1",
+  "accepted_scope": "Bounded dining arrangement only; material/lighting/decoration/gameplay-use/FPS remain held",
+  "original_native_package_files": 155,
+  "new_map_package_files": 1,
+  "node_poses_meshes_materials_bounds_room_door_lights_compared": 86,
+  "actual_author": {
+    "seconds": 110.95300000000861,
+    "peak_aggregate_private_bytes": 6615814144,
+    "owned_processes_reaped": true,
+    "new_map_only_saved": true
+  },
+  "independent_cold": {
+    "seconds": 105.48499999998603,
+    "peak_aggregate_private_bytes": 6161072128,
+    "fresh_native_process": true,
+    "owned_processes_reaped": true,
+    "all86_saved_poses_and_source155_plus_new_map_exact": true
+  },
+  "map_manifest_sha256": "2157dd8aec402f438f2b396a3175b00006c6ce5b81a719bfa4340387751e0790",
+  "new_map": {
+    "retained_filename": "native_interior_dining_move_actual_v1_001/Author/Project/Content/LivingTown_UEPilot/InteriorDiningLayout_v002/L_IR002_Dining.umap",
+    "bytes": 218630,
+    "sha256": "b7ec8ffa5e82f08d5d33861fadd467cefb0eb7141b3e0b28009bda7873eb1c00"
+  },
+  "independent_audit": {
+    "retained_filename": "native_interior_dining_move_audit_v1_001/AUDIT.json",
+    "sha256": "0e4f98130bda038a7abf879213b80056c106aa13440ceddfee8511c47962ba3d",
+    "status": "PASS_BOUNDED_86_NODE_FIVE_PLACEMENT_AUTHOR_COLD_CUSTODY"
+  },
+  "portable": {
+    "retained_filename": "native_interior_dining_move_prepare_v1_001/Portable/IR002_Halftimber_DiningLayout.glb",
+    "bytes": 94072868,
+    "sha256": "3fb5e9dff167c54f0e311c6a1bcea90ddacf2e036732ae55dadc7858e1981afa",
+    "only_five_root_node_translations_changed": true,
+    "large_GLb_not_distributed_in_this_recipe": true,
+    "all_other_JSON_semantics_preserved": true,
+    "all_BIN_and_embedded_image_bytes_preserved": true,
+    "mesh_accessor_binary_bytes_preserved": true,
+    "material_JSON_semantics_preserved": true
+  },
+  "frames": [
+    {
+      "repo_relative_path": "docs/asset_refinement/evidence/interior_dining_before_v002.png",
+      "native_source_retained_filename": "native_interior_dining_move_actual_v1_001/Author/IR002_BeforeKitchen.png",
+      "bytes": 909316,
+      "sha256": "4050b14f8ee275795b6ddd288e1542dd08a13156f2b9a8d71e5b9e079d337b5f",
+      "byte_exact_native_PNG": true
+    },
+    {
+      "repo_relative_path": "docs/asset_refinement/evidence/interior_dining_after_v002.png",
+      "native_source_retained_filename": "native_interior_dining_move_actual_v1_001/Author/IR002_AfterKitchen.png",
+      "bytes": 913374,
+      "sha256": "27532982aa1777d0f1f033f01d0f4ddf03be913e1df42fd2b929a8941005ae99",
+      "byte_exact_native_PNG": true
+    }
+  ],
+  "captures_total_redecoded_in_audit": 6,
+  "review_lighting": {
+    "manual_EV100": 11,
+    "sun_lux": 80000,
+    "point_fill_native_units": 1500,
+    "same_in_matched_before_after_and_cold": true,
+    "original_Blender_light_match": false
+  },
+  "restoration_scope": {
+    "owned_CDO_and_overlay_cvar_readback": true,
+    "owned_callbacks_absent_after_cleanup": true,
+    "external_editor_and_original_profiles_preserved": true,
+    "camera_setter_execution": true,
+    "retained_native_after_set_final_camera_FOV_game_view_observation": false
+  },
+  "new_frame_time_or_gameplay_collision_navigation_sit_qualification": false,
+  "original_source_and_original155_packages_preserved": true
+}
