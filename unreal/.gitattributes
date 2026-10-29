@@ -3,6 +3,7 @@
 LivingTown.uproject -text
 Config/** -text
 Source/** -text whitespace=cr-at-eol
+Shaders/** -text whitespace=cr-at-eol
 Content/** -text
 *.md text eol=lf
 .gitignore text eol=lf

@@ -1,0 +1,393 @@
+{
+  "schema": "living_town.cleft_photo_floor_recipe.v2",
+  "status": "EXTRACTED_FROM_ACTUAL_CLEAN_REVIEW_MINIMAL_SHADER_PORT_NOT_NEW_GRAPH_QUALIFICATION",
+  "shader": {
+    "project_path": "unreal/Shaders/Private/LTCleftFloor_v002.ush",
+    "include": "/Project/Private/LTCleftFloor_v002.ush",
+    "bytes": 5482,
+    "sha256": "b0af7864889bd966faa371bb54681eb6e87ddee072f8e62b1823a5476b2df0b6"
+  },
+  "source_frame": {
+    "UE_centimetres_to_source_metres": [
+      "x/100",
+      "-y/100",
+      "z/100"
+    ],
+    "normal_UE_to_source": [
+      "x",
+      "-y",
+      "z"
+    ],
+    "source_origin_UE_centimetres": [
+      0,
+      0,
+      0
+    ],
+    "identity_actor_required_for_direct_adapter": true,
+    "other_engines": "Supply the proven source-world position and world-normal transforms; do not assume Blender/glTF/engine axes agree."
+  },
+  "photo_sources": [
+    {
+      "input": "LeafColor",
+      "asset": "forest_leaves_02",
+      "asset_page": "https://polyhaven.com/a/forest_leaves_02",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_leaves_02/forest_leaves_02_diffuse_2k.jpg",
+      "relative_cache_path": "polyhaven/forest_leaves_02/forest_leaves_02_diffuse_2k.jpg",
+      "bytes": 1668009,
+      "md5": "b7837ba1c51fb0e11af36d6b4e225c20",
+      "sha256": "9c38b2b151a0415457a6914966422cfca5a546c94674442e5395e0b1e908a196",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "settings": {
+        "srgb": true,
+        "compression_settings": "TC_BC7",
+        "sampler_type": "SAMPLERTYPE_COLOR",
+        "flip_green_channel": false,
+        "address_x": "TA_WRAP",
+        "address_y": "TA_WRAP",
+        "lod_bias": 0,
+        "max_texture_size": 2048
+      },
+      "role": "photo_basecolor_hardware_sRGB_to_linear"
+    },
+    {
+      "input": "LeafNormal",
+      "asset": "forest_leaves_02",
+      "asset_page": "https://polyhaven.com/a/forest_leaves_02",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_leaves_02/forest_leaves_02_nor_gl_2k.jpg",
+      "relative_cache_path": "polyhaven/forest_leaves_02/forest_leaves_02_nor_gl_2k.jpg",
+      "bytes": 2323898,
+      "md5": "f974000a2ddc7dcd22bc84c37aa5d7ce",
+      "sha256": "af0346114834c347a8d6a138f6ea16a97b0bec8d6e4db32c24f1c7e482163235",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "settings": {
+        "srgb": false,
+        "compression_settings": "TC_BC7",
+        "sampler_type": "SAMPLERTYPE_LINEAR_COLOR",
+        "flip_green_channel": false,
+        "address_x": "TA_WRAP",
+        "address_y": "TA_WRAP",
+        "lod_bias": 0,
+        "max_texture_size": 2048
+      },
+      "role": "raw_encoded_OpenGL_normal_RGB"
+    },
+    {
+      "input": "LeafARM",
+      "asset": "forest_leaves_02",
+      "asset_page": "https://polyhaven.com/a/forest_leaves_02",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_leaves_02/forest_leaves_02_arm_2k.jpg",
+      "relative_cache_path": "polyhaven/forest_leaves_02/forest_leaves_02_arm_2k.jpg",
+      "bytes": 1066850,
+      "md5": "4b476f0e4b633b2aef621afda5209baf",
+      "sha256": "d8423b522d86285e26036d27fc51f4db7b8c6716b1558deb4575b288e14c28b7",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "settings": {
+        "srgb": false,
+        "compression_settings": "TC_BC7",
+        "sampler_type": "SAMPLERTYPE_LINEAR_COLOR",
+        "flip_green_channel": false,
+        "address_x": "TA_WRAP",
+        "address_y": "TA_WRAP",
+        "lod_bias": 0,
+        "max_texture_size": 2048
+      },
+      "role": "linear_ARM_R_AO_unused_G_roughness_B_metallic"
+    },
+    {
+      "input": "LeafHeight",
+      "asset": "forest_leaves_02",
+      "asset_page": "https://polyhaven.com/a/forest_leaves_02",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/forest_leaves_02/forest_leaves_02_disp_2k.png",
+      "relative_cache_path": "polyhaven/forest_leaves_02/forest_leaves_02_disp_2k.png",
+      "bytes": 6503840,
+      "md5": "f208c441c521b69c87d661c19dcfb578",
+      "sha256": "97a110abde191c2cf1dd30cf93c169c9e4395792568a4a7dd3757571f5a704bd",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bit_depth": 16,
+      "decoded_u16le_sha256": "a07e535e8dd845f574ab24abca1cdb96e2dc53adf1dbcb282802755d4921dd72",
+      "settings": {
+        "srgb": false,
+        "compression_settings": "TC_GRAYSCALE",
+        "flip_green_channel": false,
+        "address_x": "TA_WRAP",
+        "address_y": "TA_WRAP",
+        "lod_bias": 0,
+        "max_texture_size": 2048,
+        "mip_gen_settings": "TMGS_SIMPLE_AVERAGE",
+        "filter": "TF_TRILINEAR",
+        "virtual_texture_streaming": false,
+        "adjust_brightness": 1.0,
+        "adjust_brightness_curve": 1.0,
+        "adjust_vibrance": 0.0,
+        "adjust_saturation": 1.0,
+        "adjust_rgb_curve": 1.0,
+        "adjust_hue": 0.0,
+        "chroma_key_texture": false
+      },
+      "role": "relative_height_competition_only_no_geometry_displacement",
+      "normalization_low": 0.209690394445716,
+      "normalization_high": 0.6955062180514229
+    },
+    {
+      "input": "SoilColor",
+      "asset": "forest_ground_04",
+      "asset_page": "https://polyhaven.com/a/forest_ground_04",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_ground_04/forest_ground_04_diff_2k.jpg",
+      "relative_cache_path": "polyhaven/forest_ground_04/forest_ground_04_diff_2k.jpg",
+      "bytes": 4529321,
+      "md5": "f6ce9c8af4316c2627a4b3fbab8ad944",
+      "sha256": "24b8aaf4c8547305d80b0e029ec365219ab1b90748d4ca5651bdc9e75bfde5e6",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "settings": {
+        "srgb": true,
+        "compression_settings": "TC_BC7",
+        "sampler_type": "SAMPLERTYPE_COLOR",
+        "flip_green_channel": false,
+        "address_x": "TA_WRAP",
+        "address_y": "TA_WRAP",
+        "lod_bias": 0,
+        "max_texture_size": 2048
+      },
+      "role": "photo_basecolor_hardware_sRGB_to_linear"
+    },
+    {
+      "input": "SoilNormal",
+      "asset": "forest_ground_04",
+      "asset_page": "https://polyhaven.com/a/forest_ground_04",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_ground_04/forest_ground_04_nor_gl_2k.jpg",
+      "relative_cache_path": "polyhaven/forest_ground_04/forest_ground_04_nor_gl_2k.jpg",
+      "bytes": 5288849,
+      "md5": "5fa9256955e7bfa40a0269b4965ce646",
+      "sha256": "b37ac799ed410976541e0011c246fca254e74eaa3f096ae7a7d74178db5a6d9b",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "settings": {
+        "srgb": false,
+        "compression_settings": "TC_BC7",
+        "sampler_type": "SAMPLERTYPE_LINEAR_COLOR",
+        "flip_green_channel": false,
+        "address_x": "TA_WRAP",
+        "address_y": "TA_WRAP",
+        "lod_bias": 0,
+        "max_texture_size": 2048
+      },
+      "role": "raw_encoded_OpenGL_normal_RGB"
+    },
+    {
+      "input": "SoilARM",
+      "asset": "forest_ground_04",
+      "asset_page": "https://polyhaven.com/a/forest_ground_04",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/forest_ground_04/forest_ground_04_arm_2k.jpg",
+      "relative_cache_path": "polyhaven/forest_ground_04/forest_ground_04_arm_2k.jpg",
+      "bytes": 3418726,
+      "md5": "c688030cc91fbaab71cbc71fc6b280fe",
+      "sha256": "a6086cb5611fabcc3dd4c9ac74bcf6cf8ed5d07e136ebe51255a5a3bea9e42c6",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "settings": {
+        "srgb": false,
+        "compression_settings": "TC_BC7",
+        "sampler_type": "SAMPLERTYPE_LINEAR_COLOR",
+        "flip_green_channel": false,
+        "address_x": "TA_WRAP",
+        "address_y": "TA_WRAP",
+        "lod_bias": 0,
+        "max_texture_size": 2048
+      },
+      "role": "linear_ARM_R_AO_unused_G_roughness_B_metallic"
+    },
+    {
+      "input": "SoilHeight",
+      "asset": "forest_ground_04",
+      "asset_page": "https://polyhaven.com/a/forest_ground_04",
+      "license": "CC0-1.0",
+      "license_url": "https://polyhaven.com/license",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/forest_ground_04/forest_ground_04_disp_2k.png",
+      "relative_cache_path": "polyhaven/forest_ground_04/forest_ground_04_disp_2k.png",
+      "bytes": 5851483,
+      "md5": "aee602747c99de3ecee2c4d969775aaf",
+      "sha256": "013c03f6f0cb1b6c7fbcf1ce950bc09e93285dad0c1d953714a36b8dc1c93c3b",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "bit_depth": 16,
+      "decoded_u16le_sha256": "fa103496f3faf8f2018d42b39279be7745e0bff296a1274fc999b2eb62e0108e",
+      "settings": {
+        "srgb": false,
+        "compression_settings": "TC_GRAYSCALE",
+        "flip_green_channel": false,
+        "address_x": "TA_WRAP",
+        "address_y": "TA_WRAP",
+        "lod_bias": 0,
+        "max_texture_size": 2048,
+        "mip_gen_settings": "TMGS_SIMPLE_AVERAGE",
+        "filter": "TF_TRILINEAR",
+        "virtual_texture_streaming": false,
+        "adjust_brightness": 1.0,
+        "adjust_brightness_curve": 1.0,
+        "adjust_vibrance": 0.0,
+        "adjust_saturation": 1.0,
+        "adjust_rgb_curve": 1.0,
+        "adjust_hue": 0.0,
+        "chroma_key_texture": false
+      },
+      "role": "relative_height_competition_only_no_geometry_displacement",
+      "normalization_low": 0.32066834515907533,
+      "normalization_high": 0.47994201571679257
+    }
+  ],
+  "project_authored_inputs": [
+    {
+      "input": "RegionMask",
+      "project_path": "art/reserve_revision/cleft_floor_v002/land_use_mask_rgba.png",
+      "bytes": 180237,
+      "sha256": "ebd281ac7c006edb13ef295c8dda6a24d26818ccf76ed3525b6773cdd05ba513",
+      "dimensions": [
+        512,
+        1024
+      ],
+      "settings": {
+        "srgb": false,
+        "compression_settings": "TC_VECTOR_DISPLACEMENTMAP",
+        "sampler_type": "SAMPLERTYPE_LINEAR_COLOR",
+        "address_x": "TA_CLAMP",
+        "address_y": "TA_CLAMP",
+        "mip_gen_settings": "TMGS_NO_MIPMAPS",
+        "lod_bias": 0,
+        "max_texture_size": 1024
+      },
+      "rights": "Project-authored layout mask under project license; not a Poly Haven photograph.",
+      "channels": "G retains authored minimum soil fraction; R no longer gates the explicitly assigned cleft floor section."
+    }
+  ],
+  "surface_policy": {
+    "component_slot": 1,
+    "rock_slot0_and_clearing_slot2_unchanged": true,
+    "leaf_repeat_metres": [
+      3.0009725093841553,
+      3.0009801387786865
+    ],
+    "soil_repeat_metres": [
+      3.1500000953674316,
+      3.1500000953674316
+    ],
+    "composition_noise_metres": [
+      12,
+      37
+    ],
+    "height_transition_half_width": 0.06,
+    "slope_bias": "More soil from15to45degrees; full photo coverage on this floor section.",
+    "displacement": false,
+    "roughness_metallic_normal_share_layer_weight": true,
+    "AO_bound": false,
+    "UV_warp": false,
+    "albedo_tint": false
+  },
+  "UE_material_adapter": {
+    "tangent_space_normal": false,
+    "two_Custom_nodes": {
+      "MaterialExpressionCustom_0": {
+        "code": "// This exact body is placed inside ONE UE MaterialExpressionCustom function.\n// Global evaluator functions belong in IncludeFilePaths, before that function.\nfloat3 Ps = WestWoodUEPositionToSourceMetres(AbsoluteWorldPositionCm, float3(0,0,0));\nfloat3 Ns = WestWoodUENormalToSource(SmoothNormalUE);\nfloat3 Ng = normalize(cross(ddx(Ps), ddy(Ps)));\nNg = dot(Ng,Ns) < 0 ? -Ng : Ng;\nWestWoodSurface surface = CleftFloorEvaluate(\n    Ps, Ns, Ng, MacroBaseColor, MacroRoughness, MacroMetallic,\n    WestWoodUENormalToSource(MacroNormalUE),\n    RegionMask, RegionMaskSampler,\n    LeafColor, LeafColorSampler, LeafNormal, LeafNormalSampler, LeafARM, LeafARMSampler,\n    SoilColor, SoilColorSampler, SoilNormal, SoilNormalSampler, SoilARM, SoilARMSampler,\n    LeafHeight, LeafHeightSampler, SoilHeight, SoilHeightSampler);\nRoughness = surface.Roughness;\nMetallic = surface.Metallic;\nreturn surface.BaseColor;\n",
+        "include": [
+          "/Project/Private/LTCleftFloor_v002.ush"
+        ]
+      },
+      "MaterialExpressionCustom_1": {
+        "code": "// Normal-property function intentionally excludes the macro color/RM graph.\n// Reuse the canonical evaluator; color/RM fields are discarded, never used as normal inputs.\nfloat3 Ps = WestWoodUEPositionToSourceMetres(AbsoluteWorldPositionCm, float3(0,0,0));\nfloat3 Ns = WestWoodUENormalToSource(SmoothNormalUE);\nfloat3 Ng = normalize(cross(ddx(Ps), ddy(Ps)));\nNg = dot(Ng,Ns) < 0 ? -Ng : Ng;\nWestWoodSurface surface = CleftFloorEvaluate(\n    Ps, Ns, Ng, float3(0,0,0), 0.0, 0.0,\n    WestWoodUENormalToSource(MacroNormalUE),\n    RegionMask, RegionMaskSampler,\n    LeafNormal, LeafNormalSampler, LeafNormal, LeafNormalSampler, LeafNormal, LeafNormalSampler,\n    SoilNormal, SoilNormalSampler, SoilNormal, SoilNormalSampler, SoilNormal, SoilNormalSampler,\n    LeafHeight, LeafHeightSampler, SoilHeight, SoilHeightSampler);\nreturn WestWoodSourceNormalToUE(surface.NormalSource);\n",
+        "include": [
+          "/Project/Private/LTCleftFloor_v002.ush"
+        ]
+      }
+    },
+    "caller_graph_ownership": "Exact tested native material clones the existing saved height graph and preserves its other roots/settings/links. The portable function needs nine texture inputs; it is not a complete replacement for unrelated source graph roots.",
+    "minimal_function_inputs": [
+      "AbsoluteWorldPositionCm",
+      "SmoothNormalUE",
+      "RegionMask",
+      "LeafColor",
+      "LeafNormal",
+      "LeafARM",
+      "SoilColor",
+      "SoilNormal",
+      "SoilARM",
+      "LeafHeight",
+      "SoilHeight"
+    ],
+    "legacy_macro_arguments": "MacroBaseColor,MacroRoughness,MacroMetallic,MacroNormalUE remain in the proven call signature but do not feed this cleft evaluator output. The existing native material graph retains its original macro graph, input links, other roots and texture refs.",
+    "tested_material_used_texture_objects": [
+      "/Game/LivingTown_UEPilot/TownSlice_v003/Definitions/Main/TEX_SRC_0027.TEX_SRC_0027",
+      "/Game/LivingTown_UEPilot/TownSlice_v003/Definitions/Main/TEX_SRC_0028.TEX_SRC_0028",
+      "/Game/LivingTown_UEPilot/TownSlice_v003/Definitions/Main/TEX_SRC_0029.TEX_SRC_0029",
+      "/Game/LivingTown_UEPilot/TownSlice_v003/WoodlandHeight_v001/T_LeafHeight_G16_v001.T_LeafHeight_G16_v001",
+      "/Game/LivingTown_UEPilot/TownSlice_v003/WoodlandHeight_v001/T_SoilHeight_G16_v001.T_SoilHeight_G16_v001",
+      "/Game/LivingTown_UEPilot/Westwood_v001/Textures/T_Westwood_Leaf_ARM.T_Westwood_Leaf_ARM",
+      "/Game/LivingTown_UEPilot/Westwood_v001/Textures/T_Westwood_Leaf_Color.T_Westwood_Leaf_Color",
+      "/Game/LivingTown_UEPilot/Westwood_v001/Textures/T_Westwood_Leaf_Normal.T_Westwood_Leaf_Normal",
+      "/Game/LivingTown_UEPilot/Westwood_v001/Textures/T_Westwood_RegionMask.T_Westwood_RegionMask",
+      "/Game/LivingTown_UEPilot/Westwood_v001/Textures/T_Westwood_Soil_ARM.T_Westwood_Soil_ARM",
+      "/Game/LivingTown_UEPilot/Westwood_v001/Textures/T_Westwood_Soil_Color.T_Westwood_Soil_Color",
+      "/Game/LivingTown_UEPilot/Westwood_v001/Textures/T_Westwood_Soil_Normal.T_Westwood_Soil_Normal",
+      "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+      "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb"
+    ],
+    "no_EPIC_vendor_function_or_uasset_binary_redistributed": true,
+    "standalone_new_graph_requires_own_compile_cold_and_visual_review": true,
+    "include_scope": "Use this header once per material; do not combine legacy woodland evaluator headers in the same material compilation because shared global type/function names are retained byte-exact."
+  },
+  "credit": "Powered by Poly Haven. forest_leaves_02: Rob Tuytel. forest_ground_04: Rob Tuytel; minor adjustment by Rico Cilliers.",
+  "artifact_qualification": {
+    "UE_version": "5.8.4/58902052",
+    "map_and_material_saved_packages": 120,
+    "clean_review_frames_restore": [
+      1508,
+      1516
+    ],
+    "actual_viewport_pixels": [
+      1014,
+      550
+    ],
+    "same_EV100": 13,
+    "final_art_full_floor_reserve_or_FPS_accepted": false,
+    "native_full_material_statistics": {
+      "pixel_shader_instructions": 531,
+      "vertex_shader_instructions": 166,
+      "samplers": 13,
+      "pixel_texture_samples": 8,
+      "GPU_time_or_FPS_inferred": false
+    }
+  }
+}
