@@ -1,10 +1,10 @@
 # Qualified project/config/source inputs are byte-bound to build receipts.
 # Preserve their original bytes across Windows and other checkouts.
 LivingTown.uproject -text
-Config/** -text
+Config/** -text whitespace=cr-at-eol
 Source/** -text whitespace=cr-at-eol
 Shaders/** -text whitespace=cr-at-eol
-Content/** -text
+Content/** -text whitespace=cr-at-eol
 *.md text eol=lf
 .gitignore text eol=lf
 .gitattributes text eol=lf

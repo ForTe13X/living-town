@@ -5,6 +5,8 @@ public class LivingTownMaterialInspection : ModuleRules {
   PublicDependencyModuleNames.AddRange(new string[]{"Core","CoreUObject","Engine"});
   PrivateDependencyModuleNames.Add("Json");
   PrivateDependencyModuleNames.Add("UnrealEd");
+  PrivateDependencyModuleNames.Add("Landscape");
+  PrivateDependencyModuleNames.Add("Foliage");
   PrivateDependencyModuleNames.Add("LivingTownNative");
  }
 }
