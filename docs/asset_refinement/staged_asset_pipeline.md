@@ -68,6 +68,7 @@ Existing repository entry points:
 - [Two-view cafe-worker source](character_cafe_worker_multiview_v002.md): actual Tripo detailed-geometry/PBR request, preserved original, measured maps and pending close review.
 - [Portable material-image derivative](append_metallic_roughness_image.md): tested append-only metallic-roughness image replacement, retaining the original geometry/UV/normal and scene data.
 - [Portable normal-image derivative](append_normal_image.md): calibrated native normal output carried through core glTF, with exact old BIN/JSON preservation and matched portable review.
+- [Portable native normal strength](portable_normal_strength.md): the selected 0.35 shader baked into a preserved idle/walk bundle, with actual matched Blender GPU views.
 - [Complete-character framing](character_framing.md): host camera math over every native posed render vertex, with explicit projection assumptions and separate native adapter qualification.
 - [Native root alignment](native_root_correction.md): an opt-in Unreal player correction using actual blend weights, with tested pose preservation and explicit remaining motion/contact gates.
 
