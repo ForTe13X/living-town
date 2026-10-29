@@ -3,6 +3,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "LivingTownReserveLandscape.generated.h"
 
+class UHierarchicalInstancedStaticMeshComponent;
+
 // Editor-only fixed preview family. No caller paths, runtime enablement or asset saves.
 UCLASS()
 class LIVINGTOWNMATERIALINSPECTION_API ULivingTownReserveLandscape final : public UBlueprintFunctionLibrary
@@ -14,4 +16,7 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="LivingTown|Reserve Landscape")
     static FString ReadReserveLandscapePreview();
+
+    UFUNCTION(BlueprintCallable, Category="LivingTown|Reserve Landscape")
+    static FString ReadReserveHismComponent(UHierarchicalInstancedStaticMeshComponent* Component);
 };

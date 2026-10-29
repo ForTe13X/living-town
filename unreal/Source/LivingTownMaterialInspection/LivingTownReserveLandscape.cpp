@@ -27,6 +27,10 @@
 #include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
 #include "CoreGlobals.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "GameFramework/Actor.h"
+#include "ComponentInstanceDataCache.h"
+#include "UObject/UnrealType.h"
 #include <initializer_list>
 
 namespace
@@ -207,4 +211,48 @@ FString ULivingTownReserveLandscape::ReadReserveLandscapePreview()
     if(IFileManager::Get().FileExists(*Destination)){TArray<uint8> Previous;if(!FFileHelper::LoadFileToArray(Previous,*Destination)||Previous!=Encoded)return Reject(TEXT("no_readback_overwrite"));}
     else if(!FFileHelper::SaveArrayToFile(Encoded,*Destination,&IFileManager::Get(),FILEWRITE_NoReplaceExisting))return Reject(TEXT("merged_readback_file_write"));
     auto File=MakeShared<FJsonObject>();File->SetStringField(TEXT("project_relative_path"),Relative);File->SetStringField(TEXT("encoding"),TEXT("uint16_le"));File->SetNumberField(TEXT("bytes"),SourceBytes);File->SetStringField(TEXT("sha256"),MergedSha);O->SetObjectField(TEXT("merged_height_file"),File);O->SetBoolField(TEXT("all_source_uint16_samples_exact"),true);O->SetStringField(TEXT("status"),TEXT("READY_NATIVE_LANDSCAPE_SOURCE_HEIGHT_COMPONENTS_AND_COLLISION"));return Json(O);
+}
+
+FString ULivingTownReserveLandscape::ReadReserveHismComponent(UHierarchicalInstancedStaticMeshComponent* Component)
+{
+    if(!IsInGameThread()||!GEditor||GEditor->PlayWorld)return ErrorReply(TEXT("hism_read_requires_game_thread_editor_no_PIE"));
+    if(!Component||Component->GetClass()!=UHierarchicalInstancedStaticMeshComponent::StaticClass())return ErrorReply(TEXT("hism_read_requires_exact_native_component_class"));
+    const UHierarchicalInstancedStaticMeshComponent* C=Component;
+    const bool CDO=C->HasAnyFlags(RF_ClassDefaultObject);
+    UWorld* World=GEditor->GetEditorWorldContext().World();
+    if(!World||World->WorldType!=EWorldType::Editor)return ErrorReply(TEXT("hism_read_requires_current_editor_world"));
+    const AActor* Owner=C->GetOwner();
+    if(!CDO)
+    {
+        bool OwnedLabel=false;
+        if(Owner)for(int32 Index=0;Index<12;++Index)OwnedLabel|=Owner->GetActorLabel(false)==FString::Printf(TEXT("LT_RESERVE_DENSITY500_%02d"),Index);
+        if(World->GetOutermost()->GetName()!=MapPath||!Owner||Owner->GetClass()!=AActor::StaticClass()||!OwnedLabel||Owner->GetWorld()!=World||C->GetWorld()!=World||Owner->GetLevel()!=World->GetCurrentLevel()||C->GetOuter()!=Owner||Owner->GetRootComponent()!=C)return ErrorReply(TEXT("hism_read_requires_fixed_map_owned_actor_root"));
+    }
+    const FIntProperty* Built=FindFProperty<FIntProperty>(C->GetClass(),TEXT("NumBuiltInstances"));
+    const FIntProperty* RenderCount=FindFProperty<FIntProperty>(C->GetClass(),TEXT("InstanceCountToRender"));
+    const FArrayProperty* Sorted=FindFProperty<FArrayProperty>(C->GetClass(),TEXT("SortedInstances"));
+    const FIntProperty* SortedItem=Sorted?CastField<FIntProperty>(Sorted->Inner):nullptr;
+    const FBoolProperty* Density=FindFProperty<FBoolProperty>(C->GetClass(),TEXT("bEnableDensityScaling"));
+    const FBoolProperty* Translated=FindFProperty<FBoolProperty>(C->GetClass(),TEXT("bUseTranslatedInstanceSpace"));
+    if(!Built||!RenderCount||!Sorted||!SortedItem||!Density||!Translated)return ErrorReply(TEXT("hism_read_exact_reflected_property_types_missing"));
+    UPackage* Package=C->GetOutermost();UPackage* MapPackage=World->GetOutermost();
+    if(!Package||!MapPackage)return ErrorReply(TEXT("hism_read_missing_package"));
+    const bool DirtyBefore=Package->IsDirty(),MapDirtyBefore=MapPackage->IsDirty();
+    FScriptArrayHelper Array(Sorted,Sorted->ContainerPtrToValuePtr<void>(C));
+    if(Array.Num()<0||Array.Num()>500||C->GetInstanceCount()<0||C->GetInstanceCount()>500)return ErrorReply(TEXT("hism_read_bounded_component_instance_count"));
+    auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("schema"),TEXT("LivingTown.ReserveHismComponentRead.v1"));
+    O->SetStringField(TEXT("API_scope"),TEXT("GT Editor native public hierarchy/ownership getters and explicit typed read-only protected UPROPERTY snapshot; no rebuild/register/tick/flush/save; render buffer count is not visible leaf or GPU timing evidence"));
+    O->SetStringField(TEXT("component"),C->GetPathName());O->SetStringField(TEXT("class"),C->GetClass()->GetPathName());O->SetBoolField(TEXT("class_default_object"),CDO);O->SetStringField(TEXT("world"),World->GetPathName());O->SetNumberField(TEXT("engine_frame"),double(GFrameCounter));
+    O->SetNumberField(TEXT("NumBuiltInstances"),Built->GetPropertyValue_InContainer(C));O->SetNumberField(TEXT("InstanceCountToRender"),RenderCount->GetPropertyValue_InContainer(C));
+    O->SetBoolField(TEXT("bEnableDensityScaling"),Density->GetPropertyValue_InContainer(C));O->SetBoolField(TEXT("bUseTranslatedInstanceSpace"),Translated->GetPropertyValue_InContainer(C));
+    TArray<TSharedPtr<FJsonValue>> Values;for(int32 Index=0;Index<Array.Num();++Index)Values.Add(MakeShared<FJsonValueNumber>(SortedItem->GetPropertyValue(Array.GetRawPtr(Index))));O->SetArrayField(TEXT("SortedInstances"),Values);
+    O->SetNumberField(TEXT("instance_count"),C->GetInstanceCount());O->SetNumberField(TEXT("render_instance_count"),C->GetNumRenderInstances());O->SetBoolField(TEXT("registered"),C->IsRegistered());O->SetBoolField(TEXT("async_building"),C->IsAsyncBuilding());O->SetBoolField(TEXT("tree_fully_built"),C->IsTreeFullyBuilt());
+    O->SetNumberField(TEXT("creation_method_value"),int32(C->CreationMethod));O->SetStringField(TEXT("creation_method_name"),StaticEnum<EComponentCreationMethod>()->GetNameStringByValue(int64(C->CreationMethod)));
+    O->SetStringField(TEXT("owner"),Owner?Owner->GetPathName():FString());O->SetStringField(TEXT("outer"),C->GetOuter()?C->GetOuter()->GetPathName():FString());O->SetBoolField(TEXT("owner_root_is_component"),Owner&&Owner->GetRootComponent()==C);
+    TArray<TSharedPtr<FJsonValue>> Membership;bool ExactMember=false;
+    if(Owner){const TArray<UActorComponent*>& Components=Owner->GetInstanceComponents();ExactMember=Components.Num()==1&&Components[0]==C;for(const UActorComponent* Entry:Components)Membership.Add(MakeShared<FJsonValueString>(Entry?Entry->GetPathName():FString()));}
+    O->SetArrayField(TEXT("owner_instance_components"),Membership);O->SetBoolField(TEXT("exact_single_actor_instance_member"),ExactMember);O->SetBoolField(TEXT("creation_method_is_instance"),C->CreationMethod==EComponentCreationMethod::Instance);
+    O->SetStringField(TEXT("package"),Package->GetPathName());O->SetBoolField(TEXT("package_dirty_before"),DirtyBefore);O->SetBoolField(TEXT("package_dirty_after"),Package->IsDirty());O->SetBoolField(TEXT("map_package_dirty_before"),MapDirtyBefore);O->SetBoolField(TEXT("map_package_dirty_after"),MapPackage->IsDirty());
+    if(Package->IsDirty()!=DirtyBefore||MapPackage->IsDirty()!=MapDirtyBefore)return ErrorReply(TEXT("hism_read_changed_package_dirty_state"));
+    O->SetStringField(TEXT("status"),TEXT("READ_ONLY_NATIVE_HISM_COMPONENT_SNAPSHOT"));return Json(O);
 }
