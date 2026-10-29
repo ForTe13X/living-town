@@ -6,7 +6,7 @@ The source adoption includes the additive read-only HISM inspector, a fixed land
 
 ## Portable source data
 
-[The fixture descriptor](../unreal/Content/ReserveLandcoverSource_v001/source.json) defines the closed `LivingTown.ReserveLandcoverSource.v1` schema. The raw file is 1,020,100 bytes: 505×505 headerless, interleaved uint8 channels in order `Meadow`, `WoodlandLitter`, `SteepRock`, `PondSoil`. Every four-byte vertex sums to255. SHA256: `d83c74821b884ad75a80a9efa278374fcfa3674f8a8cf40c27db3bd59ba69ad9`.
+[The fixture descriptor](../unreal/Content/ReserveLandcoverSource_v001/source.json) defines the closed `LivingTown.ReserveLandcoverSource.v1` schema. The `.rgba8` source file is 1,020,100 bytes: 505×505 headerless, interleaved uint8 channels in order `Meadow`, `WoodlandLitter`, `SteepRock`, `PondSoil`. Every four-byte vertex sums to255. SHA256: `d83c74821b884ad75a80a9efa278374fcfa3674f8a8cf40c27db3bd59ba69ad9`.
 
 Row0 is minimum UnrealY / maximum canonicalY. Columns run east. UE centimetres are X=−60000+100c, Y=−22400+100r; canonical metres are `(X/100,−Y/100,Z/100)`. Elevation uses the existing [505R16 fixture](../unreal/Content/ReserveLandscapeSource_v001/Height505.r16), SHA `2b5839619c03277cc4e73bb97e0d250661e9aec1efe5efe61850e5c16170b5cb`, and Z=4000+(u16−32768)×25/128cm. The weights are authored landcover masks, not PBR images or a claim of ecological survey accuracy. Blender or another engine may consume the same byte layout without Unreal.
 
@@ -17,6 +17,14 @@ python tools/verify_reserve_landcover.py --self-test
 ```
 
 It checks every partition/hash, coordinate/schema binding and a nonidentity four-role→five-slot packing fixture with a distinct prior Visibility plane. Changed bytes (including partition-preserving edits), truncation, foreign keys, duplicate/nativeVisibility collisions and an extra native slot are refused. This CPU test is not native painting or art validation. The descriptor documents the file; the current native prototype still pins its source paths/hashes in C++.
+
+The repository stores this project-authored raster as `.rgba8`, matching its format. The unchanged qualified native helper expects a `.bin` intake in the private replay project. Materialize that byte-exact copy before starting the Editor:
+
+```text
+python tools/verify_reserve_landcover.py --materialize-project "F:\path\to\Author\Project"
+```
+
+The explicit directory must contain one `.uproject`. The command validates the entire source before copying, refuses the tracked source project and any different existing intake, and accepts an identical existing intake. The self-test exercises the copy, idempotence and refusal cases. No model-weight or executable guard exception is added; its filename and content checks remain unchanged. The native source/build identity and qualified raster bytes are unchanged.
 
 ## Fixed native prerequisites and calls
 

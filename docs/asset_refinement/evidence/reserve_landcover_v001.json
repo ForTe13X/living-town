@@ -10,7 +10,8 @@
   },
   "source_fixture": {
     "schema": "LivingTown.ReserveLandcoverSource.v1",
-    "raw": "Landcover_Actual229_505_RGBA8.bin",
+    "raw": "Landcover_Actual229_505_RGBA8.rgba8",
+    "native_runtime_raw": "Landcover_Actual229_505_RGBA8.bin",
     "width": 505,
     "height": 505,
     "channels": [
