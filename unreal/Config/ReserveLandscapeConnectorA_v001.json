@@ -1,0 +1,28 @@
+{
+  "schema": "LivingTown.ReserveLandscapeSource.v1",
+  "map_path": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorA_v001/L_ReserveConnectorA_v001",
+  "material_path": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveLandscape_v001/M_ReserveLandscape_v001.M_ReserveLandscape_v001",
+  "height_relative_path": "Content/ReserveConnectorA_v001/Height505_connectorA_v001.r16",
+  "height_sha256": "9184ca30385056c1c7b551a5e05a7c1c75daa82a10e19662ce3787a0b51ea145",
+  "height_bytes": 510050,
+  "width": 505,
+  "height": 505,
+  "height_encoding": "uint16_le",
+  "row0": "minimum_UE_Y",
+  "origin_cm": [
+    -60000,
+    -22400,
+    4000
+  ],
+  "scale_xyz": [
+    100,
+    100,
+    25
+  ],
+  "subsection_size_quads": 63,
+  "num_subsections": 2,
+  "component_count_xy": [
+    4,
+    4
+  ]
+}

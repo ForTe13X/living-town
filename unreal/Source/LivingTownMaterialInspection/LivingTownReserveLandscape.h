@@ -17,6 +17,13 @@ public:
     UFUNCTION(BlueprintCallable, Category="LivingTown|Reserve Landscape")
     static FString ReadReserveLandscapePreview();
 
+    // Explicit bounded ConnectorA source; original fixed wrappers remain unchanged.
+    UFUNCTION(BlueprintCallable, Category="LivingTown|Reserve Landscape")
+    static FString CreateReserveConnectorLandscapePreview();
+
+    UFUNCTION(BlueprintCallable, Category="LivingTown|Reserve Landscape")
+    static FString ReadReserveConnectorLandscapePreview();
+
     UFUNCTION(BlueprintCallable, Category="LivingTown|Reserve Landscape")
     static FString ReadReserveHismComponent(UHierarchicalInstancedStaticMeshComponent* Component);
 };
