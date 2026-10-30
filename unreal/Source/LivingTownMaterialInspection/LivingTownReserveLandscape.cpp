@@ -23,6 +23,9 @@
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
 #include "Misc/App.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
+#include "Misc/AutomationTest.h"
 #include "HAL/FileManager.h"
 #include "UObject/Package.h"
 #include "UObject/UObjectGlobals.h"
@@ -42,7 +45,22 @@ constexpr const TCHAR* MapPath=TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/Res
 constexpr const TCHAR* MaterialPath=TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/ReserveLandscape_v001/M_ReserveLandscape_v001.M_ReserveLandscape_v001");
 constexpr const TCHAR* Label=TEXT("LT_RESERVE_LANDSCAPE_v001");
 const FVector RequiredOrigin(-60000.,-22400.,4000.),RequiredScale(100.,100.,25.);
-struct FSource { TArray<uint16> Heights; FString HeightSha,ConfigSha; };
+struct FSource { TArray<uint16> Heights; FString HeightSha,ConfigSha; TArray<uint8> ConfigBytes,HeightBytes; };
+struct FReserveLandscapeReplayContext
+{
+    bool bExplicitSource=false;
+    FString ConfigPath,HeightPath,Map,Material,ActorLabel,DumpRoot,ExpectedConfigHash;
+    FVector Origin,Scale;
+};
+bool ReserveLandscapeConnectorAppliedInThisProcess=false;
+FReserveLandscapeReplayContext ReserveLandscapeLegacyContext()
+{
+    FReserveLandscapeReplayContext Ctx;Ctx.ConfigPath=ConfigRelative;Ctx.HeightPath=HeightRelative;Ctx.Map=MapPath;Ctx.Material=MaterialPath;Ctx.ActorLabel=Label;Ctx.Origin=RequiredOrigin;Ctx.Scale=RequiredScale;Ctx.DumpRoot=TEXT("Saved/ReserveLandscape_v001");return Ctx;
+}
+FReserveLandscapeReplayContext ReserveLandscapeConnectorContext()
+{
+    FReserveLandscapeReplayContext Ctx=ReserveLandscapeLegacyContext();Ctx.bExplicitSource=true;Ctx.ConfigPath=TEXT("Config/ReserveLandscapeConnectorA_v001.json");Ctx.HeightPath=TEXT("Content/ReserveConnectorA_v001/Height505_connectorA_v001.r16");Ctx.Map=TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorA_v001/L_ReserveConnectorA_v001");Ctx.ActorLabel=TEXT("LT_RESERVE_CONNECTOR_A_LANDSCAPE_v001");Ctx.DumpRoot=TEXT("Saved/ReserveLandscapeConnectorA_v001");return Ctx;
+}
 bool Fail(FString& Error,const TCHAR* Why){Error=Why;return false;}
 TArray<TSharedPtr<FJsonValue>> Vector(const FVector& V)
 {return {MakeShared<FJsonValueNumber>(V.X),MakeShared<FJsonValueNumber>(V.Y),MakeShared<FJsonValueNumber>(V.Z)};}
@@ -60,38 +78,59 @@ bool ArrayEquals(const FJsonObject& O,const TCHAR* Key,std::initializer_list<dou
     if(!O.TryGetArrayField(Key,A)||!A||A->Num()!=int32(Expected.size()))return false;
     int32 I=0;for(double N:Expected){double Actual=0;if(!(*A)[I++].IsValid()||!(*A)[I-1]->TryGetNumber(Actual)||!FMath::IsFinite(Actual)||Actual!=N)return false;}return true;
 }
-bool LoadSource(FSource& Out,FString& Error)
+bool ReserveLandscapeUniqueConfigFlag(const TCHAR* CommandLine,const TCHAR* Name,FString& Value)
+{
+    const FString Prefix=FString(TEXT("-"))+Name+TEXT("="),NamePrefix=FString(TEXT("-"))+Name;const TCHAR* Cursor=CommandLine;FString Token;int32 Matches=0;
+    while(FParse::Token(Cursor,Token,false))if(Token.StartsWith(NamePrefix,ESearchCase::IgnoreCase)){if(!Token.StartsWith(Prefix,ESearchCase::CaseSensitive)||++Matches!=1)return false;Value=Token.Mid(Prefix.Len());}
+    return Matches==1&&LivingTownTiles::IsSha256(Value)&&Value==Value.ToLower();
+}
+bool ReserveLandscapeConnectorAuthorIntent(const FReserveLandscapeReplayContext& Ctx,const TCHAR* CommandLine,const FString& Project,bool AlreadyApplied)
+{
+    FString Config,Author;return Ctx.bExplicitSource&&!AlreadyApplied&&Project.EndsWith(TEXT("/Author/Project"))&&ReserveLandscapeUniqueConfigFlag(CommandLine,TEXT("LivingTownReserveConnectorConfigSHA256"),Config)&&Config==Ctx.ExpectedConfigHash&&ReserveLandscapeUniqueConfigFlag(CommandLine,TEXT("LivingTownReserveConnectorAuthor"),Author)&&Author==Ctx.ExpectedConfigHash;
+}
+bool ReserveLandscapeDecodeHeights(const TArray<uint8>& Raw,const FString& Expected,FSource& Out,FString& Error)
+{
+    if(Raw.Num()!=SourceBytes||!LivingTownTiles::HashBytes(Raw,Out.HeightSha)||Out.HeightSha!=Expected)return Fail(Error,TEXT("height_source_sha256_mismatch"));
+    Out.Heights.SetNumUninitialized(Side*Side);for(int32 I=0;I<Out.Heights.Num();++I)Out.Heights[I]=uint16(Raw[I*2])|(uint16(Raw[I*2+1])<<8);return true;
+}
+bool ReserveLandscapeSourceCustody(const FReserveLandscapeReplayContext& Ctx,const FSource& Source,FString& Error)
+{
+    if(!Ctx.bExplicitSource)return true;const FString Root=FPaths::ProjectDir(),Config=FPaths::Combine(Root,Ctx.ConfigPath),Height=FPaths::Combine(Root,Ctx.HeightPath);TArray<uint8> ConfigBytes,Raw;FString ConfigHash,HeightHash;
+    if(IFileManager::Get().FileSize(*Config)!=Source.ConfigBytes.Num()||IFileManager::Get().FileSize(*Height)!=SourceBytes||!FFileHelper::LoadFileToArray(ConfigBytes,*Config)||ConfigBytes!=Source.ConfigBytes||!LivingTownTiles::HashBytes(ConfigBytes,ConfigHash)||ConfigHash!=Ctx.ExpectedConfigHash||!FFileHelper::LoadFileToArray(Raw,*Height)||Raw!=Source.HeightBytes||!LivingTownTiles::HashBytes(Raw,HeightHash)||HeightHash!=Source.HeightSha)return Fail(Error,TEXT("explicit_config_or_RAW_source_custody_changed"));return true;
+}
+bool LoadSource(const FReserveLandscapeReplayContext& Ctx,FSource& Out,FString& Error)
 {
     const FString Root=FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());
-    const FString Config=FPaths::Combine(Root,ConfigRelative),Height=FPaths::Combine(Root,HeightRelative);
+    const FString Config=FPaths::Combine(Root,Ctx.ConfigPath),Height=FPaths::Combine(Root,Ctx.HeightPath);
     if(!FPaths::IsUnderDirectory(Config,Root)||!FPaths::IsUnderDirectory(Height,Root))return Fail(Error,TEXT("source_path_escaped_project"));
     const int64 ConfigSize=IFileManager::Get().FileSize(*Config);
     if(ConfigSize<=0||ConfigSize>16384||IFileManager::Get().FileSize(*Height)!=SourceBytes)return Fail(Error,TEXT("fixed_source_file_size"));
     TArray<uint8> ConfigBytes,Raw;
     if(!FFileHelper::LoadFileToArray(ConfigBytes,*Config)||ConfigBytes.Num()!=ConfigSize||!LivingTownTiles::HashBytes(ConfigBytes,Out.ConfigSha))return Fail(Error,TEXT("config_read_or_sha256"));
+    if(Ctx.bExplicitSource&&Out.ConfigSha!=Ctx.ExpectedConfigHash)return Fail(Error,TEXT("explicit_raw_config_SHA_mismatch"));
     FString Text;FFileHelper::BufferToString(Text,ConfigBytes.GetData(),ConfigBytes.Num());TSharedPtr<FJsonObject> O;
     if(!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),O)||!O.IsValid())return Fail(Error,TEXT("config_json"));
     const TCHAR* Keys[]={TEXT("schema"),TEXT("map_path"),TEXT("material_path"),TEXT("height_relative_path"),TEXT("height_sha256"),TEXT("height_bytes"),TEXT("width"),TEXT("height"),TEXT("height_encoding"),TEXT("row0"),TEXT("origin_cm"),TEXT("scale_xyz"),TEXT("subsection_size_quads"),TEXT("num_subsections"),TEXT("component_count_xy")};
     if(O->Values.Num()!=UE_ARRAY_COUNT(Keys))return Fail(Error,TEXT("closed_config_keys"));
     for(const TCHAR* Key:Keys)if(!O->HasField(Key))return Fail(Error,TEXT("missing_config_key"));
-    if(!TextEquals(*O,TEXT("schema"),TEXT("LivingTown.ReserveLandscapeSource.v1"))||!TextEquals(*O,TEXT("map_path"),MapPath)||!TextEquals(*O,TEXT("material_path"),MaterialPath)||!TextEquals(*O,TEXT("height_relative_path"),HeightRelative)||!TextEquals(*O,TEXT("height_encoding"),TEXT("uint16_le"))||!TextEquals(*O,TEXT("row0"),TEXT("minimum_UE_Y")))return Fail(Error,TEXT("fixed_source_identity"));
-    if(!NumberEquals(*O,TEXT("height_bytes"),SourceBytes)||!NumberEquals(*O,TEXT("width"),Side)||!NumberEquals(*O,TEXT("height"),Side)||!NumberEquals(*O,TEXT("subsection_size_quads"),Quads)||!NumberEquals(*O,TEXT("num_subsections"),Subsections)||!ArrayEquals(*O,TEXT("component_count_xy"),{4.,4.})||!ArrayEquals(*O,TEXT("origin_cm"),{-60000.,-22400.,4000.})||!ArrayEquals(*O,TEXT("scale_xyz"),{100.,100.,25.}))return Fail(Error,TEXT("fixed_layout_transform_encoding"));
+    if(!TextEquals(*O,TEXT("schema"),TEXT("LivingTown.ReserveLandscapeSource.v1"))||!TextEquals(*O,TEXT("map_path"),*Ctx.Map)||!TextEquals(*O,TEXT("material_path"),*Ctx.Material)||!TextEquals(*O,TEXT("height_relative_path"),*Ctx.HeightPath)||!TextEquals(*O,TEXT("height_encoding"),TEXT("uint16_le"))||!TextEquals(*O,TEXT("row0"),TEXT("minimum_UE_Y")))return Fail(Error,TEXT("fixed_source_identity"));
+    if(!NumberEquals(*O,TEXT("height_bytes"),SourceBytes)||!NumberEquals(*O,TEXT("width"),Side)||!NumberEquals(*O,TEXT("height"),Side)||!NumberEquals(*O,TEXT("subsection_size_quads"),Quads)||!NumberEquals(*O,TEXT("num_subsections"),Subsections)||!ArrayEquals(*O,TEXT("component_count_xy"),{4.,4.})||!ArrayEquals(*O,TEXT("origin_cm"),{Ctx.Origin.X,Ctx.Origin.Y,Ctx.Origin.Z})||!ArrayEquals(*O,TEXT("scale_xyz"),{Ctx.Scale.X,Ctx.Scale.Y,Ctx.Scale.Z}))return Fail(Error,TEXT("fixed_layout_transform_encoding"));
     FString Expected;if(!O->TryGetStringField(TEXT("height_sha256"),Expected)||!LivingTownTiles::IsSha256(Expected)||Expected!=Expected.ToLower())return Fail(Error,TEXT("pinned_source_sha256_required"));
-    if(!FFileHelper::LoadFileToArray(Raw,*Height)||Raw.Num()!=SourceBytes||!LivingTownTiles::HashBytes(Raw,Out.HeightSha)||Out.HeightSha!=Expected)return Fail(Error,TEXT("height_source_sha256_mismatch"));
-    Out.Heights.SetNumUninitialized(Side*Side);for(int32 I=0;I<Out.Heights.Num();++I)Out.Heights[I]=uint16(Raw[I*2])|(uint16(Raw[I*2+1])<<8);
+    if(!FFileHelper::LoadFileToArray(Raw,*Height)||!ReserveLandscapeDecodeHeights(Raw,Expected,Out,Error))return Fail(Error,TEXT("height_source_sha256_mismatch"));
+    if(Ctx.bExplicitSource){Out.ConfigBytes=MoveTemp(ConfigBytes);Out.HeightBytes=MoveTemp(Raw);}
     return true;
 }
-bool OwnedWorld(UWorld*& World,FString& Error)
+bool OwnedWorld(const FReserveLandscapeReplayContext& Ctx,UWorld*& World,FString& Error)
 {
-    if(!IsInGameThread()||!GEditor||!FApp::CanEverRender())return Fail(Error,TEXT("editor_game_thread_render_capable_context_required"));
+    if(!IsInGameThread()||!GEditor||!FApp::CanEverRender()||(Ctx.bExplicitSource&&GEditor->PlayWorld))return Fail(Error,TEXT("editor_game_thread_render_capable_context_required"));
     World=GEditor->GetEditorWorldContext().World();
-    if(!World||World->WorldType!=EWorldType::Editor||World->IsGameWorld()||World->GetOutermost()->GetName()!=MapPath)return Fail(Error,TEXT("exact_fresh_owned_landscape_map_required"));
+    if(!World||World->WorldType!=EWorldType::Editor||World->IsGameWorld()||World->GetOutermost()->GetName()!=Ctx.Map)return Fail(Error,TEXT("exact_fresh_owned_landscape_map_required"));
     return true;
 }
-TSharedRef<FJsonObject> Receipt(const FSource& Source,ALandscape* L)
+TSharedRef<FJsonObject> Receipt(const FReserveLandscapeReplayContext& Ctx,const FSource& Source,ALandscape* L)
 {
-    auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("schema"),TEXT("LivingTown.ReserveLandscapeNative.v1"));O->SetStringField(TEXT("source_height_sha256"),Source.HeightSha);O->SetStringField(TEXT("source_config_sha256"),Source.ConfigSha);O->SetStringField(TEXT("map"),MapPath);O->SetStringField(TEXT("actor"),L->GetPathName());O->SetStringField(TEXT("actor_label"),L->GetActorLabel());O->SetStringField(TEXT("guid"),L->GetLandscapeGuid().ToString());O->SetArrayField(TEXT("location_cm"),Vector(L->GetActorLocation()));O->SetArrayField(TEXT("scale_xyz"),Vector(L->GetActorScale3D()));const FRotator R=L->GetActorRotation();O->SetArrayField(TEXT("rotation_pitch_yaw_roll"),{MakeShared<FJsonValueNumber>(R.Pitch),MakeShared<FJsonValueNumber>(R.Yaw),MakeShared<FJsonValueNumber>(R.Roll)});O->SetStringField(TEXT("material"),L->LandscapeMaterial?L->LandscapeMaterial->GetPathName():TEXT(""));O->SetNumberField(TEXT("component_count"),L->LandscapeComponents.Num());O->SetNumberField(TEXT("collision_component_count"),L->CollisionComponents.Num());O->SetNumberField(TEXT("collision_mip"),L->CollisionMipLevel);O->SetNumberField(TEXT("simple_collision_mip"),L->SimpleCollisionMipLevel);O->SetBoolField(TEXT("nanite"),L->IsNaniteEnabled());O->SetBoolField(TEXT("native_layers_up_to_date"),L->IsUpToDate());O->SetNumberField(TEXT("edit_layer_count"),L->GetEditLayersConst().Num());O->SetBoolField(TEXT("render_available"),FApp::CanEverRender());O->SetNumberField(TEXT("native_frame"),double(GFrameCounter));O->SetBoolField(TEXT("asset_or_map_saved_by_native_operation"),false);O->SetBoolField(TEXT("art_gameplay_or_FPS_qualified"),false);O->SetNumberField(TEXT("width"),Side);O->SetNumberField(TEXT("height"),Side);O->SetNumberField(TEXT("subsection_size_quads"),L->SubsectionSizeQuads);O->SetNumberField(TEXT("num_subsections"),L->NumSubsections);O->SetNumberField(TEXT("component_size_quads"),L->ComponentSizeQuads);
-    TArray<TSharedPtr<FJsonValue>> Layers;for(const ULandscapeEditLayerBase* Layer:L->GetEditLayersConst()){auto E=MakeShared<FJsonObject>();if(Layer){E->SetStringField(TEXT("class"),Layer->GetClass()->GetPathName());E->SetStringField(TEXT("object_name"),Layer->GetFName().ToString());E->SetStringField(TEXT("guid"),Layer->GetGuid().ToString());}Layers.Add(MakeShared<FJsonValueObject>(E));}O->SetArrayField(TEXT("edit_layers"),Layers);return O;
+    auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("schema"),TEXT("LivingTown.ReserveLandscapeNative.v1"));O->SetStringField(TEXT("source_height_sha256"),Source.HeightSha);O->SetStringField(TEXT("source_config_sha256"),Source.ConfigSha);O->SetStringField(TEXT("map"),Ctx.Map);O->SetStringField(TEXT("actor"),L->GetPathName());O->SetStringField(TEXT("actor_label"),L->GetActorLabel());O->SetStringField(TEXT("guid"),L->GetLandscapeGuid().ToString());O->SetArrayField(TEXT("location_cm"),Vector(L->GetActorLocation()));O->SetArrayField(TEXT("scale_xyz"),Vector(L->GetActorScale3D()));const FRotator R=L->GetActorRotation();O->SetArrayField(TEXT("rotation_pitch_yaw_roll"),{MakeShared<FJsonValueNumber>(R.Pitch),MakeShared<FJsonValueNumber>(R.Yaw),MakeShared<FJsonValueNumber>(R.Roll)});O->SetStringField(TEXT("material"),L->LandscapeMaterial?L->LandscapeMaterial->GetPathName():TEXT(""));O->SetNumberField(TEXT("component_count"),L->LandscapeComponents.Num());O->SetNumberField(TEXT("collision_component_count"),L->CollisionComponents.Num());O->SetNumberField(TEXT("collision_mip"),L->CollisionMipLevel);O->SetNumberField(TEXT("simple_collision_mip"),L->SimpleCollisionMipLevel);O->SetBoolField(TEXT("nanite"),L->IsNaniteEnabled());O->SetBoolField(TEXT("native_layers_up_to_date"),L->IsUpToDate());O->SetNumberField(TEXT("edit_layer_count"),L->GetEditLayersConst().Num());O->SetBoolField(TEXT("render_available"),FApp::CanEverRender());O->SetNumberField(TEXT("native_frame"),double(GFrameCounter));O->SetBoolField(TEXT("asset_or_map_saved_by_native_operation"),false);O->SetBoolField(TEXT("art_gameplay_or_FPS_qualified"),false);O->SetNumberField(TEXT("width"),Side);O->SetNumberField(TEXT("height"),Side);O->SetNumberField(TEXT("subsection_size_quads"),L->SubsectionSizeQuads);O->SetNumberField(TEXT("num_subsections"),L->NumSubsections);O->SetNumberField(TEXT("component_size_quads"),L->ComponentSizeQuads);
+    TArray<TSharedPtr<FJsonValue>> Layers;for(const ULandscapeEditLayerBase* Layer:L->GetEditLayersConst()){auto E=MakeShared<FJsonObject>();if(Layer){E->SetStringField(TEXT("class"),Layer->GetClass()->GetPathName());E->SetStringField(TEXT("object_name"),Layer->GetFName().ToString());E->SetStringField(TEXT("guid"),Layer->GetGuid().ToString());}Layers.Add(MakeShared<FJsonValueObject>(E));}O->SetArrayField(TEXT("edit_layers"),Layers);if(Ctx.bExplicitSource){O->SetStringField(TEXT("source_context"),TEXT("explicit_ConnectorA_v001"));O->SetStringField(TEXT("source_config_relative_path"),Ctx.ConfigPath);O->SetStringField(TEXT("source_height_relative_path"),Ctx.HeightPath);O->SetStringField(TEXT("caller_expected_config_sha256"),Ctx.ExpectedConfigHash);}return O;
 }
 
 TSharedRef<FJsonObject> TextureReference(UTexture* Texture)
@@ -145,38 +184,34 @@ TSharedRef<FJsonObject> RendererTextureReferences(ALandscape* L)
     for(const FString& Name:Names){Paths.Add(MakeShared<FJsonValueString>(Name));Textures.Add(MakeShared<FJsonValueObject>(TextureReference(Unique.FindChecked(Name))));}
     O->SetArrayField(TEXT("components"),Components);O->SetArrayField(TEXT("textures"),Textures);O->SetArrayField(TEXT("renderer_texture_paths"),Paths);O->SetBoolField(TEXT("complete"),Complete&&Components.Num()==16);O->SetBoolField(TEXT("platform_or_resident_mip_readiness_claimed"),false);return O;
 }
-}
 
-FString ULivingTownReserveLandscape::CreateReserveLandscapePreview()
+FString ReserveLandscapeCreateContext(const FReserveLandscapeReplayContext& Ctx,UWorld* World,const FSource& Source)
 {
-    UWorld* World=nullptr;FString Error;FSource Source;
-    if(!OwnedWorld(World,Error)||!LoadSource(Source,Error))return ErrorReply(Error);
     for(TActorIterator<ALandscapeProxy> It(World);It;++It)return ErrorReply(TEXT("existing_landscape_refused_no_overwrite"));
-    UMaterial* Material=LoadObject<UMaterial>(nullptr,MaterialPath);
-    if(!Material||Material->GetPathName()!=MaterialPath||Material->MaterialDomain!=MD_Surface||Material->GetBlendMode()!=BLEND_Opaque)return ErrorReply(TEXT("owned_new_opaque_photo_material_required"));
+    UMaterial* Material=LoadObject<UMaterial>(nullptr,*Ctx.Material);
+    if(!Material||Material->GetPathName()!=Ctx.Material||Material->MaterialDomain!=MD_Surface||Material->GetBlendMode()!=BLEND_Opaque)return ErrorReply(TEXT("owned_new_opaque_photo_material_required"));
     if(GetDefault<ALandscape>()->IsNaniteEnabled())return ErrorReply(TEXT("native_landscape_default_nanite_must_be_off"));
-    ALandscape* L=World->SpawnActor<ALandscape>(RequiredOrigin,FRotator::ZeroRotator);
+    if(Ctx.bExplicitSource){FString Error;if(ReserveLandscapeConnectorAppliedInThisProcess||!ReserveLandscapeSourceCustody(Ctx,Source,Error))return ErrorReply(Error.IsEmpty()?TEXT("explicit_connector_create_once_required"):Error);ReserveLandscapeConnectorAppliedInThisProcess=true;}
+    ALandscape* L=World->SpawnActor<ALandscape>(Ctx.Origin,FRotator::ZeroRotator);
     if(!L)return ErrorReply(TEXT("fresh_landscape_spawn_failed"));
-    L->SetActorLabel(Label);L->SetActorScale3D(RequiredScale);L->LandscapeMaterial=Material;L->CollisionMipLevel=0;L->SimpleCollisionMipLevel=0;L->BodyInstance.SetCollisionProfileName(FName(TEXT("BlockAll")));
+    L->SetActorLabel(Ctx.ActorLabel);L->SetActorScale3D(Ctx.Scale);L->LandscapeMaterial=Material;L->CollisionMipLevel=0;L->SimpleCollisionMipLevel=0;L->BodyInstance.SetCollisionProfileName(FName(TEXT("BlockAll")));
     TMap<FGuid,TArray<uint16>> HeightPerLayer;HeightPerLayer.Add(FGuid(),Source.Heights);
     TMap<FGuid,TArray<FLandscapeImportLayerInfo>> WeightPerLayer;WeightPerLayer.Add(FGuid(),TArray<FLandscapeImportLayerInfo>());
     // This is the installed5.8 stock import shape. It creates the default edit
     // layer after components register; no obsolete non-edit-layer toggle.
-    const FString HeightPath=FPaths::Combine(FPaths::ProjectDir(),HeightRelative);
+    const FString HeightPath=FPaths::Combine(FPaths::ProjectDir(),Ctx.HeightPath);
     L->Import(FGuid::NewGuid(),0,0,Side-1,Side-1,Subsections,Quads,HeightPerLayer,*HeightPath,WeightPerLayer,ELandscapeImportAlphamapType::Additive,TArrayView<const FLandscapeLayer>());
-    auto O=Receipt(Source,L);O->SetStringField(TEXT("status"),TEXT("IMPORTED_PENDING_NATIVE_MERGED_HEIGHT_READBACK"));return Json(O);
+    auto O=Receipt(Ctx,Source,L);O->SetStringField(TEXT("status"),TEXT("IMPORTED_PENDING_NATIVE_MERGED_HEIGHT_READBACK"));return Json(O);
 }
 
-FString ULivingTownReserveLandscape::ReadReserveLandscapePreview()
+FString ReserveLandscapeReadContext(const FReserveLandscapeReplayContext& Ctx,UWorld* World,const FSource& Source)
 {
-    UWorld* World=nullptr;FString Error;FSource Source;
-    if(!OwnedWorld(World,Error)||!LoadSource(Source,Error))return ErrorReply(Error);
     ALandscape* L=nullptr;int32 Count=0;
     for(TActorIterator<ALandscapeProxy> It(World);It;++It){++Count;L=Cast<ALandscape>(*It);}
-    if(Count!=1||!L||L->GetActorLabel()!=Label)return ErrorReply(TEXT("exact_one_owned_landscape_required"));
-    auto O=Receipt(Source,L);
+    if(Count!=1||!L||L->GetActorLabel()!=Ctx.ActorLabel)return ErrorReply(TEXT("exact_one_owned_landscape_required"));
+    auto O=Receipt(Ctx,Source,L);
     auto Reject=[&](const TCHAR* Why){O->SetStringField(TEXT("status"),TEXT("ERROR"));O->SetStringField(TEXT("error"),Why);return Json(O);};
-    if(!L->GetActorLocation().Equals(RequiredOrigin,0.)||!L->GetActorScale3D().Equals(RequiredScale,0.)||!L->GetActorRotation().Equals(FRotator::ZeroRotator,0.)||!L->LandscapeMaterial||L->LandscapeMaterial->GetPathName()!=MaterialPath||L->IsNaniteEnabled()||L->CollisionMipLevel!=0||L->SimpleCollisionMipLevel!=0)return Reject(TEXT("owned_transform_material_or_policy_changed"));
+    if(!L->GetActorLocation().Equals(Ctx.Origin,0.)||!L->GetActorScale3D().Equals(Ctx.Scale,0.)||!L->GetActorRotation().Equals(FRotator::ZeroRotator,0.)||!L->LandscapeMaterial||L->LandscapeMaterial->GetPathName()!=Ctx.Material||L->IsNaniteEnabled()||L->CollisionMipLevel!=0||L->SimpleCollisionMipLevel!=0)return Reject(TEXT("owned_transform_material_or_policy_changed"));
     ULandscapeInfo* Info=L->GetLandscapeInfo();
     if(!Info||!L->IsUpToDate()){O->SetStringField(TEXT("status"),TEXT("PENDING_NATIVE_EDIT_LAYER_MERGE"));return Json(O);}
     int32 X1=0,Y1=0,X2=0,Y2=0;if(!Info->GetLandscapeExtent(X1,Y1,X2,Y2)||X1!=0||Y1!=0||X2!=Side-1||Y2!=Side-1)return Reject(TEXT("exact_native_sample_extent"));
@@ -206,12 +241,31 @@ FString ULivingTownReserveLandscape::ReadReserveLandscapePreview()
     if(Mismatches||MergedSha!=Source.HeightSha)return Reject(TEXT("merged_height_source_encoding_differs"));
     O->SetObjectField(TEXT("renderer_texture_provenance"),RendererTextureReferences(L));
     if(L->GetOutermost()->IsDirty()!=DirtyBefore)return Reject(TEXT("renderer_reference_read_changed_package_dirty_state"));
-    const FString Relative=FString::Printf(TEXT("Saved/ReserveLandscape_v001/MergedHeight505_frame%llu.r16"),static_cast<unsigned long long>(GFrameCounter));
+    const FString Relative=FString::Printf(TEXT("%s/MergedHeight505_frame%llu.r16"),*Ctx.DumpRoot,static_cast<unsigned long long>(GFrameCounter));
     const FString Destination=FPaths::Combine(FPaths::ProjectDir(),Relative);IFileManager::Get().MakeDirectory(*FPaths::GetPath(Destination),true);
     if(IFileManager::Get().FileExists(*Destination)){TArray<uint8> Previous;if(!FFileHelper::LoadFileToArray(Previous,*Destination)||Previous!=Encoded)return Reject(TEXT("no_readback_overwrite"));}
     else if(!FFileHelper::SaveArrayToFile(Encoded,*Destination,&IFileManager::Get(),FILEWRITE_NoReplaceExisting))return Reject(TEXT("merged_readback_file_write"));
     auto File=MakeShared<FJsonObject>();File->SetStringField(TEXT("project_relative_path"),Relative);File->SetStringField(TEXT("encoding"),TEXT("uint16_le"));File->SetNumberField(TEXT("bytes"),SourceBytes);File->SetStringField(TEXT("sha256"),MergedSha);O->SetObjectField(TEXT("merged_height_file"),File);O->SetBoolField(TEXT("all_source_uint16_samples_exact"),true);O->SetStringField(TEXT("status"),TEXT("READY_NATIVE_LANDSCAPE_SOURCE_HEIGHT_COMPONENTS_AND_COLLISION"));return Json(O);
 }
+
+FString ReserveLandscapeRunContext(const FReserveLandscapeReplayContext& Ctx,bool Create)
+{
+    UWorld* World=nullptr;FString Error;FSource Source;if(!OwnedWorld(Ctx,World,Error)||!LoadSource(Ctx,Source,Error))return ErrorReply(Error);
+    const FString Reply=Create?ReserveLandscapeCreateContext(Ctx,World,Source):ReserveLandscapeReadContext(Ctx,World,Source);
+    if(Ctx.bExplicitSource&&!ReserveLandscapeSourceCustody(Ctx,Source,Error)){auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("status"),TEXT("ERROR"));O->SetStringField(TEXT("error"),TEXT("explicit_source_changed_during_operation_partial_state_retained"));O->SetStringField(TEXT("source_config_sha256"),Source.ConfigSha);O->SetStringField(TEXT("prior_operation_reply"),Reply);return Json(O);}return Reply;
+}
+FString ReserveLandscapeInvokeConnector(bool Create)
+{
+    FReserveLandscapeReplayContext Ctx=ReserveLandscapeConnectorContext();if(!ReserveLandscapeUniqueConfigFlag(FCommandLine::Get(),TEXT("LivingTownReserveConnectorConfigSHA256"),Ctx.ExpectedConfigHash))return ErrorReply(TEXT("one_explicit_raw_config_SHA_flag_required_no_legacy_fallback"));
+    FString Project=FPaths::ConvertRelativePathToFull(FPaths::ProjectDir());FPaths::NormalizeDirectoryName(Project);
+    if(Create?!ReserveLandscapeConnectorAuthorIntent(Ctx,FCommandLine::Get(),Project,ReserveLandscapeConnectorAppliedInThisProcess):!(Project.EndsWith(TEXT("/Author/Project"))||Project.EndsWith(TEXT("/Review/Project"))))return ErrorReply(TEXT("explicit_connector_SHA_Author_intent_owned_project_once_required"));
+    Ctx.DumpRoot+=TEXT("/");Ctx.DumpRoot+=Ctx.ExpectedConfigHash;return ReserveLandscapeRunContext(Ctx,Create);
+}
+}
+FString ULivingTownReserveLandscape::CreateReserveLandscapePreview(){return ReserveLandscapeRunContext(ReserveLandscapeLegacyContext(),true);}
+FString ULivingTownReserveLandscape::ReadReserveLandscapePreview(){return ReserveLandscapeRunContext(ReserveLandscapeLegacyContext(),false);}
+FString ULivingTownReserveLandscape::CreateReserveConnectorLandscapePreview(){return ReserveLandscapeInvokeConnector(true);}
+FString ULivingTownReserveLandscape::ReadReserveConnectorLandscapePreview(){return ReserveLandscapeInvokeConnector(false);}
 
 FString ULivingTownReserveLandscape::ReadReserveHismComponent(UHierarchicalInstancedStaticMeshComponent* Component)
 {
@@ -256,3 +310,30 @@ FString ULivingTownReserveLandscape::ReadReserveHismComponent(UHierarchicalInsta
     if(Package->IsDirty()!=DirtyBefore||MapPackage->IsDirty()!=MapDirtyBefore)return ErrorReply(TEXT("hism_read_changed_package_dirty_state"));
     O->SetStringField(TEXT("status"),TEXT("READ_ONLY_NATIVE_HISM_COMPONENT_SNAPSHOT"));return Json(O);
 }
+
+#if WITH_DEV_AUTOMATION_TESTS
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FReserveLandscapeSourceContextBoundary,"LivingTown.ReserveLandscape.SourceContextBoundary",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FReserveLandscapeSourceContextBoundary::RunTest(const FString&)
+{
+    const FReserveLandscapeReplayContext Legacy=ReserveLandscapeLegacyContext();FSource Old,New;FString Error;
+    if(!TestTrue(TEXT("Legacy loader still reads exact original staged source"),LoadSource(Legacy,Old,Error))){AddError(Error);return false;}
+    TestTrue(TEXT("Legacy factory retains all original fixed paths identities transform dump and no explicit flag"),!Legacy.bExplicitSource&&Legacy.ConfigPath==ConfigRelative&&Legacy.HeightPath==HeightRelative&&Legacy.Map==MapPath&&Legacy.Material==MaterialPath&&Legacy.ActorLabel==Label&&Legacy.Origin.Equals(RequiredOrigin,0.)&&Legacy.Scale.Equals(RequiredScale,0.)&&Legacy.DumpRoot==TEXT("Saved/ReserveLandscape_v001"));
+    TestEqual(TEXT("Legacy original2b SHA remains exact"),Old.HeightSha,FString(TEXT("2b5839619c03277cc4e73bb97e0d250661e9aec1efe5efe61850e5c16170b5cb")));
+    FReserveLandscapeReplayContext Ctx=ReserveLandscapeConnectorContext();TArray<uint8> ConfigRaw;
+    if(!TestTrue(TEXT("Actual new fixed config file exists"),FFileHelper::LoadFileToArray(ConfigRaw,*FPaths::Combine(FPaths::ProjectDir(),Ctx.ConfigPath)))||!TestTrue(TEXT("Actual raw config has SHA"),LivingTownTiles::HashBytes(ConfigRaw,Ctx.ExpectedConfigHash)))return false;
+    if(!TestTrue(TEXT("Same shared loader reads explicit9184 source and config SHA"),LoadSource(Ctx,New,Error))){AddError(Error);return false;}
+    TestEqual(TEXT("Connector actual9184 SHA"),New.HeightSha,FString(TEXT("9184ca30385056c1c7b551a5e05a7c1c75daa82a10e19662ce3787a0b51ea145")));
+    TestTrue(TEXT("Context changes only explicit namespace identity keeps same material origin and scale"),Ctx.bExplicitSource&&Ctx.Map!=Legacy.Map&&Ctx.HeightPath!=Legacy.HeightPath&&Ctx.ConfigPath!=Legacy.ConfigPath&&Ctx.ActorLabel!=Legacy.ActorLabel&&Ctx.Material==Legacy.Material&&Ctx.Origin.Equals(Legacy.Origin,0.)&&Ctx.Scale.Equals(Legacy.Scale,0.));
+    TestEqual(TEXT("Original full505 source samples"),Old.Heights.Num(),255025);TestEqual(TEXT("New full505 source samples"),New.Heights.Num(),255025);int32 Changed=0;
+    if(Old.Heights.Num()==New.Heights.Num())for(int32 I=0;I<Old.Heights.Num();++I)Changed+=Old.Heights[I]!=New.Heights[I]?1:0;
+    TestEqual(TEXT("Only actual59 source samples differ"),Changed,59);TestTrue(TEXT("Explicit source raw bytes held for custody"),New.HeightBytes.Num()==SourceBytes&&New.ConfigBytes==ConfigRaw);TestTrue(TEXT("Actual explicit source custody passes without mutation"),ReserveLandscapeSourceCustody(Ctx,New,Error));
+    FSource Refused;FReserveLandscapeReplayContext Bad=Ctx;Bad.ExpectedConfigHash=FString::ChrN(64,TEXT('0'));TestFalse(TEXT("Wrong raw config SHA refused before authority"),LoadSource(Bad,Refused,Error));
+    Bad=Ctx;Bad.Map=Legacy.Map;TestFalse(TEXT("Foreign map context refused by same config parser"),LoadSource(Bad,Refused,Error));Bad=Ctx;Bad.Origin.X+=1.;TestFalse(TEXT("Wrong origin context refused"),LoadSource(Bad,Refused,Error));Bad=Ctx;Bad.Material=TEXT("/Game/Foreign/M.M");TestFalse(TEXT("Foreign material context refused"),LoadSource(Bad,Refused,Error));Bad=Ctx;Bad.HeightPath=Legacy.HeightPath;TestFalse(TEXT("Old RAW path cannot satisfy new context config"),LoadSource(Bad,Refused,Error));
+    TArray<uint8> Altered=New.HeightBytes;Altered[0]^=1;TestFalse(TEXT("Actual RAW one-bit tamper cannot retain9184 SHA"),ReserveLandscapeDecodeHeights(Altered,New.HeightSha,Refused,Error));Altered=New.HeightBytes;Altered.Pop(EAllowShrinking::No);TestFalse(TEXT("Truncated RAW refused before decode"),ReserveLandscapeDecodeHeights(Altered,New.HeightSha,Refused,Error));TestFalse(TEXT("New RAW cannot claim old2b digest"),ReserveLandscapeDecodeHeights(New.HeightBytes,Old.HeightSha,Refused,Error));
+    FSource ChangedCustody=New;ChangedCustody.HeightBytes[0]^=1;TestFalse(TEXT("Held RAW change refused without writing source"),ReserveLandscapeSourceCustody(Ctx,ChangedCustody,Error));ChangedCustody=New;ChangedCustody.ConfigBytes[0]^=1;TestFalse(TEXT("Held config change refused without writing source"),ReserveLandscapeSourceCustody(Ctx,ChangedCustody,Error));
+    const FString ConfigFlag=FString(TEXT("-LivingTownReserveConnectorConfigSHA256="))+Ctx.ExpectedConfigHash,AuthorFlag=FString(TEXT(" -LivingTownReserveConnectorAuthor="))+Ctx.ExpectedConfigHash,Owned=TEXT("/Owned/Author/Project");
+    TestTrue(TEXT("Exact config and Author flags authorize actual shared predicate"),ReserveLandscapeConnectorAuthorIntent(Ctx,*(ConfigFlag+AuthorFlag),Owned,false));TestFalse(TEXT("Missing Author intent refused"),ReserveLandscapeConnectorAuthorIntent(Ctx,*ConfigFlag,Owned,false));TestFalse(TEXT("Different RAW SHA is not config Author intent"),ReserveLandscapeConnectorAuthorIntent(Ctx,*(ConfigFlag+TEXT(" -LivingTownReserveConnectorAuthor=")+New.HeightSha),Owned,false));TestFalse(TEXT("Already applied cannot mutate twice"),ReserveLandscapeConnectorAuthorIntent(Ctx,*(ConfigFlag+AuthorFlag),Owned,true));TestFalse(TEXT("Foreign project cannot mutate"),ReserveLandscapeConnectorAuthorIntent(Ctx,*(ConfigFlag+AuthorFlag),TEXT("/Ordinary/Project"),false));TestFalse(TEXT("Source-only phase cannot mutate Author assets"),ReserveLandscapeConnectorAuthorIntent(Ctx,*(ConfigFlag+AuthorFlag),TEXT("/Owned/Source/Project"),false));TestFalse(TEXT("Duplicate config flags refused"),ReserveLandscapeConnectorAuthorIntent(Ctx,*(ConfigFlag+TEXT(" ")+ConfigFlag+AuthorFlag),Owned,false));TestFalse(TEXT("Duplicate Author flags refused"),ReserveLandscapeConnectorAuthorIntent(Ctx,*(ConfigFlag+AuthorFlag+AuthorFlag),Owned,false));TestFalse(TEXT("Legacy context cannot opt into new Source intent"),ReserveLandscapeConnectorAuthorIntent(Legacy,*(ConfigFlag+AuthorFlag),Owned,false));
+    FString Parsed;TestFalse(TEXT("Malformed prefix flag refused"),ReserveLandscapeUniqueConfigFlag(*(FString(TEXT("-LivingTownReserveConnectorConfigSHA256Extra="))+Ctx.ExpectedConfigHash),TEXT("LivingTownReserveConnectorConfigSHA256"),Parsed));TestFalse(TEXT("Malformed SHA refused"),ReserveLandscapeUniqueConfigFlag(TEXT("-LivingTownReserveConnectorConfigSHA256=wrong"),TEXT("LivingTownReserveConnectorConfigSHA256"),Parsed));
+    return true;
+}
+#endif

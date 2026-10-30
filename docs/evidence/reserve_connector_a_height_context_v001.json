@@ -1,0 +1,1009 @@
+{
+  "schema": "LivingTown.ConnectorA.SourceFoundationEvidence.v1",
+  "scope": "RECORDED_NATIVE_HEIGHT_SOURCE_FOUNDATION_NOT_PAINT_OR_GAME",
+  "fixtures": [
+    {
+      "file": "unreal/Config/ReserveLandscape_v001.json",
+      "bytes": 804,
+      "sha256": "7dfec8155ef185f04acda5bc5e0f433bb163bcac5bcdfc0f3b477381c463e312"
+    },
+    {
+      "file": "unreal/Content/ReserveLandscapeSource_v001/Height505.r16",
+      "bytes": 510050,
+      "sha256": "2b5839619c03277cc4e73bb97e0d250661e9aec1efe5efe61850e5c16170b5cb"
+    },
+    {
+      "file": "unreal/Content/ReserveLandscapeSource_v001/bridge_bank_anchors.json",
+      "bytes": 2830,
+      "sha256": "b126b6d702fc216986d39f4c2cc61598ec0af0e0c04e23f0d0c4121e4f8b24e7"
+    },
+    {
+      "file": "unreal/Config/ReserveLandscapeConnectorA_v001.json",
+      "bytes": 789,
+      "sha256": "d5848a113e7917516562079eb8f1ca81c6ad22de0dcfb4e2073fd5b8ac125d39"
+    },
+    {
+      "file": "unreal/Content/ReserveConnectorA_v001/Height505_connectorA_v001.r16",
+      "bytes": 510050,
+      "sha256": "9184ca30385056c1c7b551a5e05a7c1c75daa82a10e19662ce3787a0b51ea145"
+    }
+  ],
+  "checked_repository_sources": [
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownReserveLandcover.cpp",
+      "bytes": 69518,
+      "sha256": "3c157d07871e2921ba0e0f82b7f8abfcec01e7f47f2f0dfe58a70f3db3138a53"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownReserveLandcover.h",
+      "bytes": 1014,
+      "sha256": "998973480f4921c37f4ae7cb9327f47719c8c5b0e4c2b2a80ce2433a0e8f5aaa"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownReserveLandscape.cpp",
+      "bytes": 41542,
+      "sha256": "a6f8e466c65bcd46865c25e7051fe9c458aed3f022eabe0df6fd71d834587560"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownReserveLandscape.h",
+      "bytes": 1204,
+      "sha256": "85b06a9518ebdf23ea533c349fc281193199b35b9d36a94edc728b578ca19a9d"
+    }
+  ],
+  "qualified_native87_sha256": "ae761f4c9df57fb9a07ae849096ce1b18dc92a80206fcd6dbc5101d5cdab67d4",
+  "qualified_native_inputs": [
+    {
+      "file": "unreal/LivingTown.uproject",
+      "bytes": 1382,
+      "sha256": "ef12c9425978a8f6c73aa84744c30542202be8dd132f2e18f1d0f95a8ad6572b"
+    },
+    {
+      "file": "unreal/Source/LivingTown.Target.cs",
+      "bytes": 351,
+      "sha256": "f0d00a649e4e7ce81db7590e30a97f7ffe1e648bf3fe6a86c0a02a02568f56fe"
+    },
+    {
+      "file": "unreal/Source/LivingTownEditor.Target.cs",
+      "bytes": 439,
+      "sha256": "1dc8a6e7ae5eda849a619bd6889c1c28b87eb39efb4ab9a297aa0caa0c272dbb"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownAvatarPreparation.cpp",
+      "bytes": 14826,
+      "sha256": "3aff16e761f7722ad35fcb7bf309e3435e3d9e04b2c58d5c8577c61cd2a59baf"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownAvatarPreparation.h",
+      "bytes": 1138,
+      "sha256": "075e306cc58bfc36e158da44cd4da7749b1b41a39576bc4785bd2ef1824ec29c"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCafeMotionPreparation.cpp",
+      "bytes": 7244,
+      "sha256": "f36d8705b7eb9b7a1857ce53882ffe3fba0368f22d485c54c67ece52d0eef344"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCafeMotionPreparation.h",
+      "bytes": 783,
+      "sha256": "3c1637301c607c1fe2588bfb1b9c47daf2a787cca05f5de5be350301340db8b4"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCafeWorker110Preparation.cpp",
+      "bytes": 32124,
+      "sha256": "454a3d2206fcf48658d964c27cf057234a126e2f23779254628237ff5f4ae054"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCafeWorker110Preparation.h",
+      "bytes": 651,
+      "sha256": "1da5be96e7a798cb7bb3835f113243ecd834fb3e905ee16ec4ad510222bdb233"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownConnectorCollision.cpp",
+      "bytes": 18927,
+      "sha256": "d145a4dcbb08f3c6dd38ecc2ebb5cef6da75c755d19dbfaee0a7c564b608fdb9"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownConnectorCollision.h",
+      "bytes": 642,
+      "sha256": "eb6e83563f5927c4c7f505063f49acd399153a00d281a72649f9a27e33dddc8c"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownMaterialInspection.Build.cs",
+      "bytes": 725,
+      "sha256": "fb13bf32ba38d1e4906a12640d791bcd69998d4350c6af306bb64dd0c1dbe269"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownMaterialInspection.cpp",
+      "bytes": 5548,
+      "sha256": "ea7d8fa515bd8041ab49cceef5fb7efafe8d224827b29f0923564808d4d4fb14"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownMaterialInspection.h",
+      "bytes": 734,
+      "sha256": "87655517a1511627163853dd5a547a62485e9e3f3a90bc5e96872763482820ef"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownReserveLandcover.cpp",
+      "bytes": 69518,
+      "sha256": "3c157d07871e2921ba0e0f82b7f8abfcec01e7f47f2f0dfe58a70f3db3138a53"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownReserveLandcover.h",
+      "bytes": 1014,
+      "sha256": "998973480f4921c37f4ae7cb9327f47719c8c5b0e4c2b2a80ce2433a0e8f5aaa"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownReserveLandscape.cpp",
+      "bytes": 41542,
+      "sha256": "a6f8e466c65bcd46865c25e7051fe9c458aed3f022eabe0df6fd71d834587560"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownReserveLandscape.h",
+      "bytes": 1204,
+      "sha256": "85b06a9518ebdf23ea533c349fc281193199b35b9d36a94edc728b578ca19a9d"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownRootCorrectionInspection.cpp",
+      "bytes": 16417,
+      "sha256": "a34bfa057c268fe22fa8a36cee0924e2ec652e4b103e68efb2e94aa4a2ea551a"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownRootCorrectionInspection.h",
+      "bytes": 1545,
+      "sha256": "e47e9570f9639fb47a20f2cad6bad6427c34019dd564df4ba987b5bc17c1457f"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownTileAuthoringLibrary.cpp",
+      "bytes": 42049,
+      "sha256": "1a6bfbcc1c34ebce57dc4ad5d74524a7853f4e95c281832e2ccd9dd0cfefb684"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownTileAuthoringLibrary.h",
+      "bytes": 1662,
+      "sha256": "6ad5203552474f12c439e01d2507b61dffc947598c22a3be9f8f4daa600822ee"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownTownSliceReadbackLibrary.cpp",
+      "bytes": 19893,
+      "sha256": "3dcfb9592a6bf40dcb8e83dcb9bcfa43184eb956c3ca5cfcd6137b0dc5c9ca81"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownTownSliceReadbackLibrary.h",
+      "bytes": 611,
+      "sha256": "fdf47d276a93a2b3a2be058cdb6ac266ffbaee4d64042bbe1052c72fd7b0c863"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownViewportInspection.cpp",
+      "bytes": 11537,
+      "sha256": "d982abb73c5a3d47a0e80d8ae726323f2b1bb1eb1246e2e14bd4e26afcb634b0"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownViewportInspection.h",
+      "bytes": 1141,
+      "sha256": "ce4eb93347cc31d0f52c1fd92bd4d9a1d0d5158f225a26a3389f2c65480dae64"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownWestwoodMaterialLibrary.cpp",
+      "bytes": 23708,
+      "sha256": "9349c7c7a181aa559b5fd97be8be97bf5045765bb05859a0c2df5b8114b5409c"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownWestwoodMaterialLibrary.h",
+      "bytes": 670,
+      "sha256": "d327c48937a1d2bb64b26c7c5af5eb3024df38da40f6e384cd4cf11b55b1ddfb"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/LivingTownNative.Build.cs",
+      "bytes": 1510,
+      "sha256": "be06e6e9a864adbf268afbf28fd03f2f4fab79587e710f9255498909a1e12f8d"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeBinding.cpp",
+      "bytes": 16208,
+      "sha256": "edd63df7d730647acbcb04120a53b9634b599f2fedc30a3aa92e214aab9e69cc"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeCharacter.cpp",
+      "bytes": 13381,
+      "sha256": "dab8f26ed8a0b4620b7ae2723b6489d38a8cd2ea1a1ce1ce35ffb686b62f327c"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeGameMode.cpp",
+      "bytes": 2709,
+      "sha256": "6fd463ed5adfaa0b531b49039cafb37620672e18f9e5ffcd0745af2f99a7ced6"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeGeometryLibrary.cpp",
+      "bytes": 3778,
+      "sha256": "e55f641a22f424619d4ab595ae33798604b829eab37358c74e016d8022f94980"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeHUD.cpp",
+      "bytes": 2961,
+      "sha256": "96d27b71de13d89e73593d16158688e71eb402b77c89f162f67e795900eea405"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownCafePlayerController.cpp",
+      "bytes": 1871,
+      "sha256": "19acb1344a1c2b47b7636754ab71d6c26ed7dfd1f0a47dd98ec34f915a49d2c7"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeProjectionSubsystem.cpp",
+      "bytes": 14636,
+      "sha256": "8685e3ca3e703c66ae143192042c78bcf134119a79a818990f4ef2b191a96f50"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownCafePropertyV2Scenario.cpp",
+      "bytes": 12279,
+      "sha256": "22bc83ed4d08484fe5a9b74a7f00eb2e698691be6ae03cff46bc3547e84429b3"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownCafePropertyV2Subsystem.cpp",
+      "bytes": 24890,
+      "sha256": "a7845a09d1aabd4ac23def68a2ca85897d4f824f5c1f02661b70ee69dda2c4c8"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeSlot.cpp",
+      "bytes": 1846,
+      "sha256": "f0faebac424dfc82c209c53c84f18a04e1657077608eb1ebd4316179212c512b"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeVenue.cpp",
+      "bytes": 5298,
+      "sha256": "0af33a2d1f82763b991fa92a0c3c268f87ffbc70cdfe84bca892d713b306b9ae"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownLeaseSubsystem.cpp",
+      "bytes": 18784,
+      "sha256": "094decf1159510be8ba92a31912abf6b81a4c87daa93eebbd2f4463a4a304a7e"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownMaterialUsage.h",
+      "bytes": 1353,
+      "sha256": "f238e10d081e1f804da987f061a6260ef3e4585ca8d9d944058f0a36ecd3050d"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownNative.cpp",
+      "bytes": 128,
+      "sha256": "e2ccf41011b6f8d37c50f867056e70c1b7b13dee80898b6af6be94078f4a503f"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownRootCorrectedSingleNodeInstance.cpp",
+      "bytes": 13672,
+      "sha256": "cdceb8b14e264f263482faf38ebc335424360eeb36b721870421b547d4bf1a3d"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownTileData.cpp",
+      "bytes": 15963,
+      "sha256": "6fdb5cb1d5664b8486d9e764b4cfdeb14b9193366c502ba73a27669ec92c3e4a"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownTileDriver.cpp",
+      "bytes": 2644,
+      "sha256": "2d4977c27e0b04e0850e85dafa468676471c4349e4948baae6bf67cb4f8c6722"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownTilePlan.cpp",
+      "bytes": 3051,
+      "sha256": "f922c28b315f7ed4902446e310a50373f500e1a95446a563becfe079f2b37087"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownTileStreamingSubsystem.cpp",
+      "bytes": 28143,
+      "sha256": "ecf43d75962144cfadab9a39d0f3460b8f036dbb64a7244c3b54831996fe1f9a"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownViewportCsvSubsystem.cpp",
+      "bytes": 2936,
+      "sha256": "86b41fdb7c8273a4b9fa9a94f0a5f03b8e393956b97f9ddb5cf25b38906a1f52"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/Tests/CafeSHA256KnownAnswers.h",
+      "bytes": 5725,
+      "sha256": "f37c7682a393edcd69a971960513c3a33a9d92d3b46125c060bc47bf0bfe5867"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafeActualWorldTest.cpp",
+      "bytes": 29510,
+      "sha256": "c9fd0ed2bbf7406aacbfde50e22d88a06193a8d716836126d7675bbb2eb310e6"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafeAtomicSlotTest.cpp",
+      "bytes": 2075,
+      "sha256": "5debae5acf7bc4c4a6e6074c84f8b91a1ef715d1d4247d8894357764a75c8a5c"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafeBindingTest.cpp",
+      "bytes": 8044,
+      "sha256": "2a711a054c8602504115948c95f97ebc280a68489da6bbbdbb721a00ef9f83ba"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafeProjectionJournalTest.cpp",
+      "bytes": 4226,
+      "sha256": "d49ff30539c0c3e6eabd696cea075b9615e877cf9d182e280c984a5488639863"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafePropertyV2SelectionTest.cpp",
+      "bytes": 1703,
+      "sha256": "08f25551d69c933147aacf12c8b8d37cd5aadaef475b850a03e8de984a625dff"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafePropertyV2WorldJourneyTest.cpp",
+      "bytes": 37366,
+      "sha256": "c5fc466e819ecca47efdc0920b0d55f9bc2b694b2bf33bfe0ae55ce8fb4919da"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafeWorkerMotionTest.cpp",
+      "bytes": 14837,
+      "sha256": "7fd0f5bd171e0fc1a26efbf0dc8a91bbce65a7b5eba9b230a91c1fde8adb3b0f"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafeWorkerPreviewWorldTest.cpp",
+      "bytes": 44515,
+      "sha256": "7be2d479bb59fbf93ea82a3866a0c0d75e05f60805d04cf5c76c6984cb197e5f"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownLeaseBoundaryTest.cpp",
+      "bytes": 10388,
+      "sha256": "007dfb44f962adc4aa663ddd119bc3c28f29794e53af5b7b86b7e166f125a4a7"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownTileBoundaryTest.cpp",
+      "bytes": 13242,
+      "sha256": "b4a818d77a6f275a5d592f4846c9f778f0106c4bd57ebac42220ea44e1f9814a"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownTileLifecycleWorldTest.cpp",
+      "bytes": 21313,
+      "sha256": "aef6c84220b869a77db9c170fd7162fa9b1279632356eb0658228bf794760a3d"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownTileMaterialUsageTest.cpp",
+      "bytes": 5880,
+      "sha256": "d6b9a6383e67d860c7702e539110bf17ef3fcf421095457fae9a412893057325"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeBinding.h",
+      "bytes": 3512,
+      "sha256": "743521c25cd9e3a3b61d8128bfe916d9bdac62214e9c14f2fcb749d31af98b21"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeCharacter.h",
+      "bytes": 1473,
+      "sha256": "237ea75f5c8d13e0ee89e703efa5b8d1547b9c2ba90ae03744f91e8a7e932e00"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeGameMode.h",
+      "bytes": 606,
+      "sha256": "089e350c9aab3e7c0a90fa8b5085a5cc9c2eb56066516e3470278ce11576d7f7"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeGeometryLibrary.h",
+      "bytes": 671,
+      "sha256": "af8e90bb964cfc8ab99cc1e4cd8323ee2a4658728b862ea680b1692472664bdf"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeHUD.h",
+      "bytes": 266,
+      "sha256": "965ee0fae810a7548eb58eb5126ab687cb2115a2daffe55f468a99cdb25d70c3"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownCafePlayerController.h",
+      "bytes": 566,
+      "sha256": "8b9702e8a1d032a7dd467588747a305d6dfa4d763b127b38b88b898be265c1c6"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeProjectionSubsystem.h",
+      "bytes": 3077,
+      "sha256": "a8034a5e6c009f4232a1cab2aeb33383739cb0e6559feb57719000c6d77f22bb"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownCafePropertyV2Scenario.h",
+      "bytes": 2781,
+      "sha256": "032a7f53f99565ca397d67ce79f3d05fc24e151fdc330b7a8a374e9582f3ef10"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownCafePropertyV2Subsystem.h",
+      "bytes": 2301,
+      "sha256": "93db9100fd0b13ac8f2b6c4f9341d9a967d20007441ca028185dd0a19f7d9476"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownCafePropertyV2Types.h",
+      "bytes": 806,
+      "sha256": "a2068df89225878a444c766adad4ca5887ef0f03b0031ba05d8df928483df733"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeSlot.h",
+      "bytes": 304,
+      "sha256": "df50591738e590af3c94f5527f6d4e8a483ef0cb6e1ae0483cf17a4d7ec7dd4f"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeVenue.h",
+      "bytes": 900,
+      "sha256": "621b44b0490ba64fbee513fa18c6cf839e6a04745578fef1aba358581c62f046"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownLeaseSubsystem.h",
+      "bytes": 4112,
+      "sha256": "17c559507714bcc766ac4b4d45522f932ac916aae6dc4b786e516054263c972a"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownRootCorrectedSingleNodeInstance.h",
+      "bytes": 3536,
+      "sha256": "c1d3697cb59fc8bea4275e386c07a8e99b8639c61c829308d7cdeb70b7eccf8b"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownTileData.h",
+      "bytes": 7299,
+      "sha256": "f2c375456d24c29b99271d3dafe1daeef40f886fd9625c44f076865cf6d9788f"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownTileDriver.h",
+      "bytes": 1558,
+      "sha256": "9427ff5988867770adfaeae3d478755e86e70d9f776652e7b3ee26c9b9594c83"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownTilePlan.h",
+      "bytes": 961,
+      "sha256": "ec89e75897e1fb4e0c86e9a0ac0c0c9ff2d0f26a1dd27a24ea91f6d1a93b5e3d"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownTileStreamingSubsystem.h",
+      "bytes": 5443,
+      "sha256": "6c57167566e33547cf68049c59ef56cfdd43b39ebc29710ae700d93e61a8ffd9"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownViewportCsvSubsystem.h",
+      "bytes": 779,
+      "sha256": "dfd9ddad6a52b0c126ae59adca7b0e9bd946f0705be7ab3bded140424fdd4e61"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/CafePropertyBackend.hpp",
+      "bytes": 508,
+      "sha256": "2cb17c26594ccaab753fac29ffcee29790af763b385c4ef5f8433304211e1959"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/CafePropertyV2.hpp",
+      "bytes": 23961,
+      "sha256": "50adb86b5333436ff6af330ed02ca3b21b9aae0cc7f92c32d833dcdb61ec76ab"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/LeaseKernel.hpp",
+      "bytes": 12390,
+      "sha256": "942eb43c7b822da17c4949b08aa890d65324cd6d0e31bafa5d5104440641a8ac"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/PILOT_CASES.json",
+      "bytes": 1647,
+      "sha256": "b5a0df51f0bb7fd1a04196d8fe1118df75b9de275b881faad71ac014c00ecf4c"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/PilotWorldBinding.json",
+      "bytes": 303,
+      "sha256": "9b7866e037be2bf9f2757c1201a572b466402eb4c0f3dc5b510c0166301bbcfc"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/QUALIFIED_SOURCE_BINDINGS.json",
+      "bytes": 4816,
+      "sha256": "4bb7e5572bcdb694715fa200b4d1725340c4cc778149be0a237051fbbd36aa43"
+    }
+  ],
+  "baseline_native87_sha256": "0f34c44c8565e917de7eec1a17aebcf88a6b088657aed1c367574cf5a67e30a7",
+  "baseline_changed_two": [
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownReserveLandscape.cpp",
+      "bytes": 28621,
+      "sha256": "c013aa157270071a3969ceb24a643262e1dcc00d37a54fbd4e161683ff1603a2"
+    },
+    {
+      "file": "unreal/Source/LivingTownMaterialInspection/LivingTownReserveLandscape.h",
+      "bytes": 849,
+      "sha256": "1af15dbb68085e0615e0a611ea307532709d34947701d67647733995f02e5dca"
+    }
+  ],
+  "recorded_artifacts": {
+    "build": {
+      "relative_to_evidence_root": "native_reserve_connector_height_context_build_actual_v1_001/BUILD_RECEIPT.json",
+      "bytes": 23824,
+      "sha256": "f9ea59a0091c3d12a7b5460122e8804f8cdd4261c4b46404b0c0741938a60b15"
+    },
+    "build_audit": {
+      "relative_to_evidence_root": "native_reserve_connector_height_context_build_audit_v1_001/AUDIT.json",
+      "bytes": 3075,
+      "sha256": "1660df3de01a8f05ad784c5c98961423b0aab20c33f96aee3eed43176637c9be"
+    },
+    "native_three_tests": {
+      "relative_to_evidence_root": "native_reserve_connector_height_context_boundary_actual_v1_001/FINAL_PROOF.json",
+      "bytes": 1891,
+      "sha256": "39e2247113995f7f98779334690982efc61d9b060b9daa7f882e47c8ee6f3558"
+    },
+    "native_three_tests_raw": {
+      "relative_to_evidence_root": "native_reserve_connector_height_context_boundary_actual_v1_001/Automation/index.json",
+      "bytes": 1929,
+      "sha256": "2e0ebe66ce85b0a9c544273a17974b63327e4359a042c2845afa89753a2f57de"
+    },
+    "native_three_tests_audit": {
+      "relative_to_evidence_root": "native_reserve_connector_height_context_boundary_audit_v1_001/AUDIT.json",
+      "bytes": 3435,
+      "sha256": "59d9b2549994f80ae341a62526eabb48734d1e9cf413604c270da8d7f6680913"
+    },
+    "legacy_world": {
+      "relative_to_evidence_root": "native_reserve_connector_height_legacy_actual_v1_003/LEGACY_WORLD_PROOF.json",
+      "bytes": 2294,
+      "sha256": "7142fa69d4cf22a989c180b06f6f032ce6350e112c944aac5133cffe4b83b658"
+    },
+    "legacy_world_audit": {
+      "relative_to_evidence_root": "native_reserve_connector_height_legacy_audit_v1_003/AUDIT.json",
+      "bytes": 1741,
+      "sha256": "a2d7cf03dd83d8164d0c9921f1ffb6c6c4c08ce46aebf11bd6f5d1a8610d3bb1"
+    },
+    "legacy_native": {
+      "relative_to_evidence_root": "native_reserve_connector_height_legacy_actual_v1_003/Source/FRESH_SOURCE_NATIVE_READY.json",
+      "bytes": 78528,
+      "sha256": "cad0b426b8d6a999cbd00dbb0d7563e2f91e08175f36a2ca777b3dbe28493dcc"
+    },
+    "saved137": {
+      "relative_to_evidence_root": "native_reserve_connector_height_source_actual_v1_002/SAVED_PACKAGES.json",
+      "bytes": 69041,
+      "sha256": "21de9105c44a0973bd13e4581ea6c3d4af1df2662572c731406fc4ae070ec986"
+    },
+    "source_Author_audit": {
+      "relative_to_evidence_root": "native_reserve_connector_height_source_author_audit_v1_002/AUDIT.json",
+      "bytes": 2318,
+      "sha256": "cd52cb822a4ba7e0f6b3674d2175282a8247d5d7d329be2aed41411cc92e3bf7"
+    },
+    "source_Cold_proof": {
+      "relative_to_evidence_root": "native_reserve_connector_height_source_actual_v1_002/COLD_PROOF.json",
+      "bytes": 1367,
+      "sha256": "a25ef68ffc7fb9f82e002ee40f923ebbb96cb0f8b1a1b1c33ecf31aab8c7fea0"
+    },
+    "source_Cold_audit": {
+      "relative_to_evidence_root": "native_reserve_connector_height_source_cold_audit_v1_002/AUDIT.json",
+      "bytes": 2088,
+      "sha256": "a91f385fc5e1cc3ebf2d88ef9068092ed3e317d91d3d7593c6a6609018a9a5f2"
+    },
+    "source_Author_native": {
+      "relative_to_evidence_root": "native_reserve_connector_height_source_actual_v1_002/Author/AUTHOR_NATIVE_READY.json",
+      "bytes": 79262,
+      "sha256": "58ab3930097a025c0b81a6b0e5dd02a793025776b372c4e895104bc684d98880"
+    },
+    "source_Cold_native": {
+      "relative_to_evidence_root": "native_reserve_connector_height_source_actual_v1_002/Review/COLD_NATIVE_READY.json",
+      "bytes": 79262,
+      "sha256": "a37794f02da599c0c2dd8d4c3d02f8336b74b3988aa91f433afc6494a4f39de1"
+    },
+    "height_derivative_recipe": {
+      "relative_to_evidence_root": "native_town_reserve_connector_mesh_prepare_v1_001/Generated_v003/HEIGHT_DERIVATIVE.json",
+      "bytes": 4925,
+      "sha256": "3009cf325b14de1f684b47518e4f62c66d9ee2a0d0711473b463d0bd641504d0"
+    },
+    "source_Author_merged_raw": {
+      "relative_to_evidence_root": "native_reserve_connector_height_source_actual_v1_002/Author/Project/Saved/ReserveLandscapeConnectorA_v001/d5848a113e7917516562079eb8f1ca81c6ad22de0dcfb4e2073fd5b8ac125d39/MergedHeight505_frame92.r16",
+      "bytes": 510050,
+      "sha256": "9184ca30385056c1c7b551a5e05a7c1c75daa82a10e19662ce3787a0b51ea145"
+    },
+    "source_Cold_merged_raw": {
+      "relative_to_evidence_root": "native_reserve_connector_height_source_actual_v1_002/Review/Project/Saved/ReserveLandscapeConnectorA_v001/d5848a113e7917516562079eb8f1ca81c6ad22de0dcfb4e2073fd5b8ac125d39/MergedHeight505_frame83.r16",
+      "bytes": 510050,
+      "sha256": "9184ca30385056c1c7b551a5e05a7c1c75daa82a10e19662ce3787a0b51ea145"
+    }
+  },
+  "derivative": {
+    "changed_samples": 59,
+    "unchanged_samples": 254966,
+    "delta_uint16": [
+      {
+        "row": 232,
+        "column": 500,
+        "legacy_uint16": 26373,
+        "connector_uint16": 26371
+      },
+      {
+        "row": 232,
+        "column": 501,
+        "legacy_uint16": 26324,
+        "connector_uint16": 26309
+      },
+      {
+        "row": 232,
+        "column": 502,
+        "legacy_uint16": 26291,
+        "connector_uint16": 26275
+      },
+      {
+        "row": 232,
+        "column": 503,
+        "legacy_uint16": 26270,
+        "connector_uint16": 26213
+      },
+      {
+        "row": 232,
+        "column": 504,
+        "legacy_uint16": 26224,
+        "connector_uint16": 26133
+      },
+      {
+        "row": 233,
+        "column": 499,
+        "legacy_uint16": 26495,
+        "connector_uint16": 26503
+      },
+      {
+        "row": 233,
+        "column": 500,
+        "legacy_uint16": 26444,
+        "connector_uint16": 26471
+      },
+      {
+        "row": 233,
+        "column": 501,
+        "legacy_uint16": 26395,
+        "connector_uint16": 26306
+      },
+      {
+        "row": 233,
+        "column": 502,
+        "legacy_uint16": 26351,
+        "connector_uint16": 26263
+      },
+      {
+        "row": 233,
+        "column": 503,
+        "legacy_uint16": 26310,
+        "connector_uint16": 26119
+      },
+      {
+        "row": 233,
+        "column": 504,
+        "legacy_uint16": 26261,
+        "connector_uint16": 25974
+      },
+      {
+        "row": 234,
+        "column": 498,
+        "legacy_uint16": 26611,
+        "connector_uint16": 26601
+      },
+      {
+        "row": 234,
+        "column": 499,
+        "legacy_uint16": 26558,
+        "connector_uint16": 26553
+      },
+      {
+        "row": 234,
+        "column": 500,
+        "legacy_uint16": 26507,
+        "connector_uint16": 26539
+      },
+      {
+        "row": 234,
+        "column": 501,
+        "legacy_uint16": 26458,
+        "connector_uint16": 26290
+      },
+      {
+        "row": 234,
+        "column": 502,
+        "legacy_uint16": 26410,
+        "connector_uint16": 26232
+      },
+      {
+        "row": 234,
+        "column": 503,
+        "legacy_uint16": 26363,
+        "connector_uint16": 26053
+      },
+      {
+        "row": 234,
+        "column": 504,
+        "legacy_uint16": 26312,
+        "connector_uint16": 25874
+      },
+      {
+        "row": 235,
+        "column": 498,
+        "legacy_uint16": 26659,
+        "connector_uint16": 26630
+      },
+      {
+        "row": 235,
+        "column": 499,
+        "legacy_uint16": 26611,
+        "connector_uint16": 26566
+      },
+      {
+        "row": 235,
+        "column": 500,
+        "legacy_uint16": 26564,
+        "connector_uint16": 26550
+      },
+      {
+        "row": 235,
+        "column": 501,
+        "legacy_uint16": 26515,
+        "connector_uint16": 26550
+      },
+      {
+        "row": 235,
+        "column": 502,
+        "legacy_uint16": 26466,
+        "connector_uint16": 26375
+      },
+      {
+        "row": 235,
+        "column": 503,
+        "legacy_uint16": 26415,
+        "connector_uint16": 26196
+      },
+      {
+        "row": 235,
+        "column": 504,
+        "legacy_uint16": 26359,
+        "connector_uint16": 26017
+      },
+      {
+        "row": 236,
+        "column": 498,
+        "legacy_uint16": 26688,
+        "connector_uint16": 26652
+      },
+      {
+        "row": 236,
+        "column": 499,
+        "legacy_uint16": 26654,
+        "connector_uint16": 26577
+      },
+      {
+        "row": 236,
+        "column": 500,
+        "legacy_uint16": 26618,
+        "connector_uint16": 26550
+      },
+      {
+        "row": 236,
+        "column": 501,
+        "legacy_uint16": 26571,
+        "connector_uint16": 26550
+      },
+      {
+        "row": 236,
+        "column": 502,
+        "legacy_uint16": 26523,
+        "connector_uint16": 26518
+      },
+      {
+        "row": 236,
+        "column": 503,
+        "legacy_uint16": 26471,
+        "connector_uint16": 26339
+      },
+      {
+        "row": 236,
+        "column": 504,
+        "legacy_uint16": 26411,
+        "connector_uint16": 26160
+      },
+      {
+        "row": 237,
+        "column": 498,
+        "legacy_uint16": 26707,
+        "connector_uint16": 26666
+      },
+      {
+        "row": 237,
+        "column": 499,
+        "legacy_uint16": 26687,
+        "connector_uint16": 26585
+      },
+      {
+        "row": 237,
+        "column": 500,
+        "legacy_uint16": 26668,
+        "connector_uint16": 26550
+      },
+      {
+        "row": 237,
+        "column": 501,
+        "legacy_uint16": 26635,
+        "connector_uint16": 26550
+      },
+      {
+        "row": 237,
+        "column": 502,
+        "legacy_uint16": 26593,
+        "connector_uint16": 26550
+      },
+      {
+        "row": 237,
+        "column": 503,
+        "legacy_uint16": 26542,
+        "connector_uint16": 26482
+      },
+      {
+        "row": 237,
+        "column": 504,
+        "legacy_uint16": 26480,
+        "connector_uint16": 26303
+      },
+      {
+        "row": 238,
+        "column": 498,
+        "legacy_uint16": 26721,
+        "connector_uint16": 26693
+      },
+      {
+        "row": 238,
+        "column": 499,
+        "legacy_uint16": 26719,
+        "connector_uint16": 26627
+      },
+      {
+        "row": 238,
+        "column": 500,
+        "legacy_uint16": 26718,
+        "connector_uint16": 26593
+      },
+      {
+        "row": 238,
+        "column": 501,
+        "legacy_uint16": 26699,
+        "connector_uint16": 26550
+      },
+      {
+        "row": 238,
+        "column": 502,
+        "legacy_uint16": 26661,
+        "connector_uint16": 26550
+      },
+      {
+        "row": 238,
+        "column": 503,
+        "legacy_uint16": 26613,
+        "connector_uint16": 26550
+      },
+      {
+        "row": 238,
+        "column": 504,
+        "legacy_uint16": 26552,
+        "connector_uint16": 26446
+      },
+      {
+        "row": 239,
+        "column": 498,
+        "legacy_uint16": 26734,
+        "connector_uint16": 26732
+      },
+      {
+        "row": 239,
+        "column": 499,
+        "legacy_uint16": 26754,
+        "connector_uint16": 26721
+      },
+      {
+        "row": 239,
+        "column": 500,
+        "legacy_uint16": 26771,
+        "connector_uint16": 26651
+      },
+      {
+        "row": 239,
+        "column": 501,
+        "legacy_uint16": 26764,
+        "connector_uint16": 26605
+      },
+      {
+        "row": 239,
+        "column": 502,
+        "legacy_uint16": 26728,
+        "connector_uint16": 26596
+      },
+      {
+        "row": 239,
+        "column": 503,
+        "legacy_uint16": 26682,
+        "connector_uint16": 26584
+      },
+      {
+        "row": 239,
+        "column": 504,
+        "legacy_uint16": 26623,
+        "connector_uint16": 26492
+      },
+      {
+        "row": 240,
+        "column": 499,
+        "legacy_uint16": 26795,
+        "connector_uint16": 26792
+      },
+      {
+        "row": 240,
+        "column": 500,
+        "legacy_uint16": 26821,
+        "connector_uint16": 26777
+      },
+      {
+        "row": 240,
+        "column": 501,
+        "legacy_uint16": 26825,
+        "connector_uint16": 26753
+      },
+      {
+        "row": 240,
+        "column": 502,
+        "legacy_uint16": 26795,
+        "connector_uint16": 26731
+      },
+      {
+        "row": 240,
+        "column": 503,
+        "legacy_uint16": 26751,
+        "connector_uint16": 26698
+      },
+      {
+        "row": 240,
+        "column": 504,
+        "legacy_uint16": 26692,
+        "connector_uint16": 26628
+      }
+    ],
+    "maximum_cut_m": 0.85546875,
+    "maximum_fill_m": 0.068359375,
+    "all_six_original_anchor_stencils_unchanged": true
+  },
+  "actual": {
+    "build": {
+      "status": "PASS_NATIVE_EDITOR_BUILD",
+      "seconds": 227.656
+    },
+    "native_tests": {
+      "test_names": [
+        "LivingTown.ReserveLandcover.ClosedSourceFixture",
+        "LivingTown.ReserveLandcover.ProfileBoundary",
+        "LivingTown.ReserveLandscape.SourceContextBoundary"
+      ],
+      "raw_event_counts": {
+        "LivingTown.ReserveLandcover.ClosedSourceFixture": 0,
+        "LivingTown.ReserveLandcover.ProfileBoundary": 0,
+        "LivingTown.ReserveLandscape.SourceContextBoundary": 0
+      },
+      "new_context_assertions": 34,
+      "status": "PASS_THREE_ACTUAL_NATIVE_AUTOMATION_TESTS_NOT_WORLD_REPLAY_OR_IMPORT"
+    },
+    "legacy_world": {
+      "status": "PASS_ACTUAL_LEGACY2B_CREATE_READ_WORLD_PRIVATE_MAP_ONLY_NEW_REAL_GUID_135_SOURCE_PACKAGES_EXACT",
+      "all255025_2b_samples_exact": true,
+      "old_API_names_and_old_map_config_RAW_used": true
+    },
+    "new_source": {
+      "Author_status": "PASS_INDEPENDENT_ACTUAL_CONNECTOR9184_AUTHOR_SOURCE137_AUDIT",
+      "Cold_status": "PASS_ACTUAL_CONNECTOR9184_SOURCE_AUTHOR_AND_READ_ONLY_COLD137",
+      "saved_package_count": 137,
+      "all136_original_packages_and229_intrinsic_values_preserved": true,
+      "all137_saved_bytes_preserved_cold": true,
+      "landscape_GUID": "94AEDDFD4682AE90E0E41694BE1F8337",
+      "edit_layer_GUID": "009F77EC4965957FD84C47ACA39944E6",
+      "merged_sha256": "9184ca30385056c1c7b551a5e05a7c1c75daa82a10e19662ce3787a0b51ea145",
+      "all255025_source_merged_uint16_exact": true,
+      "component_count": 16,
+      "native_collision_component_count": 16,
+      "original_pond_contacts": 171,
+      "shader_source_count": 6,
+      "texture_roles_read_back": 74,
+      "Author_seconds": 85.59400000001187,
+      "Cold_seconds": 33.21899999998277
+    }
+  },
+  "qualifications": {
+    "recorded_legacy2b_actual_create_read": true,
+    "recorded_new9184_Author_readonly_Cold": true,
+    "portable_verifier_is_new_engine_execution": false,
+    "profile_paint": false,
+    "complete_grade": false,
+    "rail_collision": false,
+    "full_world_walk": false,
+    "native_Game": false,
+    "art": false,
+    "FPS": false
+  }
+}
