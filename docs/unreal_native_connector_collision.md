@@ -1,0 +1,23 @@
+# Native connector collision assets
+
+The initial Café–Reserve route now has a qualified native Unreal collision asset case: 29 closed walking solids, 2,310 source vertices and 1,424 triangles. This adds a bounded asset builder and reader. It does not assemble the town/reserve world or qualify a continuous walking journey.
+
+`LivingTownConnectorCollision.h/.cpp` uses `MeshDescription` and `BodySetup` to create new assets in `/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders`. The five added module dependencies are `MeshDescription`, `StaticMeshDescription`, `PhysicsCore`, `Chaos` and `AssetRegistry`. All existing Landscape/profile/runtime source remains unchanged.
+
+The source is the 73,798-byte `unreal/Content/ConnectorCollisionSource_v001/ConnectorWalk29.ltcoll`, SHA-256 `b7cf9f1d56b7159e7a57ddc17dd95d3120b22ed8bd92f79f5099f5a18798eb2e`. It contains positions and indices from project-authored procedural route geometry, without external model, texture or photograph data. It is project source data under the repository's `LICENSE`; Epic engine source, DLLs and generated `.uasset` files are not distributed in this case.
+
+The little-endian format starts with the 16-byte `LTCOLL29V001\0\0\0\0` marker, then uint32 mesh count 29 and triangle count 1424. Each mesh stores uint32 name-byte count, vertex count and triangle count, an ASCII name, float64 XYZ vertices in UE centimetres, and uint32 index triples. Canonical metres transform to `(100X,-100Y,100Z)` and source winding reverses to `[0,2,1]`. Native float32 conversion has maximum measured error 0.000476 cm. The cooking provider's independent `bFlipNormals` value is recorded and checked against actual cooked Chaos triangles.
+
+The qualified UE 5.8.4 case compiled both modules, built and saved 29 new static meshes in an owned Author Editor, then copied the exact saved package closure into a separate Review project/process. It verified every committed MeshDescription position bit/index, every physics-provider triangle and all 1,424 actual cooked Chaos triangles. Both complete native readbacks are byte-identical; the portable gzip receipt preserves those arrays. All 29 package bytes and BodySetup GUIDs stayed exact. Collision is static complex-as-simple `BlockAll`, with Pawn and Camera blocked, no simple shapes, simulation, Nanite or ray tracing. The reader performs no explicit build/cook/compile/flush/wait/save/spawn; normal Unreal loading can materialize derived physics data.
+
+The native builder requires Editor game-thread context outside PIE, a private `/Author/Project`, exactly one `-LivingTownConnectorAuthor=<source SHA>` token, the fixed source SHA, and all 29 target packages absent. It runs only once per process and preserves partial failures. The reader permits private Author or Review projects. These methods return JSON and do not save packages or spawn actors themselves. The qualified orchestration saved only the new 29 assets, enforced aggregate RSS/private 16 GiB, physical/commit reserve 24 GiB and at most two shader workers, then stopped and waited for its own process tree. Build/Author/Review took 222.657/40.719/41.485 seconds on the recorded hardware. These timings are case timings, not game-loading or frame-rate measurements.
+
+Run the portable data check without Unreal:
+
+```powershell
+python -B tools/verify_connector_collision.py
+```
+
+This checks source bytes, all closed float32 edges, the compressed full native receipt, and every recorded MD/provider/Chaos triangle. It revalidates recorded evidence; it does not execute the current native helper or recreate the Unreal case. Build, save/cold receipts, complete package hashes, engine/GPU identity and source/license provenance are recorded in `docs/asset_refinement/evidence/connector_collision_v001.json`.
+
+Full scene and art acceptance remain held. The walking solids preserve all 29 stations, 168 risers and 2.4 m width. The separate CPU render proposal removes the west rail across the complete final landing edge, but render meshes/normal packing, collision rails, graded west egress, town pad cut/fill, gap-bank collision and the changed Landscape height source are not imported here. The town/reserve package families also have three conflicting same-path texture packages; they need explicit namespace/remapping before scene assembly. The existing pawn radius 28 cm, half-height 95 cm, speed 180 cm/s, camera arm 250 cm and 45 cm offset stay unchanged. Actual out-and-return CharacterMovement, capsule/headroom/landing tests and camera clearance in the continuous world are still required. This case does not qualify rendering, game performance, one-shot town generation or the broader roadmap.
