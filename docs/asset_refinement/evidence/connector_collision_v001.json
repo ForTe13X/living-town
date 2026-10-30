@@ -1,0 +1,539 @@
+{
+  "schema": "LivingTown.NativeConnectorCollisionEvidence.v1",
+  "status": "PASS_INITIAL29_NATIVE_COLLIDER_ASSETS_AUTHOR_AND_NEW_PROCESS_COLD_FULL_WORLD_WALK_HELD",
+  "engine": {
+    "version": "5.8.4",
+    "changelist": 58902052,
+    "RHI": "hardware D3D12 SM6",
+    "GPU": "AMD Radeon(TM) 8060S Graphics"
+  },
+  "source": {
+    "path": "unreal/Content/ConnectorCollisionSource_v001/ConnectorWalk29.ltcoll",
+    "bytes": 73798,
+    "sha256": "b7cf9f1d56b7159e7a57ddc17dd95d3120b22ed8bd92f79f5099f5a18798eb2e",
+    "format": "LTCOLL29V001 little endian float64 UEcm positions and uint32 indices",
+    "meshes": 29,
+    "vertices": 2310,
+    "triangles": 1424,
+    "all_F32_geometric_edges_multiplicity2": true,
+    "canonical_to_UEcm": [
+      100,
+      -100,
+      100
+    ],
+    "source_winding_indices": [
+      0,
+      2,
+      1
+    ],
+    "maximum_F64_to_F32_error_cm": 0.00047566335888404865,
+    "route_stations_preserved": 29,
+    "source_risers_preserved": 168,
+    "source_width_m": 2.4
+  },
+  "provenance": {
+    "origin": "Project-authored procedural connector A walking solids, selected from Generated_v003 SceneGeometry.json; all29 original walking positions/indices exact",
+    "project_license": {
+      "path": "LICENSE",
+      "bytes": 1393,
+      "sha256": "b00b825c50272c31e447cabbc0cdc7695f26795cd8d4fd7341163240e414349b",
+      "name": "MIT; project source data, no third-party model or texture data in this binary"
+    },
+    "upstream_project_geometry": {
+      "artifact_label": "native_town_reserve_connector_mesh_prepare_v1_001/Generated_v003/SceneGeometry.json",
+      "bytes": 61527769,
+      "sha256": "4e95c09bcef37ec95ec152497fb10844cf459e8a79b2f4026a180644f5c796c6"
+    },
+    "upstream_project_generator": {
+      "artifact_label": "native_town_reserve_connector_mesh_prepare_v1_001/generate_source.py",
+      "bytes": 22478,
+      "sha256": "ec683431b65c18737e2adb55b3520d595237986b7d1ad66064650c18566554cb"
+    },
+    "no_external_photo_pixels_material_UV_rig_or_model_assets_in_binary": true,
+    "no_Epic_engine_source_DLL_or_generated_uassets_distributed": true
+  },
+  "native_helper": {
+    "baseline_native85_sha256": "fe4af826a16d60948a4316ba1697eab8d0ecf7a3e7a299f004981434913fa522",
+    "qualified_native87_sha256": "0f34c44c8565e917de7eec1a17aebcf88a6b088657aed1c367574cf5a67e30a7",
+    "other84_existing_native_inputs_exact": true,
+    "only_existing_native_change": "LivingTownMaterialInspection.Build.cs",
+    "added_private_dependencies": [
+      "MeshDescription",
+      "StaticMeshDescription",
+      "PhysicsCore",
+      "Chaos",
+      "AssetRegistry"
+    ],
+    "qualified_helper_files": [
+      {
+        "bytes": 642,
+        "sha256": "eb6e83563f5927c4c7f505063f49acd399153a00d281a72649f9a27e33dddc8c",
+        "path": "unreal/Source/LivingTownMaterialInspection/LivingTownConnectorCollision.h"
+      },
+      {
+        "bytes": 18927,
+        "sha256": "d145a4dcbb08f3c6dd38ecc2ebb5cef6da75c755d19dbfaee0a7c564b608fdb9",
+        "path": "unreal/Source/LivingTownMaterialInspection/LivingTownConnectorCollision.cpp"
+      },
+      {
+        "bytes": 725,
+        "sha256": "fb13bf32ba38d1e4906a12640d791bcd69998d4350c6af306bb64dd0c1dbe269",
+        "path": "unreal/Source/LivingTownMaterialInspection/LivingTownMaterialInspection.Build.cs"
+      }
+    ],
+    "source_freeze": {
+      "bytes": 40634,
+      "sha256": "f06c780bdddc18a49fbdffef8d608e13408d29c957b5703f670c55ea82045628"
+    },
+    "external_actual005_source_type_review": {
+      "bytes": 26324,
+      "sha256": "91699f93062778c09ad3fafd03fcfc3e2f26fc8510a9cfb519f262d0895953e8"
+    },
+    "build_receipt": {
+      "bytes": 23825,
+      "sha256": "d7f44431a4f99669afdd2fac98aa7d70b26706b6194ff06e473061e5ace4ae69"
+    },
+    "build_audit": {
+      "bytes": 2992,
+      "sha256": "48df13eb39bd4f872e104d1dfd419a05d736adadb8dfdcc446edc01912ba560e"
+    },
+    "build_seconds": 222.657,
+    "compiler_warnings_or_errors": []
+  },
+  "shared_native_readback": {
+    "path": "docs/asset_refinement/evidence/connector_collision_native_readback_v001.json.gz",
+    "compressed_bytes": 57633,
+    "compressed_sha256": "42ca8ce6074f99f4deefb730ebeb483279c501237f5eddb0e6948b2387a75afe",
+    "raw_bytes": 1008931,
+    "raw_sha256": "a80acd78a062fc8f47b4a980e46e76acfceca2d95b53720df5f0ed014117d8b0",
+    "raw_JSON_is_byte_identical_between_actual_Author_and_Review": true,
+    "complete_MD_provider_and_actual_Chaos_arrays_preserved": true
+  },
+  "author": {
+    "native_readback_sha256": "a80acd78a062fc8f47b4a980e46e76acfceca2d95b53720df5f0ed014117d8b0",
+    "report": {
+      "bytes": 12482,
+      "sha256": "c4a45a0b9ba45a50b5d1d1baa8705a8e0ad0ffddad71c74ef090daad0c4fcea5"
+    },
+    "owner": {
+      "bytes": 161,
+      "sha256": "3810b176677233a21f4aa1ade7da5e4b5a0f8fccb1efc8856d04c0fd3e893d80"
+    },
+    "independent_audit": {
+      "bytes": 13677,
+      "sha256": "3abc9bc3260b1f998044967e874908ef408c707086f7bcf65a69ea8b619efe56"
+    },
+    "owned_PID": 30404,
+    "owned_exit_code": 92,
+    "owned_root_waited": true,
+    "remaining_owned_PIDs": [],
+    "seconds": 40.719,
+    "peak_RSS_bytes": 3379785728,
+    "peak_private_bytes": 4289282048,
+    "single_native_build": true,
+    "only29_new_assets_saved": true
+  },
+  "cold": {
+    "native_readback_sha256": "a80acd78a062fc8f47b4a980e46e76acfceca2d95b53720df5f0ed014117d8b0",
+    "report": {
+      "bytes": 12367,
+      "sha256": "c162c096a0ba184aa3f3eb8e6046e92ab97b4a6f4e0c8a75beada1a6699179ea"
+    },
+    "owner": {
+      "bytes": 178,
+      "sha256": "705fa730a3413fca9ce0ba7329be334c40d2dd023e94c28d4276629db8a69c51"
+    },
+    "independent_audit": {
+      "bytes": 13979,
+      "sha256": "5657afcb97d72109f394eefe14b33f8a331a2e0a6b1d91d0ae191c2fd9ad1e45"
+    },
+    "owned_PID": 34864,
+    "distinct_from_Author_PID": true,
+    "owned_exit_code": 92,
+    "owned_root_waited": true,
+    "remaining_owned_PIDs": [],
+    "seconds": 41.485,
+    "peak_RSS_bytes": 3392774144,
+    "peak_private_bytes": 4084670464,
+    "same29_saved_package_bytes": true,
+    "same_saved_BodySetup_GUIDs": true,
+    "explicit_build_cook_compile_flush_wait_save_spawn": false,
+    "normal_loader_DDC_materialization_not_excluded": true
+  },
+  "saved_packages": {
+    "manifest": {
+      "bytes": 15575,
+      "sha256": "c03591f29a95b6f8a3f0ab034a86e1e1ff223d419729fa1563e8f767f08256f1"
+    },
+    "root_assets": 29,
+    "files": [
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_00_Landing_WALK_COLLIDER.uasset",
+        "bytes": 16043,
+        "sha256": "8b706605050d61a849629c9c483aece3c2260dc9fec03a05470ac2320b75a5af"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_01_Flight_01_WALK_COLLIDER.uasset",
+        "bytes": 19004,
+        "sha256": "9b27b877c0a8245b72dc2a4b3819acf66719f684ee818400cef853b1e9d4a01e"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_02_Landing_WALK_COLLIDER.uasset",
+        "bytes": 15852,
+        "sha256": "2054e3d8d107fab158cecb369183bac7397e75a379b8b102c6476ac674b68bf3"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_03_Flight_02_WALK_COLLIDER.uasset",
+        "bytes": 19347,
+        "sha256": "39fc5e8df5a6b359f66145ca1f633227e368681dad849229db4ea861abe2535d"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_04_Landing_WALK_COLLIDER.uasset",
+        "bytes": 16038,
+        "sha256": "5df1c2a8318b8cac2c722bbc09c053bbe60f3e3d640802eb3c9f26f4a9fe582b"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_05_Flight_03_WALK_COLLIDER.uasset",
+        "bytes": 18523,
+        "sha256": "dc8a277fb5da1cf830b95debcbf77fdbac73997a60e12f2995a056ca3cc88b18"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_06_Landing_WALK_COLLIDER.uasset",
+        "bytes": 15880,
+        "sha256": "ac5c2dd4b337f71fd2519a382397fbccdf5b90d0cba02b1dd6c3c10199f5a53e"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_07_Flight_04_WALK_COLLIDER.uasset",
+        "bytes": 18864,
+        "sha256": "af97d11273475111d3a8714de991f70dfb59d92610e0dfcf17e70771ba4ef9fd"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_08_Landing_WALK_COLLIDER.uasset",
+        "bytes": 16014,
+        "sha256": "127ba56d97205dd8f6eb59403a1ca27bf080e615c0bcb233979fc900a1921ad2"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_09_Flight_05_WALK_COLLIDER.uasset",
+        "bytes": 19663,
+        "sha256": "70b41754fbaac7430f1d1f556539e1ba3059bff96f6246ea1066b431a254da3a"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_10_Landing_WALK_COLLIDER.uasset",
+        "bytes": 15828,
+        "sha256": "7006f803473b37351a33eab682e968aedcd247e2898c6a3659f30fc0b23f2b7f"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_11_Flight_06_WALK_COLLIDER.uasset",
+        "bytes": 19912,
+        "sha256": "7023fe4f45176aee43f0bcdd0033139fe5920af88a7cd34eb882552b10791512"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_12_Landing_WALK_COLLIDER.uasset",
+        "bytes": 16019,
+        "sha256": "c8e585843870c9c5562bf362bfcc8867e42534e97da694465dea43614b132d7e"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_13_Flight_07_WALK_COLLIDER.uasset",
+        "bytes": 18814,
+        "sha256": "9c15444b2ec4ce8ca586386b88e4f0e5289ff78910839e0d1b76b6cfad1a945e"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_14_Landing_WALK_COLLIDER.uasset",
+        "bytes": 15844,
+        "sha256": "e772cc18ab3f79175747715dd55f55c524d36547a72e177db63b2bfa2a9366e9"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_15_Flight_08_WALK_COLLIDER.uasset",
+        "bytes": 19067,
+        "sha256": "ab8f8677f63cd291c7f31cb3b231897596d68c1690def7e9149467a32805a9db"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_16_Landing_WALK_COLLIDER.uasset",
+        "bytes": 16013,
+        "sha256": "9eb30759698a3f25c39677a79035fa316a5fae7c51760d143b3b7992816f2e05"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_17_Flight_09_WALK_COLLIDER.uasset",
+        "bytes": 19396,
+        "sha256": "81f3114741bb9a219b174852fb8d820654d89a4eb98c9d392935f33c48a0b386"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_18_Landing_WALK_COLLIDER.uasset",
+        "bytes": 15875,
+        "sha256": "2f687eb6954ad66ab97d7f5f387841374c7881955fa3b61244c800f5452fc09d"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_19_Flight_10_WALK_COLLIDER.uasset",
+        "bytes": 19673,
+        "sha256": "ebdd3ee5ea227a8815999befa78015429a9bcc662df9befc21520948813efa3a"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_20_Landing_WALK_COLLIDER.uasset",
+        "bytes": 16025,
+        "sha256": "62579370620d7cd258d98bc8a5327bb4e469e6fe0b2d7945eccf16750e3e43b0"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_21_Flight_11_WALK_COLLIDER.uasset",
+        "bytes": 19125,
+        "sha256": "fd202bb6477df267f2e78b7158fd5cdc26e50762a750454b7de17c0b214ef0b7"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_22_Landing_WALK_COLLIDER.uasset",
+        "bytes": 15833,
+        "sha256": "bb1e898e808bd73d07c301f75af40c5021dea4a0275d7c77cc06001b35db1a18"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_23_Flight_12_WALK_COLLIDER.uasset",
+        "bytes": 19474,
+        "sha256": "3ec1524f5c34a98c3b2853b75bdb522562cf4a1586de533d2134dd24a2a78d7c"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_24_Landing_WALK_COLLIDER.uasset",
+        "bytes": 16045,
+        "sha256": "837373a9828415a7412d34425cbe3356ec779454323616f58b24860559df447f"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_25_Flight_13_WALK_COLLIDER.uasset",
+        "bytes": 19075,
+        "sha256": "ca47ed0a3a01d3cc8ce67afba88478981620b8a079637830d3e9b835a6bb4b9b"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_26_Landing_WALK_COLLIDER.uasset",
+        "bytes": 15859,
+        "sha256": "a0c5cf2084ceb05ee018c61d279cf701f59280910756803729fab5682af786a0"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_27_Flight_14_WALK_COLLIDER.uasset",
+        "bytes": 19453,
+        "sha256": "2ea8d8fa74dc542617d77820c68842630f37d2979eb0370359269e7931243236"
+      },
+      {
+        "content_relative": "LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_28_Landing_WALK_COLLIDER.uasset",
+        "bytes": 15989,
+        "sha256": "8d4f230150a71dcb2cf2b3be2c5b32a072c3fbf9cf58d0de9d495562f5c2c8bd"
+      }
+    ]
+  },
+  "actual_native_mesh_summary": [
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_00_Landing_WALK_COLLIDER.SM_CA_00_Landing_WALK_COLLIDER",
+      "vertices": 30,
+      "triangles": 16,
+      "BodySetup_guid": "960B705147E17D51490BB5A3113FD0DD",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_01_Flight_01_WALK_COLLIDER.SM_CA_01_Flight_01_WALK_COLLIDER",
+      "vertices": 144,
+      "triangles": 92,
+      "BodySetup_guid": "D46B2888438D808A4F700A9B9D80F4EE",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_02_Landing_WALK_COLLIDER.SM_CA_02_Landing_WALK_COLLIDER",
+      "vertices": 18,
+      "triangles": 8,
+      "BodySetup_guid": "229E25C849921027199ABEAF04925DA4",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_03_Flight_02_WALK_COLLIDER.SM_CA_03_Flight_02_WALK_COLLIDER",
+      "vertices": 144,
+      "triangles": 92,
+      "BodySetup_guid": "E6B3096442DD88C7F25DA2884B0700EB",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_04_Landing_WALK_COLLIDER.SM_CA_04_Landing_WALK_COLLIDER",
+      "vertices": 18,
+      "triangles": 8,
+      "BodySetup_guid": "34995DF14E42ADA8584C84AFAED93ABA",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_05_Flight_03_WALK_COLLIDER.SM_CA_05_Flight_03_WALK_COLLIDER",
+      "vertices": 120,
+      "triangles": 76,
+      "BodySetup_guid": "E25D6377405B94664B294C90C62D7182",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_06_Landing_WALK_COLLIDER.SM_CA_06_Landing_WALK_COLLIDER",
+      "vertices": 18,
+      "triangles": 8,
+      "BodySetup_guid": "B4DBE2E34B25165D8EC403B76FBACD1B",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_07_Flight_04_WALK_COLLIDER.SM_CA_07_Flight_04_WALK_COLLIDER",
+      "vertices": 120,
+      "triangles": 76,
+      "BodySetup_guid": "CCCE6F1F433C02B085BD0980F7E9616C",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_08_Landing_WALK_COLLIDER.SM_CA_08_Landing_WALK_COLLIDER",
+      "vertices": 18,
+      "triangles": 8,
+      "BodySetup_guid": "C0A736334196BF1576E1DF877BAFB2D3",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_09_Flight_05_WALK_COLLIDER.SM_CA_09_Flight_05_WALK_COLLIDER",
+      "vertices": 168,
+      "triangles": 108,
+      "BodySetup_guid": "1ABC4F284F1729FC98A32C927524B429",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_10_Landing_WALK_COLLIDER.SM_CA_10_Landing_WALK_COLLIDER",
+      "vertices": 18,
+      "triangles": 8,
+      "BodySetup_guid": "D09315DC4EF520F3584B1EA7D9E6C3BC",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_11_Flight_06_WALK_COLLIDER.SM_CA_11_Flight_06_WALK_COLLIDER",
+      "vertices": 168,
+      "triangles": 108,
+      "BodySetup_guid": "029F6FB542C91EC9E1D5E79B55956CB4",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_12_Landing_WALK_COLLIDER.SM_CA_12_Landing_WALK_COLLIDER",
+      "vertices": 18,
+      "triangles": 8,
+      "BodySetup_guid": "7F2B10C549AACE9A8F49EC970EB0EC47",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_13_Flight_07_WALK_COLLIDER.SM_CA_13_Flight_07_WALK_COLLIDER",
+      "vertices": 132,
+      "triangles": 84,
+      "BodySetup_guid": "39CA74AB4A4AE675AB2D099B97EA5C13",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_14_Landing_WALK_COLLIDER.SM_CA_14_Landing_WALK_COLLIDER",
+      "vertices": 18,
+      "triangles": 8,
+      "BodySetup_guid": "671742EB421C11E81FFED487F56AB23E",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_15_Flight_08_WALK_COLLIDER.SM_CA_15_Flight_08_WALK_COLLIDER",
+      "vertices": 132,
+      "triangles": 84,
+      "BodySetup_guid": "9A671F764312941FC826388AE2F8DDA7",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_16_Landing_WALK_COLLIDER.SM_CA_16_Landing_WALK_COLLIDER",
+      "vertices": 18,
+      "triangles": 8,
+      "BodySetup_guid": "50EFDF2F48A47F18D3DCEAA492CC9E37",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_17_Flight_09_WALK_COLLIDER.SM_CA_17_Flight_09_WALK_COLLIDER",
+      "vertices": 156,
+      "triangles": 100,
+      "BodySetup_guid": "9E92991046EB901EFD5D749FFCBAC44A",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_18_Landing_WALK_COLLIDER.SM_CA_18_Landing_WALK_COLLIDER",
+      "vertices": 18,
+      "triangles": 8,
+      "BodySetup_guid": "9578B81142AF2B01BDD34D8606E14516",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_19_Flight_10_WALK_COLLIDER.SM_CA_19_Flight_10_WALK_COLLIDER",
+      "vertices": 156,
+      "triangles": 100,
+      "BodySetup_guid": "1F462BBE448700DAA2A5A989A820DC3D",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_20_Landing_WALK_COLLIDER.SM_CA_20_Landing_WALK_COLLIDER",
+      "vertices": 18,
+      "triangles": 8,
+      "BodySetup_guid": "1DE51A3F408217CAA020BEAF9EC26342",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_21_Flight_11_WALK_COLLIDER.SM_CA_21_Flight_11_WALK_COLLIDER",
+      "vertices": 144,
+      "triangles": 92,
+      "BodySetup_guid": "62E7D3694DF38653E67838B4DCC5031E",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_22_Landing_WALK_COLLIDER.SM_CA_22_Landing_WALK_COLLIDER",
+      "vertices": 18,
+      "triangles": 8,
+      "BodySetup_guid": "79CC770F473DEDBA3D4AC79219CCD185",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_23_Flight_12_WALK_COLLIDER.SM_CA_23_Flight_12_WALK_COLLIDER",
+      "vertices": 144,
+      "triangles": 92,
+      "BodySetup_guid": "0DC253C94871B1505F90D593513F13FA",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_24_Landing_WALK_COLLIDER.SM_CA_24_Landing_WALK_COLLIDER",
+      "vertices": 18,
+      "triangles": 8,
+      "BodySetup_guid": "6FCAA53A47C17C5541A4F2A714621D6D",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_25_Flight_13_WALK_COLLIDER.SM_CA_25_Flight_13_WALK_COLLIDER",
+      "vertices": 144,
+      "triangles": 92,
+      "BodySetup_guid": "64E7D2D84FC380A0B81D559692C535B5",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_26_Landing_WALK_COLLIDER.SM_CA_26_Landing_WALK_COLLIDER",
+      "vertices": 18,
+      "triangles": 8,
+      "BodySetup_guid": "5FC9BD894AE25F2C4110059DC9AC5525",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_27_Flight_14_WALK_COLLIDER.SM_CA_27_Flight_14_WALK_COLLIDER",
+      "vertices": 144,
+      "triangles": 92,
+      "BodySetup_guid": "BA29E2AB43A18F7F88E855BB9BD08B59",
+      "provider_bFlipNormals": true
+    },
+    {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/ReserveConnectorPhysics_v002/Colliders/SM_CA_28_Landing_WALK_COLLIDER.SM_CA_28_Landing_WALK_COLLIDER",
+      "vertices": 30,
+      "triangles": 16,
+      "BodySetup_guid": "C924482B4E3AB39D60C6F496FAE13AD2",
+      "provider_bFlipNormals": true
+    }
+  ],
+  "qualification": {
+    "MD_source_F64_to_F32_bits_and_indices_all29_exact": true,
+    "provider_oriented_triangles_all1424_exact": true,
+    "actual_Chaos_cooked_oriented_triangles_all1424_exact_after_recorded_flip": true,
+    "provider_bFlipNormals_actual": true,
+    "static_complex_as_simple_BlockAll_Pawn_and_Camera_no_simple_shapes": true,
+    "source_config_installed_user_archives_external_processes_preserved": true,
+    "aggregate_RSS_private_GiB_cap": 16,
+    "system_physical_commit_reserve_GiB": 24,
+    "maximum_shader_workers": 2,
+    "hardware_GPU_used": true,
+    "full_world_walk_qualified": false,
+    "render_art_or_FPS_qualified": false,
+    "broader_one_shot_town_or_roadmap_qualified": false,
+    "rails_terrain_pad_exit_camera_capsule_journey_held": true,
+    "unchanged_pawn_binding_sha256": "38171606986ba5086102aeba31927fac698558eebed861dd0f4d8eaf713fad6e"
+  }
+}
