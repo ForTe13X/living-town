@@ -11,6 +11,7 @@
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
 #include "Policies/CondensedJsonPrintPolicy.h"
+#include "Containers/StringConv.h"
 
 namespace
 {
@@ -56,4 +57,72 @@ bool FLivingTownCafeBindingTest::RunTest(const FString&)
     Reject(TEXT("Duplicate keys rejected before conversion"),Valid.Replace(TEXT("\"version\":\"1\""),TEXT("\"version\":\"1\",\"version\":\"1\"")));
     Reject(TEXT("Logical-only legacy binding refuses"),TEXT("{\"schema\":\"LivingTown.LogicalCafeBinding\",\"version\":1}"));return true;
 }
+
+namespace
+{
+TSharedRef<FJsonObject> AuthoredFixture(bool bSmall=false)
+{
+    // Metadata-only fixtures. Synthetic meshes/materials cannot qualify assets,
+    // body geometry, room movement or the new native runtime image.
+    auto O=Fixture();O->SetStringField(TEXT("status"),TEXT("UE_ASSET_QUALIFIED_TRIAL"));
+    const TSet<int32> RoleNodes={8559,8562,8615,8649,8673,8684,8564,8565,8566,8570,8571,8572};
+    TArray<TSharedPtr<FJsonValue>> Parts;
+    for(const auto& V:O->GetArrayField(TEXT("parts")))
+    {
+        auto P=V->AsObject();const int32 N=FCString::Atoi(*P->GetStringField(TEXT("id")).Mid(24));
+        if(N>=8573&&N<=8606)continue;if(bSmall&&!RoleNodes.Contains(N))continue;
+        if(N>=8564&&N<=8572)P->GetObjectField(TEXT("transform"))->SetField(TEXT("translation_cm"),Vec(-100,0,0));
+        Parts.Add(V);
+    }
+    for(int32 I=0;I<(bSmall?1:6);++I)
+    {
+        auto P=MakeShared<FJsonObject>();P->SetStringField(TEXT("id"),FString::Printf(TEXT("authored_cafe:instance:Fixture_%d"),I));
+        const FString Asset=I%3==0?TEXT("/Game/ParserFixture/Table.Table"):TEXT("/Game/ParserFixture/Chair.Chair");
+        P->SetStringField(TEXT("asset"),Asset);P->SetStringField(TEXT("render_sha256"),FString::ChrN(64,'b'));P->SetStringField(TEXT("collision_guid"),FString::ChrN(32,'c'));
+        P->SetObjectField(TEXT("transform"),Transform());P->SetBoolField(TEXT("floor"),false);P->SetBoolField(TEXT("counter"),false);Parts.Add(MakeShared<FJsonValueObject>(P));
+    }
+    O->SetArrayField(TEXT("parts"),Parts);auto C=MakeShared<FJsonObject>();C->SetStringField(TEXT("format"),TEXT("LivingTown.CafePartContract"));C->SetStringField(TEXT("version"),TEXT("1"));C->SetStringField(TEXT("scope"),TEXT("private_authored_cafe_scene.v1"));C->SetNumberField(TEXT("declared_count"),Parts.Num());
+    TArray<TSharedPtr<FJsonValue>> Ids,Floors,Counters,Materials;TSet<FString> Assets;
+    for(const auto& V:Parts)
+    {
+        const auto P=V->AsObject();auto Id=MakeShared<FJsonValueString>(P->GetStringField(TEXT("id")));Ids.Add(Id);
+        if(P->GetBoolField(TEXT("floor")))Floors.Add(Id);if(P->GetBoolField(TEXT("counter")))Counters.Add(Id);
+        const FString Asset=P->GetStringField(TEXT("asset"));if(Assets.Contains(Asset))continue;Assets.Add(Asset);
+        auto M=MakeShared<FJsonObject>();M->SetStringField(TEXT("asset"),Asset);M->SetArrayField(TEXT("materials"),{MakeShared<FJsonValueString>(TEXT("/Game/ParserFixture/Material.Material"))});Materials.Add(MakeShared<FJsonValueObject>(M));
+    }
+    C->SetArrayField(TEXT("part_ids"),Ids);C->SetArrayField(TEXT("floor_ids"),Floors);C->SetArrayField(TEXT("counter_ids"),Counters);C->SetArrayField(TEXT("asset_materials"),Materials);
+    auto Context=MakeShared<FJsonObject>();FString Tagged=TEXT("LivingTown.CafePartContext.v1\n");
+    for(const TCHAR* K:{TEXT("parent_binding_sha256"),TEXT("layout_plan_sha256"),TEXT("asset_cold_proof_sha256"),TEXT("source_geometry_manifest_sha256")})
+    {const FString H=FString::ChrN(64,'a');Context->SetStringField(K,H);Tagged+=H+TEXT("\n");}
+    FTCHARToUTF8 Encoded(*Tagged);TArray<uint8> Bytes;Bytes.Append(reinterpret_cast<const uint8*>(Encoded.Get()),Encoded.Length());FString Digest;LivingTownCafeJournal::Sha256(Bytes,Digest);
+    Context->SetStringField(TEXT("context_sha256"),Digest);O->SetStringField(TEXT("physical_qualification_sha256"),Digest);C->SetObjectField(TEXT("source_context"),Context);O->SetObjectField(TEXT("part_contract"),C);return O;
+}
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FLivingTownCafeAuthoredBindingTest,"LivingTown.Native.CafeAuthoredPartContractRefusals",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FLivingTownCafeAuthoredBindingTest::RunTest(const FString&)
+{
+    TestEqual(TEXT("Domain-tagged source-context ASCII known answer"),AuthoredFixture()->GetObjectField(TEXT("part_contract"))->GetObjectField(TEXT("source_context"))->GetStringField(TEXT("context_sha256")),FString(TEXT("0b49c3e274c9d7d05bee9207fd6081f1fa827e9f599829b2ff7cbbe2316419d4")));
+    const FString Path=FPaths::Combine(FPaths::ProjectSavedDir(),TEXT("CafePilotTests"),FGuid::NewGuid().ToString(EGuidFormats::Digits)+TEXT(".json"));IFileManager::Get().MakeDirectory(*FPaths::GetPath(Path),true);ON_SCOPE_EXIT{IFileManager::Get().Delete(*Path);};
+    FLivingTownCafeBinding B;FString Error;
+    FFileHelper::SaveStringToFile(Encode(AuthoredFixture(true)),*Path);if(!TestTrue(TEXT("A declared13-part metadata fixture demonstrates data-driven count"),FLivingTownCafeBinding::ReadQualifiedFile(Path,B,Error)))return false;TestEqual(TEXT("Declared13 parts"),B.Parts.Num(),13);
+    FFileHelper::SaveStringToFile(Encode(AuthoredFixture()),*Path);if(!TestTrue(TEXT("Declared261 with two shared prototypes validates metadata only"),FLivingTownCafeBinding::ReadQualifiedFile(Path,B,Error)))return false;TestEqual(TEXT("Declared261 parts"),B.Parts.Num(),261);TestTrue(TEXT("Truthful trial contract"),B.bAuthoredSceneTrial&&B.HasValidatedPartRoster());const FString Before=B.BindingFileSha256;
+    auto Reject=[&](const TCHAR* Name,TFunctionRef<void(FJsonObject&)> Change){auto O=AuthoredFixture();Change(*O);FFileHelper::SaveStringToFile(Encode(O),*Path);TestFalse(Name,FLivingTownCafeBinding::ReadQualifiedFile(Path,B,Error));TestEqual(TEXT("Refused trial preserves complete accepted output"),B.BindingFileSha256,Before);TestEqual(TEXT("Refused trial preserves261"),B.Parts.Num(),261);};
+    Reject(TEXT("Count mismatch"),[](FJsonObject& O){O.GetObjectField(TEXT("part_contract"))->SetNumberField(TEXT("declared_count"),260);});
+    Reject(TEXT("Empty declaration"),[](FJsonObject& O){O.GetObjectField(TEXT("part_contract"))->SetNumberField(TEXT("declared_count"),0);});
+    Reject(TEXT("Bounded declaration"),[](FJsonObject& O){O.GetObjectField(TEXT("part_contract"))->SetNumberField(TEXT("declared_count"),513);});
+    Reject(TEXT("Fractional declaration"),[](FJsonObject& O){O.GetObjectField(TEXT("part_contract"))->SetNumberField(TEXT("declared_count"),261.5);});
+    Reject(TEXT("Truthful nonfinal status required"),[](FJsonObject& O){O.SetStringField(TEXT("status"),TEXT("UE_PHYSICAL_QUALIFIED"));});
+    Reject(TEXT("Wrong scope"),[](FJsonObject& O){O.GetObjectField(TEXT("part_contract"))->SetStringField(TEXT("scope"),TEXT("unbounded"));});
+    Reject(TEXT("Missing source context"),[](FJsonObject& O){O.GetObjectField(TEXT("part_contract"))->RemoveField(TEXT("source_context"));});
+    Reject(TEXT("Wrong context digest"),[](FJsonObject& O){O.GetObjectField(TEXT("part_contract"))->GetObjectField(TEXT("source_context"))->SetStringField(TEXT("context_sha256"),FString::ChrN(64,'f'));});
+    Reject(TEXT("Undeclared instance"),[](FJsonObject& O){O.GetArrayField(TEXT("parts")).Last()->AsObject()->SetStringField(TEXT("id"),TEXT("authored_cafe:instance:Undeclared"));});
+    Reject(TEXT("Wrong role"),[](FJsonObject& O){O.GetArrayField(TEXT("parts")).Last()->AsObject()->SetBoolField(TEXT("floor"),true);});
+    Reject(TEXT("Negative trial scale"),[](FJsonObject& O){O.GetArrayField(TEXT("parts")).Last()->AsObject()->GetObjectField(TEXT("transform"))->SetField(TEXT("scale"),Vec(-1,1,1));});
+    Reject(TEXT("Shared prototype cannot have conflicting GUID"),[](FJsonObject& O){O.GetArrayField(TEXT("parts")).Last()->AsObject()->SetStringField(TEXT("collision_guid"),FString::ChrN(32,'d'));});
+    Reject(TEXT("Material roster must cover actual unique assets"),[](FJsonObject& O){auto C=O.GetObjectField(TEXT("part_contract"));auto A=C->GetArrayField(TEXT("asset_materials"));A.Pop();C->SetArrayField(TEXT("asset_materials"),A);});
+    Reject(TEXT("Empty material slots"),[](FJsonObject& O){O.GetObjectField(TEXT("part_contract"))->GetArrayField(TEXT("asset_materials"))[0]->AsObject()->SetArrayField(TEXT("materials"),{});});
+    Reject(TEXT("Context cannot inject authority"),[](FJsonObject& O){O.GetObjectField(TEXT("part_contract"))->SetBoolField(TEXT("within_reach"),true);});
+    const auto Saved=B.Parts.Last();B.Parts.Pop();TestFalse(TEXT("Venue roster cannot retain stale validation after cardinality mutation"),B.HasValidatedPartRoster());B.Parts.Add(Saved);TestTrue(TEXT("Complete original roster restored in test memory"),B.HasValidatedPartRoster());return true;
+}
+
 #endif

@@ -50,6 +50,16 @@ struct FLivingTownCafeBinding
     FVector IdleRootDeltaCm = FVector::ZeroVector;
     FTransform MeshRelativeTransform = FTransform::Identity;
     TArray<FLivingTownCafePartBinding> Parts;
+    // Legacy files retain their exact 289-source-node contract. An explicit,
+    // source-qualified private trial declares its complete finite instance set.
+    int32 DeclaredPartCount = 0;
+    bool bPartRosterValidated = false;
+    bool bAuthoredSceneTrial = false;
+    FString PartSourceContextSha256;
+    TSet<FString> DeclaredPartIds;
+    TSet<FString> DeclaredFloorPartIds;
+    TSet<FString> DeclaredCounterPartIds;
+    TMap<FString,TArray<FString>> DeclaredAssetMaterials;
     FVector SpawnFeetCm = FVector::ZeroVector;
     FRotator SpawnRotation = FRotator::ZeroRotator;
     FVector CounterUsePointCm = FVector::ZeroVector;
@@ -60,6 +70,7 @@ struct FLivingTownCafeBinding
     float WalkSpeedCmPerSecond = 0;
     float CameraArmCm = 0;
     static bool ReadQualifiedFile(const FString& Path, FLivingTownCafeBinding& Out, FString& Error);
+    bool HasValidatedPartRoster() const;
 };
 
 namespace LivingTownCafeJournal
