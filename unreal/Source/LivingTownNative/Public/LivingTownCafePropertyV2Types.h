@@ -13,5 +13,8 @@ struct FLivingTownCafePropertyView {
     bool bPrepared=false,bSessionReady=false,bReachable=false,bOwnerVisualArtQualified=false;
     FString Persona,Owner,Operator,Offer,Prompt,Notice;
     int64 AriaCoins=0,BenCoins=0,Clock=0,EventCount=0,LeaseEnd=-1;
+    // Derived UI labels only; raw fields/Lines remain available in details.
+    bool bShowCounterHint=false,bPresentationWarning=false;
+    FString ResidentLabel,PropertyLabel,ListingLabel,InteractionLabel,ActionHint;
     TArray<FString> Lines;
 };

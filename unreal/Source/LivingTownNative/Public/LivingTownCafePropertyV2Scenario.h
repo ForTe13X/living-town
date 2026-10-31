@@ -43,6 +43,7 @@ private:
     FString OperationNotice;
     void SelectOwner();void SelectBuyer();void OfferSale();void OfferLease();void Buy();void Lease();void EndLease();void Save();void Load();
     void Send(ELivingTownCafePropertyAction Action);
+    void ToggleDetails();void NextDetailsPage();void PreviousDetailsPage();
 };
 
 UCLASS(NotBlueprintable)
@@ -61,5 +62,13 @@ private:
 UCLASS(NotBlueprintable)
 class LIVINGTOWNNATIVE_API ALivingTownCafePropertyV2HUD final:public AHUD {
     GENERATED_BODY()
-public:virtual void DrawHUD()override;
+public:
+    virtual void DrawHUD()override;
+    void ToggleDetails();void NextDetailsPage();void PreviousDetailsPage();
+private:
+    bool bDetailsVisible=false,bLastFeedbackWasWarning=false;
+    int32 DetailsPage=0,DetailsPageCount=1;
+    float CachedDetailsWidth=-1.f,CachedDetailsTextScale=-1.f;
+    FString CachedPrompt,CachedNotice,CachedOperation,LastFeedback,FriendlyFeedback;
+    TArray<FString> CachedSourceLines,CachedDetailLines;
 };

@@ -123,10 +123,57 @@ void ULivingTownCafePropertyV2Subsystem::Tick(float Delta){
 }
 void ULivingTownCafePropertyV2Subsystem::RefreshPresentation(){
     Presentation={};Presentation.bPrepared=bPrepared;Presentation.Notice=Notice;Presentation.Prompt=TEXT("Property v2 unavailable: exact scenario/source binding required.");
+    Presentation.ResidentLabel=TEXT("No resident selected");Presentation.PropertyLabel=TEXT("Property interaction unavailable");
+    Presentation.InteractionLabel=TEXT("Cafe interaction is unavailable. Press I for details.");Presentation.bPresentationWarning=true;
     if(!bPrepared||!State)return;Presentation.bSessionReady=SessionController.IsValid()&&SessionController->HasNativePersona()&&SessionPawn.IsValid();
     Presentation.Persona=Presentation.bSessionReady?PersonaId(SessionController->GetNativePersona()):TEXT("choose persona");Presentation.Owner=Text(State->Kernel.title().owner);Presentation.Operator=Text(State->Kernel.operator_at(State->Clock));Presentation.AriaCoins=State->Kernel.coin("aria");Presentation.BenCoins=State->Kernel.coin("ben");Presentation.Clock=State->Clock;Presentation.EventCount=int64(State->Kernel.events().size());Presentation.LeaseEnd=State->Kernel.lease().active?State->Kernel.lease().end:-1;
     const auto& O=State->Kernel.offer();Presentation.Offer=O.present?Text(O.kind):TEXT("no owner listing");FString Why;ObserveCounter(Presentation.bReachable,Why);Presentation.Prompt=Presentation.bReachable?TEXT("Counter: O sell offer | L rent offer | B buy | E lease | R end"):Why;
     Presentation.Lines={TEXT("Native cafe property v2 / one exclusive new-world ledger"),TEXT("Playing: ")+Presentation.Persona+TEXT(" | Owner: ")+Presentation.Owner+TEXT(" | Operator: ")+Presentation.Operator,FString::Printf(TEXT("Aria %lld coins / Ben %lld coins / tick %lld / events %lld"),(long long)Presentation.AriaCoins,(long long)Presentation.BenCoins,(long long)Presentation.Clock,(long long)Presentation.EventCount),TEXT("Owner listing: ")+Presentation.Offer,TEXT("Ground-floor commercial unit only; upstairs permissions unchanged."),TEXT("Aria functional proxy: final avatar/contact art remains unqualified.")};
+    // Cached presentation only. The kernel, interaction observation and raw
+    // diagnostic strings above remain the sole source of these labels.
+    const auto DisplayName=[](const FString& Id)->FString {
+        if(Id==TEXT("aria"))return TEXT("Aria");
+        if(Id==TEXT("ben"))return TEXT("Ben");
+        return TEXT("Unassigned");
+    };
+    Presentation.ResidentLabel=Presentation.bSessionReady?DisplayName(Presentation.Persona):TEXT("Choose a resident");
+    if(Presentation.bSessionReady){
+        const int64 Coins=Presentation.Persona==TEXT("aria")?Presentation.AriaCoins:Presentation.BenCoins;
+        Presentation.ResidentLabel+=FString::Printf(TEXT("  |  %lld coins"),(long long)Coins);
+    }
+    Presentation.PropertyLabel=TEXT("Owned by ")+DisplayName(Presentation.Owner)+TEXT("  |  Run by ")+DisplayName(Presentation.Operator);
+    const auto& Terms=State->Kernel.terms();
+    const auto& Lease=State->Kernel.lease();
+    if(Lease.active)Presentation.ListingLabel=TEXT("Lease active");
+    else if(O.present&&O.kind=="lease")Presentation.ListingLabel=FString::Printf(TEXT("For lease  |  %lld coins"),(long long)Terms.lease_fee);
+    else if(O.present&&O.kind=="sale")Presentation.ListingLabel=FString::Printf(TEXT("For sale  |  %lld coins"),(long long)Terms.sale_price);
+    else Presentation.ListingLabel=TEXT("No property listing");
+    Presentation.bPresentationWarning=false;
+    Presentation.InteractionLabel=TEXT("Visit the cafe counter for property options.");
+    Presentation.ActionHint.Reset();
+    Presentation.bShowCounterHint=Presentation.bReachable;
+    if(!Presentation.bSessionReady){
+        Presentation.InteractionLabel=TEXT("Choose a resident to explore.");
+    }else if(Presentation.bReachable){
+        Presentation.InteractionLabel=TEXT("Cafe counter");
+        if(Lease.active&&Presentation.Persona==Text(Lease.tenant))Presentation.ActionHint=TEXT("R  End your lease");
+        else if(Lease.active)Presentation.ActionHint=TEXT("This property currently has an active lease.");
+        else if(Presentation.Persona==Presentation.Owner)Presentation.ActionHint=TEXT("O  List for sale     L  List for lease");
+        else if(O.present&&O.kind=="sale")Presentation.ActionHint=TEXT("B  Buy this property");
+        else if(O.present&&O.kind=="lease")Presentation.ActionHint=TEXT("E  Lease this property");
+        else Presentation.ActionHint=TEXT("The owner has no offer available.");
+    }else if(Why==TEXT("face_the_counter")){
+        Presentation.bShowCounterHint=true;
+        Presentation.InteractionLabel=TEXT("Face the cafe counter");
+        Presentation.ActionHint=TEXT("Turn toward the counter to see property options.");
+    }else if(Why==TEXT("counter_line_of_sight_blocked")){
+        Presentation.bShowCounterHint=true;
+        Presentation.InteractionLabel=TEXT("The counter is obstructed");
+        Presentation.ActionHint=TEXT("Move to a clear spot beside the counter.");
+    }else if(Why!=TEXT("stand_on_the_actual_cafe_floor")&&Why!=TEXT("walk_closer_to_the_counter")){
+        Presentation.bPresentationWarning=true;
+        Presentation.InteractionLabel=TEXT("Cafe interaction is unavailable. Press I for details.");
+    }
 }
 FString ULivingTownCafePropertyV2Subsystem::SlotPath()const{return FPaths::ProjectSavedDir()/TEXT("CafePropertyV2/CafePropertyTitleV2.slot.json");}
 bool ULivingTownCafePropertyV2Subsystem::EncodeJournal(FString& Json,FString& Error)const{
