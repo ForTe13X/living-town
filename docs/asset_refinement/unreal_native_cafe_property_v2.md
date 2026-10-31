@@ -4,7 +4,7 @@ One authored ground-floor cafe can now be offered for sale, bought and explicitl
 
 F1 selects authored Aria and F2 selects Ben through native possession at the source spawn. Walk to the real counter before offering, buying or leasing. O opens a sale offer, L opens a lease offer, B buys, E leases, R ends the lease, F5 saves and F9 loads. Aria currently uses a simple functional owner-persona proxy. Her final model, hand contact and presentation remain work in progress.
 
-The default HUD shows the current resident, coins, owner/operator and active offer in a compact card. Counter actions appear when relevant. **I** opens wrapped diagnostic details; **[ / ]** selects detail pages. Current unavailable-state warnings take priority over historical success feedback. Presentation labels derive from the existing observed view; commands still use the native authority boundary. Layout/text measurements are cached until their inputs change.
+The default HUD shows the current resident, coins, owner/operator and active offer in a compact card. Counter actions appear when relevant. **I** opens wrapped diagnostic details; **[ / ]** selects detail pages. Current unavailable-state warnings take priority over historical success feedback. Presentation labels derive from the existing observed view; commands still use the native authority boundary. Wrapped diagnostic text is cached until its inputs change.
 
 The controller reserves F1/F2/F5/F9 from their exact stock development debug-view commands on its own input instance. Other debug/custom bindings remain available. Game startup also enables per-monitor DPI handling, including unattended development launches, through the two `Engine.UserInterfaceSettings` flags in DefaultEngine.ini.
 
