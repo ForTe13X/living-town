@@ -20,4 +20,5 @@ public:
 
 private:
     bool bOwnedScope = false;
+    bool bLoggedPositivePlayerView = false;
 };

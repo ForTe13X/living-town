@@ -7,6 +7,7 @@ class LIVINGTOWNNATIVE_API ALivingTownCafePlayerController final : public APlaye
 {
     GENERATED_BODY()
 public:
+    ALivingTownCafePlayerController();
     virtual void SetupInputComponent()override;
     virtual void BeginPlay()override;
     const FString& GetOperationNotice()const{return OperationNotice;}

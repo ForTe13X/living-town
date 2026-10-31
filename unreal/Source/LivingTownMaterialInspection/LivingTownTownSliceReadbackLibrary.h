@@ -12,4 +12,11 @@ public:
     UFUNCTION(BlueprintCallable,Category="LivingTown|TownSliceReadback")
     static bool ExportTownSliceMeshes(const TArray<FString>& AssetPaths,const FString& RelativeOutputDirectory,
         FString& ReceiptJson,FString& Error);
+
+    // Read-only raw export of exactly SM_Chair and SM_Table, in either order.
+    // C++ ABI is bool + two FString outs; stock Python packs tuple2 on true, None on false.
+    UFUNCTION(BlueprintCallable,Category="LivingTown|CafeFurnitureReadback")
+    static bool ExportCafeFurnitureMeshes(const TArray<FString>& AssetPaths,const FString& RelativeOutputDirectory,
+        FString& ReceiptJson,FString& Error);
+
 };

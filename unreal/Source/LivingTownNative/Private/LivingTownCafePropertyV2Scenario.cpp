@@ -36,6 +36,7 @@ void ALivingTownCafePropertyOwnerProxy::Yaw(float V){AddControllerYawInput(V);}
 void ALivingTownCafePropertyOwnerProxy::Pitch(float V){AddControllerPitchInput(V);}
 void ALivingTownCafePropertyOwnerProxy::SetupPlayerInputComponent(UInputComponent* I){Super::SetupPlayerInputComponent(I);check(I);I->BindAxis(TEXT("CafeForward"),this,&ALivingTownCafePropertyOwnerProxy::Forward);I->BindAxis(TEXT("CafeRight"),this,&ALivingTownCafePropertyOwnerProxy::Right);I->BindAxis(TEXT("CafeYaw"),this,&ALivingTownCafePropertyOwnerProxy::Yaw);I->BindAxis(TEXT("CafePitch"),this,&ALivingTownCafePropertyOwnerProxy::Pitch);}
 
+ALivingTownCafePropertyV2Controller::ALivingTownCafePropertyV2Controller(){bAutoManageActiveCameraTarget=false;}
 void ALivingTownCafePropertyV2Controller::BeginPlay(){Super::BeginPlay();bShowMouseCursor=false;SetInputMode(FInputModeGameOnly());if(PlayerCameraManager){PlayerCameraManager->ViewPitchMin=-55;PlayerCameraManager->ViewPitchMax=25;}}
 void ALivingTownCafePropertyV2Controller::SetupInputComponent(){Super::SetupInputComponent();check(InputComponent);
 // Disable only the four stock debug commands that share advertised game
