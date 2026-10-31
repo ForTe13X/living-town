@@ -4,6 +4,10 @@
 #include "Engine/World.h"
 #include "Camera/PlayerCameraManager.h"
 #include "InputCoreTypes.h"
+ALivingTownCafePlayerController::ALivingTownCafePlayerController()
+{
+    bAutoManageActiveCameraTarget=false;
+}
 void ALivingTownCafePlayerController::BeginPlay()
 {
     Super::BeginPlay();bShowMouseCursor=false;SetInputMode(FInputModeGameOnly());if(PlayerCameraManager){PlayerCameraManager->ViewPitchMin=-55;PlayerCameraManager->ViewPitchMax=25;}

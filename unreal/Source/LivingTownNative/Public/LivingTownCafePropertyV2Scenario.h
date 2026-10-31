@@ -31,6 +31,7 @@ UCLASS(NotBlueprintable)
 class LIVINGTOWNNATIVE_API ALivingTownCafePropertyV2Controller final:public APlayerController {
     GENERATED_BODY()
 public:
+    ALivingTownCafePropertyV2Controller();
     virtual void BeginPlay()override;
     virtual void SetupInputComponent()override;
     bool HasNativePersona()const{return bAuthorized;}

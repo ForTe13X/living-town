@@ -7,6 +7,7 @@
 #include "Misc/FileHelper.h"
 #include "HAL/FileManager.h"
 #include "String/BytesToHex.h"
+#include "Containers/StringConv.h"
 THIRD_PARTY_INCLUDES_START
 #include <openssl/sha.h>
 THIRD_PARTY_INCLUDES_END
@@ -51,6 +52,83 @@ const FJsonObject* Object(const FJsonObject& O,const TCHAR* K)
     const auto P=O.TryGetField(K); return P && P->Type==EJson::Object && P->AsObject() ? P->AsObject().Get() : nullptr;
 }
 bool GameAsset(const FString& S) { return S.StartsWith(TEXT("/Game/")) && S.Contains(TEXT(".")) && !S.Contains(TEXT("..")) && !S.Contains(TEXT("\\")); }
+bool MaterialAsset(const FString& S) { return (S.StartsWith(TEXT("/Game/"))||S.StartsWith(TEXT("/Engine/")))&&S.Contains(TEXT("."))&&!S.Contains(TEXT(".."))&&!S.Contains(TEXT("\\")); }
+bool PartIdentity(const FString& S)
+{
+    const FString Legacy=TEXT("town_10_urban_core:node:");
+    if(S.StartsWith(Legacy)) { int32 Node=0;return LexTryParseString(Node,*S.Mid(Legacy.Len()))&&Node>=8534&&Node<=8822&&S==FString::Printf(TEXT("town_10_urban_core:node:%d"),Node); }
+    const FString Authored=TEXT("authored_cafe:instance:");
+    if(!S.StartsWith(Authored,ESearchCase::CaseSensitive)||S.Len()<=Authored.Len()||S.Len()>192)return false;
+    for(TCHAR C:S.Mid(Authored.Len()))if(!((C>='a'&&C<='z')||(C>='A'&&C<='Z')||(C>='0'&&C<='9')||C=='_'))return false;
+    return true;
+}
+bool IdSet(const FJsonObject& O,const TCHAR* Key,TSet<FString>& Out)
+{
+    const TArray<TSharedPtr<FJsonValue>>* A=nullptr;
+    if(!O.TryGetArrayField(Key,A)||A->IsEmpty()||A->Num()>512)return false;
+    TSet<FName> Tags;
+    for(const auto& V:*A)
+    {
+        if(!V||V->Type!=EJson::String)return false;const FString S=V->AsString();
+        if(!PartIdentity(S)||Out.Contains(S))return false;const FName Tag(*S);
+        if(Tags.Contains(Tag))return false;Out.Add(S);Tags.Add(Tag);
+    }
+    return true;
+}
+bool PartContract(const FJsonObject& O,FLivingTownCafeBinding& B)
+{
+    if(!Keys(O,{TEXT("format"),TEXT("version"),TEXT("scope"),TEXT("declared_count"),TEXT("part_ids"),TEXT("floor_ids"),TEXT("counter_ids"),TEXT("source_context"),TEXT("asset_materials")}))return false;
+    FString Format,Version,Scope;double Count=0;
+    if(!Str(O,TEXT("format"),Format)||Format!=TEXT("LivingTown.CafePartContract")||!Str(O,TEXT("version"),Version)||Version!=TEXT("1")||!Str(O,TEXT("scope"),Scope)||Scope!=TEXT("private_authored_cafe_scene.v1")||!Number(O,TEXT("declared_count"),Count,1,512)||Count!=double(int32(Count)))return false;
+    B.DeclaredPartCount=int32(Count);
+    if(!IdSet(O,TEXT("part_ids"),B.DeclaredPartIds)||!IdSet(O,TEXT("floor_ids"),B.DeclaredFloorPartIds)||!IdSet(O,TEXT("counter_ids"),B.DeclaredCounterPartIds)||B.DeclaredPartIds.Num()!=B.DeclaredPartCount)return false;
+    for(const FString& Id:B.DeclaredFloorPartIds)if(!B.DeclaredPartIds.Contains(Id)||B.DeclaredCounterPartIds.Contains(Id))return false;
+    for(const FString& Id:B.DeclaredCounterPartIds)if(!B.DeclaredPartIds.Contains(Id))return false;
+    const FJsonObject* C=Object(O,TEXT("source_context"));
+    if(!C||!Keys(*C,{TEXT("parent_binding_sha256"),TEXT("layout_plan_sha256"),TEXT("asset_cold_proof_sha256"),TEXT("source_geometry_manifest_sha256"),TEXT("context_sha256")}))return false;
+    FString Tagged=TEXT("LivingTown.CafePartContext.v1\n");
+    for(const TCHAR* K:{TEXT("parent_binding_sha256"),TEXT("layout_plan_sha256"),TEXT("asset_cold_proof_sha256"),TEXT("source_geometry_manifest_sha256")})
+    { FString H;if(!Str(*C,K,H)||!Hash(H))return false;Tagged+=H+TEXT("\n"); }
+    FString Claimed;FTCHARToUTF8 Encoded(*Tagged);TArray<uint8> Bytes;Bytes.Append(reinterpret_cast<const uint8*>(Encoded.Get()),Encoded.Length());
+    if(!Str(*C,TEXT("context_sha256"),Claimed)||!Hash(Claimed)||!LivingTownCafeJournal::Sha256(Bytes,B.PartSourceContextSha256)||Claimed!=B.PartSourceContextSha256||Claimed!=B.PhysicalQualificationSha256)return false;
+    const TArray<TSharedPtr<FJsonValue>>* Materials=nullptr;
+    if(!O.TryGetArrayField(TEXT("asset_materials"),Materials)||Materials->IsEmpty()||Materials->Num()>B.DeclaredPartCount)return false;
+    for(const auto& V:*Materials)
+    {
+        if(!V||V->Type!=EJson::Object||!V->AsObject())return false;const FJsonObject& M=*V->AsObject();FString Asset;
+        const TArray<TSharedPtr<FJsonValue>>* Slots=nullptr;
+        if(!Keys(M,{TEXT("asset"),TEXT("materials")})||!Str(M,TEXT("asset"),Asset)||!GameAsset(Asset)||B.DeclaredAssetMaterials.Contains(Asset)||!M.TryGetArrayField(TEXT("materials"),Slots)||Slots->IsEmpty()||Slots->Num()>16)return false;
+        TArray<FString> Paths;
+        for(const auto& S:*Slots) { if(!S||S->Type!=EJson::String||S->AsString().Len()>512||!MaterialAsset(S->AsString()))return false;Paths.Add(S->AsString()); }
+        B.DeclaredAssetMaterials.Add(Asset,MoveTemp(Paths));
+    }
+    return true;
+}
+}
+
+bool FLivingTownCafeBinding::HasValidatedPartRoster() const
+{
+    if(!bPartRosterValidated||DeclaredPartCount<1||DeclaredPartCount>512||Parts.Num()!=DeclaredPartCount||DeclaredPartIds.Num()!=DeclaredPartCount||DeclaredFloorPartIds.IsEmpty()||DeclaredCounterPartIds.IsEmpty())return false;
+    if(!bAuthoredSceneTrial&&(DeclaredPartCount!=289||DeclaredFloorPartIds.Num()!=6||DeclaredCounterPartIds.Num()!=6))return false;
+    TSet<FString> Ids,Assets;TSet<FName> Tags;TMap<FString,FString> Signatures;
+    for(const auto& P:Parts)
+    {
+        if(!PartIdentity(P.Id)||(!bAuthoredSceneTrial&&!P.Id.StartsWith(TEXT("town_10_urban_core:node:")))||!GameAsset(P.AssetPath)||!Hash(P.RenderSha256)||!Hash(P.CollisionGuid,32))return false;
+        if(P.Transform.GetScale3D().GetAbsMin()<.0001||P.Transform.GetScale3D().GetAbsMax()>1000)return false;
+        const FName Tag(*P.Id);
+        if(Ids.Contains(P.Id)||Tags.Contains(Tag)||!DeclaredPartIds.Contains(P.Id)||P.bFloor!=DeclaredFloorPartIds.Contains(P.Id)||P.bCounter!=DeclaredCounterPartIds.Contains(P.Id)||(P.bFloor&&P.bCounter)||!P.Transform.IsValid())return false;
+        if(bAuthoredSceneTrial&&(!PartIdentity(P.Id)||P.Transform.GetScale3D().GetMin()<=0||!DeclaredAssetMaterials.Contains(P.AssetPath)))return false;
+        const FString Signature=P.RenderSha256+TEXT(":")+P.CollisionGuid;
+        if(const FString* Earlier=Signatures.Find(P.AssetPath);Earlier&&*Earlier!=Signature)return false;
+        if(!bAuthoredSceneTrial&&Assets.Contains(P.AssetPath))return false;
+        Ids.Add(P.Id);Tags.Add(Tag);Assets.Add(P.AssetPath);Signatures.Add(P.AssetPath,Signature);
+    }
+    if(bAuthoredSceneTrial)
+    {
+        for(const auto& Item:DeclaredAssetMaterials)
+        { if(Item.Value.IsEmpty()||Item.Value.Num()>16)return false;for(const FString& Path:Item.Value)if(Path.Len()>512||!MaterialAsset(Path))return false; }
+    }
+    return !bAuthoredSceneTrial||(Assets.Num()==DeclaredAssetMaterials.Num()&&Hash(PartSourceContextSha256)&&PartSourceContextSha256==PhysicalQualificationSha256);
 }
 
 bool LivingTownCafeJournal::Sha256(const TArray<uint8>& Bytes,FString& Out)
@@ -81,10 +159,16 @@ bool FLivingTownCafeBinding::ReadQualifiedFile(const FString& Path,FLivingTownCa
     TArray<uint8> Bytes; if(!FFileHelper::LoadFileToArray(Bytes,*Path)||Bytes.IsEmpty()||Bytes.Num()>2*1024*1024) return Fail(TEXT("physical_binding_missing_or_oversize"));
     FString Json; FFileHelper::BufferToString(Json,Bytes.GetData(),Bytes.Num()); if(!LivingTownCafeJournal::HasUniqueObjectKeys(Json)) return Fail(TEXT("invalid_or_duplicate_binding_json"));
     TSharedPtr<FJsonObject> O; if(!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json),O)||!O) return Fail(TEXT("invalid_binding_json"));
-    if(!Keys(*O,{TEXT("format"),TEXT("version"),TEXT("status"),TEXT("physical_scene_sha256"),TEXT("source_projection_sha256"),TEXT("physical_qualification_sha256"),TEXT("visual_sha256"),TEXT("logical_identity"),TEXT("resident"),TEXT("movement"),TEXT("spawn"),TEXT("counter_use_point_cm"),TEXT("floor_bounds_cm"),TEXT("parts")})) return Fail(TEXT("unsupported_physical_binding_fields"));
+    const bool bExplicitPartContract=O->Values.Contains(TEXT("part_contract"));
+    const bool TopKeys=bExplicitPartContract
+        ?Keys(*O,{TEXT("format"),TEXT("version"),TEXT("status"),TEXT("physical_scene_sha256"),TEXT("source_projection_sha256"),TEXT("physical_qualification_sha256"),TEXT("visual_sha256"),TEXT("logical_identity"),TEXT("resident"),TEXT("movement"),TEXT("spawn"),TEXT("counter_use_point_cm"),TEXT("floor_bounds_cm"),TEXT("parts"),TEXT("part_contract")})
+        :Keys(*O,{TEXT("format"),TEXT("version"),TEXT("status"),TEXT("physical_scene_sha256"),TEXT("source_projection_sha256"),TEXT("physical_qualification_sha256"),TEXT("visual_sha256"),TEXT("logical_identity"),TEXT("resident"),TEXT("movement"),TEXT("spawn"),TEXT("counter_use_point_cm"),TEXT("floor_bounds_cm"),TEXT("parts")});
+    if(!TopKeys)return Fail(TEXT("unsupported_physical_binding_fields"));
     FString Format,Version,Status; FLivingTownCafeBinding B;
-    if(!Str(*O,TEXT("format"),Format)||Format!=TEXT("LivingTown.CafeProjectionBinding")||!Str(*O,TEXT("version"),Version)||(Version!=TEXT("1")&&Version!=TEXT("2"))||!Str(*O,TEXT("status"),Status)||Status!=TEXT("UE_PHYSICAL_QUALIFIED")) return Fail(TEXT("physical_calibration_not_qualified"));
+    if(!Str(*O,TEXT("format"),Format)||Format!=TEXT("LivingTown.CafeProjectionBinding")||!Str(*O,TEXT("version"),Version)||(Version!=TEXT("1")&&Version!=TEXT("2"))||!Str(*O,TEXT("status"),Status)||Status!=(bExplicitPartContract?TEXT("UE_ASSET_QUALIFIED_TRIAL"):TEXT("UE_PHYSICAL_QUALIFIED"))) return Fail(TEXT("physical_calibration_not_qualified"));
     if(!Str(*O,TEXT("physical_scene_sha256"),B.PhysicalSceneSha256)||!Hash(B.PhysicalSceneSha256)||!Str(*O,TEXT("source_projection_sha256"),B.SourceProjectionSha256)||!Hash(B.SourceProjectionSha256)||!Str(*O,TEXT("physical_qualification_sha256"),B.PhysicalQualificationSha256)||!Hash(B.PhysicalQualificationSha256)||!Str(*O,TEXT("visual_sha256"),B.VisualSha256)||!Hash(B.VisualSha256)||!LivingTownCafeJournal::Sha256(Bytes,B.BindingFileSha256)) return Fail(TEXT("invalid_physical_provenance"));
+    B.bAuthoredSceneTrial=bExplicitPartContract;
+    if(bExplicitPartContract) { const FJsonObject* Contract=Object(*O,TEXT("part_contract"));if(!Contract||!PartContract(*Contract,B))return Fail(TEXT("invalid_authored_part_contract_or_source_context")); }
     const FJsonObject* Identity=Object(*O,TEXT("logical_identity")); FString Space,Floor,Interaction,Property,Model;
     if(!Identity||!Keys(*Identity,{TEXT("space_id"),TEXT("floor_id"),TEXT("interaction_id"),TEXT("property_id"),TEXT("model_asset_id")})||!Str(*Identity,TEXT("space_id"),Space)||Space!=TEXT("cafe")||!Str(*Identity,TEXT("floor_id"),Floor)||Floor!=TEXT("1f")||!Str(*Identity,TEXT("interaction_id"),Interaction)||Interaction!=TEXT("cafe1f_counter")||!Str(*Identity,TEXT("property_id"),Property)||Property!=TEXT("cafe_ground_commercial_v1")||!Str(*Identity,TEXT("model_asset_id"),Model)||Model!=TEXT("Main_cafe_L00_Public_Room_A00_cafe_counter")) return Fail(TEXT("wrong_logical_to_physical_counter_identity"));
     const FJsonObject* Resident=Object(*O,TEXT("resident")); const FJsonObject* MeshTransform=Resident?Object(*Resident,TEXT("mesh_transform")):nullptr;
@@ -114,20 +198,28 @@ bool FLivingTownCafeBinding::ReadQualifiedFile(const FString& Path,FLivingTownCa
     B.SpawnRotation=FRotator(Rotation.X,Rotation.Y,Rotation.Z);
     const auto Bounds=O->TryGetField(TEXT("floor_bounds_cm")); FVector Min,Max;
     if(!Bounds||Bounds->Type!=EJson::Array||Bounds->AsArray().Num()!=2||!VectorValue(Bounds->AsArray()[0],Min)||!VectorValue(Bounds->AsArray()[1],Max)||Min.X>=Max.X||Min.Y>=Max.Y||Min.Z>Max.Z) return Fail(TEXT("invalid_actual_floor_bounds")); B.FloorBoundsCm=FBox(Min,Max);
-    const TArray<TSharedPtr<FJsonValue>>* Parts=nullptr; if(!O->TryGetArrayField(TEXT("parts"),Parts)||Parts->Num()!=289) return Fail(TEXT("exact_289_source_parts_required"));
-    TSet<FString> Seen,SeenAssets;int32 Floors=0,Counters=0;
+    const int32 ExpectedParts=bExplicitPartContract?B.DeclaredPartCount:289;
+    const TArray<TSharedPtr<FJsonValue>>* Parts=nullptr; if(!O->TryGetArrayField(TEXT("parts"),Parts)||Parts->Num()!=ExpectedParts) return Fail(bExplicitPartContract?TEXT("exact_declared_source_parts_required"):TEXT("exact_289_source_parts_required"));
+    TSet<FString> Seen,SeenAssets,FloorIds,CounterIds;int32 Floors=0,Counters=0;
     const TSet<int32> FloorNodes={8559,8562,8615,8649,8673,8684};const TSet<int32> CounterNodes={8564,8565,8566,8570,8571,8572};
     for(const auto& V:*Parts)
     {
         if(!V||V->Type!=EJson::Object||!V->AsObject()) return Fail(TEXT("invalid_part_record")); const FJsonObject& P=*V->AsObject(); FLivingTownCafePartBinding Part;
         if(!Keys(P,{TEXT("id"),TEXT("asset"),TEXT("render_sha256"),TEXT("collision_guid"),TEXT("transform"),TEXT("floor"),TEXT("counter")})) return Fail(TEXT("unsupported_part_fields"));
         const FJsonObject* T=Object(P,TEXT("transform"));
-        if(!Str(P,TEXT("id"),Part.Id)||!Part.Id.StartsWith(TEXT("town_10_urban_core:node:"))||Seen.Contains(Part.Id)||!Str(P,TEXT("asset"),Part.AssetPath)||!GameAsset(Part.AssetPath)||!Str(P,TEXT("render_sha256"),Part.RenderSha256)||!Hash(Part.RenderSha256)||!Str(P,TEXT("collision_guid"),Part.CollisionGuid)||!Hash(Part.CollisionGuid,32)||!T||!Transform(*T,Part.Transform)||!Bool(P,TEXT("floor"),Part.bFloor)||!Bool(P,TEXT("counter"),Part.bCounter)||(Part.bFloor&&Part.bCounter)) return Fail(TEXT("invalid_or_duplicate_exact_source_part"));
+        if(!Str(P,TEXT("id"),Part.Id)||(!bExplicitPartContract&&!Part.Id.StartsWith(TEXT("town_10_urban_core:node:")))||Seen.Contains(Part.Id)||!Str(P,TEXT("asset"),Part.AssetPath)||!GameAsset(Part.AssetPath)||!Str(P,TEXT("render_sha256"),Part.RenderSha256)||!Hash(Part.RenderSha256)||!Str(P,TEXT("collision_guid"),Part.CollisionGuid)||!Hash(Part.CollisionGuid,32)||!T||!Transform(*T,Part.Transform)||!Bool(P,TEXT("floor"),Part.bFloor)||!Bool(P,TEXT("counter"),Part.bCounter)||(Part.bFloor&&Part.bCounter)) return Fail(TEXT("invalid_or_duplicate_exact_source_part"));
         int32 SourceNode=0;const FString ScopePrefix=TEXT("town_10_urban_core:node:");const FString Suffix=Part.Id.Mid(ScopePrefix.Len());
-        if(!LexTryParseString(SourceNode,*Suffix)||SourceNode<8534||SourceNode>8822||Part.Id!=FString::Printf(TEXT("town_10_urban_core:node:%d"),SourceNode)||Part.bFloor!=FloorNodes.Contains(SourceNode)||Part.bCounter!=CounterNodes.Contains(SourceNode)||SeenAssets.Contains(Part.AssetPath))return Fail(TEXT("exact_source_node_asset_or_role_scope_mismatch"));
+        if(bExplicitPartContract)
+        {
+            if(!PartIdentity(Part.Id)||!B.DeclaredPartIds.Contains(Part.Id)||Part.bFloor!=B.DeclaredFloorPartIds.Contains(Part.Id)||Part.bCounter!=B.DeclaredCounterPartIds.Contains(Part.Id)||Part.Transform.GetScale3D().GetMin()<=0)return Fail(TEXT("declared_part_identity_role_or_transform_mismatch"));
+        }
+        else if(!LexTryParseString(SourceNode,*Suffix)||SourceNode<8534||SourceNode>8822||Part.Id!=FString::Printf(TEXT("town_10_urban_core:node:%d"),SourceNode)||Part.bFloor!=FloorNodes.Contains(SourceNode)||Part.bCounter!=CounterNodes.Contains(SourceNode)||SeenAssets.Contains(Part.AssetPath))return Fail(TEXT("exact_source_node_asset_or_role_scope_mismatch"));
+        if(Part.bFloor)FloorIds.Add(Part.Id);if(Part.bCounter)CounterIds.Add(Part.Id);
         Seen.Add(Part.Id);SeenAssets.Add(Part.AssetPath);Floors+=Part.bFloor?1:0;Counters+=Part.bCounter?1:0;B.Parts.Add(MoveTemp(Part));
     }
-    if(Seen.Num()!=289||Floors!=6||Counters!=6) return Fail(TEXT("exact_actual_floor_and_counter_parts_required"));
+    if(Seen.Num()!=ExpectedParts||(!bExplicitPartContract&&(Floors!=6||Counters!=6))) return Fail(TEXT("exact_actual_floor_and_counter_parts_required"));
+    if(!bExplicitPartContract) { B.DeclaredPartCount=289;B.DeclaredPartIds=Seen;B.DeclaredFloorPartIds=FloorIds;B.DeclaredCounterPartIds=CounterIds; }
+    B.bPartRosterValidated=true;if(!B.HasValidatedPartRoster())return Fail(TEXT("authored_roster_asset_alias_or_material_scope_mismatch"));
     Out=MoveTemp(B); return true; // no partially accepted binding escapes
 }
 

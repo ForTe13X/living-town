@@ -28,6 +28,18 @@ namespace
 constexpr uint64 MaximumFileBytes=256ull*1024*1024;
 constexpr uint64 MaximumTotalBinaryBytes=1024ull*1024*1024;
 constexpr const TCHAR* AssetPrefix=TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/");
+enum class EReadbackScope : uint8 { TownSlice, CafeFurniture };
+constexpr const TCHAR* CafeChair=TEXT("/Game/LivingTown_UEPilot/CafeFurnitureCC0_v001/SM_Chair.SM_Chair");
+constexpr const TCHAR* CafeTable=TEXT("/Game/LivingTown_UEPilot/CafeFurnitureCC0_v001/SM_Table.SM_Table");
+bool CafeFurniturePair(const TArray<FString>& Paths)
+{
+    return Paths.Num()==2&&((Paths[0].Equals(CafeChair,ESearchCase::CaseSensitive)&&Paths[1].Equals(CafeTable,ESearchCase::CaseSensitive))||(Paths[0].Equals(CafeTable,ESearchCase::CaseSensitive)&&Paths[1].Equals(CafeChair,ESearchCase::CaseSensitive)));
+}
+bool AllowedAsset(const FString& Path,EReadbackScope Scope)
+{
+    return Scope==EReadbackScope::TownSlice?Path.StartsWith(AssetPrefix,ESearchCase::CaseSensitive):(Path.Equals(CafeChair,ESearchCase::CaseSensitive)||Path.Equals(CafeTable,ESearchCase::CaseSensitive));
+}
+
 constexpr const ANSICHAR* Magic="LTTOWNLOD0RB0001";
 bool Refuse(FString& Error,const FString& Why){Error=Why;return false;}
 
@@ -150,9 +162,9 @@ TSharedRef<FJsonObject> BuildSettings(UStaticMesh* Mesh)
     O->SetNumberField(TEXT("src_lightmap_index"),B.SrcLightmapIndex);O->SetNumberField(TEXT("dst_lightmap_index"),B.DstLightmapIndex);
     O->SetArrayField(TEXT("build_scale3d"),Vector(B.BuildScale3D));return O;
 }
-}
 
-bool ULivingTownTownSliceReadbackLibrary::ExportTownSliceMeshes(const TArray<FString>& AssetPaths,const FString& RelativeOutputDirectory,FString& ReceiptJson,FString& Error)
+
+bool ExportScopedNativeMeshes(const TArray<FString>& AssetPaths,const FString& RelativeOutputDirectory,FString& ReceiptJson,FString& Error,EReadbackScope Scope)
 {
     ReceiptJson.Empty();Error.Empty();
     if(!IsInGameThread()||!GIsEditor||AssetPaths.IsEmpty()||AssetPaths.Num()>1488||!OutputLeafName(RelativeOutputDirectory))
@@ -172,7 +184,7 @@ bool ULivingTownTownSliceReadbackLibrary::ExportTownSliceMeshes(const TArray<FSt
     for(const FString& Path:AssetPaths)
     {
         const FSoftObjectPath Soft(Path);
-        if(!Path.StartsWith(AssetPrefix,ESearchCase::CaseSensitive)||!FPackageName::IsValidObjectPath(Path)||!Soft.GetSubPathString().IsEmpty()||Seen.Contains(Path.ToLower()))
+        if(!AllowedAsset(Path,Scope)||!FPackageName::IsValidObjectPath(Path)||!Soft.GetSubPathString().IsEmpty()||Seen.Contains(Path.ToLower()))
             return Refuse(Error,TEXT("readback_asset_namespace_or_alias"));
         Seen.Add(Path.ToLower());
         UStaticMesh* Mesh=LoadObject<UStaticMesh>(nullptr,*Path);
@@ -247,4 +259,18 @@ bool ULivingTownTownSliceReadbackLibrary::ExportTownSliceMeshes(const TArray<FSt
     if(!IFileManager::Get().Delete(*Marker,true,false,true))return Refuse(Error,TEXT("readback_owned_incomplete_marker_removal"));
     auto Result=MakeShared<FJsonObject>();Result->SetStringField(TEXT("status"),TEXT("EXPORTED_NATIVE_BUFFERS_SOURCE_COMPARISON_PENDING"));Result->SetStringField(TEXT("manifest_path"),ManifestPath);Result->SetStringField(TEXT("manifest_sha256"),ManifestHash);Result->SetNumberField(TEXT("mesh_count"),Meshes.Num());Result->SetNumberField(TEXT("total_binary_bytes"),double(Total));
     const auto Writer=TJsonWriterFactory<TCHAR,TCondensedJsonPrintPolicy<TCHAR>>::Create(&ReceiptJson);return FJsonSerializer::Serialize(Result,Writer);
+}
+
+} // Shared implementation remains private; only the two strict reflected endpoints call it.
+
+bool ULivingTownTownSliceReadbackLibrary::ExportTownSliceMeshes(const TArray<FString>& AssetPaths,const FString& RelativeOutputDirectory,FString& ReceiptJson,FString& Error)
+{
+    return ExportScopedNativeMeshes(AssetPaths,RelativeOutputDirectory,ReceiptJson,Error,EReadbackScope::TownSlice);
+}
+
+bool ULivingTownTownSliceReadbackLibrary::ExportCafeFurnitureMeshes(const TArray<FString>& AssetPaths,const FString& RelativeOutputDirectory,FString& ReceiptJson,FString& Error)
+{
+    ReceiptJson.Empty();Error.Empty();
+    if(!CafeFurniturePair(AssetPaths))return Refuse(Error,TEXT("readback_exact_two_cafe_furniture_assets_required"));
+    return ExportScopedNativeMeshes(AssetPaths,RelativeOutputDirectory,ReceiptJson,Error,EReadbackScope::CafeFurniture);
 }

@@ -29,5 +29,6 @@ void ALivingTownCafeGameMode::StartQualifiedPlayer(APlayerController* PC)
     FCollisionQueryParams Q(SCENE_QUERY_STAT(CafeActualBenSpawn),true);Q.AddIgnoredActor(Ben);
     if(GetWorld()->OverlapBlockingTestByChannel(Ben->GetActorLocation(),FQuat::Identity,ECC_Pawn,FCollisionShape::MakeCapsule(B.CapsuleRadiusCm,B.CapsuleHalfHeightCm),Q)){Ben->Destroy();UE_LOG(LogTemp,Error,TEXT("Actual configured Ben spawn collision refused"));return;}
     PC->Possess(Ben);PC->SetControlRotation(B.SpawnRotation);
-    if(!P->AttachQualifiedPlayer(Ben,Error)){PC->UnPossess();Ben->Destroy();UE_LOG(LogTemp,Error,TEXT("Ben physical binding refused: %s"),*Error);}
+    if(!P->AttachQualifiedPlayer(Ben,Error)){PC->UnPossess();Ben->Destroy();UE_LOG(LogTemp,Error,TEXT("Ben physical binding refused: %s"),*Error);return;}
+    PC->SetViewTarget(Ben);
 }
