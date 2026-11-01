@@ -12,7 +12,7 @@
     },
     {
       "file": "unreal/Source/LivingTownNative/ThirdParty/CafeWorldV3.hpp",
-      "sha256": "61b1fbdeed51a6e1c662c8d24aafd57d95bd30d18a4ef4a34664e9bc783f4191"
+      "sha256": "ee98451748c3068a51a41f9acbf4051a4de8fd5643d93a9c0a81d30ac48b7310"
     },
     {
       "file": "unreal/Source/LivingTownNative/ThirdParty/CafeWorldV3Envelope.hpp",
@@ -49,5 +49,17 @@
   "all_eight_owned_steps_raw0_waited_reaped_no_children": true,
   "native_runs": 0,
   "physical_input_runs": 0,
-  "contexts_are_synthetic": true
+  "contexts_are_synthetic": true,
+  "latest_v3_rebuild_report_sha256": "e6836e2a474558ac15dd0e169a63d9d67b67bf965b83da6e9b657081b4d43e80",
+  "latest_v3_rebuild_reason": "Five GCC misleading-indentation warnings removed without changing non-comment tokens; canonical V3 consumers rebuilt and passed.",
+  "latest_v3_consumer_source": [
+    {
+      "file": "tools/tests/cafe_world_v3/CafeWorldV3PropertyCases.cpp",
+      "sha256": "1792382e676824e0d6fbe73e06fc5eb39b2bab2274c1400c877a6813c158cfd2"
+    },
+    {
+      "file": "tools/tests/cafe_world_v3/CafeWorldV3MealCases.cpp",
+      "sha256": "a9b5ad9f536391a302612bb05e049365f5f4a893c1333e48baf0ebbdb6f5eea7"
+    }
+  ]
 }

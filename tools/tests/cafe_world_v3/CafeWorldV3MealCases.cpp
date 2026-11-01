@@ -1,4 +1,4 @@
-// SOURCE-ONLY candidate executable. No engine, raycast, clip or UI is tested.
+// Portable CPU meal/grant/replay cases; native contact, clips and UI remain pending.
 #include "../../../unreal/Source/LivingTownNative/ThirdParty/CafeWorldV3Envelope.hpp"
 #include "../../../unreal/Source/LivingTownNative/ThirdParty/CafeBackendV3.hpp"
 #include <iostream>

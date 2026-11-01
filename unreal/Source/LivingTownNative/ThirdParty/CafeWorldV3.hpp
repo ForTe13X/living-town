@@ -1,5 +1,6 @@
 #pragma once
-// SOURCE-ONLY V3 CANDIDATE, UNCOMPILED. One property/coin/stock/care authority.
+// Portable C++17 authority for property, coins, stock and care grants.
+// Native adapter and physical gameplay integration remain pending.
 // No Unreal/Godot dependency. Never run beside v1 against the same balances.
 #include "CafePropertyV2.hpp"
 #include <algorithm>
@@ -196,7 +197,8 @@ inline void write_meal_command(Writer& w,const MealCommand& c) {
 }
 inline MealCommand read_meal_command(Reader& r) {
     MealCommand c;c.request_id=r.s();c.site_id=r.s();const auto k=parse_meal_kind(r.s());
-    if(!k)throw std::invalid_argument("meal kind");c.kind=*k;c.expected_revision=r.n();return c;
+    if(!k)throw std::invalid_argument("meal kind");
+    c.kind=*k;c.expected_revision=r.n();return c;
 }
 inline void write_meal_context(Writer& w,const MealContext& c) {
     w.s(c.actor);w.s(c.authenticated_actor);w.n(c.tick);w.b(c.fresh);w.b(c.correct_floor);
@@ -242,7 +244,8 @@ inline Event read_event(Reader& r) {
     Event e;e.id=r.n();e.tick=r.n();e.type=r.s();e.actor=r.s();e.target=r.s();e.subject=r.s();e.note=r.s();e.txid=r.s();e.accepted=r.b();
     e.amt=r.o();e.amount=r.o();e.end_tick=r.o();e.pay_event_id=r.o();e.lease_event_id=r.o();e.title_revision=r.o();e.offer_revision=r.o();
     e.request_id=r.s();e.action=r.s();e.owner_before=r.s();e.owner_after=r.s();e.offer_kind=r.s();if(r.b())e.context=read_context(r);
-    if(r.b())e.meal_command=read_meal_command(r);if(r.b())e.meal_context=read_meal_context(r);
+    if(r.b())e.meal_command=read_meal_command(r);
+    if(r.b())e.meal_context=read_meal_context(r);
     e.stock_event_id=r.o();e.grant_event_id=r.o();return e;
 }
 inline std::string event_bytes(const Event& e) { Writer w;write_event(w,e);return w.bytes; }
@@ -399,10 +402,12 @@ class Kernel {
         Event supply;supply.tick=at.tick;supply.actor=at.actor;supply.target="ration";supply.subject=input.site_id;
         supply.type=stock_current_>0?"meal_stock_consumed":"public_meal_shortage";supply.accepted=true;
         supply.request_id=input.request_id;supply.amount=stock_current_>0?1:0;
-        if(stock_current_>0)--stock_current_;append(std::move(supply));stock=events_.back().id;
+        if(stock_current_>0)--stock_current_;
+        append(std::move(supply));stock=events_.back().id;
         if(fault==MealFault::AfterStock)throw std::runtime_error("injected_meal_poststock");
         Event use=meal_base(input,at);use.type="care_meal_granted";use.accepted=true;use.note=funding;
-        if(pay>0)use.pay_event_id=pay;use.stock_event_id=stock;append(std::move(use));
+        if(pay>0)use.pay_event_id=pay;
+        use.stock_event_id=stock;append(std::move(use));
         const auto id=events_.back().id;
         CareGrant grant;grant.event_id=id;grant.tick=at.tick;grant.pay_event_id=pay;grant.stock_event_id=stock;
         grant.request_id=input.request_id;grant.resident=at.actor;grant.site_id=input.site_id;grant.provider=provider;grant.funding=funding;
@@ -631,7 +636,8 @@ public:
                 if(enabled||!e.accepted||e.subject!=meal_policy||e.note!=meal_policy_sha256||e.amount!=authored_opening_rations)return false;
                 enabled=true;stock=authored_opening_rations;
             }else if(e.type=="meal_stock_consumed") {
-                if(!enabled||!e.accepted||e.target!="ration"||e.amount!=1||stock<1)return false;--stock;
+                if(!enabled||!e.accepted||e.target!="ration"||e.amount!=1||stock<1)return false;
+                --stock;
             }else if(e.type=="public_meal_shortage") {
                 if(!enabled||!e.accepted||e.amount!=0||stock!=0)return false;
             }

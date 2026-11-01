@@ -1,4 +1,4 @@
-// UNCOMPILED candidate executable. No engine or graphics work.
+// Portable CPU property contract cases; native V3 gameplay integration remains pending.
 #include "../../../unreal/Source/LivingTownNative/ThirdParty/CafeWorldV3.hpp"
 #include "../../../unreal/Source/LivingTownNative/ThirdParty/LeaseKernel.hpp"
 #include <filesystem>
