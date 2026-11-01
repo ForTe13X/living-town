@@ -6,11 +6,15 @@ on:
     paths:
       - 'unreal/Source/LivingTownNative/ThirdParty/**'
       - 'tools/tests/cafe_property_v2/**'
+      - 'tools/tests/daily_life_use/**'
+      - 'tools/tests/cafe_world_v3/**'
       - '.github/workflows/native-property-core.yml'
   pull_request:
     paths:
       - 'unreal/Source/LivingTownNative/ThirdParty/**'
       - 'tools/tests/cafe_property_v2/**'
+      - 'tools/tests/daily_life_use/**'
+      - 'tools/tests/cafe_world_v3/**'
       - '.github/workflows/native-property-core.yml'
 
 permissions:
@@ -28,3 +32,29 @@ jobs:
           g++ -std=c++17 -O2 -Wall -Wextra tools/tests/cafe_property_v2/CafePropertyV2Cases.cpp -o "$RUNNER_TEMP/cafe-property-cases/cases"
       - name: Verify payments, title, leases and replay
         run: '"$RUNNER_TEMP/cafe-property-cases/cases" "$RUNNER_TEMP/cafe-property-cases"'
+
+  portable-care:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Compile the engine-independent care progression cases
+        run: |
+          mkdir -p "$RUNNER_TEMP/daily-life-use-cases"
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -UNDEBUG tools/tests/daily_life_use/DailyLifeUseCases.cpp -o "$RUNNER_TEMP/daily-life-use-cases/cases"
+      - name: Verify care timing, interruption and replay
+        run: '"$RUNNER_TEMP/daily-life-use-cases/cases"'
+
+  portable-world-v3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Compile and verify the engine-independent V3 cases
+        run: |
+          cases_dir="$(mktemp -d "$RUNNER_TEMP/cafe-world-v3.XXXXXX")"
+          mkdir "$cases_dir/property" "$cases_dir/meal"
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -UNDEBUG tools/tests/cafe_world_v3/CafeWorldV3PropertyCases.cpp -o "$cases_dir/property/cases"
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -UNDEBUG tools/tests/cafe_world_v3/CafeWorldV3MealCases.cpp -o "$cases_dir/meal/cases"
+          "$cases_dir/property/cases" "$cases_dir/property"
+          "$cases_dir/meal/cases"

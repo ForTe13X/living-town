@@ -1,0 +1,65 @@
+{
+  "schema": "living_town.native_daily_life_portable_evidence.v1",
+  "scope": "Portable CPU implementation only; no native scene, UI, meal completion or slot-save acceptance",
+  "source": [
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/CafePropertyV2.hpp",
+      "sha256": "50adb86b5333436ff6af330ed02ca3b21b9aae0cc7f92c32d833dcdb61ec76ab"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/LeaseKernel.hpp",
+      "sha256": "942eb43c7b822da17c4949b08aa890d65324cd6d0e31bafa5d5104440641a8ac"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/CafeWorldV3.hpp",
+      "sha256": "ee98451748c3068a51a41f9acbf4051a4de8fd5643d93a9c0a81d30ac48b7310"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/CafeWorldV3Envelope.hpp",
+      "sha256": "db50cdf075e978d86550eee6008bbcba386b6bb506f750b8aae58902f8114d82"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/CafeBackendV3.hpp",
+      "sha256": "f311599b6bb10f4ac60281c9bb2bbaf904b62bf8fec68b1ac46d7ae7e932994d"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/DailyLifeUseV1.hpp",
+      "sha256": "eafff855cdccc769532e950035cfaac04a92eeb9e19853fbe2204d605dd539fa"
+    }
+  ],
+  "actual_MSVC_flags": "/std:c++17 /EHsc /permissive- /W4 /WX /O2 /fp:strict /MT /UNDEBUG",
+  "compiler_binary_sha256": "fe251ef50a1545b1b0835ee17b1e785459712b38d79e45b5c1d3d28970a36619",
+  "actual_local_run_report_sha256": "a993c771a7a7edda622a9fc1debb4b5ee7e1bc4559f9c48bd02a350f9398a745",
+  "original_property": {
+    "cases": 16,
+    "checks": 1316
+  },
+  "v3_property": {
+    "cases": 16,
+    "checks": 1316
+  },
+  "v3_meal": {
+    "groups": 19,
+    "checks": 3342
+  },
+  "care_progress": {
+    "groups": 11
+  },
+  "all_original_input_bytes_and_metadata_unchanged": true,
+  "all_eight_owned_steps_raw0_waited_reaped_no_children": true,
+  "native_runs": 0,
+  "physical_input_runs": 0,
+  "contexts_are_synthetic": true,
+  "latest_v3_rebuild_report_sha256": "e6836e2a474558ac15dd0e169a63d9d67b67bf965b83da6e9b657081b4d43e80",
+  "latest_v3_rebuild_reason": "Five GCC misleading-indentation warnings removed without changing non-comment tokens; canonical V3 consumers rebuilt and passed.",
+  "latest_v3_consumer_source": [
+    {
+      "file": "tools/tests/cafe_world_v3/CafeWorldV3PropertyCases.cpp",
+      "sha256": "1792382e676824e0d6fbe73e06fc5eb39b2bab2274c1400c877a6813c158cfd2"
+    },
+    {
+      "file": "tools/tests/cafe_world_v3/CafeWorldV3MealCases.cpp",
+      "sha256": "a9b5ad9f536391a302612bb05e049365f5f4a893c1333e48baf0ebbdb6f5eea7"
+    }
+  ]
+}
