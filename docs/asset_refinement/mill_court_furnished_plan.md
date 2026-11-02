@@ -38,4 +38,4 @@ Coordinates start at each floor's inside southwest corner. The JSON provides wor
 
 ## Current scope
 
-The four floor plans pass the design checks. The diagrams are plan drawings, not game screenshots. Detailed meshes, surface materials, animated doors, native navigation, furnishing contact and gameplay integration remain separate validation steps. The site massing study also leaves courtyard path/terrain contacts to refine. The existing town and its runtime are unchanged by these planning assets.
+The four floor plans pass the design checks. The diagrams are plan drawings. The [portable Blender generator](mill_court_generator.md) now implements the furnished geometry, actual wall and stair openings, and procedural surface materials; its page includes rendered previews and commands. Animated doors, native navigation, furnishing contact and gameplay integration remain separate validation steps. The site massing study also leaves courtyard path/terrain contacts to refine. The existing town and its runtime are unchanged by these planning assets.

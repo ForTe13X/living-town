@@ -53,6 +53,7 @@ jobs:
           python -m unittest discover -s tools/tests -p 'test_town_expansion_exports.py'
           python -m unittest discover -s tools/tests -p 'test_town_expansion_package.py'
           python -m unittest discover -s tools/tests -p 'test_mill_court_plan.py'
+          python -m unittest discover -s tools/tests -p 'test_mill_court_generator.py'
       - name: CI lanes (lint + visual)
         env:
           GODOT: godot

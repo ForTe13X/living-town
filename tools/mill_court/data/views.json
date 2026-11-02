@@ -1,0 +1,66 @@
+[
+  {
+    "id": "01_Exterior_Courtyard",
+    "mode": "EXTERIOR",
+    "position": [
+      -25,
+      20,
+      16
+    ],
+    "target": [
+      -42,
+      36,
+      6.3
+    ],
+    "lens": 32
+  },
+  {
+    "id": "04_B_Ground_Cutaway",
+    "mode": "CUTAWAY",
+    "plan": "B_Ground",
+    "position": [
+      -30.0,
+      27.25,
+      14.063258560974631
+    ],
+    "target": [
+      -37.5,
+      36.25,
+      3.4132585609746307
+    ],
+    "type": "ORTHO",
+    "ortho_scale": 10.8
+  },
+  {
+    "id": "07_B_Ground_EyeLevel",
+    "mode": "EYELEVEL",
+    "plan": "B_Ground",
+    "position": [
+      -37.550000000000004,
+      34.3,
+      4.663258560974631
+    ],
+    "target": [
+      -35.800000000000004,
+      38.199999999999996,
+      4.163258560974631
+    ],
+    "lens": 24
+  },
+  {
+    "id": "08_B_Upper_EyeLevel",
+    "mode": "EYELEVEL",
+    "plan": "B_Upper",
+    "position": [
+      -36.2,
+      37.25,
+      7.313258560974631
+    ],
+    "target": [
+      -35.1,
+      34.699999999999996,
+      6.61325856097463
+    ],
+    "lens": 24
+  }
+]

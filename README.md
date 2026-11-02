@@ -26,7 +26,7 @@
 
 ## 最近更新
 
-- 新增 Mill Court 两栋住宅的四层[带家具平面方案](docs/asset_refinement/mill_court_furnished_plan.md)：明确门扇、楼梯洞口、家具朝向与床侧通道；可独立重跑布局检查。详细模型与 Unreal 场景接入继续推进。
+- Mill Court 两栋住宅提供四层[带家具平面方案](docs/asset_refinement/mill_court_furnished_plan.md)和可独立运行的 [Blender 模型生成器](docs/asset_refinement/mill_court_generator.md)：包含真实门窗洞口、楼梯与楼板开洞、家具和有方向的木纹，并附实际渲染预览。精细材质烘焙与 Unreal 场景接入继续推进。
 
 - 新增可选原生咖啡馆产权流程：真实柜台办理出售、购买与预付租赁，账款守恒与独立进程读档已通过。Aria 暂用功能原型角色，美术、键盘导览与性能继续验证。[范围与证据](docs/asset_refinement/unreal_native_cafe_property_v2.md)。
 

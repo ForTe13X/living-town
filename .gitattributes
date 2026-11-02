@@ -5,3 +5,7 @@ docs/asset_refinement/mill_court_furnished_plan.md text eol=lf
 docs/media/mill-court-floorplans.svg text eol=lf
 tools/mill_court_plan.py text eol=lf
 tools/tests/test_mill_court_plan.py text eol=lf
+tools/mill_court/** text eol=lf
+tools/tests/test_mill_court_generator.py text eol=lf
+tools/tests/mill_court_graph_fixture.py text eol=lf
+docs/asset_refinement/mill_court_generator.md text eol=lf
