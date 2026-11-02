@@ -1,5 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "LivingTownCurrent61HeadAssembly.h"
 
 // A physical projection contract, separate from the unchanged logical lease terms.
 // Only the scene/calibration producer supplies this. HUDs submit actions only.
@@ -78,6 +79,7 @@ struct FLivingTownCafeBinding
     FString WalkAnimationPath;
     FVector IdleRootDeltaCm = FVector::ZeroVector;
     FLivingTownCurrent61BakedCalibration Current61BakedCalibration;
+    TOptional<FLivingTownCurrent61HeadBinding> Current61Head; // trusted transient opt-in; serialized V1–V3 loader remains literal
     FTransform MeshRelativeTransform = FTransform::Identity;
     TArray<FLivingTownCafePartBinding> Parts;
     // Legacy files retain their exact 289-source-node contract. An explicit,

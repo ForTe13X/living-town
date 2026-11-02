@@ -3,6 +3,7 @@
 #include "LivingTownCafeProjectionSubsystem.h"
 #include "LivingTownCafePlayerController.h"
 #include "LivingTownCafeHUD.h"
+#include "LivingTownFullTownStreamingSubsystem.h"
 #include "Engine/World.h"
 #include "Misc/Paths.h"
 #include "GameFramework/PlayerController.h"
@@ -28,7 +29,11 @@ void ALivingTownCafeGameMode::StartQualifiedPlayer(APlayerController* PC)
     Ben->FinishSpawning(T);
     FCollisionQueryParams Q(SCENE_QUERY_STAT(CafeActualBenSpawn),true);Q.AddIgnoredActor(Ben);
     if(GetWorld()->OverlapBlockingTestByChannel(Ben->GetActorLocation(),FQuat::Identity,ECC_Pawn,FCollisionShape::MakeCapsule(B.CapsuleRadiusCm,B.CapsuleHalfHeightCm),Q)){Ben->Destroy();UE_LOG(LogTemp,Error,TEXT("Actual configured Ben spawn collision refused"));return;}
-    PC->Possess(Ben);PC->SetControlRotation(B.SpawnRotation);
+    auto* FullTown=GetWorld()->GetSubsystem<ULivingTownFullTownStreamingSubsystem>();
+    if(FullTown&&!FullTown->BeforeQualifiedPossess(PC,Error)){Ben->Destroy();UE_LOG(LogTemp,Error,TEXT("FullTown boot possession refused: %s"),*Error);return;}
+    PC->Possess(Ben);
+    if(FullTown&&!FullTown->AfterQualifiedPossess(PC,Ben,Error)){PC->UnPossess();Ben->Destroy();UE_LOG(LogTemp,Error,TEXT("FullTown post-possession lock refused: %s"),*Error);return;}
+    PC->SetControlRotation(B.SpawnRotation);
     if(!P->AttachQualifiedPlayer(Ben,Error)){PC->UnPossess();Ben->Destroy();UE_LOG(LogTemp,Error,TEXT("Ben physical binding refused: %s"),*Error);return;}
     PC->SetViewTarget(Ben);
 }
