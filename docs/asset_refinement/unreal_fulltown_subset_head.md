@@ -85,17 +85,30 @@ and zero test warnings on the AMD Radeon 8060S D3D12/SM6 device:
 The two new subset assets were authored and independently reopened with all 301
 roles, 262 external cafe parts and ordered material slots accounted for. The
 reopen check made no saves and preserved all 4,987 input packages, including the
-two new subset assets. This is saved-data evidence. The first launched runtime
-test remained movement-locked with the ground resident and two building
-sections loaded but hidden; it ended without a completion report. Traversal is
-not accepted, and the loading transition is under correction.
+two new subset assets. This is saved-data evidence. After the scheduling fix,
+Runtime003 reached all three resident sections in 11.69 seconds from native
+streaming activation and completed a 15-waypoint scripted route with grounded,
+walkable simple and complex footing traces. Its separate physical-input phase
+timed out with zero recorded displacement, so the overall run remains failed.
+
+Runtime004 made the navigation view readable with one diagnostic sun and an
+explicit transient camera exposure range. Its recorded source camera used the
+legacy maximum luminance of 8; the diagnostic override used 20,000 with zero
+exposure bias. The exterior plaster, door frame and character became visible,
+although the interior still needs lighting work. The manual phase later failed
+with Windows `Access is denied` while replacing its frequently updated progress
+JSON; a concurrent reader can prevent that replacement. This is a test-observer
+failure, not a successful movement check. A fresh run with progress logging
+that permits concurrent reads is still required. These diagnostic settings do
+not change the saved town maps.
 
 The tests exercise production validators, cancellation reservation behavior and
 safe assembly refusal. They do not prove a successful animated head attachment,
 physical traversal, unload/re-entry, collision coverage across the town,
 character appearance, startup time, frame rate or cooked packaging. Those
 remain separate checks with actual assets and runtime observations.
-The corrected source still needs a successful live traversal run.
+Physical keyboard movement and unload/re-entry still require successful live
+checks. Repository CI passed all nine checks at source commit `b536ccd`.
 
 The Blender preview investigation also isolated a source of broad black hair
 patches: the saved Cycles transparency depth was eight. Matched front/rear renders
