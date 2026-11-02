@@ -18,6 +18,11 @@ public:
     UFUNCTION(BlueprintCallable, Category="LivingTown|Viewport Review")
     static FString ConfigureFixedMidViewport();
 
+    // Exact current Entry editor viewport, reversible shared-owner scope.
+    // Temporary true realtime override; no camera/FOV or persistent settings write.
+    UFUNCTION(BlueprintCallable, Category="LivingTown|Viewport Review")
+    static FString ConfigureWallLightingViewport();
+
     // ScopeToken must equal the sole active scope. Original client must still
     // be registered with the same viewport/world; never dereference a stale one.
     UFUNCTION(BlueprintCallable, Category="LivingTown|Viewport Review")

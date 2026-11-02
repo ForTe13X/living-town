@@ -4,6 +4,7 @@ Unreal is the primary target. This project contains a C++ café projection, the 
 
 - Optional [cafe property v2](../docs/asset_refinement/unreal_native_cafe_property_v2.md) adds owner-consented title sale, conserved prepaid leasing and actual cold-process restore. Aria uses a functional proxy; final art and FPS remain open.
 - [Portable daily-life components](../docs/asset_refinement/native_daily_life_core.md) add tested meal transactions, ration reservations and care-action progression for the next native adapter. Gameplay activation and animation integration remain pending.
+- [Current61 avatar preparation and observations](../docs/asset_refinement/unreal_current61_validation.md) add an explicit baked-avatar strategy, Editor material/geometry checks and an opt-in ordinary-game diagnostic. The Editor build, five Lit character views and natural-motion test pass within their recorded scopes; character art, physical contact and production activation remain open.
 
 The editor target also loads `LivingTownMaterialInspection` for typed material graph/static-parameter inspection and explicit motion-asset derivative authoring. It is excluded from the game target. The motion helper duplicates/resamples the named new café BlendSpace only; runtime code refuses missing interpolation instead of mutating assets. The fixture-bound Python vertex-color correction is explicit and does not run during startup; its qualified scope and reproduction evidence are in [the material adapter notes](../docs/asset_refinement/unreal_vertex_color.md).
 

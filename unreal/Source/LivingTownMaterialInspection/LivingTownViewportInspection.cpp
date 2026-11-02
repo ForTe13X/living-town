@@ -173,6 +173,11 @@ FString ULivingTownViewportInspection::RestoreCurrentLevelViewport(const FString
     auto* Client = Saved->Client;
     if (!Registered(Client) || Client->Viewport != Saved->Viewport || Client->GetWorld() != Saved->World.Get())
         return Result(TEXT("REFUSED"), TEXT("Owned original client/viewport/world no longer live; no stale pointer dereference."));
+    if (Client->IsAnyActorLocked())
+        return Result(TEXT("REFUSED"), TEXT("Release the owned review camera before restoring; actor locks are never cleared implicitly."));
+    // Actor unlock can leave cached controlling-camera projection information.
+    // Refresh it while no actor is locked, before restoring the saved view type.
+    Client->UpdateViewForLockedActor();
     Client->RemoveRealtimeOverride(RealtimeTag, false);
     Client->SetViewportType(Saved->Type);
     Client->SetViewModes(Saved->PerspectiveMode, Saved->OrthographicMode);
@@ -199,4 +204,52 @@ FString ULivingTownViewportInspection::RestoreCurrentLevelViewport(const FString
     Data->SetBoolField(TEXT("scope_active"), false);
     Data->SetStringField(TEXT("scope_token"), TEXT(""));
     return Result(Restored ? TEXT("RESTORED_EXACT_ORIGINAL_VIEWPORT") : TEXT("RESTORE_READBACK_MISMATCH"), Restored ? TEXT("") : TEXT("Restored fields did not match saved values."), Data);
+}
+
+FString ULivingTownViewportInspection::ConfigureWallLightingViewport()
+{
+    if (!IsInGameThread() || !GIsEditor || IsRunningCommandlet())
+        return Result(TEXT("REFUSED"), TEXT("Wall lighting requires the Editor game thread, not a commandlet."));
+    if (Saved)
+        return Result(TEXT("REFUSED"), TEXT("One active viewport review scope only; restore its exact token first."));
+    auto* Client = GCurrentLevelEditingViewportClient;
+    if (!Registered(Client) || !Client->Viewport || !Client->GetWorld() || GEditor->PlayWorld ||
+        Client->GetWorld()->WorldType != EWorldType::Editor ||
+        Client->GetWorld()->GetPathName() != TEXT("/Engine/Maps/Entry.Entry") || !Client->IsPerspective())
+        return Result(TEXT("REFUSED"), TEXT("Exact current registered perspective Entry editor viewport required; PIE forbidden."));
+    if (Client->IsAnyActorLocked() || Client->IsEngineShowFlagsOverrideEnabled() || Client->HasRealtimeOverride(RealtimeTag) ||
+        Client->ViewTransformPerspective.IsPlaying() || Client->ViewTransformOrthographic.IsPlaying())
+        return Result(TEXT("REFUSED"), TEXT("Actor lock, animated camera, external showflag override or duplicate owned realtime scope prevents reversible wall review."));
+    const JObject Before = Observe(Client);
+    Saved = MakeUnique<FSavedViewport>(Client);
+    Client->SetViewMode(VMI_Lit);
+    Client->SetGameView(true);
+    Client->ExposureSettings.bFixed = false;
+    Client->EngineShowFlags.SetAtmosphere(true);
+    Client->EngineShowFlags.SetSkyLighting(true);
+    Client->EngineShowFlags.SetLighting(true);
+    Client->EngineShowFlags.SetMaterials(true);
+    Client->EngineShowFlags.SetTonemapper(true);
+    Client->EngineShowFlags.SetEyeAdaptation(true);
+    Client->AddRealtimeOverride(true, RealtimeTag);
+    Client->Invalidate();
+    const bool Configured = Registered(Client) && Client == GCurrentLevelEditingViewportClient &&
+        Client->Viewport == Saved->Viewport && Client->GetWorld() == Saved->World.Get() &&
+        Client->IsPerspective() && Client->GetViewMode() == VMI_Lit && Client->IsInGameView() &&
+        Client->IsRealtime() && Client->HasRealtimeOverride(RealtimeTag) && !Client->ExposureSettings.bFixed &&
+        Client->EngineShowFlags.Atmosphere && Client->EngineShowFlags.SkyLighting && Client->EngineShowFlags.Lighting &&
+        Client->EngineShowFlags.Materials && Client->EngineShowFlags.Tonemapper && Client->EngineShowFlags.EyeAdaptation &&
+        Client->ViewFOV == Saved->FOV && SameTransform(Client->ViewTransformPerspective, Saved->Perspective) &&
+        SameTransform(Client->ViewTransformOrthographic, Saved->Orthographic);
+    JObject Data = MakeShared<FJsonObject>();
+    Data->SetObjectField(TEXT("before"), Before);
+    Data->SetObjectField(TEXT("after"), Observe(Client));
+    Data->SetStringField(TEXT("scope_token"), Saved->Token);
+    Data->SetStringField(TEXT("scope_kind"), TEXT("WallLighting.Entry.CurrentClient.v1"));
+    Data->SetBoolField(TEXT("shared_private_owner_tag_mutually_exclusive_with_fixed_mid"), true);
+    Data->SetBoolField(TEXT("camera_location_rotation_FOV_unchanged"), Client->ViewFOV == Saved->FOV &&
+        SameTransform(Client->ViewTransformPerspective, Saved->Perspective) && SameTransform(Client->ViewTransformOrthographic, Saved->Orthographic));
+    Data->SetBoolField(TEXT("configured_readback_matches"), Configured);
+    return Result(Configured ? TEXT("CONFIGURED_WALL_LIGHTING_EXACT_CURRENT_VIEWPORT") : TEXT("WALL_LIGHTING_CONFIGURE_READBACK_MISMATCH"),
+        Configured ? TEXT("") : TEXT("Scope remains active; inspect the retained token/readback. Do not retry configuration."), Data);
 }

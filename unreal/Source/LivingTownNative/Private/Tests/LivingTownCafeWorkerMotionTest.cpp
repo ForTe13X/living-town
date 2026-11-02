@@ -115,7 +115,7 @@ bool FLivingTownCafeWorker110BindingTest::RunTest(const FString&)
         TestEqual(TEXT("Rejection retains complete289 source-part census"),B.Parts.Num(),289);
     };
     auto Change=[&](TFunctionRef<void(FJsonObject&)> Mutation){auto O=Worker110Fixture();Mutation(*O);return Encode(O);};
-    Reject(TEXT("Unknown future version refuses"),Change([](FJsonObject& O){O.SetStringField(TEXT("version"),TEXT("3"));}));
+    Reject(TEXT("Unsupported version 4 refuses"),Change([](FJsonObject& O){O.SetStringField(TEXT("version"),TEXT("4"));}));
     Reject(TEXT("V2 without strategy refuses"),Change([](FJsonObject& O){O.GetObjectField(TEXT("resident"))->RemoveField(TEXT("motion_strategy"));}));
     Reject(TEXT("Unknown strategy refuses"),Change([](FJsonObject& O){O.GetObjectField(TEXT("resident"))->SetStringField(TEXT("motion_strategy"),TEXT("unreviewed"));}));
     Reject(TEXT("V2 fields cannot leak into V1"),Change([](FJsonObject& O){O.SetStringField(TEXT("version"),TEXT("1"));}));

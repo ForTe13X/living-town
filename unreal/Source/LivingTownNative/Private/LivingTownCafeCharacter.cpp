@@ -27,6 +27,27 @@ bool LivingTownCafeWorker110::HasUnfilteredUnscaled1DMotionPolicy(const UBlendSp
         OneD->TargetWeightInterpolationSpeedPerSec==0.f&&OneD->InterpolationParam[0].InterpolationTime==0.f;
 }
 
+const TArray<FString>& LivingTownCafeCurrent61Baked::MaterialAssets()
+{
+    static const TArray<FString> Paths={
+        TEXT("/Game/LivingTown_UEPilot/Worker110Current61REST_v001/BakedMaterials_v001/Materials/M_Baked_body_1.M_Baked_body_1"),
+        TEXT("/Game/LivingTown_UEPilot/Worker110Current61REST_v001/BakedMaterials_v001/Materials/M_Baked_body_2.M_Baked_body_2"),
+        TEXT("/Game/LivingTown_UEPilot/Worker110Current61REST_v001/BakedMaterials_v001/Materials/M_Baked_brows_0.M_Baked_brows_0"),
+        TEXT("/Game/LivingTown_UEPilot/Worker110Current61REST_v001/BakedMaterials_v001/Materials/M_Baked_eyes_0.M_Baked_eyes_0"),
+        TEXT("/Game/LivingTown_UEPilot/Worker110Current61REST_v001/BakedMaterials_v001/Materials/M_Baked_garment_0.M_Baked_garment_0"),
+        TEXT("/Game/LivingTown_UEPilot/Worker110Current61REST_v001/BakedMaterials_v001/Materials/M_Baked_pants_0.M_Baked_pants_0"),
+        TEXT("/Game/LivingTown_UEPilot/Worker110Current61REST_v001/BakedMaterials_v001/Materials/M_Baked_shoes_0.M_Baked_shoes_0"),
+        TEXT("/Game/LivingTown_UEPilot/Worker110Current61REST_v001/BakedMaterials_v001/Materials/M_Baked_apron_0.M_Baked_apron_0")
+    };return Paths;
+}
+bool LivingTownCafeCurrent61Baked::HasUnfilteredUnscaled1DMotionPolicy(const UBlendSpace* Motion)
+{
+    if(!Motion||Motion->GetClass()!=UBlendSpace1D::StaticClass())return false;
+    const auto* OneD=Cast<UBlendSpace1D>(Motion);const auto& Axis=OneD->GetBlendParameter(0);
+    return !Axis.bSnapToGrid&&!Axis.bWrapInput&&!OneD->bScaleAnimation&&
+        OneD->TargetWeightInterpolationSpeedPerSec==0.f&&OneD->InterpolationParam[0].InterpolationTime==0.f;
+}
+
 ALivingTownCafeCharacter::ALivingTownCafeCharacter()
 {
     PrimaryActorTick.bCanEverTick=true; bUseControllerRotationYaw=false;
@@ -40,7 +61,8 @@ bool ALivingTownCafeCharacter::ConfigureQualifiedBen(const FLivingTownCafeBindin
 {
     Error.Reset(); if(bVisualQualified||B.ResidentId!=TEXT("ben")){Error=TEXT("exact_Ben_roster_binding_required");return false;}
     const bool bWorker110=B.MotionStrategy==ELivingTownCafeMotionStrategy::CafeWorker110RootAligned;
-    if(B.MotionStrategy!=ELivingTownCafeMotionStrategy::LegacySingleNode&&!bWorker110){Error=TEXT("unsupported_cafe_motion_strategy");return false;}
+    const bool bCurrent61Baked=B.MotionStrategy==ELivingTownCafeMotionStrategy::Current61BakedSingleNode;
+    if(B.MotionStrategy!=ELivingTownCafeMotionStrategy::LegacySingleNode&&!bWorker110&&!bCurrent61Baked){Error=TEXT("unsupported_cafe_motion_strategy");return false;}
     UMaterial* WorkerMaterial=nullptr;
     UAnimSequence* WorkerIdle=nullptr;UAnimSequence* WorkerWalk=nullptr;
     if(bWorker110)
@@ -59,6 +81,32 @@ bool ALivingTownCafeCharacter::ConfigureQualifiedBen(const FLivingTownCafeBindin
             WorkerIdle->GetNumberOfSampledKeys()!=462||WorkerWalk->GetNumberOfSampledKeys()!=72||
             WorkerIdle->GetPlayLength()!=15.366666793823242||WorkerWalk->GetPlayLength()!=2.366666555404663)
         {Error=TEXT("unchanged_full_worker110_source_clips_required");return false;}
+    }
+    TArray<UMaterial*> BakedMaterials;UAnimSequence* BakedIdle=nullptr;UAnimSequence* BakedWalk=nullptr;
+    if(bCurrent61Baked)
+    {
+        // Read all8 saved UMaterial skeletal flags before loading the new duplicate mesh.
+        // No material usage repair, source PBR006 mutation or engine default fallback.
+        if(!B.HasValidatedCurrent61BakedAvatarBinding()||
+            B.VisualAssetPath!=LivingTownCafeCurrent61Baked::MeshAsset||B.IdleWalkBlendSpacePath!=LivingTownCafeCurrent61Baked::MotionAsset||
+            B.IdleAnimationPath!=LivingTownCafeCurrent61Baked::IdleAsset||B.WalkAnimationPath!=LivingTownCafeCurrent61Baked::WalkAsset||B.UseSocket!=LivingTownCafeCurrent61Baked::PalmSocket||
+            B.MeshRelativeTransform.GetScale3D()!=FVector::OneVector||B.IdleRootDeltaCm!=FVector::ZeroVector||
+            B.WalkSpeedCmPerSecond!=float(B.Current61BakedCalibration.WalkSpeedCmPerSecond))
+        {Error=TEXT("qualified_current61_baked_avatar_descriptor_required");return false;}
+        for(const FString& Path:LivingTownCafeCurrent61Baked::MaterialAssets())
+        {
+            UMaterial* Material=LoadObject<UMaterial>(nullptr,*Path);
+            if(!Material||Material->GetClass()!=UMaterial::StaticClass()||!Material->GetUsageByFlag(MATUSAGE_SkeletalMesh))
+            {Error=TEXT("cold_qualified_all8_current61_baked_materials_required");return false;}
+            BakedMaterials.Add(Material);
+        }
+        BakedIdle=LoadObject<UAnimSequence>(nullptr,*B.IdleAnimationPath);BakedWalk=LoadObject<UAnimSequence>(nullptr,*B.WalkAnimationPath);
+        if(!BakedIdle||!BakedWalk||BakedIdle==BakedWalk||BakedIdle->RateScale!=1.f||BakedWalk->RateScale!=1.f||
+            BakedIdle->IsValidAdditive()||BakedWalk->IsValidAdditive()||BakedIdle->bEnableRootMotion||BakedWalk->bEnableRootMotion||
+            BakedIdle->GetNumberOfSampledKeys()!=461||BakedWalk->GetNumberOfSampledKeys()!=71||
+            double(BakedIdle->GetPlayLength())!=B.Current61BakedCalibration.IdleDurationSeconds||double(BakedWalk->GetPlayLength())!=B.Current61BakedCalibration.WalkDurationSeconds||
+            BakedIdle->GetSamplingFrameRate()!=FFrameRate(30,1)||BakedWalk->GetSamplingFrameRate()!=FFrameRate(30,1))
+        {Error=TEXT("qualified_complete_current61_baked30hz_idle_walk_required");return false;}
     }
     USkeletalMesh* Visual=LoadObject<USkeletalMesh>(nullptr,*B.VisualAssetPath);UBlendSpace* Motion=LoadObject<UBlendSpace>(nullptr,*B.IdleWalkBlendSpacePath);
     if(!Visual||!Visual->GetSkeleton()||!Motion||Motion->GetSkeleton()!=Visual->GetSkeleton()||Motion->GetBlendParameter(0).Min>0||Motion->GetBlendParameter(0).Max<B.WalkSpeedCmPerSecond){Error=TEXT("qualified_Ben_mesh_and_matching_idle_walk_motion_required");return false;}
@@ -80,6 +128,32 @@ bool ALivingTownCafeCharacter::ConfigureQualifiedBen(const FLivingTownCafeBindin
             const bool WalkRole=Sample.Animation==WorkerWalk&&Sample.SampleValue==FVector(110,0,0);
             if((!IdleRole&&!WalkRole)||Sample.RateScale!=1.f||Sample.bUseSingleFrameForBlending||Sample.bMirror)
             {Error=TEXT("worker110_unmodified_two_full_rate1_samples_required");return false;}
+        }
+    }
+    if(bCurrent61Baked)
+    {
+        const auto& Ref=Visual->GetRefSkeleton();const auto* Render=Visual->GetResourceForRendering();const auto* Palm=Visual->FindSocket(FName(LivingTownCafeCurrent61Baked::PalmSocket));
+        if(Ref.GetNum()!=62||Ref.GetBoneName(0)!=FName(LivingTownCafeCurrent61Baked::WrapperBone)||Ref.GetParentIndex(0)!=INDEX_NONE||Ref.GetBoneName(1)!=FName(TEXT("root"))||Ref.GetParentIndex(1)!=0||
+            !Render||Render->LODRenderData.Num()!=1||Render->LODRenderData[0].GetNumVertices()!=43432||Render->LODRenderData[0].GetTotalFaces()!=72848||Render->LODRenderData[0].GetNumTexCoords()!=3||Render->LODRenderData[0].RenderSections.Num()!=8||
+            Visual->GetMaterials().Num()!=8||BakedMaterials.Num()!=8||!Palm||Palm->GetOuter()!=Visual||Palm->BoneName!=FName(TEXT("hand_r"))||
+            !Palm->GetSocketLocalTransform().Equals(B.Current61BakedCalibration.PalmSocketLocalTransform,1e-9)||
+            !LivingTownCafeCurrent61Baked::HasUnfilteredUnscaled1DMotionPolicy(Motion)||Motion->GetBlendSamples().Num()!=2||Motion->IsValidAdditive()||
+            Motion->GetBlendParameter(0).Min!=0.f||Motion->GetBlendParameter(0).Max!=B.WalkSpeedCmPerSecond||
+            BakedIdle->GetSkeleton()!=Visual->GetSkeleton()||BakedWalk->GetSkeleton()!=Visual->GetSkeleton())
+        {Error=TEXT("actual_current61_baked_body_socket_and_measured_gait_motion_required");return false;}
+        TSet<int32> SectionMaterialSlots;
+        for(int32 I=0;I<8;++I)
+        {
+            if(Visual->GetMaterials()[I].MaterialInterface.Get()!=BakedMaterials[I]){Error=TEXT("exact8_current61_baked_material_order_required");return false;}
+            const int32 Slot=Render->LODRenderData[0].RenderSections[I].MaterialIndex;
+            if(Slot<0||Slot>=8||SectionMaterialSlots.Contains(Slot)){Error=TEXT("exact8_current61_baked_section_slots_required");return false;}SectionMaterialSlots.Add(Slot);
+        }
+        for(const auto& Sample:Motion->GetBlendSamples())
+        {
+            const bool IdleRole=Sample.Animation==BakedIdle&&Sample.SampleValue==FVector::ZeroVector;
+            const bool WalkRole=Sample.Animation==BakedWalk&&Sample.SampleValue==FVector(B.WalkSpeedCmPerSecond,0,0);
+            if((!IdleRole&&!WalkRole)||Sample.RateScale!=1.f||Sample.bUseSingleFrameForBlending||Sample.bMirror)
+            {Error=TEXT("current61_baked_two_full_rate1_measured_speed_samples_required");return false;}
         }
     }
     const UAnimSequence* IdleSample=nullptr;const UAnimSequence* WalkSample=nullptr;
@@ -111,7 +185,7 @@ bool ALivingTownCafeCharacter::ConfigureQualifiedBen(const FLivingTownCafeBindin
 
     GetMesh()->SetSkeletalMeshAsset(Visual);GetMesh()->SetRelativeTransform(B.MeshRelativeTransform);UseSocket=B.UseSocket;
     if(!GetMesh()->DoesSocketExist(FName(*UseSocket))){Error=TEXT("calibrated_Ben_hand_socket_missing");GetMesh()->SetSkeletalMeshAsset(nullptr);return false;}
-    GetCapsuleComponent()->SetCapsuleSize(B.CapsuleRadiusCm,B.CapsuleHalfHeightCm,true);GetCharacterMovement()->MaxWalkSpeed=B.WalkSpeedCmPerSecond;CameraArm->TargetArmLength=B.CameraArmCm;if(bWorker110)CameraArm->TargetOffset.Z=0.f; // Origin is capsule centre; keep full body framed during short boom collisions.
+    GetCapsuleComponent()->SetCapsuleSize(B.CapsuleRadiusCm,B.CapsuleHalfHeightCm,true);GetCharacterMovement()->MaxWalkSpeed=B.WalkSpeedCmPerSecond;CameraArm->TargetArmLength=B.CameraArmCm;if(bWorker110||bCurrent61Baked)CameraArm->TargetOffset.Z=0.f; // Origin is capsule centre; keep full body framed during short boom collisions.
     IdleWalk=Motion;
     if(bWorker110)
     {
@@ -127,8 +201,10 @@ bool ALivingTownCafeCharacter::ConfigureQualifiedBen(const FLivingTownCafeBindin
     {
         GetMesh()->SetAnimationMode(EAnimationMode::AnimationSingleNode);GetMesh()->PlayAnimation(IdleWalk,true);
     }
+    if(bCurrent61Baked&&(!GetMesh()->GetSingleNodeInstance()||GetMesh()->GetSingleNodeInstance()->GetClass()!=UAnimSingleNodeInstance::StaticClass()||GetMesh()->GetAnimationMode()!=EAnimationMode::AnimationSingleNode))
+    {Error=TEXT("plain_current61_baked_single_node_player_required");return false;}
     if(!GetMesh()->GetSingleNodeInstance()){Error=TEXT("native_idle_walk_player_missing");return false;}
-    GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);GetMesh()->SetVisibility(true);bVisualQualified=true;bWorker110VisualQualified=bWorker110;SetActorTickEnabled(true);UpdatePossessedBonePolicy();return true;
+    GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);GetMesh()->SetVisibility(true);bVisualQualified=true;bWorker110VisualQualified=bWorker110;bCurrent61BakedVisualQualified=bCurrent61Baked;SetActorTickEnabled(true);UpdatePossessedBonePolicy();return true;
 }
 void ALivingTownCafeCharacter::RestorePossessedBonePolicy()
 {
@@ -140,7 +216,9 @@ void ALivingTownCafeCharacter::UpdatePossessedBonePolicy()
     // Gameplay uses this active player's palm/socket and body bones even when occluded.
     // Do not expand full bone evaluation to legacy visuals, AI or unpossessed workers.
     RestorePossessedBonePolicy();
-    if(bVisualQualified&&bWorker110VisualQualified&&Controller&&Controller->IsPlayerController()&&GetMesh()&&Cast<ULivingTownRootCorrectedSingleNodeInstance>(GetMesh()->GetAnimInstance()))
+    const bool bQualifiedRootPlayer=bWorker110VisualQualified&&GetMesh()&&Cast<ULivingTownRootCorrectedSingleNodeInstance>(GetMesh()->GetAnimInstance());
+    const bool bQualifiedBakedPlayer=bCurrent61BakedVisualQualified&&GetMesh()&&GetMesh()->GetAnimationMode()==EAnimationMode::AnimationSingleNode&&GetMesh()->GetSingleNodeInstance()&&GetMesh()->GetSingleNodeInstance()->GetClass()==UAnimSingleNodeInstance::StaticClass();
+    if(bVisualQualified&&Controller&&Controller->IsPlayerController()&&(bQualifiedRootPlayer||bQualifiedBakedPlayer))
     {
         PreviousPossessedBonePolicy=static_cast<uint8>(GetMesh()->VisibilityBasedAnimTickOption);
         GetMesh()->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;

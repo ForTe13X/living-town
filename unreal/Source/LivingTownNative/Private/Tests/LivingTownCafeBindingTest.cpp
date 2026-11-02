@@ -33,6 +33,28 @@ TSharedRef<FJsonObject> Fixture()
     const TSet<int32> Floors={8559,8562,8615,8649,8673,8684},Counters={8564,8565,8566,8570,8571,8572};TArray<TSharedPtr<FJsonValue>> Parts;
     for(int32 N=8534;N<=8822;++N){auto P=MakeShared<FJsonObject>();P->SetStringField(TEXT("id"),FString::Printf(TEXT("town_10_urban_core:node:%d"),N));P->SetStringField(TEXT("asset"),FString::Printf(TEXT("/Game/ParserFixture/SM_%d.SM_%d"),N,N));P->SetStringField(TEXT("render_sha256"),FString::ChrN(64,'b'));P->SetStringField(TEXT("collision_guid"),FString::ChrN(32,'c'));P->SetObjectField(TEXT("transform"),Transform());P->SetBoolField(TEXT("floor"),Floors.Contains(N));P->SetBoolField(TEXT("counter"),Counters.Contains(N));Parts.Add(MakeShared<FJsonValueObject>(P));}O->SetArrayField(TEXT("parts"),Parts);return O;
 }
+TSharedRef<FJsonObject> Current61Fixture()
+{
+    // Synthetic parser metadata only. Even the required family paths are not
+    // loaded here; the fake qualification hash is no avatar/contact evidence.
+    auto O=Fixture();O->SetStringField(TEXT("version"),TEXT("3"));
+    auto R=O->GetObjectField(TEXT("resident"));
+    R->SetStringField(TEXT("skeletal_mesh"),LivingTownCafeCurrent61Baked::MeshAsset);
+    R->SetStringField(TEXT("idle_walk_blendspace"),LivingTownCafeCurrent61Baked::MotionAsset);
+    R->SetStringField(TEXT("use_socket"),LivingTownCafeCurrent61Baked::PalmSocket);
+    R->SetStringField(TEXT("motion_strategy"),LivingTownCafeCurrent61Baked::Strategy);
+    R->SetStringField(TEXT("idle_animation"),LivingTownCafeCurrent61Baked::IdleAsset);
+    R->SetStringField(TEXT("walk_animation"),LivingTownCafeCurrent61Baked::WalkAsset);
+    auto C=MakeShared<FJsonObject>();C->SetStringField(TEXT("format"),TEXT("LivingTown.Current61BakedAvatarCalibration"));
+    C->SetStringField(TEXT("version"),TEXT("1"));C->SetStringField(TEXT("status"),TEXT("UE_AVATAR_CONTACT_QUALIFIED"));
+    C->SetStringField(TEXT("qualification_sha256"),FString::ChrN(64,'d'));
+    auto Palm=Transform();Palm->SetField(TEXT("translation_cm"),Vec(1,2,3));C->SetObjectField(TEXT("palm_socket_transform"),Palm);
+    C->SetNumberField(TEXT("walk_speed_cm_s"),137.5);
+    C->SetNumberField(TEXT("idle_duration_seconds"),15.333332821726799);
+    C->SetNumberField(TEXT("walk_duration_seconds"),2.333333139618238);
+    R->SetObjectField(TEXT("avatar_calibration"),C);O->GetObjectField(TEXT("movement"))->SetNumberField(TEXT("walk_speed_cm_s"),137.5);
+    return O;
+}
 FString Encode(TSharedRef<FJsonObject> O){FString S;FJsonSerializer::Serialize(O,TJsonWriterFactory<TCHAR,TCondensedJsonPrintPolicy<TCHAR>>::Create(&S));return S;}
 }
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FLivingTownCafeBindingTest,"LivingTown.Native.CafeBindingRefusals",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
@@ -53,9 +75,46 @@ bool FLivingTownCafeBindingTest::RunTest(const FString&)
     Reject(TEXT("Duplicate imported path refuses source aliasing"),Change([](FJsonObject& O){const auto& P=O.GetArrayField(TEXT("parts"));P[1]->AsObject()->SetStringField(TEXT("asset"),P[0]->AsObject()->GetStringField(TEXT("asset")));}));
     Reject(TEXT("UI reach authority cannot be inserted"),Change([](FJsonObject& O){O.SetBoolField(TEXT("within_reach"),true);}));
     Reject(TEXT("Boolean capsule dimension cannot coerce"),Change([](FJsonObject& O){O.GetObjectField(TEXT("movement"))->SetBoolField(TEXT("capsule_radius_cm"),true);}));
-    Reject(TEXT("Unknown version rejected"),Change([](FJsonObject& O){O.SetStringField(TEXT("version"),TEXT("2"));}));
+    Reject(TEXT("Unknown version rejected"),Change([](FJsonObject& O){O.SetStringField(TEXT("version"),TEXT("4"));}));
     Reject(TEXT("Duplicate keys rejected before conversion"),Valid.Replace(TEXT("\"version\":\"1\""),TEXT("\"version\":\"1\",\"version\":\"1\"")));
-    Reject(TEXT("Logical-only legacy binding refuses"),TEXT("{\"schema\":\"LivingTown.LogicalCafeBinding\",\"version\":1}"));return true;
+    Reject(TEXT("Logical-only legacy binding refuses"),TEXT("{\"schema\":\"LivingTown.LogicalCafeBinding\",\"version\":1}"));
+
+    FFileHelper::SaveStringToFile(Encode(Current61Fixture()),*Path);
+    if(!TestTrue(TEXT("Complete synthetic V3 validates parser metadata only"),FLivingTownCafeBinding::ReadQualifiedFile(Path,B,Error)))return false;
+    TestTrue(TEXT("V3 explicitly selects once-baked plain-player strategy"),B.MotionStrategy==ELivingTownCafeMotionStrategy::Current61BakedSingleNode);
+    TestTrue(TEXT("V3 complete metadata predicate holds without loading assets"),B.HasValidatedCurrent61BakedAvatarBinding());
+    TestEqual(TEXT("V3 retains all legacy room source parts"),B.Parts.Num(),289);
+    TestEqual(TEXT("V3 reads declared speed rather than candidate100 or legacy180"),B.Current61BakedCalibration.WalkSpeedCmPerSecond,137.5);
+    TestTrue(TEXT("V3 reads declared nonidentity palm transform"),B.Current61BakedCalibration.PalmSocketLocalTransform.GetTranslation()==FVector(1,2,3));
+    const FString BeforeV3=B.BindingFileSha256;
+    auto RejectV3=[&](const TCHAR* Name,TFunctionRef<void(FJsonObject&)> C)
+    {
+        auto O=Current61Fixture();C(*O);FFileHelper::SaveStringToFile(Encode(O),*Path);
+        TestFalse(Name,FLivingTownCafeBinding::ReadQualifiedFile(Path,B,Error));
+        TestEqual(TEXT("Refused V3 preserves accepted file identity"),B.BindingFileSha256,BeforeV3);
+        TestTrue(TEXT("Refused V3 preserves accepted descriptor and roster"),B.HasValidatedCurrent61BakedAvatarBinding()&&B.Parts.Num()==289&&B.Current61BakedCalibration.WalkSpeedCmPerSecond==137.5&&B.Current61BakedCalibration.PalmSocketLocalTransform.GetTranslation()==FVector(1,2,3));
+    };
+    RejectV3(TEXT("V3 requires complete avatar descriptor"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->RemoveField(TEXT("avatar_calibration"));});
+    RejectV3(TEXT("V3 rejects unqualified avatar status"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->GetObjectField(TEXT("avatar_calibration"))->SetStringField(TEXT("status"),TEXT("SOURCE_ONLY"));});
+    RejectV3(TEXT("V3 rejects zero qualification hash"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->GetObjectField(TEXT("avatar_calibration"))->SetStringField(TEXT("qualification_sha256"),FString::ChrN(64,'0'));});
+    RejectV3(TEXT("V3 rejects noncanonical qualification hash"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->GetObjectField(TEXT("avatar_calibration"))->SetStringField(TEXT("qualification_sha256"),FString::ChrN(64,'D'));});
+    RejectV3(TEXT("V3 rejects injected descriptor authority"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->GetObjectField(TEXT("avatar_calibration"))->SetBoolField(TEXT("within_reach"),true);});
+    RejectV3(TEXT("V3 rejects old root-aligned strategy"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->SetStringField(TEXT("motion_strategy"),LivingTownCafeWorker110::Strategy);});
+    RejectV3(TEXT("V3 rejects another body family"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->SetStringField(TEXT("skeletal_mesh"),LivingTownCafeWorker110::MeshAsset);});
+    RejectV3(TEXT("V3 rejects another motion family"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->SetStringField(TEXT("idle_walk_blendspace"),LivingTownCafeWorker110::MotionAsset);});
+    RejectV3(TEXT("V3 rejects another idle clip"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->SetStringField(TEXT("idle_animation"),LivingTownCafeWorker110::IdleAsset);});
+    RejectV3(TEXT("V3 rejects another walk clip"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->SetStringField(TEXT("walk_animation"),LivingTownCafeWorker110::WalkAsset);});
+    RejectV3(TEXT("V3 rejects old palm socket"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->SetStringField(TEXT("use_socket"),LivingTownCafeWorker110::PalmSocket);});
+    RejectV3(TEXT("V3 rejects double-applied mesh scale"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->GetObjectField(TEXT("mesh_transform"))->SetField(TEXT("scale"),Vec(.01,.01,.01));});
+    RejectV3(TEXT("V3 rejects nonunit palm scale"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->GetObjectField(TEXT("avatar_calibration"))->GetObjectField(TEXT("palm_socket_transform"))->SetField(TEXT("scale"),Vec(2,1,1));});
+    RejectV3(TEXT("V3 rejects invalid palm quaternion"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->GetObjectField(TEXT("avatar_calibration"))->GetObjectField(TEXT("palm_socket_transform"))->SetArrayField(TEXT("rotation_quat_xyzw"),{MakeShared<FJsonValueNumber>(0),MakeShared<FJsonValueNumber>(0),MakeShared<FJsonValueNumber>(0),MakeShared<FJsonValueNumber>(0)});});
+    RejectV3(TEXT("V3 movement must match declared gait speed"),[](FJsonObject& O){O.GetObjectField(TEXT("movement"))->SetNumberField(TEXT("walk_speed_cm_s"),100);});
+    RejectV3(TEXT("V3 rejects Boolean descriptor speed"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->GetObjectField(TEXT("avatar_calibration"))->SetBoolField(TEXT("walk_speed_cm_s"),true);});
+    RejectV3(TEXT("V3 rejects out-of-range descriptor speed"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->GetObjectField(TEXT("avatar_calibration"))->SetNumberField(TEXT("walk_speed_cm_s"),59);});
+    RejectV3(TEXT("V3 rejects truncated idle duration"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->GetObjectField(TEXT("avatar_calibration"))->SetNumberField(TEXT("idle_duration_seconds"),1);});
+    RejectV3(TEXT("V3 rejects truncated walk duration"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->GetObjectField(TEXT("avatar_calibration"))->SetNumberField(TEXT("walk_duration_seconds"),1);});
+    RejectV3(TEXT("V3 rejects legacy root correction field"),[](FJsonObject& O){O.GetObjectField(TEXT("resident"))->SetField(TEXT("idle_root_delta_cm"),Vec(0,0,0));});
+    return true;
 }
 
 namespace
