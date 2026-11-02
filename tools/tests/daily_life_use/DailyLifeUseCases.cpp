@@ -13,7 +13,7 @@ static Contact contact() {
     return {"ben","site/qualified","grant/1",true,true,true,true,true};
 }
 static bool same_needs(const Needs& a,const Needs& b) {
-    return a.hunger==b.hunger && a.energy==b.energy && a.hygiene==b.hygiene;
+    return a.hunger==b.hunger && a.energy==b.energy && a.hygiene==b.hygiene && a.fun==b.fun;
 }
 int main() {
     { // Authored exact decay, independent of rendering frequency.
@@ -27,6 +27,8 @@ int main() {
         for(Tick i=101;i<118;++i)assert(s.advance_one(i,contact())==Outcome::Progress);
         assert(s.advance_one(118,contact())==Outcome::Completed);
         assert(s.needs().hunger==7200-118*28+5000&&!s.active());
+        assert(s.needs().fun==7500&&s.requests().back().progressed_ticks==18);
+        assert(s.requests().back().end==End::Completed&&s.requests().back().end_tick==118);
     }
     { // Replay is not another action/meal; conflicting reuse is rejected.
         ResidentUse s("ben");auto g=grant(Kind::Eat);assert(s.begin(g).accepted);
@@ -105,5 +107,59 @@ int main() {
         fresh.tick=1;assert(s.begin(fresh).accepted&&s.requests().size()==2);
         assert(s.active()&&s.active()->elapsed==0&&s.active()->grant.tick==1);
     }
-    std::cout << "PASS 11 daily-life progress groups (portable CPU only).\n";
+    { // Durable typed state reconstructs partial gains and then continues once.
+        ResidentUse original("ben");const auto g=grant(Kind::Eat);assert(original.begin(g).accepted);
+        for(Tick i=1;i<=6;++i)assert(original.advance_one(i,contact())==Outcome::Progress);
+        const auto saved=original.export_state();ResidentUse restored("ben");
+        assert(restored.restore_state(saved)&&same_journal(saved,restored.export_state()));
+        assert(restored.active()->elapsed==6&&restored.requests()[0].progressed_ticks==6);
+        assert(restored.needs().fun==7300);
+        for(Tick i=7;i<=18;++i){assert(original.advance_one(i,contact())==restored.advance_one(i,contact()));}
+        assert(same_journal(original.export_state(),restored.export_state()));
+        assert(restored.needs().fun==7500&&restored.requests()[0].end==End::Completed);
+        const auto before=restored.export_state();assert(restored.begin(g).already_applied);
+        assert(same_journal(before,restored.export_state()));
+    }
+    { // Recomputed or well-typed cache edits are not a substitute for replay.
+        ResidentUse source("ben");assert(source.begin(grant(Kind::Eat)).accepted);
+        source.advance_one(1,contact());const auto good=source.export_state();
+        ResidentUse guard("ben");assert(guard.advance_idle_to(9));const auto before=guard.export_state();
+        for(int i=0;i<8;++i) {
+            auto bad=good;
+            switch(i){case 0:++bad.needs.fun;break;case 1:++bad.active->elapsed;break;
+                case 2:++bad.requests[0].progressed_ticks;break;case 3:bad.requests[0].end=End::Completed;break;
+                case 4:bad.history[1].contact->permission_valid=false;break;case 5:bad.history[0].grant->grant_id="other";break;
+                case 6:bad.version="1";break;case 7:bad.resident="aria";break;}
+            assert(!guard.restore_state(bad)&&same_journal(before,guard.export_state()));
+        }
+        auto bad=good;bad.history[1].tick=3;assert(!guard.restore_state(bad));
+        assert(same_journal(before,guard.export_state()));
+        bad=good;bad.history.resize(max_history+1);
+        assert(!guard.restore_state(bad)&&same_journal(before,guard.export_state()));
+        bad=good;bad.requests.resize(max_requests+1);
+        assert(!guard.restore_state(bad)&&same_journal(before,guard.export_state()));
+    }
+    { // Inactive catch-up is bounded and coalesced, never action progress.
+        ResidentUse s("ben");for(Tick i=1;i<=100;++i)assert(s.advance_one(i,{})==Outcome::TickOnly);
+        assert(s.export_state().history.size()==1);
+        auto g=grant(Kind::Eat);g.tick=100;assert(s.begin(g).accepted);const auto active=s.export_state();
+        assert(!s.advance_idle_to(1000)&&same_journal(active,s.export_state()));
+        assert(s.interrupt()&&s.requests().back().end==End::Interrupted);
+        assert(s.advance_idle_to(max_tick)&&s.needs().hunger==0&&s.needs().energy==0&&s.needs().hygiene==0&&s.needs().fun==7200);
+        ResidentUse restored("ben");assert(restored.restore_state(s.export_state()));
+        assert(same_journal(restored.export_state(),s.export_state()));
+        assert(s.advance_one(max_tick,{})==Outcome::RejectedTick&&!s.advance_idle_to(max_tick));
+    }
+    { // Load invalidation is distinct from completion/cancel and preserves effects.
+        ResidentUse s("ben");const auto g=grant(Kind::Eat);assert(s.begin(g).accepted);
+        s.advance_one(1,contact());const auto earned=s.needs();const auto saved=s.export_state();
+        ResidentUse restored("ben");assert(restored.restore_state(saved));
+        assert(restored.invalidate_use_after_load()&&!restored.active());
+        assert(restored.requests().back().end==End::AfterLoad&&same_needs(earned,restored.needs()));
+        const auto stopped=restored.export_state();assert(!restored.invalidate_use_after_load());
+        assert(restored.begin(g).already_applied&&same_journal(stopped,restored.export_state()));
+        ResidentUse again("ben");assert(again.restore_state(stopped));
+        assert(same_journal(stopped,again.export_state()));
+    }
+    std::cout << "PASS 15 daily-life progress/persistence groups (portable CPU only).\n";
 }
