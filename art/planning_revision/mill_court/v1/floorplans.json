@@ -1,0 +1,3283 @@
+{
+  "schema": "LivingTown.EngineAgnosticFurnishedRoomPlan.v1",
+  "status": "DESIGN_ONLY_NOT_NATIVE_ASSET_OR_LEGAL_CERTIFICATION",
+  "source_site_proposal": "Mill Court site proposal v1, two new owners; coordinates preserved in this document.",
+  "world_units": "metres",
+  "floor_to_floor_m": 2.7,
+  "floor_slab_m": 0.2,
+  "room_clear_height_m": 2.5,
+  "roof_coordination": {
+    "preferred_prototype_ridge_above_ground_FF_m": 7.7,
+    "wall_plate_above_ground_FF_m": 5.4,
+    "upper_ceiling_above_ground_FF_m": 5.2,
+    "ridge_variants_above_ground_FF_m": [
+      6.8,
+      7.7
+    ],
+    "roof_structural_span_m": 5.5,
+    "pitch_degrees_without_overhang": [
+      26.980230718222845,
+      39.90788487550103
+    ],
+    "eave_overhang_m": 0.25,
+    "note": "6.8m is an unproven massing study recommendation, not a sightline-derived cap. Both variants retain full2.5m upper clear rooms; roof-edge eaves drop below wall-plate datum along the roof slope."
+  },
+  "plans": [
+    {
+      "id": "A_Ground",
+      "owner_id": "PROPOSED_Core_MillCourt_A",
+      "owner_label": "A",
+      "level_index": 0,
+      "clear_width_m": 5.4,
+      "clear_depth_m": 4.9,
+      "exterior_wall_thickness_m": 0.3,
+      "nominal_partition_thickness_m": 0.1,
+      "FF_world_m": 3.6336615457293915,
+      "world_inner_southwest_xy_m": [
+        -50.2,
+        34.8
+      ],
+      "local_coordinate_system": "Metres from inside southwest corner; +X east,+Y north; FF is localZ0",
+      "clear_ceiling_height_m": 2.5,
+      "rooms": [
+        {
+          "id": "open_main",
+          "polygon_m": [
+            [
+              1.1,
+              0
+            ],
+            [
+              5.4,
+              0
+            ],
+            [
+              5.4,
+              4.9
+            ],
+            [
+              1.1,
+              4.9
+            ]
+          ],
+          "label": "Living / dining / kitchen"
+        },
+        {
+          "id": "north_storage_niche",
+          "polygon_m": [
+            [
+              0,
+              3.875
+            ],
+            [
+              1.1,
+              3.875
+            ],
+            [
+              1.1,
+              4.9
+            ],
+            [
+              0,
+              4.9
+            ]
+          ],
+          "label": "Pantry"
+        },
+        {
+          "id": "stair_bottom",
+          "polygon_m": [
+            [
+              0,
+              0
+            ],
+            [
+              1.0,
+              0
+            ],
+            [
+              1.0,
+              0.95
+            ],
+            [
+              0,
+              0.95
+            ]
+          ],
+          "label": "Landing"
+        }
+      ],
+      "furniture": [
+        {
+          "id": "sofa",
+          "kind": "sofa",
+          "bounds_m": [
+            4.55,
+            0.45,
+            5.4,
+            2.25
+          ],
+          "facing": [
+            -1,
+            0
+          ],
+          "height_m": 0.85,
+          "seats": 2,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.85,
+          "seat_top_above_FF_m": 0.45
+        },
+        {
+          "id": "end_table",
+          "kind": "side_table",
+          "bounds_m": [
+            4.65,
+            2.25,
+            5.0,
+            2.6
+          ],
+          "facing": [
+            -1,
+            0
+          ],
+          "height_m": 0.5,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.5
+        },
+        {
+          "id": "media",
+          "kind": "media_console",
+          "bounds_m": [
+            1.2,
+            1.0,
+            1.5,
+            1.8
+          ],
+          "facing": [
+            1,
+            0
+          ],
+          "height_m": 0.6,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.6
+        },
+        {
+          "id": "dining",
+          "kind": "table",
+          "bounds_m": [
+            1.7,
+            2.0,
+            2.45,
+            3.2
+          ],
+          "facing": [
+            1,
+            0
+          ],
+          "height_m": 0.75,
+          "dual_use": "dining and laptop/handwork",
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.75
+        },
+        {
+          "id": "banquette",
+          "kind": "bench",
+          "bounds_m": [
+            1.1,
+            2.0,
+            1.6,
+            3.2
+          ],
+          "facing": [
+            1,
+            0
+          ],
+          "height_m": 0.85,
+          "seats": 2,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.85,
+          "seat_top_above_FF_m": 0.45
+        },
+        {
+          "id": "chair_1",
+          "kind": "chair",
+          "bounds_m": [
+            2.6,
+            2.1,
+            3.1,
+            2.55
+          ],
+          "facing": [
+            -1,
+            0
+          ],
+          "height_m": 0.85,
+          "pullback_bounds_m": [
+            3.1,
+            2.1,
+            3.6,
+            2.55
+          ],
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.85,
+          "seat_top_above_FF_m": 0.45
+        },
+        {
+          "id": "chair_2",
+          "kind": "chair",
+          "bounds_m": [
+            2.6,
+            2.7,
+            3.1,
+            3.15
+          ],
+          "facing": [
+            -1,
+            0
+          ],
+          "height_m": 0.85,
+          "pullback_bounds_m": [
+            3.1,
+            2.7,
+            3.6,
+            3.15
+          ],
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.85,
+          "seat_top_above_FF_m": 0.45
+        },
+        {
+          "id": "counter_n",
+          "kind": "kitchen_counter",
+          "bounds_m": [
+            2.55,
+            4.25,
+            5.4,
+            4.9
+          ],
+          "facing": [
+            0,
+            -1
+          ],
+          "height_m": 0.9,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.9
+        },
+        {
+          "id": "sink",
+          "kind": "sink",
+          "bounds_m": [
+            2.95,
+            4.3,
+            3.65,
+            4.85
+          ],
+          "facing": [
+            0,
+            -1
+          ],
+          "height_m": 0.92,
+          "host_surface_id": "counter_n",
+          "base_above_FF_m": 0.9,
+          "top_above_FF_m": 0.92
+        },
+        {
+          "id": "hob",
+          "kind": "hob",
+          "bounds_m": [
+            4.2,
+            4.3,
+            4.9,
+            4.85
+          ],
+          "facing": [
+            0,
+            -1
+          ],
+          "height_m": 0.92,
+          "host_surface_id": "counter_n",
+          "base_above_FF_m": 0.9,
+          "top_above_FF_m": 0.92
+        },
+        {
+          "id": "fridge",
+          "kind": "fridge",
+          "bounds_m": [
+            4.75,
+            2.6,
+            5.4,
+            3.25
+          ],
+          "facing": [
+            -1,
+            0
+          ],
+          "height_m": 2.0,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 2.0
+        },
+        {
+          "id": "pantry",
+          "kind": "pantry",
+          "bounds_m": [
+            0,
+            4.0,
+            0.4,
+            4.9
+          ],
+          "facing": [
+            1,
+            0
+          ],
+          "height_m": 2.2,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 2.2
+        }
+      ],
+      "walls": [
+        {
+          "id": "stair_east",
+          "axis": "vertical",
+          "at_m": 1.0,
+          "start_m": 0.95,
+          "end_m": 3.875,
+          "thickness_m": 0.1,
+          "openings": []
+        }
+      ],
+      "doors": [
+        {
+          "id": "entry_south",
+          "kind": "hinged",
+          "hinge_xy_m": [
+            3.3000000000000003,
+            0
+          ],
+          "closed_unit_vector": [
+            -1,
+            0
+          ],
+          "open_unit_vector": [
+            0,
+            1
+          ],
+          "clear_width_m": 1.2,
+          "opaque": true,
+          "external": true,
+          "south_threshold_world_m": [
+            -47.5,
+            34.5,
+            3.6336615457293915
+          ],
+          "threshold_local_xy_m": [
+            2.7,
+            0
+          ],
+          "height_m": 2.1,
+          "rough_opening_height_m": 2.2,
+          "jamb_width_m": 0.05,
+          "animation_clearance_scope": "hinge arcs or pocket travel explicit; no native animation qualification",
+          "rough_opening_width_m": 1.3,
+          "leaf_thickness_m": 0.04
+        }
+      ],
+      "windows": [
+        {
+          "id": "living_e",
+          "side": "E",
+          "start_m": 0.8,
+          "end_m": 2.0,
+          "sill_above_FF_m": 1.0,
+          "height_m": 1.2,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        },
+        {
+          "id": "sink_n",
+          "side": "N",
+          "start_m": 2.75,
+          "end_m": 3.95,
+          "sill_above_FF_m": 1.05,
+          "height_m": 1.15,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        },
+        {
+          "id": "dining_s",
+          "side": "S",
+          "start_m": 0.4,
+          "end_m": 1.7,
+          "sill_above_FF_m": 1.05,
+          "height_m": 1.15,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        },
+        {
+          "id": "stair_w",
+          "side": "W",
+          "start_m": 1.8,
+          "end_m": 2.7,
+          "sill_above_FF_m": 1.5,
+          "height_m": 0.75,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        }
+      ],
+      "clearance_zones": [
+        {
+          "id": "kitchen_work_aisle",
+          "bounds_m": [
+            2.65,
+            3.35,
+            4.65,
+            4.25
+          ],
+          "minimum_clear_m": 0.9,
+          "clearance_axis": "y"
+        },
+        {
+          "id": "sofa_front",
+          "bounds_m": [
+            3.75,
+            0.55,
+            4.55,
+            2.2
+          ],
+          "minimum_clear_m": 0.8,
+          "clearance_axis": "x"
+        },
+        {
+          "id": "pantry_front",
+          "bounds_m": [
+            0.4,
+            4.0,
+            1.3,
+            4.9
+          ],
+          "minimum_clear_m": 0.9,
+          "clearance_axis": "x"
+        }
+      ],
+      "circulation": [
+        {
+          "id": "entry_to_stair",
+          "points_m": [
+            [
+              2.7,
+              0.45
+            ],
+            [
+              0.5,
+              0.45
+            ]
+          ],
+          "clear_width_m": 0.8,
+          "connects": [
+            "entry_south",
+            "stair_bottom"
+          ]
+        },
+        {
+          "id": "entry_to_kitchen",
+          "points_m": [
+            [
+              2.7,
+              1.3
+            ],
+            [
+              4.075,
+              1.6
+            ],
+            [
+              4.075,
+              3.8
+            ],
+            [
+              3.3,
+              3.8
+            ]
+          ],
+          "clear_width_m": 0.8,
+          "connects": [
+            "entry_south",
+            "kitchen"
+          ]
+        },
+        {
+          "id": "kitchen_to_pantry",
+          "points_m": [
+            [
+              3.3,
+              3.8
+            ],
+            [
+              2.15,
+              3.8
+            ],
+            [
+              2.15,
+              4.4
+            ],
+            [
+              0.85,
+              4.4
+            ]
+          ],
+          "clear_width_m": 0.7,
+          "connects": [
+            "kitchen",
+            "pantry"
+          ]
+        }
+      ],
+      "tradeoffs": [
+        "No ground-floor WC; full bathroom upstairs.",
+        "Dining banquette/table doubles as work surface.",
+        "Small end table replaces a central coffee table to keep circulation clear.",
+        "Compact40.6deg domestic stair; not an accessible upper floor."
+      ],
+      "stair": {
+        "id": "A_S1",
+        "type": "straight",
+        "clear_width_m": 0.9,
+        "overall_width_m": 1.0,
+        "run_bounds_m": [
+          0,
+          0.95,
+          1.0,
+          3.875
+        ],
+        "risers": 14,
+        "riser_m": 0.19285714285714287,
+        "treads": 13,
+        "tread_going_m": 0.225,
+        "horizontal_run_m": 2.925,
+        "rise_m": 2.7,
+        "pitch_degrees": 40.60129464500447,
+        "bottom_landing_bounds_m": [
+          0,
+          0.05,
+          1.0,
+          0.95
+        ],
+        "top_landing_bounds_m": [
+          0,
+          3.875,
+          1.0,
+          4.9
+        ],
+        "slab_thickness_m": 0.2,
+        "minimum_modelled_headroom_m": 2.5,
+        "opening_bounds_m": [
+          0,
+          0.95,
+          1.0,
+          3.875
+        ],
+        "rail_height_m": 1.0,
+        "rail_sides": [
+          "east",
+          "west"
+        ],
+        "upper_floor_covered_over_bottom_landing": true,
+        "from_level": 0,
+        "to_level": 1,
+        "geometry_origin_world_FF_m": 3.6336615457293915,
+        "placement_scope": "ONE_STAIR_PER_OWNER_REFERENCED_ON_BOTH_PLANS"
+      },
+      "kitchen_triangle": {
+        "points_m": {
+          "fridge": [
+            5.075,
+            2.925
+          ],
+          "sink": [
+            3.3,
+            4.575
+          ],
+          "hob": [
+            4.55,
+            4.575
+          ]
+        },
+        "scope": "appliance centres; all prep fronts open to shared working aisle"
+      },
+      "floor_slab": {
+        "footprint_bounds_m": [
+          -0.3,
+          -0.3,
+          5.7,
+          5.2
+        ],
+        "bottom_world_Z_m": 3.4336615457293913,
+        "top_world_Z_m": 3.6336615457293915,
+        "opening_bounds_m": null,
+        "scope": "Upper slab removes the exact stair void; ground slab remains continuous"
+      },
+      "wall_segments": [
+        {
+          "id": "ext_S",
+          "bounds_m": [
+            0,
+            -0.3,
+            2.1,
+            0
+          ],
+          "exterior": true
+        },
+        {
+          "id": "ext_S",
+          "bounds_m": [
+            3.3000000000000003,
+            -0.3,
+            5.4,
+            0
+          ],
+          "exterior": true
+        },
+        {
+          "id": "ext_N",
+          "bounds_m": [
+            0,
+            4.9,
+            5.4,
+            5.2
+          ],
+          "exterior": true
+        },
+        {
+          "id": "ext_W",
+          "bounds_m": [
+            -0.3,
+            -0.3,
+            0,
+            5.2
+          ],
+          "exterior": true
+        },
+        {
+          "id": "ext_E",
+          "bounds_m": [
+            5.4,
+            -0.3,
+            5.7,
+            5.2
+          ],
+          "exterior": true
+        },
+        {
+          "id": "stair_east",
+          "bounds_m": [
+            1.0,
+            0.95,
+            1.1,
+            3.875
+          ],
+          "exterior": false
+        }
+      ]
+    },
+    {
+      "id": "A_Upper",
+      "owner_id": "PROPOSED_Core_MillCourt_A",
+      "owner_label": "A",
+      "level_index": 1,
+      "clear_width_m": 5.4,
+      "clear_depth_m": 4.9,
+      "exterior_wall_thickness_m": 0.3,
+      "nominal_partition_thickness_m": 0.1,
+      "FF_world_m": 6.333661545729392,
+      "world_inner_southwest_xy_m": [
+        -50.2,
+        34.8
+      ],
+      "local_coordinate_system": "Metres from inside southwest corner; +X east,+Y north; FF is localZ0",
+      "clear_ceiling_height_m": 2.5,
+      "rooms": [
+        {
+          "id": "bath",
+          "label": "Shower / WC",
+          "polygon_m": [
+            [
+              0,
+              0
+            ],
+            [
+              2.7,
+              0
+            ],
+            [
+              2.7,
+              2.1
+            ],
+            [
+              1.1,
+              2.1
+            ],
+            [
+              1.1,
+              0.9
+            ],
+            [
+              0,
+              0.9
+            ]
+          ]
+        },
+        {
+          "id": "bedroom",
+          "polygon_m": [
+            [
+              2.8,
+              0
+            ],
+            [
+              5.4,
+              0
+            ],
+            [
+              5.4,
+              4.9
+            ],
+            [
+              2.8,
+              4.9
+            ]
+          ],
+          "label": "Double bedroom"
+        },
+        {
+          "id": "landing",
+          "label": "Landing / study",
+          "polygon_m": [
+            [
+              0,
+              3.875
+            ],
+            [
+              1.1,
+              3.875
+            ],
+            [
+              1.1,
+              2.2
+            ],
+            [
+              2.7,
+              2.2
+            ],
+            [
+              2.7,
+              4.9
+            ],
+            [
+              0,
+              4.9
+            ]
+          ]
+        }
+      ],
+      "furniture": [
+        {
+          "id": "double_bed",
+          "kind": "bed",
+          "bounds_m": [
+            3.4,
+            0.25,
+            4.8,
+            2.25
+          ],
+          "facing": [
+            0,
+            1
+          ],
+          "height_m": 0.55,
+          "mattress_m": [
+            1.4,
+            2.0
+          ],
+          "head_direction": [
+            0,
+            -1
+          ],
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.55,
+          "platform_type": "flush divan; no projecting frame outside stated footprint",
+          "headboard_top_above_FF_m": 0.95
+        },
+        {
+          "id": "night_w",
+          "kind": "nightstand",
+          "bounds_m": [
+            2.9,
+            0.25,
+            3.3,
+            0.65
+          ],
+          "facing": [
+            0,
+            1
+          ],
+          "height_m": 0.55,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.55
+        },
+        {
+          "id": "night_e",
+          "kind": "nightstand",
+          "bounds_m": [
+            4.9,
+            0.25,
+            5.3,
+            0.65
+          ],
+          "facing": [
+            0,
+            1
+          ],
+          "height_m": 0.55,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.55
+        },
+        {
+          "id": "wardrobe",
+          "kind": "wardrobe",
+          "bounds_m": [
+            2.9,
+            4.3,
+            4.5,
+            4.9
+          ],
+          "facing": [
+            0,
+            -1
+          ],
+          "height_m": 2.2,
+          "door_type": "sliding",
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 2.2
+        },
+        {
+          "id": "desk",
+          "kind": "desk",
+          "bounds_m": [
+            4.85,
+            2.9,
+            5.4,
+            4.1
+          ],
+          "facing": [
+            -1,
+            0
+          ],
+          "height_m": 0.75,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.75
+        },
+        {
+          "id": "desk_chair",
+          "kind": "chair",
+          "bounds_m": [
+            4.25,
+            3.2,
+            4.85,
+            3.8
+          ],
+          "facing": [
+            1,
+            0
+          ],
+          "height_m": 0.9,
+          "pullback_bounds_m": [
+            3.75,
+            3.2,
+            4.25,
+            3.8
+          ],
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.9,
+          "seat_top_above_FF_m": 0.45
+        },
+        {
+          "id": "shower",
+          "kind": "shower",
+          "bounds_m": [
+            0,
+            0,
+            0.9,
+            0.9
+          ],
+          "facing": [
+            1,
+            0
+          ],
+          "height_m": 2.05,
+          "entry_type": "screen and curtain",
+          "clear_entry_m": 0.7,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 2.05
+        },
+        {
+          "id": "toilet",
+          "kind": "toilet",
+          "bounds_m": [
+            2.0,
+            1.35,
+            2.45,
+            2.1
+          ],
+          "facing": [
+            0,
+            -1
+          ],
+          "height_m": 0.8,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.8
+        },
+        {
+          "id": "basin",
+          "kind": "basin",
+          "bounds_m": [
+            2.1,
+            0,
+            2.7,
+            0.5
+          ],
+          "facing": [
+            0,
+            1
+          ],
+          "height_m": 0.85,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.85
+        }
+      ],
+      "walls": [
+        {
+          "id": "stair_east",
+          "axis": "vertical",
+          "at_m": 1.0,
+          "start_m": 0.95,
+          "end_m": 3.875,
+          "thickness_m": 0.1,
+          "openings": []
+        },
+        {
+          "id": "bath_n",
+          "axis": "horizontal",
+          "at_m": 2.1,
+          "start_m": 1.1,
+          "end_m": 2.7,
+          "thickness_m": 0.1,
+          "openings": [
+            {
+              "door_id": "bath_door",
+              "start_m": 1.2,
+              "end_m": 2.0
+            }
+          ]
+        },
+        {
+          "id": "bed_w",
+          "axis": "vertical",
+          "at_m": 2.7,
+          "start_m": 0,
+          "end_m": 4.9,
+          "thickness_m": 0.1,
+          "openings": [
+            {
+              "door_id": "bed_door",
+              "start_m": 2.2,
+              "end_m": 3.0
+            }
+          ]
+        },
+        {
+          "id": "bath_stair_s",
+          "axis": "horizontal",
+          "at_m": 0.9,
+          "start_m": 0,
+          "end_m": 1.1,
+          "thickness_m": 0.05,
+          "openings": []
+        }
+      ],
+      "doors": [
+        {
+          "id": "bath_door",
+          "kind": "hinged",
+          "hinge_xy_m": [
+            1.2,
+            2.1
+          ],
+          "closed_unit_vector": [
+            1,
+            0
+          ],
+          "open_unit_vector": [
+            0,
+            -1
+          ],
+          "clear_width_m": 0.8,
+          "opaque": true,
+          "privacy_lock": true,
+          "height_m": 2.1,
+          "rough_opening_height_m": 2.2,
+          "jamb_width_m": 0.05,
+          "animation_clearance_scope": "hinge arcs or pocket travel explicit; no native animation qualification",
+          "rough_opening_width_m": 0.9,
+          "leaf_thickness_m": 0.04
+        },
+        {
+          "id": "bed_door",
+          "kind": "pocket",
+          "opening_axis": "vertical",
+          "at_m": 2.75,
+          "start_m": 2.2,
+          "end_m": 3.0,
+          "clear_width_m": 0.8,
+          "pocket_extent_m": [
+            3.0,
+            3.9
+          ],
+          "opaque": true,
+          "height_m": 2.1,
+          "rough_opening_height_m": 2.2,
+          "jamb_width_m": 0.05,
+          "animation_clearance_scope": "hinge arcs or pocket travel explicit; no native animation qualification",
+          "rough_opening_width_m": 0.9,
+          "leaf_thickness_m": 0.04
+        }
+      ],
+      "windows": [
+        {
+          "id": "bed_s",
+          "side": "S",
+          "start_m": 3.5,
+          "end_m": 4.7,
+          "sill_above_FF_m": 1.05,
+          "height_m": 1.15,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        },
+        {
+          "id": "desk_e",
+          "side": "E",
+          "start_m": 2.9,
+          "end_m": 3.9,
+          "sill_above_FF_m": 1.0,
+          "height_m": 1.2,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        },
+        {
+          "id": "landing_n",
+          "side": "N",
+          "start_m": 1.3,
+          "end_m": 2.3,
+          "sill_above_FF_m": 1.1,
+          "height_m": 1.15,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        },
+        {
+          "id": "bath_s",
+          "side": "S",
+          "start_m": 0.15,
+          "end_m": 0.8,
+          "sill_above_FF_m": 1.6,
+          "height_m": 0.65,
+          "frosted": true,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        }
+      ],
+      "clearance_zones": [
+        {
+          "id": "bed_w_side",
+          "bounds_m": [
+            2.8,
+            0.75,
+            3.4,
+            2.15
+          ],
+          "minimum_clear_m": 0.6,
+          "clearance_axis": "x"
+        },
+        {
+          "id": "bed_e_side",
+          "bounds_m": [
+            4.8,
+            0.75,
+            5.4,
+            2.15
+          ],
+          "minimum_clear_m": 0.6,
+          "clearance_axis": "x"
+        },
+        {
+          "id": "bed_foot",
+          "bounds_m": [
+            3.4,
+            2.25,
+            4.8,
+            2.95
+          ],
+          "minimum_clear_m": 0.7,
+          "clearance_axis": "y"
+        },
+        {
+          "id": "wardrobe_front",
+          "bounds_m": [
+            3.0,
+            3.4,
+            3.7,
+            4.3
+          ],
+          "minimum_clear_m": 0.9,
+          "clearance_axis": "y"
+        },
+        {
+          "id": "wc_front",
+          "bounds_m": [
+            1.85,
+            0.55,
+            2.6,
+            1.35
+          ],
+          "minimum_clear_m": 0.75,
+          "clearance_axis": "y"
+        },
+        {
+          "id": "shower_front",
+          "bounds_m": [
+            0.9,
+            0.1,
+            1.6,
+            0.8
+          ],
+          "minimum_clear_m": 0.7,
+          "clearance_axis": "x"
+        }
+      ],
+      "circulation": [
+        {
+          "id": "landing_to_bath",
+          "points_m": [
+            [
+              0.5,
+              4.35
+            ],
+            [
+              2.15,
+              4.35
+            ],
+            [
+              2.15,
+              2.7
+            ],
+            [
+              1.6,
+              2.7
+            ],
+            [
+              1.6,
+              1.8
+            ]
+          ],
+          "clear_width_m": 0.7,
+          "connects": [
+            "stair_top",
+            "bath_door"
+          ]
+        },
+        {
+          "id": "landing_to_bed",
+          "points_m": [
+            [
+              0.5,
+              4.35
+            ],
+            [
+              2.15,
+              4.35
+            ],
+            [
+              2.15,
+              2.65
+            ],
+            [
+              3.1,
+              2.65
+            ],
+            [
+              3.9,
+              2.65
+            ]
+          ],
+          "clear_width_m": 0.7,
+          "connects": [
+            "stair_top",
+            "bed_door"
+          ]
+        },
+        {
+          "id": "bed_to_wardrobe",
+          "points_m": [
+            [
+              3.2,
+              2.65
+            ],
+            [
+              3.25,
+              3.85
+            ]
+          ],
+          "clear_width_m": 0.7,
+          "connects": [
+            "bed_door",
+            "wardrobe"
+          ]
+        }
+      ],
+      "tradeoffs": [
+        "Southwest bathroom uses real upper-floor area above the ground bottom landing; it does not cover the stair flight opening.",
+        "Double bed has0.60m on both long sides; north foot area remains open.",
+        "Opaque pocket bedroom door avoids a door leaf across the bedside route."
+      ],
+      "stair": {
+        "id": "A_S1",
+        "type": "straight",
+        "clear_width_m": 0.9,
+        "overall_width_m": 1.0,
+        "run_bounds_m": [
+          0,
+          0.95,
+          1.0,
+          3.875
+        ],
+        "risers": 14,
+        "riser_m": 0.19285714285714287,
+        "treads": 13,
+        "tread_going_m": 0.225,
+        "horizontal_run_m": 2.925,
+        "rise_m": 2.7,
+        "pitch_degrees": 40.60129464500447,
+        "bottom_landing_bounds_m": [
+          0,
+          0.05,
+          1.0,
+          0.95
+        ],
+        "top_landing_bounds_m": [
+          0,
+          3.875,
+          1.0,
+          4.9
+        ],
+        "slab_thickness_m": 0.2,
+        "minimum_modelled_headroom_m": 2.5,
+        "opening_bounds_m": [
+          0,
+          0.95,
+          1.0,
+          3.875
+        ],
+        "rail_height_m": 1.0,
+        "rail_sides": [
+          "east",
+          "west"
+        ],
+        "upper_floor_covered_over_bottom_landing": true,
+        "from_level": 0,
+        "to_level": 1,
+        "geometry_origin_world_FF_m": 3.6336615457293915,
+        "placement_scope": "ONE_STAIR_PER_OWNER_REFERENCED_ON_BOTH_PLANS"
+      },
+      "stair_void_bounds_m": [
+        0,
+        0.95,
+        1.0,
+        3.875
+      ],
+      "floor_slab": {
+        "footprint_bounds_m": [
+          -0.3,
+          -0.3,
+          5.7,
+          5.2
+        ],
+        "bottom_world_Z_m": 6.1336615457293915,
+        "top_world_Z_m": 6.333661545729392,
+        "opening_bounds_m": [
+          0,
+          0.95,
+          1.0,
+          3.875
+        ],
+        "scope": "Upper slab removes the exact stair void; ground slab remains continuous"
+      },
+      "wall_segments": [
+        {
+          "id": "ext_S",
+          "bounds_m": [
+            0,
+            -0.3,
+            5.4,
+            0
+          ],
+          "exterior": true
+        },
+        {
+          "id": "ext_N",
+          "bounds_m": [
+            0,
+            4.9,
+            5.4,
+            5.2
+          ],
+          "exterior": true
+        },
+        {
+          "id": "ext_W",
+          "bounds_m": [
+            -0.3,
+            -0.3,
+            0,
+            5.2
+          ],
+          "exterior": true
+        },
+        {
+          "id": "ext_E",
+          "bounds_m": [
+            5.4,
+            -0.3,
+            5.7,
+            5.2
+          ],
+          "exterior": true
+        },
+        {
+          "id": "stair_east",
+          "bounds_m": [
+            1.0,
+            0.95,
+            1.1,
+            3.875
+          ],
+          "exterior": false
+        },
+        {
+          "id": "bath_n",
+          "bounds_m": [
+            1.1,
+            2.1,
+            1.2,
+            2.2
+          ],
+          "exterior": false
+        },
+        {
+          "id": "bath_n",
+          "bounds_m": [
+            2.0,
+            2.1,
+            2.7,
+            2.2
+          ],
+          "exterior": false
+        },
+        {
+          "id": "bed_w",
+          "bounds_m": [
+            2.7,
+            0,
+            2.8000000000000003,
+            2.2
+          ],
+          "exterior": false
+        },
+        {
+          "id": "bed_w",
+          "bounds_m": [
+            2.7,
+            3.0,
+            2.8000000000000003,
+            4.9
+          ],
+          "exterior": false
+        },
+        {
+          "id": "bath_stair_s",
+          "bounds_m": [
+            0,
+            0.9,
+            1.1,
+            0.9500000000000001
+          ],
+          "exterior": false
+        }
+      ]
+    },
+    {
+      "id": "B_Ground",
+      "owner_id": "PROPOSED_Core_MillCourt_B",
+      "owner_label": "B",
+      "level_index": 0,
+      "clear_width_m": 7.4,
+      "clear_depth_m": 4.9,
+      "exterior_wall_thickness_m": 0.3,
+      "nominal_partition_thickness_m": 0.1,
+      "FF_world_m": 3.0632585609746306,
+      "world_inner_southwest_xy_m": [
+        -41.2,
+        33.8
+      ],
+      "local_coordinate_system": "Metres from inside southwest corner; +X east,+Y north; FF is localZ0",
+      "clear_ceiling_height_m": 2.5,
+      "rooms": [
+        {
+          "id": "open_main",
+          "label": "Living / dining / kitchen",
+          "polygon_m": [
+            [
+              1.1,
+              0
+            ],
+            [
+              7.4,
+              0
+            ],
+            [
+              7.4,
+              4.9
+            ],
+            [
+              2.9,
+              4.9
+            ],
+            [
+              2.9,
+              3.3
+            ],
+            [
+              1.1,
+              3.3
+            ]
+          ]
+        },
+        {
+          "id": "utility",
+          "label": "WC / laundry",
+          "polygon_m": [
+            [
+              1.1,
+              3.4
+            ],
+            [
+              2.8,
+              3.4
+            ],
+            [
+              2.8,
+              4.9
+            ],
+            [
+              0,
+              4.9
+            ],
+            [
+              0,
+              3.95
+            ],
+            [
+              1.1,
+              3.95
+            ]
+          ]
+        },
+        {
+          "id": "stair_bottom",
+          "polygon_m": [
+            [
+              0,
+              0
+            ],
+            [
+              1.0,
+              0
+            ],
+            [
+              1.0,
+              0.95
+            ],
+            [
+              0,
+              0.95
+            ]
+          ],
+          "label": "Landing"
+        }
+      ],
+      "furniture": [
+        {
+          "id": "sofa",
+          "kind": "sofa",
+          "bounds_m": [
+            6.5,
+            0.45,
+            7.4,
+            2.65
+          ],
+          "facing": [
+            -1,
+            0
+          ],
+          "height_m": 0.9,
+          "seats": 3,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.9,
+          "seat_top_above_FF_m": 0.45
+        },
+        {
+          "id": "coffee",
+          "kind": "coffee_table",
+          "bounds_m": [
+            5.1,
+            1.1,
+            5.85,
+            1.9
+          ],
+          "facing": [
+            1,
+            0
+          ],
+          "height_m": 0.42,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.42
+        },
+        {
+          "id": "media",
+          "kind": "media_console",
+          "bounds_m": [
+            2.9,
+            1.3,
+            3.2,
+            2.4
+          ],
+          "facing": [
+            1,
+            0
+          ],
+          "height_m": 0.65,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.65
+        },
+        {
+          "id": "dining",
+          "kind": "table",
+          "bounds_m": [
+            1.3,
+            1.95,
+            2.7,
+            2.75
+          ],
+          "facing": [
+            0,
+            1
+          ],
+          "height_m": 0.75,
+          "dual_use": "family dining / homework",
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.75
+        },
+        {
+          "id": "banquette",
+          "kind": "bench",
+          "bounds_m": [
+            1.2,
+            2.85,
+            2.7,
+            3.3
+          ],
+          "facing": [
+            0,
+            -1
+          ],
+          "height_m": 0.85,
+          "seats": 2,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.85,
+          "seat_top_above_FF_m": 0.45
+        },
+        {
+          "id": "chair_1",
+          "kind": "chair",
+          "bounds_m": [
+            1.35,
+            1.4,
+            1.8,
+            1.9
+          ],
+          "facing": [
+            0,
+            1
+          ],
+          "height_m": 0.85,
+          "pullback_bounds_m": [
+            1.35,
+            0.9,
+            1.8,
+            1.4
+          ],
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.85,
+          "seat_top_above_FF_m": 0.45
+        },
+        {
+          "id": "chair_2",
+          "kind": "chair",
+          "bounds_m": [
+            2.05,
+            1.4,
+            2.5,
+            1.9
+          ],
+          "facing": [
+            0,
+            1
+          ],
+          "height_m": 0.85,
+          "pullback_bounds_m": [
+            2.05,
+            0.9,
+            2.5,
+            1.4
+          ],
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.85,
+          "seat_top_above_FF_m": 0.45
+        },
+        {
+          "id": "counter_n",
+          "kind": "kitchen_counter",
+          "bounds_m": [
+            4.1,
+            4.25,
+            7.4,
+            4.9
+          ],
+          "facing": [
+            0,
+            -1
+          ],
+          "height_m": 0.9,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.9
+        },
+        {
+          "id": "sink",
+          "kind": "sink",
+          "bounds_m": [
+            4.45,
+            4.3,
+            5.05,
+            4.85
+          ],
+          "facing": [
+            0,
+            -1
+          ],
+          "height_m": 0.92,
+          "host_surface_id": "counter_n",
+          "base_above_FF_m": 0.9,
+          "top_above_FF_m": 0.92
+        },
+        {
+          "id": "hob",
+          "kind": "hob",
+          "bounds_m": [
+            5.75,
+            4.3,
+            6.45,
+            4.85
+          ],
+          "facing": [
+            0,
+            -1
+          ],
+          "height_m": 0.92,
+          "host_surface_id": "counter_n",
+          "base_above_FF_m": 0.9,
+          "top_above_FF_m": 0.92
+        },
+        {
+          "id": "fridge",
+          "kind": "fridge",
+          "bounds_m": [
+            6.75,
+            3.15,
+            7.4,
+            3.8
+          ],
+          "facing": [
+            -1,
+            0
+          ],
+          "height_m": 2.0,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 2.0
+        },
+        {
+          "id": "pantry",
+          "kind": "pantry",
+          "bounds_m": [
+            3.05,
+            4.4,
+            3.85,
+            4.9
+          ],
+          "facing": [
+            0,
+            -1
+          ],
+          "height_m": 2.2,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 2.2
+        },
+        {
+          "id": "washer",
+          "kind": "washing_machine",
+          "bounds_m": [
+            1.15,
+            3.4,
+            1.8,
+            4.05
+          ],
+          "facing": [
+            1,
+            0
+          ],
+          "height_m": 0.88,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.88
+        },
+        {
+          "id": "toilet",
+          "kind": "toilet",
+          "bounds_m": [
+            0.15,
+            4.15,
+            0.85,
+            4.6
+          ],
+          "facing": [
+            1,
+            0
+          ],
+          "height_m": 0.8,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.8
+        },
+        {
+          "id": "basin",
+          "kind": "basin",
+          "bounds_m": [
+            2.3,
+            4.45,
+            2.8,
+            4.9
+          ],
+          "facing": [
+            -1,
+            0
+          ],
+          "height_m": 0.85,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.85
+        }
+      ],
+      "walls": [
+        {
+          "id": "stair_east",
+          "axis": "vertical",
+          "at_m": 1.0,
+          "start_m": 0.95,
+          "end_m": 3.875,
+          "thickness_m": 0.1,
+          "openings": []
+        },
+        {
+          "id": "utility_s",
+          "axis": "horizontal",
+          "at_m": 3.3,
+          "start_m": 1.1,
+          "end_m": 2.9,
+          "thickness_m": 0.1,
+          "openings": []
+        },
+        {
+          "id": "utility_e",
+          "axis": "vertical",
+          "at_m": 2.8,
+          "start_m": 3.3,
+          "end_m": 4.9,
+          "thickness_m": 0.1,
+          "openings": [
+            {
+              "door_id": "utility_door",
+              "start_m": 3.5,
+              "end_m": 4.3
+            }
+          ]
+        }
+      ],
+      "doors": [
+        {
+          "id": "entry_south",
+          "kind": "hinged",
+          "hinge_xy_m": [
+            4.3,
+            0
+          ],
+          "closed_unit_vector": [
+            -1,
+            0
+          ],
+          "open_unit_vector": [
+            0,
+            1
+          ],
+          "clear_width_m": 1.2,
+          "opaque": true,
+          "external": true,
+          "south_threshold_world_m": [
+            -37.5,
+            33.5,
+            3.0632585609746306
+          ],
+          "threshold_local_xy_m": [
+            3.7,
+            0
+          ],
+          "height_m": 2.1,
+          "rough_opening_height_m": 2.2,
+          "jamb_width_m": 0.05,
+          "animation_clearance_scope": "hinge arcs or pocket travel explicit; no native animation qualification",
+          "rough_opening_width_m": 1.3,
+          "leaf_thickness_m": 0.04
+        },
+        {
+          "id": "utility_door",
+          "kind": "hinged",
+          "hinge_xy_m": [
+            2.8,
+            4.3
+          ],
+          "closed_unit_vector": [
+            0,
+            -1
+          ],
+          "open_unit_vector": [
+            -1,
+            0
+          ],
+          "clear_width_m": 0.8,
+          "opaque": true,
+          "privacy_lock": true,
+          "height_m": 2.1,
+          "rough_opening_height_m": 2.2,
+          "jamb_width_m": 0.05,
+          "animation_clearance_scope": "hinge arcs or pocket travel explicit; no native animation qualification",
+          "rough_opening_width_m": 0.9,
+          "leaf_thickness_m": 0.04
+        }
+      ],
+      "windows": [
+        {
+          "id": "living_e",
+          "side": "E",
+          "start_m": 0.9,
+          "end_m": 2.1,
+          "sill_above_FF_m": 1.0,
+          "height_m": 1.2,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        },
+        {
+          "id": "sink_n",
+          "side": "N",
+          "start_m": 4.25,
+          "end_m": 5.5,
+          "sill_above_FF_m": 1.05,
+          "height_m": 1.15,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        },
+        {
+          "id": "dining_s",
+          "side": "S",
+          "start_m": 1.3,
+          "end_m": 2.6,
+          "sill_above_FF_m": 1.05,
+          "height_m": 1.15,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        },
+        {
+          "id": "wc_n",
+          "side": "N",
+          "start_m": 0.15,
+          "end_m": 0.85,
+          "sill_above_FF_m": 1.6,
+          "height_m": 0.65,
+          "frosted": true,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        },
+        {
+          "id": "stair_w",
+          "side": "W",
+          "start_m": 1.8,
+          "end_m": 2.7,
+          "sill_above_FF_m": 1.5,
+          "height_m": 0.75,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        }
+      ],
+      "clearance_zones": [
+        {
+          "id": "kitchen_work_aisle",
+          "bounds_m": [
+            4.15,
+            3.35,
+            6.45,
+            4.25
+          ],
+          "minimum_clear_m": 0.9,
+          "clearance_axis": "y"
+        },
+        {
+          "id": "coffee_sofa_gap",
+          "bounds_m": [
+            5.85,
+            1.1,
+            6.5,
+            1.9
+          ],
+          "minimum_clear_m": 0.65,
+          "clearance_axis": "x"
+        },
+        {
+          "id": "wc_front",
+          "bounds_m": [
+            0.85,
+            4.05,
+            1.65,
+            4.8
+          ],
+          "minimum_clear_m": 0.8,
+          "clearance_axis": "x"
+        },
+        {
+          "id": "washer_front",
+          "bounds_m": [
+            1.8,
+            3.4,
+            2.55,
+            4.05
+          ],
+          "minimum_clear_m": 0.75,
+          "clearance_axis": "x"
+        }
+      ],
+      "circulation": [
+        {
+          "id": "entry_to_stair",
+          "points_m": [
+            [
+              3.7,
+              0.45
+            ],
+            [
+              0.5,
+              0.45
+            ]
+          ],
+          "clear_width_m": 0.8,
+          "connects": [
+            "entry_south",
+            "stair_bottom"
+          ]
+        },
+        {
+          "id": "entry_to_kitchen",
+          "points_m": [
+            [
+              3.7,
+              1.3
+            ],
+            [
+              3.7,
+              3.8
+            ],
+            [
+              5.0,
+              3.8
+            ]
+          ],
+          "clear_width_m": 0.8,
+          "connects": [
+            "entry_south",
+            "kitchen"
+          ]
+        },
+        {
+          "id": "entry_to_utility",
+          "points_m": [
+            [
+              3.7,
+              1.3
+            ],
+            [
+              3.7,
+              3.9
+            ],
+            [
+              2.35,
+              3.9
+            ]
+          ],
+          "clear_width_m": 0.7,
+          "connects": [
+            "entry_south",
+            "utility_door"
+          ]
+        }
+      ],
+      "tradeoffs": [
+        "Ground sanitary room combines WC and washer; separate opaque door off circulation.",
+        "Dining banquette provides four seats; homework uses that table."
+      ],
+      "stair": {
+        "id": "B_S1",
+        "type": "straight",
+        "clear_width_m": 0.9,
+        "overall_width_m": 1.0,
+        "run_bounds_m": [
+          0,
+          0.95,
+          1.0,
+          3.875
+        ],
+        "risers": 14,
+        "riser_m": 0.19285714285714287,
+        "treads": 13,
+        "tread_going_m": 0.225,
+        "horizontal_run_m": 2.925,
+        "rise_m": 2.7,
+        "pitch_degrees": 40.60129464500447,
+        "bottom_landing_bounds_m": [
+          0,
+          0.05,
+          1.0,
+          0.95
+        ],
+        "top_landing_bounds_m": [
+          0,
+          3.875,
+          1.0,
+          4.9
+        ],
+        "slab_thickness_m": 0.2,
+        "minimum_modelled_headroom_m": 2.5,
+        "opening_bounds_m": [
+          0,
+          0.0,
+          1.0,
+          3.875
+        ],
+        "rail_height_m": 1.0,
+        "rail_sides": [
+          "east",
+          "west"
+        ],
+        "upper_floor_covered_over_bottom_landing": false,
+        "from_level": 0,
+        "to_level": 1,
+        "geometry_origin_world_FF_m": 3.0632585609746306,
+        "placement_scope": "ONE_STAIR_PER_OWNER_REFERENCED_ON_BOTH_PLANS"
+      },
+      "kitchen_triangle": {
+        "points_m": {
+          "fridge": [
+            7.075,
+            3.475
+          ],
+          "sink": [
+            4.75,
+            4.575
+          ],
+          "hob": [
+            6.1,
+            4.575
+          ]
+        },
+        "scope": "appliance centres; food prep kept out of stair/entry route"
+      },
+      "floor_slab": {
+        "footprint_bounds_m": [
+          -0.3,
+          -0.3,
+          7.7,
+          5.2
+        ],
+        "bottom_world_Z_m": 2.8632585609746304,
+        "top_world_Z_m": 3.0632585609746306,
+        "opening_bounds_m": null,
+        "scope": "Upper slab removes the exact stair void; ground slab remains continuous"
+      },
+      "wall_segments": [
+        {
+          "id": "ext_S",
+          "bounds_m": [
+            0,
+            -0.3,
+            3.1,
+            0
+          ],
+          "exterior": true
+        },
+        {
+          "id": "ext_S",
+          "bounds_m": [
+            4.3,
+            -0.3,
+            7.4,
+            0
+          ],
+          "exterior": true
+        },
+        {
+          "id": "ext_N",
+          "bounds_m": [
+            0,
+            4.9,
+            7.4,
+            5.2
+          ],
+          "exterior": true
+        },
+        {
+          "id": "ext_W",
+          "bounds_m": [
+            -0.3,
+            -0.3,
+            0,
+            5.2
+          ],
+          "exterior": true
+        },
+        {
+          "id": "ext_E",
+          "bounds_m": [
+            7.4,
+            -0.3,
+            7.7,
+            5.2
+          ],
+          "exterior": true
+        },
+        {
+          "id": "stair_east",
+          "bounds_m": [
+            1.0,
+            0.95,
+            1.1,
+            3.875
+          ],
+          "exterior": false
+        },
+        {
+          "id": "utility_s",
+          "bounds_m": [
+            1.1,
+            3.3,
+            2.9,
+            3.4
+          ],
+          "exterior": false
+        },
+        {
+          "id": "utility_e",
+          "bounds_m": [
+            2.8,
+            3.3,
+            2.9,
+            3.5
+          ],
+          "exterior": false
+        },
+        {
+          "id": "utility_e",
+          "bounds_m": [
+            2.8,
+            4.3,
+            2.9,
+            4.9
+          ],
+          "exterior": false
+        }
+      ]
+    },
+    {
+      "id": "B_Upper",
+      "owner_id": "PROPOSED_Core_MillCourt_B",
+      "owner_label": "B",
+      "level_index": 1,
+      "clear_width_m": 7.4,
+      "clear_depth_m": 4.9,
+      "exterior_wall_thickness_m": 0.3,
+      "nominal_partition_thickness_m": 0.1,
+      "FF_world_m": 5.763258560974631,
+      "world_inner_southwest_xy_m": [
+        -41.2,
+        33.8
+      ],
+      "local_coordinate_system": "Metres from inside southwest corner; +X east,+Y north; FF is localZ0",
+      "clear_ceiling_height_m": 2.5,
+      "rooms": [
+        {
+          "id": "bath",
+          "polygon_m": [
+            [
+              1.1,
+              1.8
+            ],
+            [
+              3.0,
+              1.8
+            ],
+            [
+              3.0,
+              3.8
+            ],
+            [
+              1.1,
+              3.8
+            ]
+          ],
+          "label": "Shared shower / WC"
+        },
+        {
+          "id": "child",
+          "label": "Single bedroom",
+          "polygon_m": [
+            [
+              1.1,
+              0
+            ],
+            [
+              4.5,
+              0
+            ],
+            [
+              4.5,
+              3.2
+            ],
+            [
+              3.1,
+              3.2
+            ],
+            [
+              3.1,
+              1.7
+            ],
+            [
+              1.1,
+              1.7
+            ]
+          ]
+        },
+        {
+          "id": "primary",
+          "polygon_m": [
+            [
+              4.6,
+              0
+            ],
+            [
+              7.4,
+              0
+            ],
+            [
+              7.4,
+              4.9
+            ],
+            [
+              4.6,
+              4.9
+            ]
+          ],
+          "label": "Double bedroom"
+        },
+        {
+          "id": "landing",
+          "label": "Private landing",
+          "polygon_m": [
+            [
+              0,
+              3.875
+            ],
+            [
+              1.1,
+              3.875
+            ],
+            [
+              1.1,
+              3.9
+            ],
+            [
+              3.1,
+              3.9
+            ],
+            [
+              3.1,
+              3.3
+            ],
+            [
+              4.5,
+              3.3
+            ],
+            [
+              4.5,
+              4.9
+            ],
+            [
+              0,
+              4.9
+            ]
+          ]
+        }
+      ],
+      "furniture": [
+        {
+          "id": "double_bed",
+          "kind": "bed",
+          "bounds_m": [
+            5.3,
+            0.2,
+            6.7,
+            2.2
+          ],
+          "facing": [
+            0,
+            1
+          ],
+          "height_m": 0.55,
+          "mattress_m": [
+            1.4,
+            2.0
+          ],
+          "head_direction": [
+            0,
+            -1
+          ],
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.55,
+          "platform_type": "flush divan; no projecting frame outside stated footprint",
+          "headboard_top_above_FF_m": 0.95
+        },
+        {
+          "id": "night_w",
+          "kind": "nightstand",
+          "bounds_m": [
+            4.75,
+            0.2,
+            5.15,
+            0.6
+          ],
+          "facing": [
+            0,
+            1
+          ],
+          "height_m": 0.55,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.55
+        },
+        {
+          "id": "night_e",
+          "kind": "nightstand",
+          "bounds_m": [
+            6.85,
+            0.2,
+            7.25,
+            0.6
+          ],
+          "facing": [
+            0,
+            1
+          ],
+          "height_m": 0.55,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.55
+        },
+        {
+          "id": "wardrobe",
+          "kind": "wardrobe",
+          "bounds_m": [
+            4.7,
+            4.3,
+            6.3,
+            4.9
+          ],
+          "facing": [
+            0,
+            -1
+          ],
+          "height_m": 2.2,
+          "door_type": "sliding",
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 2.2
+        },
+        {
+          "id": "desk",
+          "kind": "desk",
+          "bounds_m": [
+            6.85,
+            2.8,
+            7.4,
+            4.0
+          ],
+          "facing": [
+            -1,
+            0
+          ],
+          "height_m": 0.75,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.75
+        },
+        {
+          "id": "desk_chair",
+          "kind": "chair",
+          "bounds_m": [
+            6.25,
+            3.1,
+            6.85,
+            3.7
+          ],
+          "facing": [
+            1,
+            0
+          ],
+          "height_m": 0.9,
+          "pullback_bounds_m": [
+            5.75,
+            3.1,
+            6.25,
+            3.7
+          ],
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.9,
+          "seat_top_above_FF_m": 0.45
+        },
+        {
+          "id": "single_bed",
+          "kind": "bed",
+          "bounds_m": [
+            1.2,
+            0.1,
+            3.2,
+            1.0
+          ],
+          "facing": [
+            1,
+            0
+          ],
+          "height_m": 0.5,
+          "mattress_m": [
+            0.9,
+            2.0
+          ],
+          "head_direction": [
+            -1,
+            0
+          ],
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.5,
+          "platform_type": "flush divan; no projecting frame outside stated footprint",
+          "headboard_top_above_FF_m": 0.95
+        },
+        {
+          "id": "child_wardrobe",
+          "kind": "wardrobe",
+          "bounds_m": [
+            3.9,
+            0.1,
+            4.5,
+            1.3
+          ],
+          "facing": [
+            -1,
+            0
+          ],
+          "height_m": 2.1,
+          "door_type": "sliding",
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 2.1
+        },
+        {
+          "id": "shower",
+          "kind": "shower",
+          "bounds_m": [
+            1.1,
+            1.8,
+            2.0,
+            2.7
+          ],
+          "facing": [
+            0,
+            1
+          ],
+          "height_m": 2.05,
+          "entry_type": "screen and curtain",
+          "clear_entry_m": 0.7,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 2.05
+        },
+        {
+          "id": "toilet",
+          "kind": "toilet",
+          "bounds_m": [
+            2.45,
+            1.8,
+            2.9,
+            2.55
+          ],
+          "facing": [
+            0,
+            1
+          ],
+          "height_m": 0.8,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.8
+        },
+        {
+          "id": "basin",
+          "kind": "basin",
+          "bounds_m": [
+            1.1,
+            3.45,
+            1.8,
+            3.8
+          ],
+          "facing": [
+            0,
+            -1
+          ],
+          "height_m": 0.85,
+          "base_above_FF_m": 0.0,
+          "top_above_FF_m": 0.85
+        }
+      ],
+      "walls": [
+        {
+          "id": "stair_east",
+          "axis": "vertical",
+          "at_m": 1.0,
+          "start_m": 0.95,
+          "end_m": 3.875,
+          "thickness_m": 0.1,
+          "openings": []
+        },
+        {
+          "id": "bath_s",
+          "axis": "horizontal",
+          "at_m": 1.7,
+          "start_m": 1.1,
+          "end_m": 3.1,
+          "thickness_m": 0.1,
+          "openings": []
+        },
+        {
+          "id": "bath_e",
+          "axis": "vertical",
+          "at_m": 3.0,
+          "start_m": 1.7,
+          "end_m": 3.9,
+          "thickness_m": 0.1,
+          "openings": []
+        },
+        {
+          "id": "bath_n",
+          "axis": "horizontal",
+          "at_m": 3.8,
+          "start_m": 1.1,
+          "end_m": 3.1,
+          "thickness_m": 0.1,
+          "openings": [
+            {
+              "door_id": "bath_door",
+              "start_m": 2.1,
+              "end_m": 2.9
+            }
+          ]
+        },
+        {
+          "id": "child_n",
+          "axis": "horizontal",
+          "at_m": 3.2,
+          "start_m": 3.1,
+          "end_m": 4.5,
+          "thickness_m": 0.1,
+          "openings": [
+            {
+              "door_id": "child_door",
+              "start_m": 3.2,
+              "end_m": 4.0
+            }
+          ]
+        },
+        {
+          "id": "primary_w",
+          "axis": "vertical",
+          "at_m": 4.5,
+          "start_m": 0,
+          "end_m": 4.9,
+          "thickness_m": 0.1,
+          "openings": [
+            {
+              "door_id": "primary_door",
+              "start_m": 3.35,
+              "end_m": 4.15
+            }
+          ]
+        }
+      ],
+      "doors": [
+        {
+          "id": "bath_door",
+          "kind": "pocket",
+          "opening_axis": "horizontal",
+          "at_m": 3.85,
+          "start_m": 2.1,
+          "end_m": 2.9,
+          "clear_width_m": 0.8,
+          "pocket_extent_m": [
+            1.2,
+            2.1
+          ],
+          "opaque": true,
+          "privacy_lock": true,
+          "height_m": 2.1,
+          "rough_opening_height_m": 2.2,
+          "jamb_width_m": 0.05,
+          "animation_clearance_scope": "hinge arcs or pocket travel explicit; no native animation qualification",
+          "rough_opening_width_m": 0.9,
+          "leaf_thickness_m": 0.04
+        },
+        {
+          "id": "child_door",
+          "kind": "hinged",
+          "hinge_xy_m": [
+            3.2,
+            3.2
+          ],
+          "closed_unit_vector": [
+            1,
+            0
+          ],
+          "open_unit_vector": [
+            0,
+            -1
+          ],
+          "clear_width_m": 0.8,
+          "opaque": true,
+          "height_m": 2.1,
+          "rough_opening_height_m": 2.2,
+          "jamb_width_m": 0.05,
+          "animation_clearance_scope": "hinge arcs or pocket travel explicit; no native animation qualification",
+          "rough_opening_width_m": 0.9,
+          "leaf_thickness_m": 0.04
+        },
+        {
+          "id": "primary_door",
+          "kind": "pocket",
+          "opening_axis": "vertical",
+          "at_m": 4.55,
+          "start_m": 3.35,
+          "end_m": 4.15,
+          "clear_width_m": 0.8,
+          "pocket_extent_m": [
+            2.45,
+            3.35
+          ],
+          "opaque": true,
+          "height_m": 2.1,
+          "rough_opening_height_m": 2.2,
+          "jamb_width_m": 0.05,
+          "animation_clearance_scope": "hinge arcs or pocket travel explicit; no native animation qualification",
+          "rough_opening_width_m": 0.9,
+          "leaf_thickness_m": 0.04
+        }
+      ],
+      "windows": [
+        {
+          "id": "primary_s",
+          "side": "S",
+          "start_m": 5.35,
+          "end_m": 6.65,
+          "sill_above_FF_m": 1.05,
+          "height_m": 1.15,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        },
+        {
+          "id": "desk_e",
+          "side": "E",
+          "start_m": 2.9,
+          "end_m": 3.9,
+          "sill_above_FF_m": 1.0,
+          "height_m": 1.2,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        },
+        {
+          "id": "child_s",
+          "side": "S",
+          "start_m": 1.4,
+          "end_m": 2.7,
+          "sill_above_FF_m": 1.0,
+          "height_m": 1.2,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        },
+        {
+          "id": "landing_n",
+          "side": "N",
+          "start_m": 1.2,
+          "end_m": 2.5,
+          "sill_above_FF_m": 1.1,
+          "height_m": 1.15,
+          "frame_width_m": 0.06,
+          "opening_type": "outward casement",
+          "jamb_depth_m": 0.3
+        },
+        {
+          "id": "bath_rooflight",
+          "side": "ROOF",
+          "bounds_m": [
+            1.2,
+            1.9,
+            1.8,
+            2.5
+          ],
+          "frosted": true,
+          "mechanical_extract": true,
+          "frame_width_m": 0.06,
+          "opening_type": "rooflight with light shaft through loft",
+          "jamb_depth_m": 0.3
+        }
+      ],
+      "clearance_zones": [
+        {
+          "id": "bed_w_side",
+          "bounds_m": [
+            4.6,
+            0.7,
+            5.3,
+            2.1
+          ],
+          "minimum_clear_m": 0.7,
+          "clearance_axis": "x"
+        },
+        {
+          "id": "bed_e_side",
+          "bounds_m": [
+            6.7,
+            0.7,
+            7.4,
+            2.1
+          ],
+          "minimum_clear_m": 0.7,
+          "clearance_axis": "x"
+        },
+        {
+          "id": "bed_foot",
+          "bounds_m": [
+            5.3,
+            2.2,
+            6.7,
+            3.0
+          ],
+          "minimum_clear_m": 0.8,
+          "clearance_axis": "y"
+        },
+        {
+          "id": "wardrobe_front",
+          "bounds_m": [
+            4.8,
+            3.4,
+            5.65,
+            4.3
+          ],
+          "minimum_clear_m": 0.9,
+          "clearance_axis": "y"
+        },
+        {
+          "id": "single_bed_side",
+          "bounds_m": [
+            1.3,
+            1.0,
+            3.1,
+            1.7
+          ],
+          "minimum_clear_m": 0.7,
+          "clearance_axis": "y"
+        },
+        {
+          "id": "child_wardrobe_front",
+          "bounds_m": [
+            3.2,
+            0.2,
+            3.9,
+            1.2
+          ],
+          "minimum_clear_m": 0.7,
+          "clearance_axis": "x"
+        },
+        {
+          "id": "wc_basin_shared_aisle",
+          "bounds_m": [
+            2.25,
+            2.55,
+            3.0,
+            3.35
+          ],
+          "minimum_clear_m": 0.8,
+          "clearance_axis": "y"
+        },
+        {
+          "id": "shower_entry",
+          "bounds_m": [
+            1.25,
+            2.7,
+            1.95,
+            3.45
+          ],
+          "minimum_clear_m": 0.7,
+          "clearance_axis": "y"
+        }
+      ],
+      "circulation": [
+        {
+          "id": "landing_to_bath",
+          "points_m": [
+            [
+              0.5,
+              4.35
+            ],
+            [
+              2.5,
+              4.35
+            ],
+            [
+              2.5,
+              3.1
+            ]
+          ],
+          "clear_width_m": 0.7,
+          "connects": [
+            "stair_top",
+            "bath_door"
+          ]
+        },
+        {
+          "id": "landing_to_child",
+          "points_m": [
+            [
+              0.5,
+              4.35
+            ],
+            [
+              3.6,
+              4.35
+            ],
+            [
+              3.6,
+              2.8
+            ]
+          ],
+          "clear_width_m": 0.7,
+          "connects": [
+            "stair_top",
+            "child_door"
+          ]
+        },
+        {
+          "id": "landing_to_primary",
+          "points_m": [
+            [
+              0.5,
+              4.35
+            ],
+            [
+              3.8,
+              4.35
+            ],
+            [
+              3.8,
+              3.75
+            ],
+            [
+              5.2,
+              3.75
+            ]
+          ],
+          "clear_width_m": 0.7,
+          "connects": [
+            "stair_top",
+            "primary_door"
+          ]
+        }
+      ],
+      "tradeoffs": [
+        "One generous double room and one compact single room; intended household three people, not two double bedrooms.",
+        "Single-room homework uses the family dining table; no extra desk forced into the small room.",
+        "B leaves a small double-height entrance/stair void above the bottom landing; it is not counted as usable upper floor.",
+        "Shared upper shower/WC; no bath tub."
+      ],
+      "stair": {
+        "id": "B_S1",
+        "type": "straight",
+        "clear_width_m": 0.9,
+        "overall_width_m": 1.0,
+        "run_bounds_m": [
+          0,
+          0.95,
+          1.0,
+          3.875
+        ],
+        "risers": 14,
+        "riser_m": 0.19285714285714287,
+        "treads": 13,
+        "tread_going_m": 0.225,
+        "horizontal_run_m": 2.925,
+        "rise_m": 2.7,
+        "pitch_degrees": 40.60129464500447,
+        "bottom_landing_bounds_m": [
+          0,
+          0.05,
+          1.0,
+          0.95
+        ],
+        "top_landing_bounds_m": [
+          0,
+          3.875,
+          1.0,
+          4.9
+        ],
+        "slab_thickness_m": 0.2,
+        "minimum_modelled_headroom_m": 2.5,
+        "opening_bounds_m": [
+          0,
+          0.0,
+          1.0,
+          3.875
+        ],
+        "rail_height_m": 1.0,
+        "rail_sides": [
+          "east",
+          "west"
+        ],
+        "upper_floor_covered_over_bottom_landing": false,
+        "from_level": 0,
+        "to_level": 1,
+        "geometry_origin_world_FF_m": 3.0632585609746306,
+        "placement_scope": "ONE_STAIR_PER_OWNER_REFERENCED_ON_BOTH_PLANS"
+      },
+      "stair_void_bounds_m": [
+        0,
+        0,
+        1.0,
+        3.875
+      ],
+      "floor_slab": {
+        "footprint_bounds_m": [
+          -0.3,
+          -0.3,
+          7.7,
+          5.2
+        ],
+        "bottom_world_Z_m": 5.563258560974631,
+        "top_world_Z_m": 5.763258560974631,
+        "opening_bounds_m": [
+          0,
+          0,
+          1.0,
+          3.875
+        ],
+        "scope": "Upper slab removes the exact stair void; ground slab remains continuous"
+      },
+      "wall_segments": [
+        {
+          "id": "ext_S",
+          "bounds_m": [
+            0,
+            -0.3,
+            7.4,
+            0
+          ],
+          "exterior": true
+        },
+        {
+          "id": "ext_N",
+          "bounds_m": [
+            0,
+            4.9,
+            7.4,
+            5.2
+          ],
+          "exterior": true
+        },
+        {
+          "id": "ext_W",
+          "bounds_m": [
+            -0.3,
+            -0.3,
+            0,
+            5.2
+          ],
+          "exterior": true
+        },
+        {
+          "id": "ext_E",
+          "bounds_m": [
+            7.4,
+            -0.3,
+            7.7,
+            5.2
+          ],
+          "exterior": true
+        },
+        {
+          "id": "stair_east",
+          "bounds_m": [
+            1.0,
+            0.95,
+            1.1,
+            3.875
+          ],
+          "exterior": false
+        },
+        {
+          "id": "bath_s",
+          "bounds_m": [
+            1.1,
+            1.7,
+            3.1,
+            1.8
+          ],
+          "exterior": false
+        },
+        {
+          "id": "bath_e",
+          "bounds_m": [
+            3.0,
+            1.7,
+            3.1,
+            3.9
+          ],
+          "exterior": false
+        },
+        {
+          "id": "bath_n",
+          "bounds_m": [
+            1.1,
+            3.8,
+            2.1,
+            3.9
+          ],
+          "exterior": false
+        },
+        {
+          "id": "bath_n",
+          "bounds_m": [
+            2.9,
+            3.8,
+            3.1,
+            3.9
+          ],
+          "exterior": false
+        },
+        {
+          "id": "child_n",
+          "bounds_m": [
+            3.1,
+            3.2,
+            3.2,
+            3.3000000000000003
+          ],
+          "exterior": false
+        },
+        {
+          "id": "child_n",
+          "bounds_m": [
+            4.0,
+            3.2,
+            4.5,
+            3.3000000000000003
+          ],
+          "exterior": false
+        },
+        {
+          "id": "primary_w",
+          "bounds_m": [
+            4.5,
+            0,
+            4.6,
+            3.35
+          ],
+          "exterior": false
+        },
+        {
+          "id": "primary_w",
+          "bounds_m": [
+            4.5,
+            4.15,
+            4.6,
+            4.9
+          ],
+          "exterior": false
+        }
+      ]
+    }
+  ],
+  "stairs": [
+    {
+      "id": "A_S1",
+      "type": "straight",
+      "clear_width_m": 0.9,
+      "overall_width_m": 1.0,
+      "run_bounds_m": [
+        0,
+        0.95,
+        1.0,
+        3.875
+      ],
+      "risers": 14,
+      "riser_m": 0.19285714285714287,
+      "treads": 13,
+      "tread_going_m": 0.225,
+      "horizontal_run_m": 2.925,
+      "rise_m": 2.7,
+      "pitch_degrees": 40.60129464500447,
+      "bottom_landing_bounds_m": [
+        0,
+        0.05,
+        1.0,
+        0.95
+      ],
+      "top_landing_bounds_m": [
+        0,
+        3.875,
+        1.0,
+        4.9
+      ],
+      "slab_thickness_m": 0.2,
+      "minimum_modelled_headroom_m": 2.5,
+      "opening_bounds_m": [
+        0,
+        0.95,
+        1.0,
+        3.875
+      ],
+      "rail_height_m": 1.0,
+      "rail_sides": [
+        "east",
+        "west"
+      ],
+      "upper_floor_covered_over_bottom_landing": true,
+      "from_level": 0,
+      "to_level": 1,
+      "geometry_origin_world_FF_m": 3.6336615457293915,
+      "placement_scope": "ONE_STAIR_PER_OWNER_REFERENCED_ON_BOTH_PLANS",
+      "owner_id": "PROPOSED_Core_MillCourt_A"
+    },
+    {
+      "id": "B_S1",
+      "type": "straight",
+      "clear_width_m": 0.9,
+      "overall_width_m": 1.0,
+      "run_bounds_m": [
+        0,
+        0.95,
+        1.0,
+        3.875
+      ],
+      "risers": 14,
+      "riser_m": 0.19285714285714287,
+      "treads": 13,
+      "tread_going_m": 0.225,
+      "horizontal_run_m": 2.925,
+      "rise_m": 2.7,
+      "pitch_degrees": 40.60129464500447,
+      "bottom_landing_bounds_m": [
+        0,
+        0.05,
+        1.0,
+        0.95
+      ],
+      "top_landing_bounds_m": [
+        0,
+        3.875,
+        1.0,
+        4.9
+      ],
+      "slab_thickness_m": 0.2,
+      "minimum_modelled_headroom_m": 2.5,
+      "opening_bounds_m": [
+        0,
+        0.0,
+        1.0,
+        3.875
+      ],
+      "rail_height_m": 1.0,
+      "rail_sides": [
+        "east",
+        "west"
+      ],
+      "upper_floor_covered_over_bottom_landing": false,
+      "from_level": 0,
+      "to_level": 1,
+      "geometry_origin_world_FF_m": 3.0632585609746306,
+      "placement_scope": "ONE_STAIR_PER_OWNER_REFERENCED_ON_BOTH_PLANS",
+      "owner_id": "PROPOSED_Core_MillCourt_B"
+    }
+  ],
+  "id_scope": "All room/furniture/wall/door/window IDs are local to plan.id; stair.id is shared once per owner across both drawing levels.",
+  "source_site_proposal_sha256": "1765a29995f1600f0d1caf19f12bc4702bba0221d62777c7a524787b8b9d17a4",
+  "wall_segments_scope": "Finished wall and jamb footprints for clearance checks. Model masonry apertures extend each clear interval by jamb_width_m at both ends; fit jambs outside clear passage. Pocket host partitions need the declared hollow travel cavity.",
+  "geometry_coordination": {
+    "B_Upper_child_n": "Butt at X4.50m rather than overlap the primary pocket cavity to4.60m; room polygons and clear portals unchanged.",
+    "slabs": "Upper floor opening equals stair_void_bounds_m and shared stair opening_bounds_m; ground slab is continuous."
+  }
+}

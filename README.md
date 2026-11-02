@@ -26,6 +26,8 @@
 
 ## 最近更新
 
+- 新增 Mill Court 两栋住宅的四层[带家具平面方案](docs/asset_refinement/mill_court_furnished_plan.md)：明确门扇、楼梯洞口、家具朝向与床侧通道；可独立重跑布局检查。详细模型与 Unreal 场景接入继续推进。
+
 - 新增可选原生咖啡馆产权流程：真实柜台办理出售、购买与预付租赁，账款守恒与独立进程读档已通过。Aria 暂用功能原型角色，美术、键盘导览与性能继续验证。[范围与证据](docs/asset_refinement/unreal_native_cafe_property_v2.md)。
 
 - 61 骨骼咖啡馆角色已通过 Unreal 受控预览中的自然待机、行走、停止与完整身体取景检查，保留源几何、UV、蒙皮和完整动画。脚步/柜台接触、最终美术与性能继续完善。[角色管线与验证范围](docs/asset_refinement/native_worker110.md)。
