@@ -30,6 +30,13 @@ pinned, and retiring another section requires both simple and complex traces to
 show that it does not support the player. A live failure retains resident support
 and locks movement; it does not pretend that world teardown has completed.
 
+Pending tickets now rotate through one shared validation window, starting after
+the owner and cafe checks. Resident sections cannot consume a pending section's
+turn. A separate scan checks ticket deadlines and retirement on every tick, so
+an exhausted validation budget cannot hide a timeout. Diagnostics report those
+phases separately; the 1 ms validation target does not bound engine work or an
+individual component check.
+
 This implementation deliberately refuses cooked-data mode. It is an integration
 step toward a streamed town, not a packaged whole-town release or evidence of
 improved frame rate.
@@ -54,10 +61,18 @@ the declared normal convention and alpha threshold. These helpers do not run in
 the game target or repair original materials at runtime. Their named candidate
 packages are not supplied by this source change.
 
+The fine-hair preparation helper requires an isolated Editor startup profile
+with `r.ShaderCompiler.JobCacheDDC=0`, enabling complete material-map compilation
+for that process. It reads the policy before requesting work and never changes
+the console variable itself. The intake profile affects all materials loaded by
+that Editor process. Both fine-hair and head-cap readiness checks require
+successful, finalized compilation in addition to their resource checks.
+
 ## Observed validation, 2026-11-02
 
-The complete 178-file source snapshot compiled in Unreal 5.8.4, changelist
-58902052, on Windows. Five native automation tests passed with zero test errors
+The complete 178-file source snapshot, including the scheduling and
+shader-readiness corrections, compiled in Unreal 5.8.4, changelist
+58902052, on Windows. Six native automation tests passed with zero test errors
 and zero test warnings on the AMD Radeon 8060S D3D12/SM6 device:
 
 - `LivingTown.FullTown.TransformAndDistance`
@@ -65,22 +80,28 @@ and zero test warnings on the AMD Radeon 8060S D3D12/SM6 device:
 - `LivingTown.FullTown.CancelledLoadRetainsReservation`
 - `LivingTown.Current61.HeadAssembly.SafeRefusal`
 - `LivingTown.Current61.HeadAssembly.DeclaredShadingProfiles`
+- `LivingTown.FullTown.FairValidationBudgetAndDeadlines`
 
-The two new subset assets were authored and read back with all 301 roles,
-262 external cafe parts and ordered material slots accounted for. The 4,985
-original source packages remained unchanged. This is saved-data evidence;
-independent reopening and the actual movement/streaming journey must still be
-completed before gameplay acceptance.
+The two new subset assets were authored and independently reopened with all 301
+roles, 262 external cafe parts and ordered material slots accounted for. The
+reopen check made no saves and preserved all 4,987 input packages, including the
+two new subset assets. This is saved-data evidence. The first launched runtime
+test remained movement-locked with the ground resident and two building
+sections loaded but hidden; it ended without a completion report. Traversal is
+not accepted, and the loading transition is under correction.
 
 The tests exercise production validators, cancellation reservation behavior and
 safe assembly refusal. They do not prove a successful animated head attachment,
 physical traversal, unload/re-entry, collision coverage across the town,
 character appearance, startup time, frame rate or cooked packaging. Those
 remain separate checks with actual assets and runtime observations.
+The corrected source still needs a successful live traversal run.
 
 The Blender preview investigation also isolated a source of broad black hair
 patches: the saved Cycles transparency depth was eight. Matched front/rear renders
 at depth 64 removed the broad patches with the same geometry and textures,
 including a neutral-emission control. That is a Blender preview finding, not an
-Unreal shader or runtime-performance result. Hairline, underlayer edges, side
-strands and final character art remain under refinement.
+Unreal shader or runtime-performance result. A separate Blender copy now saves
+that GPU preview profile and passes independent reopening and eight matched
+renders covering front, side, three-quarter and rear views. Hairline, underlayer
+edges, side strands and final character art remain under refinement.

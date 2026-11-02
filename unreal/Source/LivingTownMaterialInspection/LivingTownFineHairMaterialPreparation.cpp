@@ -88,6 +88,29 @@ TSharedRef<FJsonObject> StateJson(const FState& State)
 {
     auto Object=MakeShared<FJsonObject>();Object->SetStringField(TEXT("material"),State.Path);Object->SetStringField(TEXT("file"),State.File);Object->SetStringField(TEXT("sha256"),State.Hash);Object->SetNumberField(TEXT("bytes"),double(State.Bytes));Object->SetStringField(TEXT("mtime_ticks"),LexToString(State.Timestamp.GetTicks()));Object->SetStringField(TEXT("StateId"),State.Id.ToString());Object->SetBoolField(TEXT("dirty"),State.Dirty);Object->SetNumberField(TEXT("shading_model_field"),State.Models);return Object;
 }
+// Dedicated owned Editor startup profile only. This policy is per-process,
+// not per-material. Observe it; never change a console variable here.
+struct FCompilePolicy
+{
+    bool VariableExists=false,ReadOnly=false,MaterialMapDDC=false,ODSCOnly=true,Skipped=true;
+    int32 JobCacheValue=-1;uint32 Flags=0;
+    bool AllowsCompleteMaps() const { return VariableExists&&ReadOnly&&JobCacheValue==0&&MaterialMapDDC&&!ODSCOnly&&!Skipped; }
+};
+FCompilePolicy ReadCompilePolicy()
+{
+    FCompilePolicy P;
+    const IConsoleVariable* V=IConsoleManager::Get().FindConsoleVariable(TEXT("r.ShaderCompiler.JobCacheDDC"));
+    P.VariableExists=V!=nullptr;P.ReadOnly=V&&V->TestFlags(ECVF_ReadOnly);P.JobCacheValue=V?V->GetInt():-1;P.Flags=V?uint32(V->GetFlags()):0;
+    P.MaterialMapDDC=IsMaterialMapDDCEnabled();P.ODSCOnly=ShouldCompileODSCOnlyShaders();P.Skipped=!GShaderCompilingManager||GShaderCompilingManager->IsShaderCompilationSkipped();return P;
+}
+bool SamePolicy(const FCompilePolicy& A,const FCompilePolicy& B)
+{
+    return A.VariableExists==B.VariableExists&&A.ReadOnly==B.ReadOnly&&A.MaterialMapDDC==B.MaterialMapDDC&&A.ODSCOnly==B.ODSCOnly&&A.Skipped==B.Skipped&&A.JobCacheValue==B.JobCacheValue&&A.Flags==B.Flags;
+}
+TSharedRef<FJsonObject> PolicyJson(const FCompilePolicy& P)
+{
+    auto O=MakeShared<FJsonObject>();O->SetBoolField(TEXT("job_cache_CVar_exists"),P.VariableExists);O->SetBoolField(TEXT("job_cache_CVar_readonly"),P.ReadOnly);O->SetNumberField(TEXT("job_cache_DDC_value"),P.JobCacheValue);O->SetNumberField(TEXT("job_cache_CVar_flags"),double(P.Flags));O->SetBoolField(TEXT("material_map_DDC_enabled"),P.MaterialMapDDC);O->SetBoolField(TEXT("ODSC_only_shaders"),P.ODSCOnly);O->SetBoolField(TEXT("shader_compilation_skipped"),P.Skipped);O->SetBoolField(TEXT("allows_complete_maps"),P.AllowsCompleteMaps());O->SetBoolField(TEXT("policy_scope_all_loaded_materials_in_this_owned_Editor_not_per_material"),true);return O;
+}
 TSet<TWeakObjectPtr<UMaterial>> Begun;
 }
 
@@ -96,11 +119,18 @@ FString ULivingTownFineHairMaterialPreparation::PrepareSavedFineHairMaterialReso
     using namespace FineHairMaterialPreparation;
     FState Before,After;
     if(!Snapshot(Material,ExpectedPackageSha256,Before))return Refuse(TEXT("exact_clean_saved_owned_material_hash_and_Editor_D3D12_SM6_required"));
+    const FCompilePolicy PolicyBefore=ReadCompilePolicy();
+    if(!PolicyBefore.AllowsCompleteMaps())
+    {
+        auto Object=MakeShared<FJsonObject>();Object->SetStringField(TEXT("status"),TEXT("REFUSED_DEDICATED_PRIVATE_FULL_MATERIAL_MAP_STARTUP_PROFILE_REQUIRED"));Object->SetObjectField(TEXT("compile_policy_before_request"),PolicyJson(PolicyBefore));Object->SetObjectField(TEXT("before"),StateJson(Before));Object->SetBoolField(TEXT("explicit_resource_cache_request_once"),false);Object->SetBoolField(TEXT("console_variable_or_asset_mutation"),false);return Json(Object);
+    }
     const TWeakObjectPtr<UMaterial> Key(Material);
     if(Begun.Contains(Key))return Refuse(TEXT("once_only_explicit_resource_preparation_no_retry"));
     Begun.Add(Key);
     // CacheShaders is the public exported wrapper for private
     // CacheResourceShadersForRendering(false, CompileMode). It preserves StateId.
+    // With the verified dedicated full-map startup policy, Background requests
+    // missing permutations and the stock finalizer may set completion flags.
     // The scope syncs render state; shader jobs finish asynchronously. No asset
     // edit notifications, global full-map CVar change or package save is issued.
     {
@@ -109,8 +139,10 @@ FString ULivingTownFineHairMaterialPreparation::PrepareSavedFineHairMaterialReso
         Material->CacheShaders(EMaterialShaderPrecompileMode::Default);
     }
     const bool Custody=Snapshot(Material,ExpectedPackageSha256,After)&&Same(Before,After);
+    const FCompilePolicy PolicyAfter=ReadCompilePolicy();const bool PolicyStable=PolicyAfter.AllowsCompleteMaps()&&SamePolicy(PolicyBefore,PolicyAfter);
     auto Object=MakeShared<FJsonObject>();
-    Object->SetStringField(TEXT("status"),Custody?TEXT("REQUESTED_OWNED_MATERIAL_RESOURCE_CACHE_NOT_READY_PROOF"):TEXT("REFUSED_RESOURCE_INITIALIZATION_CUSTODY_CHANGED"));
+    Object->SetStringField(TEXT("status"),Custody&&PolicyStable?TEXT("REQUESTED_OWNED_MATERIAL_RESOURCE_CACHE_NOT_READY_PROOF"):TEXT("REFUSED_RESOURCE_INITIALIZATION_CUSTODY_OR_PRIVATE_POLICY_CHANGED"));
+    Object->SetObjectField(TEXT("compile_policy_before_request"),PolicyJson(PolicyBefore));Object->SetObjectField(TEXT("compile_policy_after_request"),PolicyJson(PolicyAfter));Object->SetBoolField(TEXT("private_startup_compile_policy_unchanged"),PolicyStable);Object->SetBoolField(TEXT("no_live_console_variable_setter"),true);
     Object->SetStringField(TEXT("schema"),TEXT("LivingTown.Current61OwnedMaterialResourcePreparation.v1"));
     Object->SetObjectField(TEXT("before"),StateJson(Before));Object->SetObjectField(TEXT("after"),StateJson(After));
     Object->SetBoolField(TEXT("saved_package_StateId_dirty_shading_models_unchanged"),Custody);
@@ -149,7 +181,7 @@ FString ULivingTownFineHairMaterialPreparation::ReadSavedFineHairMaterialResourc
     const bool GlobalAfter=GShaderCompilingManager->IsCompiling();const int32 JobsAfter=GShaderCompilingManager->GetNumRemainingJobs();
     const bool Custody=Snapshot(Material,ExpectedPackageSha256,After)&&Same(Before,After);
     const bool Stable=static_cast<const UMaterial*>(Material)->GetMaterialResource(GMaxRHIShaderPlatform)==Resource&&(!Resource||(Resource->GetGameThreadShaderMap()==Map&&Resource->GetQualityLevel()==ResourceQuality))&&(!Map||(Map->GetResource()==Code&&Map->GetFrozenContentSize()==FrozenBytes&&Map->IsCompilationFinalized()==Finalized&&Map->CompiledSuccessfully()==Successful))&&(!Code||(Code->IsResolved()==Resolved&&Code->GetNumShaders()==CodeShaders))&&GetCachedScalabilityCVars().MaterialQualityLevel==Quality&&IsMaterialMapDDCEnabled()==DDC&&Context();
-    const bool Ready=Custody&&Stable&&Own&&Complete&&!Caching&&Compatible&&Current&&Renderable&&Errors.IsEmpty()&&!GlobalBefore&&!GlobalAfter&&JobsBefore==0&&JobsAfter==0;
+    const bool Ready=Custody&&Stable&&Own&&Finalized&&Successful&&Complete&&!Caching&&Compatible&&Current&&Renderable&&Errors.IsEmpty()&&!GlobalBefore&&!GlobalAfter&&JobsBefore==0&&JobsAfter==0;
     auto Object=MakeShared<FJsonObject>();
     Object->SetStringField(TEXT("status"),Ready?TEXT("READ_ONLY_OWNED_SAVED_SM6_RESOURCE_READY_V1"):TEXT("HOLD_OWNED_SAVED_SHADER_RESOURCE_PENDING_OR_INVALID_V1"));
     Object->SetStringField(TEXT("schema"),TEXT("LivingTown.Current61OwnedMaterialResourceReadiness.v1"));Object->SetStringField(TEXT("material"),Before.Path);Object->SetObjectField(TEXT("before"),StateJson(Before));Object->SetObjectField(TEXT("after"),StateJson(After));

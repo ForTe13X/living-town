@@ -145,7 +145,7 @@ FString ULivingTownHeadCapMaterialPreparation::ReadSavedCapMaterialResource(UMat
     const bool GlobalAfter=GShaderCompilingManager->IsCompiling();const int32 JobsAfter=GShaderCompilingManager->GetNumRemainingJobs();
     const bool Custody=Snapshot(Material,ExpectedPackageSha256,After)&&Same(Before,After);
     const bool Stable=static_cast<const UMaterial*>(Material)->GetMaterialResource(GMaxRHIShaderPlatform)==Resource&&(!Resource||(Resource->GetGameThreadShaderMap()==Map&&Resource->GetQualityLevel()==ResourceQuality))&&(!Map||(Map->GetResource()==Code&&Map->GetFrozenContentSize()==FrozenBytes&&Map->IsCompilationFinalized()==Finalized&&Map->CompiledSuccessfully()==Successful))&&(!Code||(Code->IsResolved()==Resolved&&Code->GetNumShaders()==CodeShaders))&&GetCachedScalabilityCVars().MaterialQualityLevel==Quality&&IsMaterialMapDDCEnabled()==DDC&&Context();
-    const bool Ready=Custody&&Stable&&Own&&Complete&&!Caching&&Compatible&&Current&&Renderable&&Errors.IsEmpty()&&!GlobalBefore&&!GlobalAfter&&JobsBefore==0&&JobsAfter==0;
+    const bool Ready=Custody&&Stable&&Own&&Finalized&&Successful&&Complete&&!Caching&&Compatible&&Current&&Renderable&&Errors.IsEmpty()&&!GlobalBefore&&!GlobalAfter&&JobsBefore==0&&JobsAfter==0;
     auto Object=MakeShared<FJsonObject>();
     Object->SetStringField(TEXT("status"),Ready?TEXT("READ_ONLY_OWNED_SAVED_SM6_RESOURCE_READY_V1"):TEXT("HOLD_OWNED_SAVED_SHADER_RESOURCE_PENDING_OR_INVALID_V1"));
     Object->SetStringField(TEXT("schema"),TEXT("LivingTown.Current61OwnedMaterialResourceReadiness.v1"));Object->SetStringField(TEXT("material"),Before.Path);Object->SetObjectField(TEXT("before"),StateJson(Before));Object->SetObjectField(TEXT("after"),StateJson(After));

@@ -79,6 +79,8 @@ private:
     uint64 Epoch=1, NextToken=1, Frames=0, ArmedFrame=0, ReadyFrame=0;
     double ArmedSeconds=0, ReadySeconds=0, RefreshAccumulator=0;
     double ManifestSourceHashSeconds=0, MapSourceHashSecondsTotal=0, MapSourceHashSecondsMax=0;
+    double LastPreValidationSafetySeconds=0, LastTicketControlSeconds=0, LastValidationSeconds=0;
+    int32 NextTicketCursor=0;
     int32 MapSourceHashCalls=0;
     int32 PeakTransitions=0, LoadsIssued=0, ShownUnits=0, Cancellations=0, PossessionRelocks=0;
     int32 FrameComponents=0, FrameInstances=0;
@@ -103,11 +105,11 @@ private:
     void PumpLoads();
     void BeginDrain(ULivingTownFullTownTicket& Ticket);
     bool GatherHidden(ULivingTownFullTownTicket& Ticket,FString& Error);
-    bool AdvanceValidation(ULivingTownFullTownTicket& Ticket,bool bRegistered,FString& Error);
+    bool AdvanceValidation(ULivingTownFullTownTicket& Ticket,bool bRegistered,double Deadline,FString& Error);
     bool ValidateComponent(ULivingTownFullTownTicket& Ticket,int32 Index,bool bRegistered,FString& Error);
     bool ObserveFooting(int32* SimpleUnit=nullptr,int32* ComplexUnit=nullptr) const;
     bool MayRetire(int32 UnitIndex) const;
-    void AdvanceTickets(double TickStartedSeconds);
+    void AdvanceTickets();
     void CancelHiddenWork();
     void TearDownOwnedReferences();
 };

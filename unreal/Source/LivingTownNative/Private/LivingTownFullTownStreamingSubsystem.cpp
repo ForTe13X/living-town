@@ -32,6 +32,33 @@
 namespace
 {
 bool Refuse(FString& Error,const FString& Why) { Error=Why; return false; }
+// These small production selectors are also exercised by the Automation regression.
+enum class EFullTownDeadlineViolation : uint8 { None, Unit, Unload };
+EFullTownDeadlineViolation FullTownDeadlineViolation(const ULivingTownFullTownTicket& T,double Now,double Limit)
+{
+    if (T.Phase==ELivingTownFullTownPhase::Unloading)
+        return Now-T.RetireStartedSeconds>Limit ? EFullTownDeadlineViolation::Unload : EFullTownDeadlineViolation::None;
+    return T.Phase!=ELivingTownFullTownPhase::Resident && T.Phase!=ELivingTownFullTownPhase::Removed && Now-T.StartedSeconds>Limit
+        ? EFullTownDeadlineViolation::Unit : EFullTownDeadlineViolation::None;
+}
+double FullTownValidationDeadline(double ValidationStarted,double TargetMs)
+{ return ValidationStarted+TargetMs*0.001; }
+bool FullTownCanValidate(double Now,double Deadline,int32 Components,int32 ComponentLimit,int32 Instances,int32 InstanceLimit)
+{ return Now<Deadline && Components<ComponentLimit && Instances<InstanceLimit; }
+int32 FullTownNextPendingTicket(const TArray<TObjectPtr<ULivingTownFullTownTicket>>& InTickets,int32& Cursor)
+{
+    const int32 Num=InTickets.Num();
+    if (Num==0) { Cursor=0; return INDEX_NONE; }
+    Cursor=Cursor%Num;
+    for (int32 Offset=0; Offset<Num; ++Offset)
+    {
+        const int32 Index=(Cursor+Offset)%Num; const auto* T=InTickets[Index].Get();
+        if (T && !T->bCancelled && (T->Phase==ELivingTownFullTownPhase::LoadingHidden ||
+            T->Phase==ELivingTownFullTownPhase::ValidatingHidden || T->Phase==ELivingTownFullTownPhase::MakingVisible))
+        { Cursor=(Index+1)%Num; return Index; }
+    }
+    return INDEX_NONE;
+}
 bool BaseActor(const AActor* A)
 {
     const FString P=A->GetClass()->GetPathName();
@@ -347,18 +374,17 @@ bool ULivingTownFullTownStreamingSubsystem::ValidateComponent(ULivingTownFullTow
     return true;
 }
 
-bool ULivingTownFullTownStreamingSubsystem::AdvanceValidation(ULivingTownFullTownTicket& T,bool Registered,FString& Error)
+bool ULivingTownFullTownStreamingSubsystem::AdvanceValidation(ULivingTownFullTownTicket& T,bool Registered,double Deadline,FString& Error)
 {
-    const double Start=FPlatformTime::Seconds();
-    while (T.NextComponent<T.Components.Num() && FrameComponents<ComponentBudget && FrameInstances<InstanceBudget &&
-           (FPlatformTime::Seconds()-Start)*1000.0<ValidationTargetMs)
+    while (T.NextComponent<T.Components.Num() && FullTownCanValidate(FPlatformTime::Seconds(),Deadline,
+           FrameComponents,ComponentBudget,FrameInstances,InstanceBudget))
     {
         const int32 I=T.NextComponent; const auto& R=Data->Units[T.UnitIndex].Roles[T.RoleIndices[I]];
         if (T.NextInstance==0) { ++FrameComponents; if (!ValidateComponent(T,I,Registered,Error)) return false; }
         if (R.Kind==ELivingTownFullTownComponentKind::HierarchicalInstances)
         {
             auto* H=CastChecked<UHierarchicalInstancedStaticMeshComponent>(T.Components[I].Get());
-            while (T.NextInstance<R.Instances.Num() && FrameInstances<InstanceBudget && (FPlatformTime::Seconds()-Start)*1000.0<ValidationTargetMs)
+            while (T.NextInstance<R.Instances.Num() && FrameInstances<InstanceBudget && FPlatformTime::Seconds()<Deadline)
             {
                 FTransform Actual; const auto& Instance=R.Instances[T.NextInstance];
                 if (!H->GetInstanceTransform(T.NextInstance,Actual,true) || !LivingTownFullTown::SameQualifiedTransform(Actual,Instance.WorldTransform))
@@ -401,9 +427,11 @@ bool ULivingTownFullTownStreamingSubsystem::MayRetire(int32 I) const
         ObserveFooting(&Simple,&Complex) && Simple!=I && Complex!=I;
 }
 
-void ULivingTownFullTownStreamingSubsystem::AdvanceTickets(double TickStarted)
+void ULivingTownFullTownStreamingSubsystem::AdvanceTickets()
 {
-    const double Now=FPlatformTime::Seconds();
+    const double ControlStarted=FPlatformTime::Seconds(); LastValidationSeconds=0;
+    // Safety/deadlines/retirement are never behind the validation-time break.
+    // This control scan does not recreate geometry or change any acceptance rule.
     for (ULivingTownFullTownTicket* T:Tickets)
     {
         if (!T || T->Phase==ELivingTownFullTownPhase::Removed) continue;
@@ -412,25 +440,43 @@ void ULivingTownFullTownStreamingSubsystem::AdvanceTickets(double TickStarted)
             const auto State=T->Streaming?T->Streaming->GetLevelStreamingState():ELevelStreamingState::Removed;
             if (!T->Streaming || (State==ELevelStreamingState::Removed && !GetWorld()->GetStreamingLevels().Contains(T->Streaming.Get())))
             { T->Streaming=nullptr; T->Phase=ELivingTownFullTownPhase::Removed; }
-            else if (Now-T->RetireStartedSeconds>UnitDeadline) Fail(TEXT("fulltown_native_unload_deadline_reservation_retained"));
+            else if (FullTownDeadlineViolation(*T,ControlStarted,UnitDeadline)==EFullTownDeadlineViolation::Unload)
+            { Fail(TEXT("fulltown_native_unload_deadline_reservation_retained")); break; }
             continue;
         }
         if (bFailed || bStopping) continue;
-        if (!T->Accepts(Epoch,T->Token) || !T->Streaming) { Fail(TEXT("fulltown_stale_or_missing_ticket")); return; }
-        const auto State=T->Streaming->GetLevelStreamingState();
-        if (State==ELevelStreamingState::FailedToLoad) { Fail(TEXT("fulltown_native_map_failed_to_load")); return; }
-        if (T->Phase!=ELivingTownFullTownPhase::Resident && Now-T->StartedSeconds>UnitDeadline)
-        { Fail(TEXT("fulltown_native_unit_deadline")); return; }
+        if (!T->Accepts(Epoch,T->Token) || !T->Streaming) { Fail(TEXT("fulltown_stale_or_missing_ticket")); break; }
+        if (T->Streaming->GetLevelStreamingState()==ELevelStreamingState::FailedToLoad)
+        { Fail(TEXT("fulltown_native_map_failed_to_load")); break; }
+        if (FullTownDeadlineViolation(*T,ControlStarted,UnitDeadline)==EFullTownDeadlineViolation::Unit)
+        { Fail(TEXT("fulltown_native_unit_deadline")); break; }
         if (!Wanted.Contains(T->UnitIndex) && T->Phase!=ELivingTownFullTownPhase::Resident) { BeginDrain(*T); continue; }
-        FString Error;
+        if (T->Phase==ELivingTownFullTownPhase::Resident && !Wanted.Contains(T->UnitIndex) && MayRetire(T->UnitIndex) && TransitionReservations()<2) BeginDrain(*T);
+    }
+    Tickets.RemoveAll([](const auto& T){return !T || T->Phase==ELivingTownFullTownPhase::Removed;});
+    LastTicketControlSeconds=FPlatformTime::Seconds()-ControlStarted;
+    if (bFailed || bStopping) return;
+
+    // ONE shared target window, beginning at validation work, not before the
+    // caller's owner/Cafe safety checks. Resident tickets cannot consume its turn.
+    const double ValidationStarted=FPlatformTime::Seconds();
+    const double Deadline=FullTownValidationDeadline(ValidationStarted,ValidationTargetMs);
+    const int32 MaximumVisits=Tickets.Num();
+    for (int32 Visit=0; Visit<MaximumVisits && FullTownCanValidate(FPlatformTime::Seconds(),Deadline,
+         FrameComponents,ComponentBudget,FrameInstances,InstanceBudget); ++Visit)
+    {
+        const int32 Index=FullTownNextPendingTicket(Tickets,NextTicketCursor);
+        if (Index==INDEX_NONE) break;
+        ULivingTownFullTownTicket* T=Tickets[Index];
+        const auto State=T->Streaming->GetLevelStreamingState(); FString Error;
         if (T->Phase==ELivingTownFullTownPhase::LoadingHidden && T->bLoadedEvent && State==ELevelStreamingState::LoadedNotVisible)
         {
-            if (!GatherHidden(*T,Error)) { Fail(Error); return; }
+            if (!GatherHidden(*T,Error)) { Fail(Error); break; }
             T->Phase=ELivingTownFullTownPhase::ValidatingHidden;
         }
         if (T->Phase==ELivingTownFullTownPhase::ValidatingHidden)
         {
-            if (!AdvanceValidation(*T,false,Error)) { Fail(Error); return; }
+            if (!AdvanceValidation(*T,false,Deadline,Error)) { Fail(Error); break; }
             bool OtherShowing=false;
             for (ULivingTownFullTownTicket* Other:Tickets) if (Other!=T && Other->Phase==ELivingTownFullTownPhase::MakingVisible) OtherShowing=true;
             if (T->NextComponent==T->Components.Num() && !OtherShowing)
@@ -438,14 +484,12 @@ void ULivingTownFullTownStreamingSubsystem::AdvanceTickets(double TickStarted)
         }
         if (T->Phase==ELivingTownFullTownPhase::MakingVisible && T->bShownEvent && State==ELevelStreamingState::LoadedVisible)
         {
-            if (!AdvanceValidation(*T,true,Error)) { Fail(Error); return; }
+            if (!AdvanceValidation(*T,true,Deadline,Error)) { Fail(Error); break; }
             if (T->NextComponent==T->Components.Num())
             { T->Phase=ELivingTownFullTownPhase::Resident; ++ShownUnits; UE_LOG(LogTemp,Display,TEXT("FullTown unit resident %s token=%llu"),*Data->Units[T->UnitIndex].UnitId,T->Token); }
         }
-        if (T->Phase==ELivingTownFullTownPhase::Resident && !Wanted.Contains(T->UnitIndex) && MayRetire(T->UnitIndex) && TransitionReservations()<2) BeginDrain(*T);
-        if ((FPlatformTime::Seconds()-TickStarted)*1000.0>=ValidationTargetMs || FrameComponents>=ComponentBudget || FrameInstances>=InstanceBudget) break;
     }
-    Tickets.RemoveAll([](const auto& T){return !T || T->Phase==ELivingTownFullTownPhase::Removed;});
+    LastValidationSeconds=FPlatformTime::Seconds()-ValidationStarted;
 }
 
 void ULivingTownFullTownStreamingSubsystem::Tick(float Delta)
@@ -469,7 +513,8 @@ void ULivingTownFullTownStreamingSubsystem::Tick(float Delta)
         RefreshAccumulator+=Delta;
         if (Wanted.IsEmpty() || RefreshAccumulator>=0.25) { RefreshAccumulator=0; RefreshWanted(); }
     }
-    AdvanceTickets(Now);
+    LastPreValidationSafetySeconds=FPlatformTime::Seconds()-Now;
+    AdvanceTickets();
     if (!bFailed && !bStopping && Data && !CafeWaiting)
     {
         PumpLoads();
@@ -499,6 +544,10 @@ FString ULivingTownFullTownStreamingSubsystem::GetStatusJson() const
     J->SetNumberField(TEXT("map_source_file_hash_total_seconds"),MapSourceHashSecondsTotal);
     J->SetNumberField(TEXT("map_source_file_hash_max_seconds"),MapSourceHashSecondsMax);
     J->SetNumberField(TEXT("last_tick_components_observed"),FrameComponents); J->SetNumberField(TEXT("last_tick_instances_observed"),FrameInstances);
+    J->SetNumberField(TEXT("last_pre_validation_safety_seconds"),LastPreValidationSafetySeconds);
+    J->SetNumberField(TEXT("last_ticket_control_seconds"),LastTicketControlSeconds);
+    J->SetNumberField(TEXT("last_validation_seconds"),LastValidationSeconds);
+    J->SetNumberField(TEXT("next_pending_ticket_cursor"),NextTicketCursor);
     J->SetBoolField(TEXT("GPU_FPS_and_cooked_and_art_qualified"),false);
     TArray<TSharedPtr<FJsonValue>> Units;
     for (const ULivingTownFullTownTicket* T:Tickets)
@@ -506,6 +555,12 @@ FString ULivingTownFullTownStreamingSubsystem::GetStatusJson() const
         auto U=MakeShared<FJsonObject>(); U->SetNumberField(TEXT("unit_index"),T->UnitIndex); U->SetNumberField(TEXT("token"),double(T->Token));
         U->SetNumberField(TEXT("phase"),int32(T->Phase)); U->SetBoolField(TEXT("cancelled"),T->bCancelled);
         U->SetStringField(TEXT("native_state"),T->Streaming?EnumToString(T->Streaming->GetLevelStreamingState()):TEXT("NO_STREAM_OBJECT"));
+        U->SetBoolField(TEXT("loaded_event"),T->bLoadedEvent); U->SetBoolField(TEXT("shown_event"),T->bShownEvent);
+        U->SetBoolField(TEXT("hidden_event"),T->bHiddenEvent); U->SetBoolField(TEXT("unloaded_event"),T->bUnloadedEvent);
+        U->SetNumberField(TEXT("next_component"),T->NextComponent); U->SetNumberField(TEXT("next_instance"),T->NextInstance);
+        U->SetNumberField(TEXT("captured_components"),T->Components.Num());
+        U->SetBoolField(TEXT("loaded_level_present"),T->Streaming && T->Streaming->GetLoadedLevel()!=nullptr);
+        U->SetNumberField(TEXT("age_seconds"),FMath::Max(0.0,FPlatformTime::Seconds()-T->StartedSeconds));
         Units.Add(MakeShared<FJsonValueObject>(U));
     }
     J->SetArrayField(TEXT("tickets"),Units); FString Out; auto Writer=TJsonWriterFactory<>::Create(&Out); FJsonSerializer::Serialize(J,Writer); return Out;
@@ -543,4 +598,30 @@ bool FLivingTownFullTownTicketTest::RunTest(const FString&)
     T->Phase=ELivingTownFullTownPhase::Removed; TestFalse(TEXT("only actual removal releases"),T->ReservesTransition());
     return true;
 }
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FLivingTownFullTownFairValidationTest,"LivingTown.FullTown.FairValidationBudgetAndDeadlines",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FLivingTownFullTownFairValidationTest::RunTest(const FString&)
+{
+    auto* Ground=NewObject<ULivingTownFullTownTicket>(); Ground->Phase=ELivingTownFullTownPhase::Resident;
+    auto* A=NewObject<ULivingTownFullTownTicket>(); A->bLoadedEvent=true; A->UnitIndex=0;
+    auto* B=NewObject<ULivingTownFullTownTicket>(); B->bLoadedEvent=true; B->UnitIndex=1;
+    TArray<TObjectPtr<ULivingTownFullTownTicket>> Work={Ground,A,B}; int32 Cursor=0;
+    const double CallerStarted=10.0,ValidationStarted=20.0;
+    TestTrue(TEXT("regression caller already consumed old1ms before resident first"),(ValidationStarted-CallerStarted)*1000.0>1.0);
+    const double Deadline=FullTownValidationDeadline(ValidationStarted,1.0);
+    TestTrue(TEXT("production shared validation slice starts AFTER safety work"),FullTownCanValidate(20.0001,Deadline,0,8,0,256));
+    TestEqual(TEXT("resident ground cannot take pending selection"),FullTownNextPendingTicket(Work,Cursor),1);
+    TestEqual(TEXT("second pending ticket gets next fair selection"),FullTownNextPendingTicket(Work,Cursor),2);
+    TestEqual(TEXT("round robin returns to first pending"),FullTownNextPendingTicket(Work,Cursor),1);
+    TestFalse(TEXT("same shared deadline not reset by next ticket"),FullTownCanValidate(20.0011,Deadline,0,8,0,256));
+    TestFalse(TEXT("8 component cap retained"),FullTownCanValidate(20.0001,Deadline,8,8,0,256));
+    TestFalse(TEXT("256 instance cap retained"),FullTownCanValidate(20.0001,Deadline,0,8,256,256));
+    TestTrue(TEXT("resident first has no unit deadline"),FullTownDeadlineViolation(*Ground,181.0,180.0)==EFullTownDeadlineViolation::None);
+    TestTrue(TEXT("production safety scan sees later pending expiry independently of exhausted validation slice"),FullTownDeadlineViolation(*A,181.0,180.0)==EFullTownDeadlineViolation::Unit);
+    A->Phase=ELivingTownFullTownPhase::Unloading;
+    TestTrue(TEXT("unload deadline remains independent"),FullTownDeadlineViolation(*A,181.0,180.0)==EFullTownDeadlineViolation::Unload);
+    A->MarkCancelled(); TestEqual(TEXT("cancelled/unloading ticket cannot be scheduled"),FullTownNextPendingTicket(Work,Cursor),2);
+    B->Phase=ELivingTownFullTownPhase::Resident; TestEqual(TEXT("all residents produce no pending work"),FullTownNextPendingTicket(Work,Cursor),INDEX_NONE);
+    return true;
+}
+
 #endif
