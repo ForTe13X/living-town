@@ -87,6 +87,18 @@ def build_scene(bpy, spec, data, site, patch, floorplan_sha256):
                 mod = ob.modifiers.new("PurposefulEdgeBevel", "BEVEL")
                 mod.width = r["bevel"]
                 mod.segments = 2
+                if r["material"].startswith("linen_"):
+                    # Upholstery needs a continuous soft edge at room distance.
+                    # Keep the plan footprint and bevel width; extra segments
+                    # are limited to these small fabric-covered pieces.
+                    mod.segments = 6
+                    mod.harden_normals = True
+                    for poly in me.polygons:
+                        poly.use_smooth = True
+                    normal = ob.modifiers.new(
+                        "UpholsteryFaceNormals", "WEIGHTED_NORMAL"
+                    )
+                    normal.keep_sharp = True
         elif kind == "MESH":
             me = bpy.data.meshes.new(r["id"])
             me.from_pydata(r["vertices"], [], r["faces"])

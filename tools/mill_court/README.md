@@ -2,7 +2,7 @@
 
 Generate two furnished houses from the engine-agnostic Mill Court floor plans. The Python geometry compiler needs only the standard library. Blender can save the procedural master, render selected views and optionally export provisional geometry.
 
-The current model is an architectural prototype. It has real door/window openings, room partitions, stair and ceiling voids, fourteen risers/thirteen treads per house, fitted furniture, folded bedding, and procedural PBR materials. Coarser grain is now visible on floors and furniture, but remains stylized and linear. Pillows/mattresses retain a stylized shape, and exterior threshold/terrain route contacts need work. These are not final art assets.
+The current model is an architectural prototype. It has real door/window openings, room partitions, stair and ceiling voids, fourteen risers/thirteen treads per house, fitted furniture, folded bedding, and procedural PBR materials. Fabric-covered box pieces use six-segment bevels and smooth, weighted normals to soften mattress and cushion edges without changing their dimensions. Coarser grain is visible on floors and furniture, but remains stylized and linear. Pillow shapes, bedding intersections and exterior threshold/terrain route contacts need work. These are not final art assets.
 
 ## Compile without Blender
 
@@ -37,7 +37,7 @@ Reopen the saved master in a separate fresh process:
 blender --background --factory-startup --disable-autoexec --python-exit-code 1 --python tools/mill_court/reopen.py -- --floorplans art/planning_revision/mill_court/v1/floorplans.json --source-output output/mill-court-master --output output/mill-court-reopen
 ```
 
-The reader compares actual saved geometry, UVs, transforms, material graphs and lighting; it checks real stair holes/headroom and unchanged source-file bytes/mtime. The new reader output must also be fresh. Automated shape checks do not replace visual review, capsule/nav checks or building-code assessment.
+The reader compares actual saved geometry, UVs, transforms, material graphs and lighting, including smooth-face flags and bevel/weighted-normal settings; it checks real stair holes/headroom and unchanged source-file bytes/mtime. The new reader output must also be fresh. Automated shape checks do not replace visual review, capsule/nav checks or building-code assessment.
 
 The saved output folder can be copied or moved. The reader resolves the known blend filename inside `--source-output` and checks its authored hash; the old absolute author path remains provenance only. Furniture counts are derived from the bound floorplans and compiled geometry rather than assuming the bundled 47 items.
 
