@@ -36,6 +36,11 @@ void same_money(const w::Kernel& k,w::Int aria,w::Int ben) {
 void refused_load(const w::Journal& altered,const w::Kernel& guard) {
     auto live=guard;const auto before=live.save_bytes();check(!live.restore(altered),"altered journal refused");check(live.save_bytes()==before,"failed restore leaves exact authority");
 }
+w::CareBindings care_bindings() {return {bindings(),std::string(64,'6')};}
+w::care::Contact care_contact(const w::care::ResidentUse& use) {
+    // Synthetic observation only. No native pose, prop or contact is asserted.
+    const auto& g=use.active()->grant;return {g.resident_id,g.site_id,g.grant_id,true,true,true,true,true};
+}
 }
 int main() {
     try {
@@ -223,6 +228,109 @@ int main() {
             const auto current=k.release_grant({"ben",9,11,w::ReleaseReason::Cancelled});
             check(current.ok&&!current.already_applied&&current.event_id==11&&!k.care_grants().back().active,"fresh active release commits actual event11");
             same_money(k,16,8);passed("M15_late_release_replay_and_new_release_clock");
+        }
+        {
+            auto k=enabled();check(k.execute_meal(meal(k),observed("ben",0)).ok,"completion source grant");
+            const auto before=k.save_bytes();
+            check(k.release_grant({"ben",4,17,w::ReleaseReason::Completed,18}).reason=="meal_completion_not_elapsed"&&k.save_bytes()==before,"time alone not elapsed");
+            check(k.release_grant({"ben",4,18,w::ReleaseReason::Completed,17}).reason=="meal_completion_not_elapsed"&&k.save_bytes()==before,"full authored progress required");
+            check(k.release_grant({"ben",4,18,w::ReleaseReason::Cancelled,18}).reason=="invalid_release"&&k.save_bytes()==before,"cancel cannot carry completion evidence");
+            const w::TrustedRelease complete{"ben",4,18,w::ReleaseReason::Completed,18};const auto receipt=k.release_grant(complete);
+            check(receipt.ok&&!receipt.already_applied&&!k.care_grants().back().active&&k.events().back().note=="completed"&&k.events().back().amount==18,"truthful distinct completion event");
+            check(property(k,"aria",25,"after-completion/property",w::Action::offer_sale).ok,"later authority event");const auto done=k.save_bytes();
+            check(k.release_grant(complete).already_applied&&k.save_bytes()==done,"original completion receipt replays after later time");
+            check(k.release_grant({"ben",4,25,w::ReleaseReason::Cancelled}).reason=="release_reason_conflict"&&k.save_bytes()==done,"completion cannot masquerade as cancellation");
+            w::Kernel restored;check(restored.restore_bytes(done)&&restored.save_bytes()==done,"completed event and elapsed evidence replay");
+            auto bad=k.journal();bad.events[4].amount=17;refused_load(bad,k);
+            bad=k.journal();bad.events[4].note="cancelled";refused_load(bad,k);
+            same_money(k,14,10);passed("M16_completed_release_distinct_and_replayable");
+        }
+        {
+            auto k=enabled();w::care::ResidentUse use("ben");const auto command=meal(k);const auto begin=w::begin_meal_use(k,use,command,observed("ben",0));
+            check(begin.ok&&use.active()&&w::care_matches_world(k,use),"world grant and care begin commit together");
+            for(w::Int tick=1;tick<=18;++tick){const auto r=w::advance_meal_use(k,use,tick,care_contact(use));check(r.ok&&r.outcome==(tick==18?w::care::Outcome::Completed:w::care::Outcome::Progress),"one actual supplied tick per progression");}
+            check(!use.active()&&use.needs().fun==7500&&k.events().back().note=="completed"&&k.events().back().amount==18,"authored fun exactly3 and completion releases site");
+            const auto world_before=k.save_bytes();const auto care_before=w::encode_care_document(use.export_state());
+            check(w::begin_meal_use(k,use,command,observed("ben",18)).already_applied&&!use.active(),"late accepted request is no restart");
+            check(k.save_bytes()==world_before&&w::encode_care_document(use.export_state())==care_before,"late receipt changes neither side");
+            check(k.rations()==1&&use.requests().size()==1&&w::care_matches_world(k,use),"one ration and one care history");same_money(k,14,10);
+            const auto bytes=w::save_care_envelope(k,use,care_bindings(),{18,0});check(bytes.has_value(),"completed paired state saves");
+            w::Kernel target;w::care::ResidentUse loaded("ben");w::ClockMetadata clock;
+            check(w::load_care_envelope(target,loaded,*bytes,care_bindings(),clock)&&target.save_bytes()==k.save_bytes()&&w::encode_care_document(loaded.export_state())==care_before,"completed load is not relabelled AfterLoad");
+            passed("M17_paired_completion_effects_exactly_once");
+        }
+        {
+            auto k=enabled();w::care::ResidentUse use("ben");const auto command=meal(k);check(w::begin_meal_use(k,use,command,observed("ben",0)).ok,"partial source meal");
+            for(w::Int tick=1;tick<=6;++tick)check(w::advance_meal_use(k,use,tick,care_contact(use)).ok,"partial ticks");
+            const auto earned=use.needs();check(earned.fun==7300&&use.active()->elapsed==6,"partial authored effect");
+            const auto saved=w::save_care_envelope(k,use,care_bindings(),{6,bits(.25)});check(saved.has_value(),"one paired durable document");
+            w::Kernel restored;w::care::ResidentUse reopened("ben");w::ClockMetadata clock;
+            check(w::load_care_envelope(restored,reopened,*saved,care_bindings(),clock),"both documents validated before publication");
+            check(clock.tick==6&&clock.fraction_bits==bits(.25)&&w::care::same_need_values(earned,reopened.needs()),"clock/fraction/all four earned needs restore");
+            check(!reopened.active()&&!restored.care_grants().back().active&&restored.events().back().note=="after_load"&&reopened.requests().back().end==w::care::End::AfterLoad,"old use/reservation invalidated together");
+            const auto before=restored.save_bytes();const auto care_before=w::encode_care_document(reopened.export_state());
+            check(w::begin_meal_use(restored,reopened,command,observed("ben",6)).already_applied&&!reopened.active()&&restored.save_bytes()==before&&w::encode_care_document(reopened.export_state())==care_before,"load replay earns no extra effect/payment");
+            const auto stopped=w::save_care_envelope(restored,reopened,care_bindings(),clock);check(stopped.has_value(),"interrupted load state is itself durable");
+            w::Kernel again;w::care::ResidentUse again_use("ben");w::ClockMetadata again_clock;
+            check(w::load_care_envelope(again,again_use,*stopped,care_bindings(),again_clock)&&again.save_bytes()==before&&w::encode_care_document(again_use.export_state())==care_before,"already-invalidated load appends nothing");
+            same_money(restored,14,10);check(restored.rations()==1,"load no refund/replenishment");passed("M18_partial_progress_durable_load_quarantine");
+        }
+        {
+            auto k=enabled();w::care::ResidentUse use("ben");const auto command=meal(k);check(w::begin_meal_use(k,use,command,observed("ben",0)).ok,"cancel source");
+            for(w::Int tick=1;tick<=3;++tick)check(w::advance_meal_use(k,use,tick,care_contact(use)).ok,"cancel source ticks");
+            const auto earned=use.needs();check(w::cancel_meal_use(k,use).ok&&!use.active()&&w::care::same_need_values(earned,use.needs()),"cancel retains only earned needs");
+            check(k.events().back().note=="cancelled"&&use.requests().back().end==w::care::End::Cancelled&&!k.events().back().amount,"cancel never claims completed duration");
+            const auto cancelled=k.save_bytes();check(w::cancel_meal_use(k,use).already_applied&&k.save_bytes()==cancelled,"cancel idempotent");
+            check(k.release_grant({"ben",4,18,w::ReleaseReason::Completed,18}).reason=="release_reason_conflict"&&k.save_bytes()==cancelled,"elapsed clock cannot turn a cancelled grant into completion");
+            const auto stopped=w::save_care_envelope(k,use,care_bindings(),{3,0});check(stopped.has_value(),"cancelled partial effects save");
+            w::Kernel cancelled_world;w::care::ResidentUse cancelled_use("ben");w::ClockMetadata cancelled_clock;
+            check(w::load_care_envelope(cancelled_world,cancelled_use,*stopped,care_bindings(),cancelled_clock)&&cancelled_world.save_bytes()==cancelled&&w::care::same_journal(cancelled_use.export_state(),use.export_state()),"cancelled load keeps partial effects and terminal cause without another release");
+            check(w::begin_meal_use(cancelled_world,cancelled_use,command,observed("ben",3)).already_applied&&!cancelled_use.active()&&w::care::same_need_values(earned,cancelled_use.needs()),"original cancelled request replay after load earns nothing");
+            check(w::advance_meal_use(k,use,4,{}).ok&&use.needs().fun==earned.fun,"inactive next tick no meal gain");
+            check(w::begin_meal_use(k,use,meal(k,"interrupt/2"),observed("ben",4)).ok,"new actual meal");const auto at=care_contact(use);auto lost=at;lost.permission_valid=false;
+            const auto interrupted=w::advance_meal_use(k,use,5,lost);check(interrupted.ok&&interrupted.outcome==w::care::Outcome::Interrupted&&!use.active()&&k.events().back().note=="interrupted","lost contact is interruption, not completion");
+            const auto before=k.save_bytes();const auto care_before=w::encode_care_document(use.export_state());check(!w::advance_meal_use(k,use,7,at).ok&&k.save_bytes()==before&&w::encode_care_document(use.export_state())==care_before,"long frame cannot fabricate ticks/gains");
+            check(!w::cancel_meal_use(k,use,w::ReleaseReason::Completed).ok,"cancel API cannot claim completion");same_money(k,16,8);passed("M19_cancel_interruption_and_tick_refusals");
+        }
+        {
+            auto k=enabled();w::care::ResidentUse use("ben");
+            for(auto fault:{w::MealFault::AfterPayment,w::MealFault::AfterStock,w::MealFault::AfterGrant}) {
+                const auto world_before=k.save_bytes();const auto care_before=w::encode_care_document(use.export_state());const auto command=meal(k);
+                check(!w::begin_meal_use(k,use,command,observed("ben",0),fault).ok,"injected world candidate failure");
+                check(k.save_bytes()==world_before&&w::encode_care_document(use.export_state())==care_before,"both world and care remain exact after failure");
+            }
+            const auto opening_world=k.save_bytes();const auto opening_care=w::encode_care_document(use.export_state());
+            check(!w::begin_meal_use(k,use,meal(k),observed("ben",0),w::MealFault::None,w::CareCommitFault::AfterCareBegin).ok,"failure after both candidate sides mutated");
+            check(k.save_bytes()==opening_world&&w::encode_care_document(use.export_state())==opening_care,"care begin fault discards payment/stock/grant/progress together");
+            check(w::begin_meal_use(k,use,meal(k),observed("ben",0)).ok,"same command remains usable after rollback");
+            const auto world_before=k.save_bytes();const auto care_before=w::encode_care_document(use.export_state());
+            check(!w::advance_meal_use(k,use,2,care_contact(use)).ok&&k.save_bytes()==world_before&&w::encode_care_document(use.export_state())==care_before,"nonconsecutive tick atomic across both states");
+            check(!w::advance_meal_use(k,use,1,care_contact(use),w::CareCommitFault::AfterCareAdvance).ok&&k.save_bytes()==world_before&&w::encode_care_document(use.export_state())==care_before,"earned-gain candidate failure leaves no tick/gain publication");
+            for(w::Int tick=1;tick<=17;++tick)check(w::advance_meal_use(k,use,tick,care_contact(use)).ok,"completion fault setup");
+            const auto before_completion=k.save_bytes();const auto care_before_completion=w::encode_care_document(use.export_state());
+            check(!w::advance_meal_use(k,use,18,care_contact(use),w::CareCommitFault::AfterCareAdvance).ok&&k.save_bytes()==before_completion&&w::encode_care_document(use.export_state())==care_before_completion,"completion benefit and release are not half-published");
+            check(w::advance_meal_use(k,use,18,care_contact(use)).outcome==w::care::Outcome::Completed,"fresh fixture retry commits completion once");
+            passed("M20_paired_rollback");
+        }
+        {
+            auto k=enabled();w::care::ResidentUse use("ben");check(w::begin_meal_use(k,use,meal(k),observed("ben",0)).ok,"corruption source");
+            for(w::Int tick=1;tick<=6;++tick)check(w::advance_meal_use(k,use,tick,care_contact(use)).ok,"corruption source progress");
+            const auto good=w::save_care_envelope(k,use,care_bindings(),{6,0});check(good.has_value(),"canonical V4 source");
+            for(int i=0;i<7;++i) {
+                auto e=*w::decode_care_envelope_document(*good);
+                if(i<4){auto j=*w::decode_care_document(e.care_payload);switch(i){case 0:++j.needs.fun;break;case 1:++j.active->elapsed;break;case 2:j.history[1].contact->reservation_valid=false;break;case 3:j.active.reset();j.requests[0].end=w::care::End::Cancelled;j.requests[0].end_tick=6;j.history.push_back({w::care::Op::Cancel,6,{}, {}});break;}e.care_payload=w::encode_care_document(j);e.care_digest=w::detail::hash_bytes(14695981039346656037ULL,e.care_payload);}
+                if(i==4)e.bindings.care_core_sha256=std::string(64,'f');
+                if(i==5)++e.clock.tick;
+                if(i==6)e.version="3";
+                auto target=k;auto target_use=use;w::ClockMetadata clock{6,bits(.5)};const auto before=target.save_bytes();const auto care_before=w::encode_care_document(target_use.export_state());
+                check(!w::load_care_envelope(target,target_use,w::encode_care_envelope_document(e),care_bindings(),clock),"recomputed checksum cannot bypass replay/pair/bindings/version");
+                check(target.save_bytes()==before&&w::encode_care_document(target_use.export_state())==care_before&&clock.tick==6&&clock.fraction_bits==bits(.5),"refused load publishes no partial world/care/clock");
+            }
+            const auto legacy=w::save_envelope(k,bindings(),{6,0});check(legacy.has_value(),"old V3 API remains available");auto target=k;auto target_use=use;w::ClockMetadata clock;
+            check(!w::load_care_envelope(target,target_use,*legacy,care_bindings(),clock),"V3 lacks care, requires explicit migration");
+            check(!w::load_envelope(target,*good,bindings(),clock),"old envelope reader rejects paired V4");
+            check(!w::decode_care_document(w::encode_care_document(use.export_state())+"x"),"care trailing bytes refused");
+            passed("M21_paired_corruption_and_explicit_versions");
         }
         std::cout<<"PASS "<<groups<<" groups, "<<checks<<" checks. Portable CPU only; native integration absent.\n";return 0;
     }catch(const std::exception& e){std::cerr<<"FAIL "<<e.what()<<" after "<<checks<<" checks\n";return 1;}

@@ -1,0 +1,64 @@
+{
+  "scope": "Portable C++17 meal-care persistence and paired logical replay only; no native meal animation/contact/HUD/authority adoption.",
+  "baseline": "582f93be51cc49d152b44384e6debe4abd646e9d",
+  "compiler": {
+    "name": "MSVC C++17",
+    "sha256": "fe251ef50a1545b1b0835ee17b1e785459712b38d79e45b5c1d3d28970a36619",
+    "flags": [
+      "/std:c++17",
+      "/EHsc",
+      "/O2",
+      "/W4",
+      "/UNDEBUG"
+    ]
+  },
+  "portable_headers": [
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/DailyLifeUseV1.hpp",
+      "bytes": 13684,
+      "sha256": "3968a82beab862fdd56054d1fe6cfe08aca3c7be41003a1fdc82abae56841d06"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/CafeWorldV3.hpp",
+      "bytes": 48348,
+      "sha256": "4856df21feca1d51d357454cee2047e4de19e4ffa7c16aa57d459f6f0793e903"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/CafeWorldV3Envelope.hpp",
+      "bytes": 20244,
+      "sha256": "0cf5fca9a0f91fbaedfa83ab8e786f5022733aa33a56ea8f954d244bb9bd2690"
+    },
+    {
+      "file": "unreal/Source/LivingTownNative/ThirdParty/CafeBackendV3.hpp",
+      "bytes": 1025,
+      "sha256": "f311599b6bb10f4ac60281c9bb2bbaf904b62bf8fec68b1ac46d7ae7e932994d"
+    }
+  ],
+  "tests": [
+    {
+      "name": "daily_life_use",
+      "groups": 15
+    },
+    {
+      "name": "world_v3_meal",
+      "groups": 25,
+      "checks": 3486
+    },
+    {
+      "name": "property_v2",
+      "cases": 16,
+      "checks": 1316
+    },
+    {
+      "name": "world_v3_property",
+      "cases": 16,
+      "checks": 1316
+    }
+  ],
+  "closed_process_exit": 0,
+  "source_code_exact_through_test": true,
+  "result_receipt_sha256": "568b9ba2a86e7ed230b7289be555137f03ba0f3e4a66205f5be919497083b70b",
+  "process_receipt_sha256": "21f9c6636116de6ae28b9df66985a659f0e94837c2e8ba22d3e55390550dff3f",
+  "native_V1_V2_core_changes": false,
+  "native_save_slot_or_gameplay_qualified": false
+}

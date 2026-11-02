@@ -78,16 +78,19 @@ struct MealContext {
     bool qualified_clip=false;
 };
 struct TrustedActivation { Int tick=0; bool explicitly_authorized=false; };
-enum class ReleaseReason { Cancelled, Interrupted, AfterLoad };
+enum class ReleaseReason { Cancelled, Interrupted, AfterLoad, Completed };
 inline std::string release_name(ReleaseReason r) {
-    switch(r){case ReleaseReason::Cancelled:return "cancelled";case ReleaseReason::Interrupted:return "interrupted";case ReleaseReason::AfterLoad:return "after_load";}
+    switch(r){case ReleaseReason::Cancelled:return "cancelled";case ReleaseReason::Interrupted:return "interrupted";case ReleaseReason::AfterLoad:return "after_load";case ReleaseReason::Completed:return "completed";}
     return {};
 }
 inline std::optional<ReleaseReason> parse_release(const std::string& s) {
-    for(auto r:{ReleaseReason::Cancelled,ReleaseReason::Interrupted,ReleaseReason::AfterLoad})if(release_name(r)==s)return r;
+    for(auto r:{ReleaseReason::Cancelled,ReleaseReason::Interrupted,ReleaseReason::AfterLoad,ReleaseReason::Completed})if(release_name(r)==s)return r;
     return {};
 }
-struct TrustedRelease { std::string resident; Int grant_event_id=-1, tick=0; ReleaseReason reason=ReleaseReason::Interrupted; };
+// completed_ticks is trusted action-state output, never a UI field. Completion
+// also needs the elapsed authority time; the paired care adapter validates its
+// actual replayed progress. Legacy four-field cancellation callers stay valid.
+struct TrustedRelease { std::string resident; Int grant_event_id=-1, tick=0; ReleaseReason reason=ReleaseReason::Interrupted; Int completed_ticks=0; };
 struct CareGrant {
     Int event_id=-1, tick=0, pay_event_id=-1, stock_event_id=-1, release_event_id=-1;
     std::string request_id, resident, site_id, provider, funding;
@@ -604,17 +607,28 @@ public:
         }catch(const std::exception& e){return {false,false,std::string("technical_failure:")+e.what(),-1};}
     }
     Receipt release_grant(const TrustedRelease& at) {
-        if(at.tick<0||at.tick>max_tick||release_name(at.reason).empty())return {false,false,"invalid_release",-1};
+        if(at.tick<0||at.tick>max_tick||release_name(at.reason).empty()||
+           (at.reason!=ReleaseReason::Completed&&at.completed_ticks!=0))return {false,false,"invalid_release",-1};
         auto where=std::find_if(grants_.begin(),grants_.end(),[&](const CareGrant& g){return g.event_id==at.grant_event_id&&g.resident==at.resident;});
         if(where==grants_.end())return {false,false,"unknown_care_grant",-1};
-        if(!where->active)return {true,true,"grant_already_released",where->release_event_id};
+        if(at.reason==ReleaseReason::Completed&&(at.completed_ticks!=where->duration_ticks||
+           at.tick<where->tick||at.tick-where->tick<where->duration_ticks))return {false,false,"meal_completion_not_elapsed",-1};
+        if(!where->active) {
+            if(where->release_event_id<1||static_cast<std::uint64_t>(where->release_event_id)>events_.size())return {false,false,"invalid_release_cache",-1};
+            const auto& old=events_[static_cast<std::size_t>(where->release_event_id-1)];
+            if(old.note!=release_name(at.reason)||old.amount!=(at.reason==ReleaseReason::Completed?std::optional<Int>(at.completed_ticks):std::nullopt))
+                return {false,false,"release_reason_conflict",-1};
+            return {true,true,"grant_already_released",where->release_event_id};
+        }
         // Historical once-release replay returns its original receipt before NEW release time validation.
         if(at.tick<minimum_authority_tick())return {false,false,"invalid_release",-1};
         Kernel candidate=*this;
         try {
             const auto offset=static_cast<std::size_t>(where-grants_.begin());auto& g=candidate.grants_[offset];
             Event e;e.tick=at.tick;e.type="care_grant_released";e.actor=g.resident;e.subject=g.site_id;
-            e.accepted=true;e.note=release_name(at.reason);e.grant_event_id=g.event_id;candidate.append(std::move(e));
+            e.accepted=true;e.note=release_name(at.reason);e.grant_event_id=g.event_id;
+            if(at.reason==ReleaseReason::Completed)e.amount=at.completed_ticks;
+            candidate.append(std::move(e));
             g.active=false;g.release_event_id=candidate.events_.back().id;
             if(candidate.active_grants()==0)candidate.loaded_grants_need_interruption_=false;
             const Int id=g.release_event_id;*this=std::move(candidate);return {true,false,"grant_released",id};
@@ -693,7 +707,7 @@ public:
                 if(first.type=="care_enabled")candidate.activate_care({first.tick,true});
                 else if(first.type=="care_grant_released") {
                     const auto reason=parse_release(first.note);if(!reason||!first.grant_event_id)return false;
-                    candidate.release_grant({first.actor,*first.grant_event_id,first.tick,*reason});
+                    candidate.release_grant({first.actor,*first.grant_event_id,first.tick,*reason,first.amount.value_or(0)});
                 }else {
                     std::size_t terminal=at;
                     if(first.type=="pay") {
