@@ -7,6 +7,8 @@ public class LivingTownMaterialInspection : ModuleRules {
   PrivateDependencyModuleNames.AddRange(new string[]{"MeshDescription","StaticMeshDescription","PhysicsCore","Chaos","AssetRegistry"});
 
  PrivateDependencyModuleNames.Add("RHI");
+ PrivateDependencyModuleNames.Add("RenderCore");
+  PrivateDependencyModuleNames.AddRange(new string[]{"SkeletalMeshDescription","AnimationCore"});
   PrivateDependencyModuleNames.Add("UnrealEd");
   PrivateDependencyModuleNames.Add("Landscape");
   PrivateDependencyModuleNames.Add("Foliage");

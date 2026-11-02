@@ -51,6 +51,19 @@ const FJsonObject* Object(const FJsonObject& O,const TCHAR* K)
 {
     const auto P=O.TryGetField(K); return P && P->Type==EJson::Object && P->AsObject() ? P->AsObject().Get() : nullptr;
 }
+bool Current61Calibration(const FJsonObject& O,FLivingTownCurrent61BakedCalibration& C)
+{
+    if(!Keys(O,{TEXT("format"),TEXT("version"),TEXT("status"),TEXT("qualification_sha256"),TEXT("palm_socket_transform"),TEXT("walk_speed_cm_s"),TEXT("idle_duration_seconds"),TEXT("walk_duration_seconds")}))return false;
+    FString Format,Version,Status;const FJsonObject* Palm=Object(O,TEXT("palm_socket_transform"));
+    if(!Str(O,TEXT("format"),Format)||Format!=TEXT("LivingTown.Current61BakedAvatarCalibration")||
+        !Str(O,TEXT("version"),Version)||Version!=TEXT("1")||!Str(O,TEXT("status"),Status)||Status!=TEXT("UE_AVATAR_CONTACT_QUALIFIED")||
+        !Str(O,TEXT("qualification_sha256"),C.QualificationSha256)||!Hash(C.QualificationSha256)||C.QualificationSha256==FString::ChrN(64,TCHAR('0'))||
+        !Palm||!Transform(*Palm,C.PalmSocketLocalTransform)||C.PalmSocketLocalTransform.GetScale3D()!=FVector::OneVector||
+        !Number(O,TEXT("walk_speed_cm_s"),C.WalkSpeedCmPerSecond,60,500)||
+        !Number(O,TEXT("idle_duration_seconds"),C.IdleDurationSeconds,15.333333333333334-1e-6,15.333333333333334+1e-6)||
+        !Number(O,TEXT("walk_duration_seconds"),C.WalkDurationSeconds,2.3333333333333335-1e-6,2.3333333333333335+1e-6))return false;
+    C.bReadQualifiedDescriptor=true;return C.IsValidated();
+}
 bool GameAsset(const FString& S) { return S.StartsWith(TEXT("/Game/")) && S.Contains(TEXT(".")) && !S.Contains(TEXT("..")) && !S.Contains(TEXT("\\")); }
 bool MaterialAsset(const FString& S) { return (S.StartsWith(TEXT("/Game/"))||S.StartsWith(TEXT("/Engine/")))&&S.Contains(TEXT("."))&&!S.Contains(TEXT(".."))&&!S.Contains(TEXT("\\")); }
 bool PartIdentity(const FString& S)
@@ -104,6 +117,22 @@ bool PartContract(const FJsonObject& O,FLivingTownCafeBinding& B)
     }
     return true;
 }
+}
+
+bool FLivingTownCurrent61BakedCalibration::IsValidated() const
+{
+    return bReadQualifiedDescriptor&&Hash(QualificationSha256)&&QualificationSha256!=FString::ChrN(64,TCHAR('0'))&&
+        PalmSocketLocalTransform.IsValid()&&PalmSocketLocalTransform.GetScale3D()==FVector::OneVector&&
+        FMath::IsFinite(WalkSpeedCmPerSecond)&&WalkSpeedCmPerSecond>=60&&WalkSpeedCmPerSecond<=500&&
+        FMath::IsFinite(IdleDurationSeconds)&&FMath::Abs(IdleDurationSeconds-15.333333333333334)<=1e-6&&FMath::Abs(IdleDurationSeconds-15.333332821726799)<=1e-6&&
+        FMath::IsFinite(WalkDurationSeconds)&&FMath::Abs(WalkDurationSeconds-2.3333333333333335)<=1e-6&&FMath::Abs(WalkDurationSeconds-2.333333139618238)<=1e-6;
+}
+
+bool FLivingTownCafeBinding::HasValidatedCurrent61BakedAvatarBinding() const
+{
+    return MotionStrategy==ELivingTownCafeMotionStrategy::Current61BakedSingleNode&&HasValidatedPartRoster()&&Current61BakedCalibration.IsValidated()&&
+        Hash(PhysicalSceneSha256)&&Hash(SourceProjectionSha256)&&Hash(PhysicalQualificationSha256)&&Hash(BindingFileSha256)&&Hash(VisualSha256)&&
+        MeshRelativeTransform.IsValid()&&MeshRelativeTransform.GetScale3D()==FVector::OneVector&&IdleRootDeltaCm==FVector::ZeroVector;
 }
 
 bool FLivingTownCafeBinding::HasValidatedPartRoster() const
@@ -165,7 +194,7 @@ bool FLivingTownCafeBinding::ReadQualifiedFile(const FString& Path,FLivingTownCa
         :Keys(*O,{TEXT("format"),TEXT("version"),TEXT("status"),TEXT("physical_scene_sha256"),TEXT("source_projection_sha256"),TEXT("physical_qualification_sha256"),TEXT("visual_sha256"),TEXT("logical_identity"),TEXT("resident"),TEXT("movement"),TEXT("spawn"),TEXT("counter_use_point_cm"),TEXT("floor_bounds_cm"),TEXT("parts")});
     if(!TopKeys)return Fail(TEXT("unsupported_physical_binding_fields"));
     FString Format,Version,Status; FLivingTownCafeBinding B;
-    if(!Str(*O,TEXT("format"),Format)||Format!=TEXT("LivingTown.CafeProjectionBinding")||!Str(*O,TEXT("version"),Version)||(Version!=TEXT("1")&&Version!=TEXT("2"))||!Str(*O,TEXT("status"),Status)||Status!=(bExplicitPartContract?TEXT("UE_ASSET_QUALIFIED_TRIAL"):TEXT("UE_PHYSICAL_QUALIFIED"))) return Fail(TEXT("physical_calibration_not_qualified"));
+    if(!Str(*O,TEXT("format"),Format)||Format!=TEXT("LivingTown.CafeProjectionBinding")||!Str(*O,TEXT("version"),Version)||(Version!=TEXT("1")&&Version!=TEXT("2")&&Version!=TEXT("3"))||!Str(*O,TEXT("status"),Status)||Status!=(bExplicitPartContract?TEXT("UE_ASSET_QUALIFIED_TRIAL"):TEXT("UE_PHYSICAL_QUALIFIED"))) return Fail(TEXT("physical_calibration_not_qualified"));
     if(!Str(*O,TEXT("physical_scene_sha256"),B.PhysicalSceneSha256)||!Hash(B.PhysicalSceneSha256)||!Str(*O,TEXT("source_projection_sha256"),B.SourceProjectionSha256)||!Hash(B.SourceProjectionSha256)||!Str(*O,TEXT("physical_qualification_sha256"),B.PhysicalQualificationSha256)||!Hash(B.PhysicalQualificationSha256)||!Str(*O,TEXT("visual_sha256"),B.VisualSha256)||!Hash(B.VisualSha256)||!LivingTownCafeJournal::Sha256(Bytes,B.BindingFileSha256)) return Fail(TEXT("invalid_physical_provenance"));
     B.bAuthoredSceneTrial=bExplicitPartContract;
     if(bExplicitPartContract) { const FJsonObject* Contract=Object(*O,TEXT("part_contract"));if(!Contract||!PartContract(*Contract,B))return Fail(TEXT("invalid_authored_part_contract_or_source_context")); }
@@ -173,9 +202,12 @@ bool FLivingTownCafeBinding::ReadQualifiedFile(const FString& Path,FLivingTownCa
     if(!Identity||!Keys(*Identity,{TEXT("space_id"),TEXT("floor_id"),TEXT("interaction_id"),TEXT("property_id"),TEXT("model_asset_id")})||!Str(*Identity,TEXT("space_id"),Space)||Space!=TEXT("cafe")||!Str(*Identity,TEXT("floor_id"),Floor)||Floor!=TEXT("1f")||!Str(*Identity,TEXT("interaction_id"),Interaction)||Interaction!=TEXT("cafe1f_counter")||!Str(*Identity,TEXT("property_id"),Property)||Property!=TEXT("cafe_ground_commercial_v1")||!Str(*Identity,TEXT("model_asset_id"),Model)||Model!=TEXT("Main_cafe_L00_Public_Room_A00_cafe_counter")) return Fail(TEXT("wrong_logical_to_physical_counter_identity"));
     const FJsonObject* Resident=Object(*O,TEXT("resident")); const FJsonObject* MeshTransform=Resident?Object(*Resident,TEXT("mesh_transform")):nullptr;
     const bool bWorker110=Version==TEXT("2");
-    const bool ResidentKeys=Resident&&(bWorker110
+    const bool bCurrent61Baked=Version==TEXT("3");
+    const bool ResidentKeys=Resident&&(bCurrent61Baked
+        ?Keys(*Resident,{TEXT("id"),TEXT("skeletal_mesh"),TEXT("idle_walk_blendspace"),TEXT("use_socket"),TEXT("mesh_transform"),TEXT("motion_strategy"),TEXT("idle_animation"),TEXT("walk_animation"),TEXT("avatar_calibration")})
+        :(bWorker110
         ?Keys(*Resident,{TEXT("id"),TEXT("skeletal_mesh"),TEXT("idle_walk_blendspace"),TEXT("use_socket"),TEXT("mesh_transform"),TEXT("motion_strategy"),TEXT("idle_animation"),TEXT("walk_animation"),TEXT("idle_root_delta_cm")})
-        :Keys(*Resident,{TEXT("id"),TEXT("skeletal_mesh"),TEXT("idle_walk_blendspace"),TEXT("use_socket"),TEXT("mesh_transform")}));
+        :Keys(*Resident,{TEXT("id"),TEXT("skeletal_mesh"),TEXT("idle_walk_blendspace"),TEXT("use_socket"),TEXT("mesh_transform")})));
     if(!Resident||!ResidentKeys||!Str(*Resident,TEXT("id"),B.ResidentId)||B.ResidentId!=TEXT("ben")||!Str(*Resident,TEXT("skeletal_mesh"),B.VisualAssetPath)||!GameAsset(B.VisualAssetPath)||!Str(*Resident,TEXT("idle_walk_blendspace"),B.IdleWalkBlendSpacePath)||!GameAsset(B.IdleWalkBlendSpacePath)||!Str(*Resident,TEXT("use_socket"),B.UseSocket,128)||!MeshTransform||!Transform(*MeshTransform,B.MeshRelativeTransform)) return Fail(TEXT("qualified_Ben_visual_or_motion_binding_missing"));
     if(bWorker110)
     {
@@ -189,9 +221,21 @@ bool FLivingTownCafeBinding::ReadQualifiedFile(const FString& Path,FLivingTownCa
             return Fail(TEXT("unsupported_or_unqualified_worker110_family"));
         B.MotionStrategy=ELivingTownCafeMotionStrategy::CafeWorker110RootAligned;
     }
+    if(bCurrent61Baked)
+    {
+        FString Strategy;const FJsonObject* Calibration=Object(*Resident,TEXT("avatar_calibration"));
+        if(!Str(*Resident,TEXT("motion_strategy"),Strategy)||Strategy!=LivingTownCafeCurrent61Baked::Strategy||
+            !Str(*Resident,TEXT("idle_animation"),B.IdleAnimationPath)||B.IdleAnimationPath!=LivingTownCafeCurrent61Baked::IdleAsset||
+            !Str(*Resident,TEXT("walk_animation"),B.WalkAnimationPath)||B.WalkAnimationPath!=LivingTownCafeCurrent61Baked::WalkAsset||
+            B.VisualAssetPath!=LivingTownCafeCurrent61Baked::MeshAsset||B.IdleWalkBlendSpacePath!=LivingTownCafeCurrent61Baked::MotionAsset||B.UseSocket!=LivingTownCafeCurrent61Baked::PalmSocket||
+            B.MeshRelativeTransform.GetScale3D()!=FVector::OneVector||!Calibration||!Current61Calibration(*Calibration,B.Current61BakedCalibration))
+            return Fail(TEXT("unsupported_or_unqualified_current61_baked_avatar_calibration"));
+        B.MotionStrategy=ELivingTownCafeMotionStrategy::Current61BakedSingleNode;
+    }
     const FJsonObject* Move=Object(*O,TEXT("movement")); double Radius,Half,Reach,Speed,Arm;
     if(!Move||!Keys(*Move,{TEXT("capsule_radius_cm"),TEXT("capsule_half_height_cm"),TEXT("reach_cm"),TEXT("walk_speed_cm_s"),TEXT("camera_arm_cm")})||!Number(*Move,TEXT("capsule_radius_cm"),Radius,12,45)||!Number(*Move,TEXT("capsule_half_height_cm"),Half,50,120)||Radius>=Half||!Number(*Move,TEXT("reach_cm"),Reach,25,160)||!Number(*Move,TEXT("walk_speed_cm_s"),Speed,60,500)||!Number(*Move,TEXT("camera_arm_cm"),Arm,100,450)) return Fail(TEXT("invalid_calibrated_movement_dimensions"));
     if(bWorker110&&Speed!=110.)return Fail(TEXT("worker110_movement_axis_must_match"));
+    if(bCurrent61Baked&&Speed!=B.Current61BakedCalibration.WalkSpeedCmPerSecond)return Fail(TEXT("current61_baked_movement_must_match_measured_gait_axis"));
     B.CapsuleRadiusCm=float(Radius); B.CapsuleHalfHeightCm=float(Half); B.ReachCm=float(Reach); B.WalkSpeedCmPerSecond=float(Speed); B.CameraArmCm=float(Arm);
     const FJsonObject* Spawn=Object(*O,TEXT("spawn")); FVector Rotation=FVector::ZeroVector;
     if(!Spawn||!Keys(*Spawn,{TEXT("feet_cm"),TEXT("rotation_degrees")})||!VectorValue(Spawn->TryGetField(TEXT("feet_cm")),B.SpawnFeetCm)||!VectorValue(Spawn->TryGetField(TEXT("rotation_degrees")),Rotation)||!VectorValue(O->TryGetField(TEXT("counter_use_point_cm")),B.CounterUsePointCm)) return Fail(TEXT("invalid_calibrated_spawn_or_use_point"));

@@ -2,7 +2,7 @@
 
 The 2026-10-24 goal is **active**. The user explicitly included the broader remaining roadmap, alongside production-quality characters, everyday action animation, interior variety and terrain materials. On 2026-10-25 the user added gradual migration to Unreal Engine through Epic's native MCP support, using the installed `D:/Dev/UE_5.8`, then explicitly made that migration the higher priority with Godot ultimately abandoned. The preceding release is a recoverable baseline; it does not complete this goal.
 
-Released baseline: merged PR89, tree `5b9a29608df9d0e9f5d3e3ffa1b745fb4b3236fd`. The local equivalent is commit `27911940`. Migration and asset work proceeds on `codex/native-town-streaming` in PR91. Preserve the existing README showcase until a new verified walkthrough replaces it.
+The earlier released art baseline is merged PR89, tree `5b9a29608df9d0e9f5d3e3ffa1b745fb4b3236fd` (local equivalent `27911940`). Native source integration now builds on merged PR106, master `173945b1d8d4aa492def3e91f646be5bb4c10026`, in isolated branch `codex/native-current61-integration`. Preserve the existing README showcase until a new verified walkthrough replaces it.
 
 The user explicitly permits replacing weaker implementations with stronger native Unreal or Blender workflows. Choose the tool by the result: prioritize Unreal for scene assembly, collision/navigation, runtime materials, LODs/instancing and profiling; use Blender for source mesh/UV/bake/rig work where it serves better. Preserve portable authored sources and simulation authority, while allowing engine-specific presentation and optimization adapters. Reproducing legacy implementation details is not a requirement.
 
@@ -29,6 +29,12 @@ The user explicitly permits replacing weaker implementations with stronger nativ
 | Gradual Unreal migration | Installed UE 5.8.4 and native experimental ModelContextProtocol/ToolsetRegistry plugins; portable Blender/glTF source assets | Establish a separate reproducible project and actual local MCP connection. Import and inspect qualified assets with correct units, coordinates, materials, collisions and LODs. Migrate a usable gameplay slice with state/payment/save parity before expanding. Evaluate Nanite, Lumen, streaming, instancing and PCG against measured quality, startup, frame and memory costs. Preserve the current playable reference and engine-agnostic asset sources during the transition. |
 
 ## Work in progress
+
+### 2026-11-01 current61 native integration and presentation checkpoint
+
+The integrated Unreal Editor source builds successfully. A separate worker capture verifies all nine saved material resources, exact hair geometry/source pixels, five actual Lit GPU views and restoration of the original viewport. The ordinary-game candidate completes 325 natural pose observations, four GPU frames and a separate ten-second CSV interval. A second private comparison selects Lumen diffuse GI and passes 315 natural samples/four GPU frames: shaded café surfaces become readable with exposure, lights and materials unchanged. All four portable property/care/world regression suites also pass. These results establish the preparation and observation path; neck/jaw shading, hair appearance, gait/contact and final interior presentation remain open. No new production avatar binding, complete-town performance result, cooked build or replacement walkthrough has been adopted. See [current61 scope and evidence](asset_refinement/unreal_current61_validation.md).
+
+The complete-source town census contains 151 building owners and 32,400 shared placements, including 30,176 botanical placements. The current small native subset is not the complete town. A recovered 32-building geometry subset passes exact position/UV/material-slot/collision checks; its material import is being repaired separately, with source tangent-basis quality and texture mip/streaming policy still under review. These counts are migration scope, not proof of a finished playable world.
 
 ### 2026-10-28 native collision, coverage and character checkpoint
 

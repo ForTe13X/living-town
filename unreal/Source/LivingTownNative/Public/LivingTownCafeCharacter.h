@@ -28,6 +28,7 @@ private:
     FString UseSocket;
     bool bVisualQualified=false;
     bool bWorker110VisualQualified=false, bPossessedBonePolicyApplied=false;
+    bool bCurrent61BakedVisualQualified=false;
     uint8 PreviousPossessedBonePolicy=0;
     void RestorePossessedBonePolicy();
     void UpdatePossessedBonePolicy();
