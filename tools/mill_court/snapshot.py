@@ -50,6 +50,9 @@ def state(bpy):
                 polygon_material_sha256=digest_bytes(
                     struct.pack("<I", p.material_index) for p in me.polygons
                 ),
+                polygon_smooth_sha256=digest_bytes(
+                    struct.pack("<?", p.use_smooth) for p in me.polygons
+                ),
                 materials=[m.name if m else None for m in me.materials],
                 UV_layers=[
                     dict(
@@ -65,7 +68,17 @@ def state(bpy):
                         type=m.type,
                         properties={
                             k: value(getattr(m, k))
-                            for k in ("width", "segments", "thickness", "offset")
+                            for k in (
+                                "width",
+                                "segments",
+                                "thickness",
+                                "offset",
+                                "harden_normals",
+                                "keep_sharp",
+                                "weight",
+                                "thresh",
+                                "mode",
+                            )
                             if hasattr(m, k)
                         },
                     )
