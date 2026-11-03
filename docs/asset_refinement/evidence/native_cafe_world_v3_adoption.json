@@ -1,0 +1,208 @@
+{
+  "scope": "Exclusive native WorldV3 authority, paired V4 durable saves, real counter refusal without a reviewed meal provider, and off-counter F5 feedback composition. No positive eating/character/cloth/cook/full-town performance claim.",
+  "baseline": "371ec4078b0535b9f66ffdaae0458f90171603e3",
+  "native_source_family": "7a730268caf8ca1135e6a7ac24266b9059f15f5a1235533067e407ba68a31584",
+  "changed_files": [
+    {
+      "path": "docs/asset_refinement/native_cafe_world_v3_adoption.md",
+      "bytes": 13750,
+      "sha256": "64bcad999bcd8ac0015ec5cebef2a8f7edfaf04a79b50c0b5e77aa4518270dc3"
+    },
+    {
+      "path": "unreal/Source/LivingTownNative/Private/LivingTownCafeProjectionSubsystem.cpp",
+      "bytes": 14846,
+      "sha256": "8d3198f57256e1e1024a3c0dfa27242effc74547fee67c195655461a01ab78c7"
+    },
+    {
+      "path": "unreal/Source/LivingTownNative/Private/LivingTownCafePropertyV2Subsystem.cpp",
+      "bytes": 28228,
+      "sha256": "02a728e3d944fb22146dba5b935bfea61fc43c03346a62128cf97497288c2118"
+    },
+    {
+      "path": "unreal/Source/LivingTownNative/Private/LivingTownCafeWorldV3Scenario.cpp",
+      "bytes": 12324,
+      "sha256": "64aef176cc8b09540c9df93df17bcc3365a0ea18c1e22c6a01a23a34df269517"
+    },
+    {
+      "path": "unreal/Source/LivingTownNative/Private/LivingTownCafeWorldV3Subsystem.cpp",
+      "bytes": 37819,
+      "sha256": "108d1182049ac73329451156583a0378d73c43114fadec7fb236efe990699684"
+    },
+    {
+      "path": "unreal/Source/LivingTownNative/Private/LivingTownCafeWorldV3Types.cpp",
+      "bytes": 5601,
+      "sha256": "27ddd7a9c66a80036b942485c122eb11cf51f88df08917b967f2bfc71636e69c"
+    },
+    {
+      "path": "unreal/Source/LivingTownNative/Private/LivingTownLeaseSubsystem.cpp",
+      "bytes": 18687,
+      "sha256": "c87dcd31952176bb4e07659b2840eb137077e6d7db7c40d470ffef0206d78e67"
+    },
+    {
+      "path": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafeWorldV3BoundaryTest.cpp",
+      "bytes": 30853,
+      "sha256": "bfbd0cc5ffcf9dc02651643e35ddb84bb147b186ec09532eb019a7876ee60b19"
+    },
+    {
+      "path": "unreal/Source/LivingTownNative/Public/LivingTownCafeWorldV3Scenario.h",
+      "bytes": 2302,
+      "sha256": "52c2aa086361a00952bdced62a657d3d285d55572c74871989c3c84d3883f169"
+    },
+    {
+      "path": "unreal/Source/LivingTownNative/Public/LivingTownCafeWorldV3Subsystem.h",
+      "bytes": 3120,
+      "sha256": "bd76d0b46350ce78144ef72bd00a0bd0dfe23258fa046c1c45b7ca9c36bbbf2f"
+    },
+    {
+      "path": "unreal/Source/LivingTownNative/Public/LivingTownCafeWorldV3Types.h",
+      "bytes": 2732,
+      "sha256": "28c095cb64dc3d1b19775ac39c2f85776cd35f3d0bb56aa1ed808cff69955c4c"
+    }
+  ],
+  "builds": {
+    "Editor": {
+      "status": "PASS_NATIVE_EDITOR_BUILD",
+      "wall_seconds": 367.9369999999981,
+      "peak_RSS": 4093140992,
+      "peak_private": 4884852736,
+      "owned_reap": {
+        "root_exit_code": 0,
+        "owned_root_waited": true,
+        "remaining_owned_pids": [],
+        "controlled_job_termination": true,
+        "includes_ShaderCompileWorker_descendants": true
+      }
+    },
+    "Game": {
+      "status": "PASS_NATIVE_GAME_TARGET_BUILD_CURRENT_ACTION_CAPTURE",
+      "wall_seconds": 191.54699999999866,
+      "peak_RSS": 5176479744,
+      "peak_private": 4208021504,
+      "owned_reap": {
+        "root_exit_code": 0,
+        "owned_root_waited": true,
+        "remaining_owned_pids": [],
+        "controlled_job_termination": true,
+        "includes_ShaderCompileWorker_descendants": true
+      }
+    }
+  },
+  "build_receipts": {
+    "build_receipt": {
+      "bytes": 55450,
+      "sha256": "9b0b75b46c5a07db877d4309fd5953004d76badb0491f2dd0ffb1da0fadd1537"
+    },
+    "game_build_receipt": {
+      "bytes": 54945,
+      "sha256": "27d90a01f92831b65a949b02f266369e9a79d620cb84857a148e0b2547bed5ca"
+    }
+  },
+  "runtime_tests": [
+    {
+      "case": "selection",
+      "tests": [
+        {
+          "name": "LivingTown.PropertyV2.ExclusiveBackendSelection",
+          "state": "Success",
+          "duration": 0.01628350093960762
+        },
+        {
+          "name": "LivingTown.WorldV3.ExclusiveBackendSelection",
+          "state": "Success",
+          "duration": 0.01613609865307808
+        }
+      ],
+      "native_seconds": 33.6559999999954,
+      "peak_RSS": 4371488768,
+      "peak_private": 5274882048,
+      "closed_exit": 0,
+      "report_sha256": "0ad40c90f3f9f75560f1b755ddc1aad1679ab365d6ffe4029a45d299690f07df"
+    },
+    {
+      "case": "property",
+      "tests": [
+        {
+          "name": "LivingTown.PropertyV2.ActualPublicBoundaryJourney",
+          "state": "Success",
+          "duration": 21.295917510986328
+        }
+      ],
+      "native_seconds": 53.390999999995984,
+      "peak_RSS": 4367470592,
+      "peak_private": 5474824192,
+      "closed_exit": 0,
+      "report_sha256": "c2cf652c980d5f5019fceb738dba864a56f97a878c123a182ee36e07db5cad3d"
+    },
+    {
+      "case": "world_refusal",
+      "tests": [
+        {
+          "name": "LivingTown.WorldV3.ActualPublicBoundaryRefusal",
+          "state": "Success",
+          "duration": 15.475937843322754
+        }
+      ],
+      "native_seconds": 47.625,
+      "peak_RSS": 4281454592,
+      "peak_private": 5380296704,
+      "closed_exit": 0,
+      "report_sha256": "5d25bef3e9194018cf35a86f3b0b593b36ec9afb142124c8cd6e91fc775a1deb"
+    },
+    {
+      "case": "world_cold",
+      "tests": [
+        {
+          "name": "LivingTown.WorldV3.ColdPublicBoundaryRestore",
+          "state": "Success",
+          "duration": 1.9999653100967407
+        }
+      ],
+      "native_seconds": 34.29700000000594,
+      "peak_RSS": 4249096192,
+      "peak_private": 5082693632,
+      "closed_exit": 0,
+      "report_sha256": "d3205317fcb7cd3acb67700800b15c5b91be5956a3dfb304530f439dde3cdc1b"
+    },
+    {
+      "case": "hud_feedback",
+      "tests": [
+        {
+          "name": "LivingTown.WorldV3.OffCounterSaveFeedbackInput",
+          "state": "Success",
+          "duration": 12.003741264343262
+        }
+      ],
+      "native_seconds": 43.43800000000192,
+      "peak_RSS": 4267933696,
+      "peak_private": 5347217408,
+      "closed_exit": 0,
+      "report_sha256": "967657120822da325e99dd220c0bc9afe95d06c10d63bf08bd170b6b131f7e3f"
+    }
+  ],
+  "native_test_count": 6,
+  "cold_restore": {
+    "separate_process": true,
+    "producer_pid": 28172,
+    "consumer_pid": 9136,
+    "identical_slot_sha256": "2effcdf63ef08c5412b281c3aa3c5e8ecc22a1e052df3947a57b9de7fb499fc6",
+    "saved_observations_do_not_resume_care": true
+  },
+  "F5_input": {
+    "route": "FInputKeyEventArgs through actual controller and natural PlayerInput frames at grounded source spawn",
+    "live_authority_and_last_action_rows_separate": true,
+    "actual_atomic_V4_slot_verified": true,
+    "pixels_or_OS_keypress_claimed": false
+  },
+  "meaningful_global_and_source_custody_preserved": true,
+  "positive_eating_qualified": false,
+  "reviewed_positive_clip_provider_supplied": false,
+  "character_or_cloth_adopted": false,
+  "cooked_IoStore_provider_qualified": false,
+  "full_town_or_FPS_qualified": false,
+  "root_review_sha256": "7688e9ee3fe8d7c01f271aead8fdb5061c783adc63c0f8506a6ed431db46b6bd",
+  "documentation_updated_after_validation": {
+    "file": "docs/asset_refinement/native_cafe_world_v3_adoption.md",
+    "native_compiler_inputs_changed": false,
+    "reason": "Publish actual results and correct reproduction command; native source family unchanged"
+  }
+}
