@@ -1,0 +1,464 @@
+{
+  "schema": "LivingTown.Native118004SubsetLifecycleEvidence.v1",
+  "status": "EXACT_THREE_STATIC_MAP_SUBSET_UNLOAD_REENTRY_DATA_ACCEPTED",
+  "observed_UTC": "2026-11-03T05:46:15.085949+00:00",
+  "source": {
+    "actual_native_family": "9d1e11b86ab484399aca53b894b25cb2e78ae27e35b106ed2ddfd6c1e2941e5f",
+    "later_head_build_native_family": "4ea6ade4953a5f3e4e72e49640e4fd7e86f0c5ff459205817aa6a79290a53d1c",
+    "complete_native_families_equal": false,
+    "whole_current_source_snapshot_equivalence_claimed": false,
+    "six_production_FullTown_files_byte_identical_to_current_checkout": [
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownFullTownData.cpp",
+        "bytes": 10965,
+        "sha256": "f4fc8623c6407b0d4ab6a164c722b3839b3cc77104370c646cde8940dbcf5a4f"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownFullTownData.h",
+        "bytes": 5754,
+        "sha256": "132aa7d6e5485415e06148019b18dfeea929f844e3956a839734be2763c2927a"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownFullTownDriver.cpp",
+        "bytes": 989,
+        "sha256": "2f50668da2f98d879402627122f62393884cfb6aee6ae759ced6675fa4c4bd5a"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownFullTownDriver.h",
+        "bytes": 1596,
+        "sha256": "daaa45dfb7adabd495d747ded0e855b27d89cbd2034c74cdde1a826d06b94d9e"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownFullTownStreamingSubsystem.cpp",
+        "bytes": 41215,
+        "sha256": "426fa438398a2fcce8fad076f3915937a67ba8e8a182e32ace1ae641e8b3b2eb"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownFullTownStreamingSubsystem.h",
+        "bytes": 5522,
+        "sha256": "3cbdd551cb7e07686e0949bd063a5d7e14650aa7476a1c2bba1661d31fb30e18"
+      }
+    ],
+    "qualified_source_files": 180,
+    "qualified_native_inputs": 131,
+    "head_probe_enabled": false
+  },
+  "scope": {
+    "uncooked_Editor_Game": true,
+    "streamed_maps": [
+      {
+        "dispatch_index": 131,
+        "static_roles": 66
+      },
+      {
+        "dispatch_index": 142,
+        "static_roles": 80
+      },
+      {
+        "dispatch_index": 151,
+        "pinned": true,
+        "static_roles": 155,
+        "terrain_meshes": 154,
+        "ocean_context_roles": 1
+      }
+    ],
+    "source_packages": 4987,
+    "total_static_source_roles": 301,
+    "external_cafe_parts": 262,
+    "HISM_profile_exercised": false,
+    "full193_town_profile": false
+  },
+  "actual_host": {
+    "seconds": 215.84299999999712,
+    "peak_private_bytes": 8548257792,
+    "native_exit_code": 0,
+    "owned_waited_and_reaped_empty": true,
+    "all_five_closing_guards_passed": true
+  },
+  "independent_replay": {
+    "original_source_contract": true,
+    "all4987source_and_staged_package_bytes": true,
+    "original_native_runtime_and_private_config": true,
+    "actual_hardware_and_critical_log": true,
+    "original_postgate_and_raw_query_sample_crossbounds": true,
+    "captured_global_before_after_policy": true,
+    "current_canonical_equals_actual_prelaunch": true,
+    "current_global_and_lane_not_resampled_during_other_owned_run": true,
+    "source_and_D_cache_before_after_exact": true
+  },
+  "route": {
+    "actual_natural_samples": 10047,
+    "horizontal_distance_m": 171.1952879307236,
+    "spatial_distance_m": 172.04728184390038,
+    "actual_world_duration_seconds": 151.8296197988093,
+    "actual_QPC_duration_seconds": 151.7466892,
+    "first_engine_frame": 206,
+    "last_engine_frame": 10252,
+    "westmost_feet_x_cm": -7798.20341278886,
+    "return_horizontal_error_cm": 1.8780325053543265,
+    "all_samples_grounded_and_walkable": true,
+    "both_actual_simple_complex_traces_passed_every_sample": true,
+    "support_categories_or_source_roles": [
+      "CAFE_DECLARED_FLOOR",
+      "CAFE_SOURCE_PART",
+      "GROUND::LT_GROUND170_120",
+      "GROUND::LT_GROUND170_134",
+      "GROUND::LT_GROUND170_148"
+    ],
+    "peak_transition_reservations": 2,
+    "scripted_normal_AddMovementInput_force_false": true,
+    "physical_or_OS_keyboard_qualified": false,
+    "pawn_transform_floor_speed_radius_native_state_setters": false
+  },
+  "retirement_window": {
+    "actual_samples": 134,
+    "first_engine_frame": 4336,
+    "last_engine_frame": 4469,
+    "world_seconds": 2.0010914988815784,
+    "QPC_seconds": 2.0006849,
+    "all_complete_conjunctions_independently_replayed": true,
+    "exact_pinned_role_count": 155,
+    "exact_pinned_roster_sha256": "f820bb4ff6ed7e33c774bb535a6608ec7a36c9adacced91d7d0128757f2cf6a0",
+    "cafe_parts": 262,
+    "ground_token": 1,
+    "terminal_Removed_observations": {
+      "1": {
+        "engine_frame": 3975,
+        "token": 3,
+        "loaded_level_present": false
+      },
+      "0": {
+        "engine_frame": 3976,
+        "token": 2,
+        "loaded_level_present": false
+      }
+    },
+    "UNLOADED_delegate_observations": {
+      "0": {
+        "count": 0,
+        "status": "NOT_OBSERVED_NOT_PROMISED_AFTER_REMOVAL"
+      },
+      "1": {
+        "count": 0,
+        "status": "NOT_OBSERVED_NOT_PROMISED_AFTER_REMOVAL"
+      }
+    },
+    "direct_current_Removed_getter": "UNOBSERVED_NONREFLECTED",
+    "GC_or_memory_release_qualified": false
+  },
+  "milestones": [
+    {
+      "label": "INITIAL_RESIDENT",
+      "engine_frame": 206,
+      "world_seconds": 3.3783011016785167,
+      "feet_cm": [
+        762.5,
+        -12.5,
+        76.85281610488892
+      ],
+      "active_source_roles": 301,
+      "cafe_parts": 262,
+      "tickets": [
+        {
+          "unit_index": 2,
+          "token": 1,
+          "phase": 3,
+          "native_state": "LoadedVisible"
+        },
+        {
+          "unit_index": 0,
+          "token": 2,
+          "phase": 3,
+          "native_state": "LoadedVisible"
+        },
+        {
+          "unit_index": 1,
+          "token": 3,
+          "phase": 3,
+          "native_state": "LoadedVisible"
+        }
+      ],
+      "transition_reservations": 0,
+      "loads_issued": 3,
+      "shown_validated_units_total": 3,
+      "cancellations": 0
+    },
+    {
+      "label": "HYSTERESIS_OUT_RESIDENT",
+      "engine_frame": 3571,
+      "world_seconds": 63.39176370477071,
+      "feet_cm": [
+        -6198.054777300713,
+        -12.5,
+        342.1624086825341
+      ],
+      "active_source_roles": 301,
+      "cafe_parts": 262,
+      "tickets": [
+        {
+          "unit_index": 2,
+          "token": 1,
+          "phase": 3,
+          "native_state": "LoadedVisible"
+        },
+        {
+          "unit_index": 0,
+          "token": 2,
+          "phase": 3,
+          "native_state": "LoadedVisible"
+        },
+        {
+          "unit_index": 1,
+          "token": 3,
+          "phase": 3,
+          "native_state": "LoadedVisible"
+        }
+      ],
+      "transition_reservations": 0,
+      "loads_issued": 3,
+      "shown_validated_units_total": 3,
+      "cancellations": 0
+    },
+    {
+      "label": "FAR_REMOVED",
+      "engine_frame": 4469,
+      "world_seconds": 78.3326076035737,
+      "feet_cm": [
+        -7798.20341278886,
+        -12.5,
+        456.7701477141344
+      ],
+      "active_source_roles": 155,
+      "cafe_parts": 262,
+      "tickets": [
+        {
+          "unit_index": 2,
+          "token": 1,
+          "phase": 3,
+          "native_state": "LoadedVisible"
+        }
+      ],
+      "transition_reservations": 0,
+      "loads_issued": 3,
+      "shown_validated_units_total": 3,
+      "cancellations": 2
+    },
+    {
+      "label": "HYSTERESIS_BACK_ABSENT",
+      "engine_frame": 5533,
+      "world_seconds": 93.20685900276294,
+      "feet_cm": [
+        -6201.848566974633,
+        -12.5,
+        342.13180839888537
+      ],
+      "active_source_roles": 155,
+      "cafe_parts": 262,
+      "tickets": [
+        {
+          "unit_index": 2,
+          "token": 1,
+          "phase": 3,
+          "native_state": "LoadedVisible"
+        }
+      ],
+      "transition_reservations": 0,
+      "loads_issued": 3,
+      "shown_validated_units_total": 3,
+      "cancellations": 2
+    },
+    {
+      "label": "RELOADED_NEW_TOKENS",
+      "engine_frame": 6673,
+      "world_seconds": 108.87140680005541,
+      "feet_cm": [
+        -4501.882625678755,
+        -12.5,
+        249.6707412206335
+      ],
+      "active_source_roles": 301,
+      "cafe_parts": 262,
+      "tickets": [
+        {
+          "unit_index": 2,
+          "token": 1,
+          "phase": 3,
+          "native_state": "LoadedVisible"
+        },
+        {
+          "unit_index": 0,
+          "token": 4,
+          "phase": 3,
+          "native_state": "LoadedVisible"
+        },
+        {
+          "unit_index": 1,
+          "token": 5,
+          "phase": 3,
+          "native_state": "LoadedVisible"
+        }
+      ],
+      "transition_reservations": 0,
+      "loads_issued": 5,
+      "shown_validated_units_total": 5,
+      "cancellations": 2
+    },
+    {
+      "label": "RETURNED_CAFE",
+      "engine_frame": 10252,
+      "world_seconds": 155.2079209004878,
+      "feet_cm": [
+        760.6219674946457,
+        -12.5,
+        76.78453995567438
+      ],
+      "active_source_roles": 301,
+      "cafe_parts": 262,
+      "tickets": [
+        {
+          "unit_index": 2,
+          "token": 1,
+          "phase": 3,
+          "native_state": "LoadedVisible"
+        },
+        {
+          "unit_index": 0,
+          "token": 4,
+          "phase": 3,
+          "native_state": "LoadedVisible"
+        },
+        {
+          "unit_index": 1,
+          "token": 5,
+          "phase": 3,
+          "native_state": "LoadedVisible"
+        }
+      ],
+      "transition_reservations": 0,
+      "loads_issued": 5,
+      "shown_validated_units_total": 5,
+      "cancellations": 2
+    }
+  ],
+  "callback_summary": [
+    {
+      "unit_index": 0,
+      "token": 2,
+      "event_counts": {
+        "LOADED": 1,
+        "SHOWN": 1,
+        "HIDDEN": 1,
+        "UNLOADED": 0
+      }
+    },
+    {
+      "unit_index": 0,
+      "token": 4,
+      "event_counts": {
+        "LOADED": 1,
+        "SHOWN": 1,
+        "HIDDEN": 0,
+        "UNLOADED": 0
+      }
+    },
+    {
+      "unit_index": 1,
+      "token": 3,
+      "event_counts": {
+        "LOADED": 1,
+        "SHOWN": 1,
+        "HIDDEN": 1,
+        "UNLOADED": 0
+      }
+    },
+    {
+      "unit_index": 1,
+      "token": 5,
+      "event_counts": {
+        "LOADED": 1,
+        "SHOWN": 1,
+        "HIDDEN": 0,
+        "UNLOADED": 0
+      }
+    },
+    {
+      "unit_index": 2,
+      "token": 1,
+      "event_counts": {
+        "LOADED": 1,
+        "SHOWN": 1,
+        "HIDDEN": 0,
+        "UNLOADED": 0
+      }
+    }
+  ],
+  "limitations": [
+    "Exact three static-map301-role plus262-part cafe subset only",
+    "Different complete004/007 native families; equality established only for six named production FullTown files",
+    "OnLevelUnloaded not promised after removal; actual recorded counts remain zero/NOT_OBSERVED",
+    "Direct post-removal GetLevelStreamingState and directPython component IsRegistered flags unobserved; actual terminalRemoved and original native registered-validation phases are scoped evidence",
+    "Scripted normal movement harness; no physical/OS keyboard qualification",
+    "No HISM lifecycle, whole-town collision/coverage, cooked/packaged, production-avatar, final-art, GC/memory-release, GPU/render-quality or performance qualification"
+  ],
+  "bindings": [
+    {
+      "artifact": "Runtime014/source/FROZEN_HANDOFF.json",
+      "bytes": 29981,
+      "sha256": "747a445fc404e0d814906155605eb412a09f9839f2437e4cf1db2d422aad927d"
+    },
+    {
+      "artifact": "Runtime014/HOST_INTAKE_REPORT.json",
+      "bytes": 1000393,
+      "sha256": "b2d96de8a468a1bbb01006aab2de9cb2f28f023d1693569313f7f14ff8373e10"
+    },
+    {
+      "artifact": "Runtime014/Game/LIFECYCLE_PROOF.json",
+      "bytes": 964529,
+      "sha256": "7d518c6364e42c6a5cb55a57cbde66ce6869e4e0bb8aedf57ac651970b217402"
+    },
+    {
+      "artifact": "Runtime014/Game/FINISH.json",
+      "bytes": 1502,
+      "sha256": "b4273a7cd1bd83d7aa615ecc2d7b3935f6b2312ac005982c25af1dfd25d4389a"
+    },
+    {
+      "artifact": "Runtime014/Game/LIFECYCLE_MILESTONES.json",
+      "bytes": 935980,
+      "sha256": "78c6337aef8b832df4b271699320b9ddbb0f89bd4ba684388e0ded432d3c46af"
+    },
+    {
+      "artifact": "Runtime014/Game/RETIREMENT_CONJUNCTION_WINDOW.json",
+      "bytes": 552765,
+      "sha256": "2087772fb5f68a6730229000f7c9329bcaf3aa88dd74062c3e3a8393f0b0ee90"
+    },
+    {
+      "artifact": "Runtime014/Game/LIFECYCLE_DELEGATE_EVENTS.json",
+      "bytes": 3525,
+      "sha256": "148a8226b2304e85e1dc0006586bd9a681d419c162bb54d336df41446c50486e"
+    },
+    {
+      "artifact": "Runtime014/GLOBAL_DELTA.json",
+      "bytes": 4035,
+      "sha256": "3f2c0699e278e0787c9a73123e92fff1867134bd5082bbf8e0ead08e9fb6d7a3"
+    },
+    {
+      "artifact": "Native118004/BUILD_RECEIPT.json",
+      "bytes": 53791,
+      "sha256": "2b9bf582b6b11fbfe133b0e3dd9844d775b1478f36330f019eb81fe0952dc53e"
+    },
+    {
+      "artifact": "Native118004/ROOT_ACTUAL_REVIEW.json",
+      "bytes": 2523,
+      "sha256": "60d88ee7b6762d444294c6c5e6bedd91fec547740ebaebc31a7c01b4f57a1b8a"
+    },
+    {
+      "artifact": "Native118004/six_regressions_ROOT_ACTUAL_REVIEW.json",
+      "bytes": 2329,
+      "sha256": "83577a932bd7b3b4f30d2f88b81dea19c34cf0078d7471323b1373e13f1b9dde"
+    }
+  ],
+  "root_review_binding": {
+    "bytes": 7397,
+    "sha256": "1021cba7661e6ae78b2279c496a5ebddf65ba2f74c7cd00ae743f8e0c1dd4a9d"
+  }
+}

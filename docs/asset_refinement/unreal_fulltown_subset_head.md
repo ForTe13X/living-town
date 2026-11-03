@@ -122,8 +122,8 @@ qualify whole-town or production performance.
 The tests exercise production validators, cancellation reservation behavior and
 safe assembly refusal. These six tests alone do not prove successful animated
 head attachment. The later diagnostic below supplies a separate, bounded
-idle/walk observation. OS keyboard handling, unload/re-entry, collision coverage
-across the town, final character appearance, startup time, frame rate and cooked
+idle/walk observation. OS keyboard handling, whole-town unload/re-entry and collision coverage,
+final character appearance, startup time, frame rate and cooked
 packaging remain separate checks.
 Repository CI passed all nine checks at documentation commit `d425460`, which
 retained the qualified native source.
@@ -197,6 +197,26 @@ do not activate a production avatar or change the saved town's presentation.
 The required host/manifest/assets are not bundled by this source change.
 
 The [sanitized source, build, test and capture evidence](evidence/native118_head_followers_diagnostic_v001.json)
-binds the actual artifacts and their limitations. Full-town residency,
-unload/re-entry, production character integration, final hair/skin/fabric art,
+binds the actual artifacts and their limitations. Full-town residency and unload/re-entry, production character integration,
+final hair/skin/fabric art,
 whole-mesh GPU skinning, contact, FPS and cooking/packaging remain unqualified.
+
+## Native118004 subset retirement and reentry
+
+The uncooked three-map subset completed an actual 215.843-second host run with natural exit code 0, every owned process waited/reaped, and all five closing guards passing. Independent closed-data replay verified the original source, all 4,987 source packages and their staged copies, private configuration, captured global custody, and complete lifecycle/query/sample associations. The run uses Native118004 family `9d1e11b86ab484399aca53b894b25cb2e78ae27e35b106ed2ddfd6c1e2941e5f`. Its six production FullTown source files match the current implementation byte-for-byte. The complete 004 and 007 build families differ; this result does not claim full source-family equivalence.
+
+The scripted route used ordinary `AddMovementInput` with `force=false`, controller yaw and natural character physics. It travelled 171.195 m horizontally over 151.830 seconds of world time, with 10,047 grounded/walkable samples and actual simple/complex support checks throughout. No pawn transform, floor, speed, radius or streaming-state setters were used. It returned within 1.878 cm of the source café spawn. This is a normal-movement harness observation; OS keyboard handling remains separate.
+
+| Observation | Active source roles | Native ticket tokens |
+| --- | ---: | --- |
+| Initial and outward hysteresis | 301 | U0131:2, U0142:3, pinned U0151:1 |
+| Far retirement and return through hysteresis | 155 | pinned U0151:1 |
+| Reentry and café return | 301 | U0131:4, U0142:5, pinned U0151:1 |
+
+All six ordered milestones retained 262 café parts. The peak transition reservation count was two. Each original section produced an actual HIDDEN callback and a native terminal `Removed` snapshot with no loaded level. A window of 134 frames then recorded 2.001 seconds of world time and 2.001 seconds of QPC time with the old levels null, loaded/visible/pending flags false, both old instances absent from World streaming lookup and actor roster, no reservations, and the same pinned section's exact 155-role roster. The pinned section comprises 154 terrain meshes and one ocean context role; pedestrian support checks rejected the ocean plane.
+
+`OnLevelUnloaded` recorded zero callbacks for both retired instances and remains **NOT_OBSERVED_NOT_PROMISED_AFTER_REMOVAL**. Installed engine code broadcasts that notification during conditional/delayed GC preparation through streaming objects still in the World array; it is not a required recipient event after removal. No callback was invented. A direct post-removal state getter is nonreflected; actual terminal `Removed` snapshots and current null-level/World-absence readbacks establish this scoped retirement observation. Package GC and physical memory release remain unobserved.
+
+Reentry loaded and validated both sections under new tokens, restored all 301 unique source roles without duplicate ownership, retained the pinned token, and returned to the café. The descriptor and native retirement/support/cancellation/deadline policies were unchanged. This profile exercises three static-only maps and the external café. It does not qualify HISM lifecycle, all 193 maps, whole-town collision coverage, cooking/packaging, final appearance, production avatar activation, GPU/render quality or performance.
+
+The [sanitized lifecycle evidence](evidence/native118_subset_lifecycle_v001.json) binds the actual source/build/test/capture artifacts and the independent review's scope.
