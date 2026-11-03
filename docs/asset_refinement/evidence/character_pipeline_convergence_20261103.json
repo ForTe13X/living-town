@@ -1,0 +1,95 @@
+{
+  "date": "2026-11-03",
+  "kind": "Local experiment receipt index; runtime adoption is a separate decision",
+  "engine": "Unreal Engine 5.8.4",
+  "blender": "5.2.2",
+  "product_baseline": {
+    "merge_commit": "654e46424ce930c7bd352a68457e571fb407e8bf",
+    "pull_request": "https://github.com/ForTe13X/living-town/pull/115"
+  },
+  "local_review_directory": "root_character_pipeline_macro_review_v1_001",
+  "local_receipts": [
+    {
+      "file": "FBX_REST_SKIN_FRAME_ANALYSIS_REVIEW.json",
+      "bytes": 2031,
+      "sha256": "b2cedf9aafa0d6e6482f8d8680efaedc264581e560dd997151cd847eee404850",
+      "status": "ROOT_ACCEPTS_FBX_REST_FULL_VISIBLE_CORNER_AND_SKIN_REPRESENTATION_FOR_MOTION_PROOF"
+    },
+    {
+      "file": "FBX_MOTION003_TWO_CAUSES_REVIEW.json",
+      "bytes": 1933,
+      "sha256": "41d2224c3507dd37e5df906b0ec2e0337464ee082db1bdf93d2bbb7a5b01aead",
+      "status": "ROOT_ACCEPTS_MEASURED_IMPORT_SAMPLING_AND_COMPRESSION_CAUSES_NOT_FIDELITY"
+    },
+    {
+      "file": "FBX_MOTION004_RAW_PASS_COMPRESSION_REFUSAL.json",
+      "bytes": 2508,
+      "sha256": "f0f0fb058fad3971fc23449b40115a1d5f5aa81565df6e0f31d084d1b5841037",
+      "status": "ROOT_REJECTS004_COMPRESSED_BODY_FIDELITY_RAW_SOURCE_RATE_ROUTE_PASSES"
+    },
+    {
+      "file": "ADULT_MATERIAL001_NORMAL_FAMILY_REJECTION.json",
+      "bytes": 1087,
+      "sha256": "0a118688d4d9d21f4e3698c570ebc96f801e17a5a68cd4c9cb31935f6e2a13d8",
+      "status": "ROOT_REJECTS_MIXED_SKIN_HAIR_NORMAL_FAMILY"
+    },
+    {
+      "file": "WHOLEBODY002_ATTACHMENT_REJECTION.json",
+      "bytes": 2452,
+      "sha256": "d3a9b7a7d829ecbfaa2de7ddaeffb69328e5b377e4c06b06ba252671f4850bf3",
+      "status": "ROOT_REJECTS_EXPOSED_NECK_ATTACHMENT_RETAINS_FUNCTIONAL_ANATOMY_PROTOTYPE"
+    },
+    {
+      "file": "BEDDING_DONOR002_AUTHORING_FORM_ADMISSION.json",
+      "bytes": 1859,
+      "sha256": "c7c9761b03ffcd7cf7656bef51049512f7000193f9e7660c4a691184ef1839ee",
+      "status": "ROOT_ADMITS_LOCAL_AUTHORED_BEDDING_FORM_AND_WEAVE"
+    },
+    {
+      "file": "BEDDING_LOD001_NEAR_ADMISSION.json",
+      "bytes": 2120,
+      "sha256": "76a822897510ccc88046b58588f7acf216b07133a6e60c7a656049d5a35eaa9f",
+      "status": "ROOT_ADMITS_NEAR48K_LOCAL_AUTHORING_FORM_WEAVE_MID_FAR_DATA_ONLY"
+    },
+    {
+      "file": "FBX_COLLISION_INPUTS002_ROUTE_ADMISSION.json",
+      "bytes": 3832,
+      "sha256": "38819e1cb45fe3aed47d5792cc6be014938002d25b042e049b120d4c460604e5",
+      "status": "ROOT_ACCEPTS_ACTUAL_REST_PUBLIC_CLOTH_COLLISION_INPUT_UNITS_AND_NAME_REMAP"
+    }
+  ],
+  "bundled_inspection_images": [
+    {
+      "file": "worker110_original_visual_baseline_20261103.png",
+      "bytes": 382906,
+      "sha256": "d787929ec30c5d3204df22df3ecf0d7abb7c42af5337be5f85d8c4d4eabee2f0"
+    },
+    {
+      "file": "mill_court_bedding_near48k_20261103.png",
+      "bytes": 2502207,
+      "sha256": "00212ffdb88be49574ce5c264a76672645fb9fc8670c4909ff3a8ee652183ca1"
+    }
+  ],
+  "measured": {
+    "original_idle_walk_samples": 1062,
+    "FBX_original_bones": 61,
+    "FBX_unweighted_wrapper_bones": 1,
+    "body_max_skin_influences": 7,
+    "source_rate_Hz": 30,
+    "raw_body_max_error_m": 8.81461115151243e-06,
+    "compressed_body_max_error_m": 0.0003996160806041105,
+    "strict_motion_budget_m": 0.0001,
+    "bedding_source_triangles": 111744,
+    "bedding_near_triangles": 48000,
+    "bedding_mid_triangles": 18000,
+    "bedding_far_triangles": 6000
+  },
+  "scope": {
+    "new_character_product_adoption": false,
+    "generic_replacement_head_route": "Stopped after whole-character art review",
+    "live_native_cloth": false,
+    "near_bedding_local_art": "Reviewed; portable roundtrip and engine adoption pending",
+    "mid_far_bedding_visual": "Pending distance views",
+    "full_town_Game_FPS": false
+  }
+}
