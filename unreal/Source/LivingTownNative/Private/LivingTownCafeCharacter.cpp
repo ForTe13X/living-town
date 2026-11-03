@@ -204,6 +204,22 @@ bool ALivingTownCafeCharacter::ConfigureQualifiedBen(const FLivingTownCafeBindin
     if(bCurrent61Baked&&(!GetMesh()->GetSingleNodeInstance()||GetMesh()->GetSingleNodeInstance()->GetClass()!=UAnimSingleNodeInstance::StaticClass()||GetMesh()->GetAnimationMode()!=EAnimationMode::AnimationSingleNode))
     {Error=TEXT("plain_current61_baked_single_node_player_required");return false;}
     if(!GetMesh()->GetSingleNodeInstance()){Error=TEXT("native_idle_walk_player_missing");return false;}
+    if(B.Current61Head.IsSet())
+    {
+        if(!bCurrent61Baked){Error=TEXT("head_parts_require_explicit_current61_body");return false;}
+        HairCards=NewObject<USkeletalMeshComponent>(this,TEXT("Current61HairCards"));
+        HairUnderlayer=NewObject<USkeletalMeshComponent>(this,TEXT("Current61HairUnderlayer"));
+        for(auto* C:{HairCards.Get(),HairUnderlayer.Get()})if(C)
+        { AddInstanceComponent(C);C->SetupAttachment(GetMesh());C->SetVisibility(false);C->SetCollisionEnabled(ECollisionEnabled::NoCollision);C->RegisterComponent(); }
+        if(!HairCards||!HairUnderlayer||!LivingTownCurrent61HeadAssembly::Configure(GetMesh(),HairCards,HairUnderlayer,B.Current61Head.GetValue(),Error))
+        {
+            LivingTownCurrent61HeadAssembly::Reset(HairCards,HairUnderlayer);
+            for(auto* C:{HairCards.Get(),HairUnderlayer.Get()})if(C)C->DestroyComponent();
+            HairCards=nullptr;HairUnderlayer=nullptr;GetMesh()->SetVisibility(false);GetMesh()->SetSkeletalMeshAsset(nullptr);
+            if(Error.IsEmpty())Error=TEXT("closed_current61_head_parts_required");return false;
+        }
+        bCurrent61HeadBound=true;
+    }
     GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);GetMesh()->SetVisibility(true);bVisualQualified=true;bWorker110VisualQualified=bWorker110;bCurrent61BakedVisualQualified=bCurrent61Baked;SetActorTickEnabled(true);UpdatePossessedBonePolicy();return true;
 }
 void ALivingTownCafeCharacter::RestorePossessedBonePolicy()
@@ -235,6 +251,7 @@ void ALivingTownCafeCharacter::UnPossessed()
 }
 void ALivingTownCafeCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    LivingTownCurrent61HeadAssembly::Reset(HairCards,HairUnderlayer);bCurrent61HeadBound=false;
     RestorePossessedBonePolicy();Super::EndPlay(EndPlayReason);
 }
 FVector ALivingTownCafeCharacter::InteractionHand()const{return bVisualQualified?GetMesh()->GetSocketLocation(FName(*UseSocket)):FVector::ZeroVector;}

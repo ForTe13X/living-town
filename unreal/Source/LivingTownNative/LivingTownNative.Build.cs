@@ -13,6 +13,7 @@ public class LivingTownNative : ModuleRules
         CppStandard = CppStandardVersion.Cpp20;
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
         PrivateDependencyModuleNames.Add("Json");
+        PrivateDependencyModuleNames.Add("RHI");
         AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL");
         string CoreFile = Path.Combine(ModuleDirectory, "ThirdParty", "LeaseKernel.hpp");
         string Actual = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(CoreFile))).ToLowerInvariant();

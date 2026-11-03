@@ -6,6 +6,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class UBlendSpace;
+class USkeletalMeshComponent;
 
 UCLASS(NotBlueprintable)
 class LIVINGTOWNNATIVE_API ALivingTownCafeCharacter final : public ACharacter
@@ -15,6 +16,7 @@ public:
     ALivingTownCafeCharacter();
     bool ConfigureQualifiedBen(const FLivingTownCafeBinding& Binding,FString& Error);
     bool HasQualifiedVisual() const {return bVisualQualified;}
+    bool HasBoundCurrent61HeadParts() const { return bCurrent61HeadBound; }
     FVector InteractionHand() const;
     virtual void PossessedBy(AController* NewController) override;
     virtual void UnPossessed() override;
@@ -25,6 +27,9 @@ private:
     UPROPERTY() TObjectPtr<USpringArmComponent> CameraArm;
     UPROPERTY() TObjectPtr<UCameraComponent> Camera;
     UPROPERTY() TObjectPtr<UBlendSpace> IdleWalk;
+    UPROPERTY() TObjectPtr<USkeletalMeshComponent> HairCards;
+    UPROPERTY() TObjectPtr<USkeletalMeshComponent> HairUnderlayer;
+    bool bCurrent61HeadBound=false;
     FString UseSocket;
     bool bVisualQualified=false;
     bool bWorker110VisualQualified=false, bPossessedBonePolicyApplied=false;
