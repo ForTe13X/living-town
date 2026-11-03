@@ -6,7 +6,7 @@
 #include "LivingTownLeaseSubsystem.h"
 #include "LivingTownCafeSlot.h"
 #include "../ThirdParty/CafePropertyV2.hpp"
-#include "../ThirdParty/CafePropertyBackend.hpp"
+#include "LivingTownCafeWorldV3Types.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -24,12 +24,12 @@
 
 namespace {
 namespace P=living_town::cafe_property_v2;
-namespace Backend=living_town::cafe_property_backend;
+namespace Backend=living_town::cafe_backend_v3;
 constexpr const TCHAR* CoreHash=TEXT("50adb86b5333436ff6af330ed02ca3b21b9aae0cc7f92c32d833dcdb61ec76ab");
 constexpr const TCHAR* RosterHash=TEXT("fda4596387cffd0eec0cab7fb021e7950afc4c6e878467712949924a630f0d8b");
 constexpr const TCHAR* ConfigHash=TEXT("d45f1b001e0177088757be4e45ee3a4910c5cd6b09b18128693058886f40637f");
 constexpr int64 MaxEnvelopeBytes=8*1024*1024;
-bool Requested(){return FParse::Param(FCommandLine::Get(),TEXT("LivingTownCafePropertyV2"));}
+
 FString Text(const std::string& S){return FString(UTF8_TO_TCHAR(S.c_str()));}
 std::string Utf8(const FString& S){return std::string(TCHAR_TO_UTF8(*S));}
 FString PersonaId(ELivingTownCafePropertyPersona Pn){return Pn==ELivingTownCafePropertyPersona::Aria?TEXT("aria"):TEXT("ben");}
@@ -62,14 +62,14 @@ struct ULivingTownCafePropertyV2Subsystem::FState {P::Kernel Kernel;int64 Clock=
 void ULivingTownCafePropertyV2Subsystem::FStateDeleter::operator()(FState* Pn)const{delete Pn;}
 ULivingTownCafePropertyV2Subsystem::ULivingTownCafePropertyV2Subsystem()=default;
 ULivingTownCafePropertyV2Subsystem::~ULivingTownCafePropertyV2Subsystem()=default;
-bool ULivingTownCafePropertyV2Subsystem::ShouldCreateSubsystem(UObject* Outer)const{return Super::ShouldCreateSubsystem(Outer)&&Backend::Select(Requested())==Backend::Backend::PropertyV2;}
+bool ULivingTownCafePropertyV2Subsystem::ShouldCreateSubsystem(UObject* Outer)const{return Super::ShouldCreateSubsystem(Outer)&&LivingTownCafeNativeBackend::Selected()==Backend::Backend::PropertyV2;}
 bool ULivingTownCafePropertyV2Subsystem::DoesSupportWorldType(EWorldType::Type T)const{return T==EWorldType::Game||T==EWorldType::PIE;}
 TStatId ULivingTownCafePropertyV2Subsystem::GetStatId()const{RETURN_QUICK_DECLARE_CYCLE_STAT(ULivingTownCafePropertyV2Subsystem,STATGROUP_Tickables);}
 void ULivingTownCafePropertyV2Subsystem::Deinitialize(){DetachNativeSession();State.Reset();if(IsValid(Venue))Venue->Destroy();Venue=nullptr;bPrepared=false;Super::Deinitialize();}
 bool ULivingTownCafePropertyV2Subsystem::PrepareScenario(FString& Error){
     Error.Reset();auto Fail=[&](const TCHAR* Why){Error=Why;Notice=Error;RefreshPresentation();return false;};
     UWorld* W=GetWorld();if(!IsInGameThread()||bPrepared||!W)return Fail(TEXT("single_game_thread_property_scenario_required"));
-    if(!Backend::CanActivateV2(Requested(),W->GetAuthGameMode()&&W->GetAuthGameMode()->GetClass()==ALivingTownCafePropertyV2GameMode::StaticClass(),W->GetNetMode()==NM_Standalone,FParse::Param(FCommandLine::Get(),TEXT("LivingTownCafeWorker110DevelopmentPreview")),FParse::Param(FCommandLine::Get(),TEXT("LivingTownCafeLegacyV1"))))return Fail(TEXT("explicit_exclusive_property_v2_standalone_scenario_required"));
+    if(!Backend::can_activate(LivingTownCafeNativeBackend::Selected(),W->GetAuthGameMode()&&W->GetAuthGameMode()->GetClass()==ALivingTownCafePropertyV2GameMode::StaticClass()?Backend::ExactMode::PropertyV2:Backend::ExactMode::Other,W->GetNetMode()==NM_Standalone,LivingTownCafeNativeBackend::Flags().worker_preview))return Fail(TEXT("explicit_exclusive_property_v2_standalone_scenario_required"));
     if(!W->GetGameInstance()||W->GetGameInstance()->GetSubsystem<ULivingTownLeaseSubsystem>())return Fail(TEXT("legacy_v1_authority_must_not_exist_in_property_v2"));
     if(const auto* Old=W->GetSubsystem<ULivingTownCafeProjectionSubsystem>())if(Old->IsReady()||Old->IsScenePrepared())return Fail(TEXT("legacy_v1_projection_must_remain_unprepared"));
     if(!AuthoredSources(Error)){Notice=Error;RefreshPresentation();return false;}

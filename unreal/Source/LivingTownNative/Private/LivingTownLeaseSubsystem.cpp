@@ -1,6 +1,6 @@
 #include "LivingTownLeaseSubsystem.h"
 #include "../ThirdParty/LeaseKernel.hpp"
-#include "../ThirdParty/CafePropertyBackend.hpp"
+#include "LivingTownCafeWorldV3Types.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Dom/JsonObject.h"
@@ -200,8 +200,7 @@ ULivingTownLeaseSubsystem::ULivingTownLeaseSubsystem() : State(new FState()) {}
 ULivingTownLeaseSubsystem::~ULivingTownLeaseSubsystem() = default;
 bool ULivingTownLeaseSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
-    return Super::ShouldCreateSubsystem(Outer) && living_town::cafe_property_backend::Select(
-        FParse::Param(FCommandLine::Get(), TEXT("LivingTownCafePropertyV2"))) == living_town::cafe_property_backend::Backend::LegacyV1;
+    return Super::ShouldCreateSubsystem(Outer) && LivingTownCafeNativeBackend::Selected() == living_town::cafe_backend_v3::Backend::LegacyV1;
 }
 void ULivingTownLeaseSubsystem::Deinitialize()
 {

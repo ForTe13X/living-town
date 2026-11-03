@@ -1,4 +1,5 @@
 #include "LivingTownCafeProjectionSubsystem.h"
+#include "LivingTownCafeWorldV3Types.h"
 #include "LivingTownCafeVenue.h"
 #include "LivingTownCafeCharacter.h"
 #include "LivingTownCafeSlot.h"
@@ -27,7 +28,7 @@ void ULivingTownCafeProjectionSubsystem::Deinitialize()
 bool ULivingTownCafeProjectionSubsystem::PrepareQualifiedScene(const FString& Path,FString& Error)
 {
     const double Started=FPlatformTime::Seconds();ON_SCOPE_EXIT{RefreshPresentation(true);UE_LOG(LogTemp,Display,TEXT("Cafe startup binding/geometry/spawn check seconds=%.6f prepared=%d"),FPlatformTime::Seconds()-Started,bScenePrepared?1:0);};
-    Error.Reset(); if(bScenePrepared||!IsInGameThread()||!GetWorld()||GetWorld()->GetNetMode()!=NM_Standalone||!Lease()){Error=TEXT("single_standalone_authority_scene_required");Status=Error;return false;}
+    Error.Reset(); if(LivingTownCafeNativeBackend::Selected()!=living_town::cafe_backend_v3::Backend::LegacyV1){Error=TEXT("exclusive_legacy_backend_required");Status=Error;return false;} if(bScenePrepared||!IsInGameThread()||!GetWorld()||GetWorld()->GetNetMode()!=NM_Standalone||!Lease()){Error=TEXT("single_standalone_authority_scene_required");Status=Error;return false;}
     FLivingTownCafeBinding Candidate;if(!FLivingTownCafeBinding::ReadQualifiedFile(Path,Candidate,Error)){Status=TEXT("Café unavailable: ")+Error;return false;}
     // Read-only display quote comes from the exact frozen core fixture, never a widget.
     TArray<uint8> TermsBytes;FString TermsHash,TermsJson;
