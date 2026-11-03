@@ -98,17 +98,43 @@ exposure bias. The exterior plaster, door frame and character became visible,
 although the interior still needs lighting work. The manual phase later failed
 with Windows `Access is denied` while replacing its frequently updated progress
 JSON; a concurrent reader can prevent that replacement. This is a test-observer
-failure, not a successful movement check. A fresh run with progress logging
-that permits concurrent reads is still required. These diagnostic settings do
-not change the saved town maps.
+failure, not a successful movement check. Runtime005 corrected the observer with
+append-only progress logging, but its manual-input phase timed out without
+movement. These diagnostic settings do not change the saved town maps.
+
+Runtime009 completed the route and an automatic held-input check through stock
+EnhancedInput `Input.+key W` and `Input.-key W` commands. The request lasted
+1.011 seconds, with 65 observed held frames spanning 0.991 seconds, 175.79 cm of
+horizontal movement and two subsequent released frames. The character remained
+grounded on walkable, source-bound terrain with simple and complex footing
+traces. No direct movement or transform setters ran during that input phase.
+There was one explicit release; the process exited with code zero, all owned
+processes were reaped and all five closing guards passed. This checks synthetic
+engine input, with no OS or physical keyboard claim. The stock release also
+flushes pressed keys on the isolated test controller. It changes no saved input
+settings. The view still has an overly dark interior.
+
+The corrected Runtime005 CSV covers all 675 route frames at 1920x1080:
+14.30 ms mean, 15.35 ms p95 and 68.59 ms maximum frame time. This short
+three-section observation may include background compilation and does not
+qualify whole-town or production performance.
 
 The tests exercise production validators, cancellation reservation behavior and
 safe assembly refusal. They do not prove a successful animated head attachment,
-physical traversal, unload/re-entry, collision coverage across the town,
+OS keyboard handling, unload/re-entry, collision coverage across the town,
 character appearance, startup time, frame rate or cooked packaging. Those
 remain separate checks with actual assets and runtime observations.
-Physical keyboard movement and unload/re-entry still require successful live
-checks. Repository CI passed all nine checks at source commit `b536ccd`.
+Repository CI passed all nine checks at documentation commit `d425460`, which
+retained the qualified native source.
+
+Fine009's saved 29-package closure also passed an independent fresh-process
+reopen check. Geometry, skin, UV/tangent basis, the saved material graph and
+byte-exact source texture pixels passed; source and staged packages each
+retained their own byte and modification-time baseline. The material's own
+shader resource was complete, finalized and successful without fallback, with
+global compilation idle. This establishes saved data and resource readiness.
+Actual use in rendered frames, animated head attachment and final appearance
+remain pending.
 
 The Blender preview investigation also isolated a source of broad black hair
 patches: the saved Cycles transparency depth was eight. Matched front/rear renders
