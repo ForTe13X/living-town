@@ -1,0 +1,222 @@
+{
+  "schema": "LivingTown.Native118EditorBoundaryEvidence.v1",
+  "status": "EDITOR_BOUNDARY_COMPILED_AND_EXACT_SIX_REGRESSIONS_ACCEPTED_GAME_TARGET_AND_NEW_HEAD_RUNTIME_UNQUALIFIED",
+  "recorded_UTC": "2026-11-03T06:37:01.921493+00:00",
+  "source": {
+    "native_family": "c87e68b7186d876ea427dc8991cffa67d41d808997509a529f96c1b565d09d60",
+    "parent_observation_family": "4ea6ade4953a5f3e4e72e49640e4fd7e86f0c5ff459205817aa6a79290a53d1c",
+    "qualified_snapshot_full_source_files": 180,
+    "qualified_native_input_files": 131,
+    "repository_native_inputs_match_qualified_build_at_integration": true,
+    "other_native_input_files_unchanged": 130,
+    "changed_native_input": {
+      "file": "unreal/Source/LivingTownNative/Private/LivingTownHeadFollowersProofSubsystem.cpp",
+      "bytes": 31968,
+      "sha256": "9cd0551c626bdaf37cff989a677c4a3c365a9a314234103a0a1d15f6c5ca0462"
+    },
+    "full_repository_180_file_equivalence_claimed": false,
+    "source_freeze": {
+      "artifact": "FROZEN_BUILD.json",
+      "bytes": 64470,
+      "sha256": "60d79cab3f622982169b139d8969cb4276611d8ad1a8b412323c19ebed043575"
+    }
+  },
+  "conditional_boundary": {
+    "parent_CPP_bytes": 31214,
+    "parent_CPP_sha256": "44420c94400de3de2c554987a7b90fa4fe4e5a1d1cf4fba3b38d90f96a8f7138",
+    "current_CPP_bytes": 31968,
+    "current_CPP_sha256": "9cd0551c626bdaf37cff989a677c4a3c365a9a314234103a0a1d15f6c5ca0462",
+    "own_header_only_outside_editor_guard": true,
+    "all_other_includes_and_diagnostic_implementation_inside_WITH_EDITOR": true,
+    "original_remaining_Editor_body_bytes": 31163,
+    "original_remaining_Editor_body_sha256": "2cfec7fe71552ba7b55fdd3f2ccb0b2598e183a78d8512cc5955cf91f9ee18ea",
+    "original_Editor_body_and_predicates_byte_identical": true,
+    "public_header": {
+      "file": "unreal/Source/LivingTownNative/Public/LivingTownHeadFollowersProofSubsystem.h",
+      "artifact": "LivingTownHeadFollowersProofSubsystem.h",
+      "bytes": 2179,
+      "sha256": "8cf6b5f086912c464362593c1000c6329783b3f64af804853df14516e7ae52b7"
+    },
+    "public_header_unchanged": true,
+    "nonEditor_public_virtuals": [
+      "ShouldCreateSubsystem",
+      "DoesSupportWorldType",
+      "OnWorldBeginPlay",
+      "OnWorldEndPlay",
+      "Deinitialize"
+    ],
+    "nonEditor_creation_and_world_support_return_false": true,
+    "nonEditor_lifecycle_only_calls_runtime_base": true
+  },
+  "primary_engine_declarations": [
+    {
+      "file": "Engine/Source/Runtime/Engine/Classes/Engine/SkinnedAssetCommon.h",
+      "lines": "435-445",
+      "finding": "FSkeletalMaterial.ImportedMaterialSlotName exists only WITH_EDITORONLY_DATA; the two proof reads are concrete stripped-Game compile hazards",
+      "binding": {
+        "artifact": "SkinnedAssetCommon.h",
+        "bytes": 15501,
+        "sha256": "27522ab7d02a594b58a56285d4d9ff27bd7788b5ee89cc879d08e7f09302d04f"
+      }
+    },
+    {
+      "file": "Engine/Source/Runtime/Engine/Public/Materials/Material.h",
+      "lines": "1578-1580",
+      "finding": "UMaterial IsCompiling override is WITH_EDITOR only",
+      "binding": {
+        "artifact": "Material.h",
+        "bytes": 106018,
+        "sha256": "e5c457d568a54dd1139cf938a4f4018dab2293971d3b08892a2d73fb96c92d74"
+      }
+    },
+    {
+      "file": "Engine/Source/Runtime/Engine/Public/Materials/MaterialInterface.h",
+      "lines": "1371-1375",
+      "finding": "Base IsCompiling inlinefalse fallback exists in nonEditor, so that call alone is not a proven compile failure",
+      "binding": {
+        "artifact": "MaterialInterface.h",
+        "bytes": 81089,
+        "sha256": "bea770f73328fb86c54d3ccd7199925d99dc4d5954d6424981af3b6dd15d66c5"
+      }
+    },
+    {
+      "file": "Engine/Source/Runtime/Engine/Public/Subsystems/WorldSubsystem.h",
+      "lines": "34-77",
+      "finding": "Public lifecycle virtuals and DoesSupportWorldType are runtime declarations; inert overrides use only base runtime calls",
+      "binding": {
+        "artifact": "WorldSubsystem.h",
+        "bytes": 4322,
+        "sha256": "114ff8e3099cefe2f49d0da45a08d35c5ab4833df48fdc93883d2864a8520520"
+      }
+    }
+  ],
+  "compile": {
+    "run": "Native118EditorBuild_v008",
+    "review": {
+      "artifact": "ROOT_ACTUAL_REVIEW.json",
+      "bytes": 2524,
+      "sha256": "88ba10decc1b50d7c38879012ed489e8f0f90ef5468ab6c36b63e529e7773a9e"
+    },
+    "receipt": {
+      "artifact": "BUILD_RECEIPT.json",
+      "bytes": 53685,
+      "sha256": "1aabdc4e23391a2c13ce994c448997f25d518056e0965cdb1622ae2dfc200823"
+    },
+    "target": "LivingTownEditor Win64 Development",
+    "seconds": 380.03199999999924,
+    "peak_private_bytes": 4894486528,
+    "closing_guards": {
+      "canonical_sources_exact": true,
+      "workcopy_sources_exact": true,
+      "full_source_workcopy_exact": true,
+      "preexisting_config_exact": true,
+      "engine_inputs_exact": true,
+      "producer_sources_exact": true,
+      "critical_byte_inputs_exact": true,
+      "declared_metadata_custody_exact": true,
+      "UbtRuns_terminal_exact": true
+    },
+    "root_exit_code": 0,
+    "owned_root_waited": true,
+    "remaining_owned_process_count": 0,
+    "runtime_files": [
+      {
+        "artifact": "UnrealEditor.modules",
+        "bytes": 194,
+        "sha256": "21487d34c4712d190337ea8ba6dbeca687a6afa4434103c8a1be4212721701e6"
+      },
+      {
+        "artifact": "UnrealEditor-LivingTownNative.dll",
+        "bytes": 2448896,
+        "sha256": "15d81eae63822b34c5559adcac645ed64b935aecaf1b5eaad44c2ecd77568789"
+      },
+      {
+        "artifact": "UnrealEditor-LivingTownMaterialInspection.dll",
+        "bytes": 2846208,
+        "sha256": "3c49e7bc8ae6ac8c7122cfaeeb3832da42d03fcacc20bb0af4d5eb2e86365179"
+      }
+    ]
+  },
+  "regressions": {
+    "run": "Native118SixRegressions_v004",
+    "review": {
+      "artifact": "ROOT_ACTUAL_REVIEW.json",
+      "bytes": 2329,
+      "sha256": "2e37ee63d271b583d8d70e31cd388069e2f96f4aaf8bc1a395232ac5306cee34"
+    },
+    "host": {
+      "artifact": "RUN_REPORT.json",
+      "bytes": 25843,
+      "sha256": "25d40fbe6eb8565c367fba930b4aa75c59d997832a86f098ba23f34c4d9c4f24"
+    },
+    "automation_report": {
+      "artifact": "index.json",
+      "bytes": 3129,
+      "sha256": "f208012b543c2f6daf6bc6e7ce5c5a7dd399672583997c094338536838fb3038"
+    },
+    "log": {
+      "artifact": "UnrealEditor.log",
+      "bytes": 276979,
+      "sha256": "98bab5bc7803f79bef196e290743bd12516919a9fa3c7a014f68aabc27afc07f"
+    },
+    "seconds": 33.13999999999942,
+    "tests": [
+      "LivingTown.FullTown.TransformAndDistance",
+      "LivingTown.FullTown.SubsetSchemaRefusals",
+      "LivingTown.FullTown.CancelledLoadRetainsReservation",
+      "LivingTown.Current61.HeadAssembly.SafeRefusal",
+      "LivingTown.Current61.HeadAssembly.DeclaredShadingProfiles",
+      "LivingTown.FullTown.FairValidationBudgetAndDeadlines"
+    ],
+    "all_six_success": true,
+    "test_errors": 0,
+    "test_warnings": 0,
+    "strict_gate_pass": true,
+    "root_exit_code": 0,
+    "owned_root_waited": true,
+    "remaining_owned_process_count": 0,
+    "unrelated_engine_warnings": [
+      "Non-normalized private INI path warning",
+      "External connectivity probe timed out"
+    ],
+    "all_engine_warnings_zero_claimed": false
+  },
+  "historical_observations": {
+    "evidence": "native118_head_followers_diagnostic_v001.json",
+    "native_family": "4ea6ade4953a5f3e4e72e49640e4fd7e86f0c5ff459205817aa6a79290a53d1c",
+    "original_build_test_runtime_art_hashes_and_data_preserved": true,
+    "only_historical_evidence_key_change": "repository_native_inputs_match_qualified_build -> repository_native_inputs_match_qualified_build_at_observation",
+    "Editor_body_byte_identity_is_not_new_008_runtime_qualification": true
+  },
+  "limits": {
+    "Game_target_build": false,
+    "nonEditor_UHT_compile": false,
+    "new_008_head_runtime_or_render_capture": false,
+    "whole_repository_source_family_equivalence": false,
+    "cooking_or_packaging": false,
+    "production_character_activation": false,
+    "final_art": false,
+    "GPU_skinning_contact_or_performance": false
+  },
+  "bootstrap_staging": {
+    "test": "tools/unreal/test_bootstrap.py",
+    "report": {
+      "artifact": "REPORT.json",
+      "bytes": 3140,
+      "sha256": "75241347334853439d17277da0c0a1368d1f3e19831f6f3a17fbc66755c1e413"
+    },
+    "actual_native_staging": {
+      "artifact": "ACTUAL_NATIVE_STAGING.json",
+      "bytes": 4833,
+      "sha256": "5333309c81e21a0d42f0fffe184193b81d7706a0e58d5d8260d29b4ea2278341"
+    },
+    "checks": 60,
+    "status": "PASS_SOURCE_PARAMETERIZATION_AND_OPTIONAL_ACTUAL_REPLAY_NO_ENGINE",
+    "actual_008_receipt_replayed": true,
+    "exact_runtime_files_staged": 3,
+    "no_engine_launched": true,
+    "seconds": 12.219,
+    "CPU_private_limit_bytes": 2147483648,
+    "CPU_peak_private_bytes": 26861568
+  }
+}

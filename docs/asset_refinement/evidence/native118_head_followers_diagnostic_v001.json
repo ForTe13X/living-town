@@ -6,7 +6,7 @@
     "native_family": "4ea6ade4953a5f3e4e72e49640e4fd7e86f0c5ff459205817aa6a79290a53d1c",
     "qualified_snapshot_full_source_files": 180,
     "qualified_native_input_files": 131,
-    "repository_native_inputs_match_qualified_build": true,
+    "repository_native_inputs_match_qualified_build_at_observation": true,
     "full_repository_snapshot_180_file_equivalence_claimed": false,
     "integration_delta": [
       "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61FineHairInspection.cpp",

@@ -149,14 +149,15 @@ edges, side strands and final character art remain under refinement.
 
 ## Native118007 diagnostic head check
 
-A later qualified snapshot contains 180 source files, including 131 native
-build inputs. Its Editor Development build completed in 383.844 seconds with
+The historical Native118007 snapshot contains 180 source files, including 131
+native build inputs. Its Editor Development build completed in 383.844 seconds with
 all nine closing guards passing. The same six native regressions completed in
 32.125 seconds: six successes, zero test errors and zero test warnings. Two
 unrelated engine warnings were retained; this is not a zero-warning engine log.
-The repository's complete 131 native inputs match that build's source family,
+At that observation, the repository's complete 131 native inputs matched the
+Native118007 build's source family,
 `4ea6ade4953a5f3e4e72e49640e4fd7e86f0c5ff459205817aa6a79290a53d1c`.
-The new source adds the development observer and its private RHI dependency;
+That source added the development observer and its private RHI dependency;
 the two inspection-source newline changes preserve the qualified file bytes.
 The earlier 178-file observations retain their original scope.
 
@@ -201,9 +202,38 @@ binds the actual artifacts and their limitations. Full-town residency and unload
 final hair/skin/fabric art,
 whole-mesh GPU skinning, contact, FPS and cooking/packaging remain unqualified.
 
+## Native118008 Editor boundary and current source
+
+The current 131 native inputs match Native118008 family
+`c87e68b7186d876ea427dc8991cffa67d41d808997509a529f96c1b565d09d60`.
+Its Editor Development build completed in 380.032 seconds with all nine closing
+guards passing. The same six regressions passed in 33.140 seconds with zero test
+errors and warnings. Two unrelated engine warnings were retained. Both processes
+exited with code zero and all owned descendants were waited/reaped.
+
+The only native change from 007 encloses the complete diagnostic implementation
+and its non-header includes in `WITH_EDITOR`. Installed-engine
+`FSkeletalMaterial::ImportedMaterialSlotName` exists only under
+`WITH_EDITORONLY_DATA`; a runtime refusal did not prevent those reads from being
+compiled in a non-Editor target. The reflected public header remains unchanged.
+Non-Editor builds retain definitions for all five public virtual overrides:
+creation and world support return false, and begin/end/deinitialization hooks
+only call their runtime base implementations. There is no diagnostic activity in
+that branch. Shipping/Test refusals in the Editor branch remain unchanged.
+
+The entire 007 Editor implementation body, including material/pose/readiness
+predicates, camera, output and cleanup, remains byte-identical inside the guard.
+The 007 idle/walk captures and art findings above remain historical 007
+observations; they are not a new 008 head-runtime or art qualification. The
+current build and tests qualify the Editor target only. Full Game-target and
+non-Editor UHT compilation, cooking/packaging and production activation remain
+unqualified. The [Editor boundary evidence](evidence/native118_editor_boundary_v001.json)
+binds the current source, actual build and tests, primary engine declarations
+and preserved conditional body.
+
 ## Native118004 subset retirement and reentry
 
-The uncooked three-map subset completed an actual 215.843-second host run with natural exit code 0, every owned process waited/reaped, and all five closing guards passing. Independent closed-data replay verified the original source, all 4,987 source packages and their staged copies, private configuration, captured global custody, and complete lifecycle/query/sample associations. The run uses Native118004 family `9d1e11b86ab484399aca53b894b25cb2e78ae27e35b106ed2ddfd6c1e2941e5f`. Its six production FullTown source files match the current implementation byte-for-byte. The complete 004 and 007 build families differ; this result does not claim full source-family equivalence.
+The uncooked three-map subset completed an actual 215.843-second host run with natural exit code 0, every owned process waited/reaped, and all five closing guards passing. Independent closed-data replay verified the original source, all 4,987 source packages and their staged copies, private configuration, captured global custody, and complete lifecycle/query/sample associations. The run uses Native118004 family `9d1e11b86ab484399aca53b894b25cb2e78ae27e35b106ed2ddfd6c1e2941e5f`. Its six production FullTown source files match the current implementation byte-for-byte. The complete 004, 007 and 008 build families differ; this result compares only those six production files.
 
 The scripted route used ordinary `AddMovementInput` with `force=false`, controller yaw and natural character physics. It travelled 171.195 m horizontally over 151.830 seconds of world time, with 10,047 grounded/walkable samples and actual simple/complex support checks throughout. No pawn transform, floor, speed, radius or streaming-state setters were used. It returned within 1.878 cm of the source café spawn. This is a normal-movement harness observation; OS keyboard handling remains separate.
 

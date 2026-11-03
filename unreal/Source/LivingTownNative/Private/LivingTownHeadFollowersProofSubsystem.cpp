@@ -1,4 +1,6 @@
 #include "LivingTownHeadFollowersProofSubsystem.h"
+
+#if WITH_EDITOR
 #include "LivingTownCurrent61HeadAssembly.h"
 #include "LivingTownCafeBinding.h"
 #include "UObject/Package.h"
@@ -272,3 +274,15 @@ void ULivingTownHeadFollowersProofSubsystem::Cleanup()
 }
 void ULivingTownHeadFollowersProofSubsystem::OnWorldEndPlay(UWorld& World){Cleanup();Super::OnWorldEndPlay(World);}
 void ULivingTownHeadFollowersProofSubsystem::Deinitialize(){Cleanup();Super::Deinitialize();}
+
+#else // WITH_EDITOR
+
+// The owned proof uses Editor-only imported material metadata and compilation
+// readiness APIs. Non-Editor targets retain only an inert reflected subsystem.
+bool ULivingTownHeadFollowersProofSubsystem::ShouldCreateSubsystem(UObject*) const { return false; }
+bool ULivingTownHeadFollowersProofSubsystem::DoesSupportWorldType(EWorldType::Type) const { return false; }
+void ULivingTownHeadFollowersProofSubsystem::OnWorldBeginPlay(UWorld& World) { Super::OnWorldBeginPlay(World); }
+void ULivingTownHeadFollowersProofSubsystem::OnWorldEndPlay(UWorld& World) { Super::OnWorldEndPlay(World); }
+void ULivingTownHeadFollowersProofSubsystem::Deinitialize() { Super::Deinitialize(); }
+
+#endif // WITH_EDITOR
