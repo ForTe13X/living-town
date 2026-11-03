@@ -1,0 +1,834 @@
+{
+  "schema": "LivingTown.Native118HeadFollowersDiagnosticEvidence.v1",
+  "status": "DIAGNOSTIC_IDLE_WALK_FOLLOWER_DATA_ACCEPTED_FINAL_ART_AND_PRODUCTION_ACTIVATION_HELD",
+  "observed_UTC": "2026-11-03T04:37:38.579904+00:00",
+  "source": {
+    "native_family": "4ea6ade4953a5f3e4e72e49640e4fd7e86f0c5ff459205817aa6a79290a53d1c",
+    "qualified_snapshot_full_source_files": 180,
+    "qualified_native_input_files": 131,
+    "repository_native_inputs_match_qualified_build": true,
+    "full_repository_snapshot_180_file_equivalence_claimed": false,
+    "integration_delta": [
+      "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61FineHairInspection.cpp",
+      "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61HeadCapInspection.cpp",
+      "unreal/Source/LivingTownNative/LivingTownNative.Build.cs",
+      "unreal/Source/LivingTownNative/Private/LivingTownHeadFollowersProofSubsystem.cpp",
+      "unreal/Source/LivingTownNative/Public/LivingTownHeadFollowersProofSubsystem.h"
+    ],
+    "native_input_rows": [
+      {
+        "file": "unreal/LivingTown.uproject",
+        "bytes": 1382,
+        "sha256": "ef12c9425978a8f6c73aa84744c30542202be8dd132f2e18f1d0f95a8ad6572b"
+      },
+      {
+        "file": "unreal/Source/LivingTown.Target.cs",
+        "bytes": 351,
+        "sha256": "f0d00a649e4e7ce81db7590e30a97f7ffe1e648bf3fe6a86c0a02a02568f56fe"
+      },
+      {
+        "file": "unreal/Source/LivingTownEditor.Target.cs",
+        "bytes": 439,
+        "sha256": "1dc8a6e7ae5eda849a619bd6889c1c28b87eb39efb4ab9a297aa0caa0c272dbb"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownAvatarPreparation.cpp",
+        "bytes": 14826,
+        "sha256": "3aff16e761f7722ad35fcb7bf309e3435e3d9e04b2c58d5c8577c61cd2a59baf"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownAvatarPreparation.h",
+        "bytes": 1138,
+        "sha256": "075e306cc58bfc36e158da44cd4da7749b1b41a39576bc4785bd2ef1824ec29c"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCafeMotionPreparation.cpp",
+        "bytes": 7244,
+        "sha256": "f36d8705b7eb9b7a1857ce53882ffe3fba0368f22d485c54c67ece52d0eef344"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCafeMotionPreparation.h",
+        "bytes": 783,
+        "sha256": "3c1637301c607c1fe2588bfb1b9c47daf2a787cca05f5de5be350301340db8b4"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCafeWorker110Preparation.cpp",
+        "bytes": 32124,
+        "sha256": "454a3d2206fcf48658d964c27cf057234a126e2f23779254628237ff5f4ae054"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCafeWorker110Preparation.h",
+        "bytes": 651,
+        "sha256": "1da5be96e7a798cb7bb3835f113243ecd834fb3e905ee16ec4ad510222bdb233"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownConnectorCollision.cpp",
+        "bytes": 18927,
+        "sha256": "d145a4dcbb08f3c6dd38ecc2ebb5cef6da75c755d19dbfaee0a7c564b608fdb9"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownConnectorCollision.h",
+        "bytes": 642,
+        "sha256": "eb6e83563f5927c4c7f505063f49acd399153a00d281a72649f9a27e33dddc8c"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownContextCollisionInspection.cpp",
+        "bytes": 191243,
+        "sha256": "06d27dc9b9553896d6a65e3b2bf016d3df9fa9b592e14176ec4b24e971e5c221"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownContextCollisionInspection.h",
+        "bytes": 614,
+        "sha256": "aa476bc9c6c780ad2e2f902853ea6cc6ca64b265f661259af36c571950a1e962"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61AvatarPreparation.cpp",
+        "bytes": 51944,
+        "sha256": "c7c195d99507e22c6fde5a66e35b3352bd12878fd3df615cedbc9940b8f927f3"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61AvatarPreparation.h",
+        "bytes": 1620,
+        "sha256": "f60999b4045981d71ec97d7a22d14bbf84f036d625c80848b7fb5dedcb16f791"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61FineHairInspection.cpp",
+        "bytes": 60681,
+        "sha256": "b440c6385aebf43427e37ad08faef3b95523dd2bc5f44b851e7fd4d6f72b39b9"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61FineHairInspection.h",
+        "bytes": 837,
+        "sha256": "d77420bb8abc0ec0759fa7d3a8d1517986052ffe8121f42374921f961c48a353"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61HairInspection.cpp",
+        "bytes": 70861,
+        "sha256": "22b173f0889b7a056d41996f19d1574da4f9ee10e4d9a4156d3701b176a64444"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61HairInspection.h",
+        "bytes": 1156,
+        "sha256": "b573264f5d880a79ecece659b26bd3b9cd66f3f4d04dd68f4e3c4391e42ff626"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61HeadCapInspection.cpp",
+        "bytes": 60654,
+        "sha256": "b47df9da300adf259c70e14463340d1fd0981bab26ab1cf9093138134ea234b5"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61HeadCapInspection.h",
+        "bytes": 813,
+        "sha256": "757948eef7db7acc5d785ed419228bcbcb93043746f8c147e11d79e6566b4ba4"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61Inspection.cpp",
+        "bytes": 41618,
+        "sha256": "a6ea0a9c4790183515259981f1ed4a57cb6f5dfd45c4b4249794ac4ed0d202d2"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61Inspection.h",
+        "bytes": 582,
+        "sha256": "9eba75c151c562ba29dbc213ce1328f0b5461dfcf32bb7c2b4391672949875b9"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61MaterialPreparation.cpp",
+        "bytes": 13911,
+        "sha256": "f0a0868a59f61a450333ebf6b7e4dec5949096ea1ab093c30bf6ae8fc005ce1c"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61MaterialPreparation.h",
+        "bytes": 890,
+        "sha256": "35ee29df292597a31b890ad0baf0fdf672ec3dbe877b332c144436f95b6160ef"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61SourcePreparation.cpp",
+        "bytes": 19282,
+        "sha256": "5b69740512db69f6d852168903e01420ceb4a6ad21aa7ead652ea7d5c5846d78"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownCurrent61SourcePreparation.h",
+        "bytes": 760,
+        "sha256": "bc582653056b0e1aadf20c071b705474be0e7e55c8d7d214cfec38e298e97fbc"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownFineHairMaterialPreparation.cpp",
+        "bytes": 16421,
+        "sha256": "0b23a074910372214d469244e1cbc295a30c87c5829831f5fed14c18d6642892"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownFineHairMaterialPreparation.h",
+        "bytes": 886,
+        "sha256": "b9d2251374205ea80fffe906400eef41a88cbbb83edbe84345184df387e327de"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownGroundIntakeInspection.cpp",
+        "bytes": 59747,
+        "sha256": "2911512b03572a68ff30a9e2d22631fb2f95e272f84716a8e7c7e73591666ef6"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownGroundIntakeInspection.h",
+        "bytes": 1094,
+        "sha256": "13034b99541291c19d9e39cb494a9a97cdaa25b4c277016be7a054f75a746249"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownHeadCapMaterialPreparation.cpp",
+        "bytes": 12813,
+        "sha256": "0ee9c58a1c27a7319b626a683b91f3e227429f458e235dcdc790e9b3708500ed"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownHeadCapMaterialPreparation.h",
+        "bytes": 874,
+        "sha256": "e58984a0c0a62c79389ed3ce695b6c11badb5aeebd81679f376c16d6b32d27b7"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownMaterialInspection.Build.cs",
+        "bytes": 872,
+        "sha256": "a9a76ae66bfe2d8b7dab352c9a859a6b4c01d42bf0233801e8331d2d0cdbd16f"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownMaterialInspection.cpp",
+        "bytes": 5548,
+        "sha256": "ea7d8fa515bd8041ab49cceef5fb7efafe8d224827b29f0923564808d4d4fb14"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownMaterialInspection.h",
+        "bytes": 734,
+        "sha256": "87655517a1511627163853dd5a547a62485e9e3f3a90bc5e96872763482820ef"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownRemainderCollisionInspectionV2.cpp",
+        "bytes": 40310,
+        "sha256": "1e3f4ac12e63cb4e3657b99def0d29b6ed18d2714ceb63d5c866bdedc8c796ef"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownRemainderCollisionInspectionV2.h",
+        "bytes": 995,
+        "sha256": "c76d924a1910f89ea16a3fd1a9f4f8cab55b5ad25e0e5096f68e3fd6b7e96214"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownReserveLandcover.cpp",
+        "bytes": 69518,
+        "sha256": "3c157d07871e2921ba0e0f82b7f8abfcec01e7f47f2f0dfe58a70f3db3138a53"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownReserveLandcover.h",
+        "bytes": 1014,
+        "sha256": "998973480f4921c37f4ae7cb9327f47719c8c5b0e4c2b2a80ce2433a0e8f5aaa"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownReserveLandscape.cpp",
+        "bytes": 41542,
+        "sha256": "a6f8e466c65bcd46865c25e7051fe9c458aed3f022eabe0df6fd71d834587560"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownReserveLandscape.h",
+        "bytes": 1204,
+        "sha256": "85b06a9518ebdf23ea533c349fc281193199b35b9d36a94edc728b578ca19a9d"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownRootCorrectionInspection.cpp",
+        "bytes": 16417,
+        "sha256": "a34bfa057c268fe22fa8a36cee0924e2ec652e4b103e68efb2e94aa4a2ea551a"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownRootCorrectionInspection.h",
+        "bytes": 1545,
+        "sha256": "e47e9570f9639fb47a20f2cad6bad6427c34019dd564df4ba987b5bc17c1457f"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownStaticMeshCollisionInspection.cpp",
+        "bytes": 28146,
+        "sha256": "65d76b8e931baf10dd262823849cbf6be4858f81814b990dbc025b071ff11fde"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownStaticMeshCollisionInspection.h",
+        "bytes": 555,
+        "sha256": "c85cb08f8d90350d8ec7f151a0658c2880897b8824842a446b8532db789ee830"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownTileAuthoringLibrary.cpp",
+        "bytes": 42049,
+        "sha256": "1a6bfbcc1c34ebce57dc4ad5d74524a7853f4e95c281832e2ccd9dd0cfefb684"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownTileAuthoringLibrary.h",
+        "bytes": 1662,
+        "sha256": "6ad5203552474f12c439e01d2507b61dffc947598c22a3be9f8f4daa600822ee"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownTownSliceReadbackLibrary.cpp",
+        "bytes": 21556,
+        "sha256": "83354324869ac4d2b08581e64b1311b2b93de232fcc647d1b27ef9909e05d0d7"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownTownSliceReadbackLibrary.h",
+        "bytes": 1024,
+        "sha256": "ca0f3ec7c2959f59093f92d711902c90c3bcef8c82a378a2a82af52ec11930dd"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownViewportInspection.cpp",
+        "bytes": 15628,
+        "sha256": "b684f8c80d9ad62ebc299eabd6b3c4459f536f897a8c97f34df87fe500456535"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownViewportInspection.h",
+        "bytes": 1431,
+        "sha256": "15b183b781ca4971992851c0d1aa27b974260594c0b161514deb489723386a91"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownWestwoodMaterialLibrary.cpp",
+        "bytes": 23708,
+        "sha256": "9349c7c7a181aa559b5fd97be8be97bf5045765bb05859a0c2df5b8114b5409c"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownWestwoodMaterialLibrary.h",
+        "bytes": 670,
+        "sha256": "d327c48937a1d2bb64b26c7c5af5eb3024df38da40f6e384cd4cf11b55b1ddfb"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/LivingTownNative.Build.cs",
+        "bytes": 2774,
+        "sha256": "f5091f523f773e78d5e563d0af8d978c29b0b44d48f282bc4953417e63302108"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeBinding.cpp",
+        "bytes": 28238,
+        "sha256": "aede01f5767d02a16d1ddf1d4ea192917b2c92510009860233da2197a5b94bd3"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeCharacter.cpp",
+        "bytes": 21718,
+        "sha256": "66acc5280fe2645507d245ed21f5b63011bd893e9e1f5344c1d467236a55cf29"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeGameMode.cpp",
+        "bytes": 3229,
+        "sha256": "d2ada51a705e373fcc6fd5f4d3900f1fecfd8e0a9aa07a198997d43ae29ffd5b"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeGeometryLibrary.cpp",
+        "bytes": 3778,
+        "sha256": "e55f641a22f424619d4ab595ae33798604b829eab37358c74e016d8022f94980"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeHUD.cpp",
+        "bytes": 2961,
+        "sha256": "96d27b71de13d89e73593d16158688e71eb402b77c89f162f67e795900eea405"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownCafePlayerController.cpp",
+        "bytes": 1983,
+        "sha256": "3313a4b579115b991e29f621065004d33229e5fd10049a543e3c9358d23180b5"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeProjectionSubsystem.cpp",
+        "bytes": 14636,
+        "sha256": "8685e3ca3e703c66ae143192042c78bcf134119a79a818990f4ef2b191a96f50"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownCafePropertyV2Scenario.cpp",
+        "bytes": 22254,
+        "sha256": "308b39b51e01c97fc7d335994dbbde736cf4e742cc0d59793f866997bf5f7d66"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownCafePropertyV2Subsystem.cpp",
+        "bytes": 28340,
+        "sha256": "a4fb7d40d61778112bf2a4a513e00d445dac5d2eb441fca5a74b128241dda7c5"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeSlot.cpp",
+        "bytes": 1846,
+        "sha256": "f0faebac424dfc82c209c53c84f18a04e1657077608eb1ebd4316179212c512b"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownCafeVenue.cpp",
+        "bytes": 6401,
+        "sha256": "6fabe1b74ed4ec2f9d8e89bae43fb48d5deebac0846aa3c841ce64c4bb8fd7d0"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownCurrent61HeadAssembly.cpp",
+        "bytes": 7325,
+        "sha256": "e5bb86bc967abf3629cf90d0dcd8cb0368a5af6c0048db001925e86fe2fb3176"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownFullTownData.cpp",
+        "bytes": 10965,
+        "sha256": "f4fc8623c6407b0d4ab6a164c722b3839b3cc77104370c646cde8940dbcf5a4f"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownFullTownDriver.cpp",
+        "bytes": 989,
+        "sha256": "2f50668da2f98d879402627122f62393884cfb6aee6ae759ced6675fa4c4bd5a"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownFullTownStreamingSubsystem.cpp",
+        "bytes": 41215,
+        "sha256": "426fa438398a2fcce8fad076f3915937a67ba8e8a182e32ace1ae641e8b3b2eb"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownHeadFollowersProofSubsystem.cpp",
+        "bytes": 31214,
+        "sha256": "44420c94400de3de2c554987a7b90fa4fe4e5a1d1cf4fba3b38d90f96a8f7138"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownHismInspection.cpp",
+        "bytes": 18622,
+        "sha256": "1ce39a751ff6658e296e069111314f18d24ebcf39e4b3347a9170fb5aedad94c"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownLeaseSubsystem.cpp",
+        "bytes": 18784,
+        "sha256": "094decf1159510be8ba92a31912abf6b81a4c87daa93eebbd2f4463a4a304a7e"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownMaterialUsage.h",
+        "bytes": 1353,
+        "sha256": "f238e10d081e1f804da987f061a6260ef3e4585ca8d9d944058f0a36ecd3050d"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownNative.cpp",
+        "bytes": 128,
+        "sha256": "e2ccf41011b6f8d37c50f867056e70c1b7b13dee80898b6af6be94078f4a503f"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownRootCorrectedSingleNodeInstance.cpp",
+        "bytes": 13672,
+        "sha256": "cdceb8b14e264f263482faf38ebc335424360eeb36b721870421b547d4bf1a3d"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownTileData.cpp",
+        "bytes": 15963,
+        "sha256": "6fdb5cb1d5664b8486d9e764b4cfdeb14b9193366c502ba73a27669ec92c3e4a"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownTileDriver.cpp",
+        "bytes": 2644,
+        "sha256": "2d4977c27e0b04e0850e85dafa468676471c4349e4948baae6bf67cb4f8c6722"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownTilePlan.cpp",
+        "bytes": 3051,
+        "sha256": "f922c28b315f7ed4902446e310a50373f500e1a95446a563becfe079f2b37087"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownTileStreamingSubsystem.cpp",
+        "bytes": 28143,
+        "sha256": "ecf43d75962144cfadab9a39d0f3460b8f036dbb64a7244c3b54831996fe1f9a"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/LivingTownViewportCsvSubsystem.cpp",
+        "bytes": 6905,
+        "sha256": "af73801354a20df12c333655a42808b0409bde12f37834a6c2eb69c4b136f911"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/Tests/CafeSHA256KnownAnswers.h",
+        "bytes": 5725,
+        "sha256": "f37c7682a393edcd69a971960513c3a33a9d92d3b46125c060bc47bf0bfe5867"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafeActualWorldTest.cpp",
+        "bytes": 29510,
+        "sha256": "c9fd0ed2bbf7406aacbfde50e22d88a06193a8d716836126d7675bbb2eb310e6"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafeAtomicSlotTest.cpp",
+        "bytes": 2075,
+        "sha256": "5debae5acf7bc4c4a6e6074c84f8b91a1ef715d1d4247d8894357764a75c8a5c"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafeBindingTest.cpp",
+        "bytes": 23573,
+        "sha256": "9ee94bd8fc15e69c76b54e8478c790b434f9b503d5afb147758b4760cb05f6a2"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafeProjectionJournalTest.cpp",
+        "bytes": 4226,
+        "sha256": "d49ff30539c0c3e6eabd696cea075b9615e877cf9d182e280c984a5488639863"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafePropertyV2SelectionTest.cpp",
+        "bytes": 1703,
+        "sha256": "08f25551d69c933147aacf12c8b8d37cd5aadaef475b850a03e8de984a625dff"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafePropertyV2WorldJourneyTest.cpp",
+        "bytes": 37366,
+        "sha256": "c5fc466e819ecca47efdc0920b0d55f9bc2b694b2bf33bfe0ae55ce8fb4919da"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafeWorkerMotionTest.cpp",
+        "bytes": 14836,
+        "sha256": "b2ab15dc207cb95349becb65c53b78faba8e34fda237b81488f675e0e563c684"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCafeWorkerPreviewWorldTest.cpp",
+        "bytes": 44515,
+        "sha256": "7be2d479bb59fbf93ea82a3866a0c0d75e05f60805d04cf5c76c6984cb197e5f"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCurrent61GroundGameCandidateTest.cpp",
+        "bytes": 95911,
+        "sha256": "49f6aef744ae530ad94775fafc59956d6e9b96bea9c98b6f6d9acd615bf07ea8"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownCurrent61HeadAssemblySafetyTest.cpp",
+        "bytes": 8839,
+        "sha256": "da492ab630b4330ab505244e7fa403f1b46329f0ae83ab2a6205d0164a89bbaf"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownLeaseBoundaryTest.cpp",
+        "bytes": 10388,
+        "sha256": "007dfb44f962adc4aa663ddd119bc3c28f29794e53af5b7b86b7e166f125a4a7"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownTileBoundaryTest.cpp",
+        "bytes": 13242,
+        "sha256": "b4a818d77a6f275a5d592f4846c9f778f0106c4bd57ebac42220ea44e1f9814a"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownTileLifecycleWorldTest.cpp",
+        "bytes": 21313,
+        "sha256": "aef6c84220b869a77db9c170fd7162fa9b1279632356eb0658228bf794760a3d"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Private/Tests/LivingTownTileMaterialUsageTest.cpp",
+        "bytes": 5880,
+        "sha256": "d6b9a6383e67d860c7702e539110bf17ef3fcf421095457fae9a412893057325"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeBinding.h",
+        "bytes": 6126,
+        "sha256": "7417018e349102e0831b1337f18acfae08874a81a31fd39480fec80880994b07"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeCharacter.h",
+        "bytes": 1753,
+        "sha256": "8ef11d770f261aa166c916eeac515ace8cef4fdeeb2eb5292777b3cb59b38ce6"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeGameMode.h",
+        "bytes": 606,
+        "sha256": "089e350c9aab3e7c0a90fa8b5085a5cc9c2eb56066516e3470278ce11576d7f7"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeGeometryLibrary.h",
+        "bytes": 671,
+        "sha256": "af8e90bb964cfc8ab99cc1e4cd8323ee2a4658728b862ea680b1692472664bdf"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeHUD.h",
+        "bytes": 266,
+        "sha256": "965ee0fae810a7548eb58eb5126ab687cb2115a2daffe55f468a99cdb25d70c3"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownCafePlayerController.h",
+        "bytes": 605,
+        "sha256": "4be487da373f93714097c7686304cbd727133d87f1a1a7cd3b584a0ecc74f154"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeProjectionSubsystem.h",
+        "bytes": 3077,
+        "sha256": "a8034a5e6c009f4232a1cab2aeb33383739cb0e6559feb57719000c6d77f22bb"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownCafePropertyV2Scenario.h",
+        "bytes": 3301,
+        "sha256": "35bb99f64b0a9d26419945fa9ebe409798df066e6e2db7525a289b1e1d84ea76"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownCafePropertyV2Subsystem.h",
+        "bytes": 2301,
+        "sha256": "93db9100fd0b13ac8f2b6c4f9341d9a967d20007441ca028185dd0a19f7d9476"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownCafePropertyV2Types.h",
+        "bytes": 1025,
+        "sha256": "8237fb47c9e6f76c16b80a8f7c6637881f8470aa88933b32523ec778ddb12dbe"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeSlot.h",
+        "bytes": 304,
+        "sha256": "df50591738e590af3c94f5527f6d4e8a483ef0cb6e1ae0483cf17a4d7ec7dd4f"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownCafeVenue.h",
+        "bytes": 900,
+        "sha256": "621b44b0490ba64fbee513fa18c6cf839e6a04745578fef1aba358581c62f046"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownCurrent61HeadAssembly.h",
+        "bytes": 1678,
+        "sha256": "8875d26600e94af0142f9882c6f658712524407b22747b99cc91cfa9a19cc982"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownFullTownData.h",
+        "bytes": 5754,
+        "sha256": "132aa7d6e5485415e06148019b18dfeea929f844e3956a839734be2763c2927a"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownFullTownDriver.h",
+        "bytes": 1596,
+        "sha256": "daaa45dfb7adabd495d747ded0e855b27d89cbd2034c74cdde1a826d06b94d9e"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownFullTownStreamingSubsystem.h",
+        "bytes": 5522,
+        "sha256": "3cbdd551cb7e07686e0949bd063a5d7e14650aa7476a1c2bba1661d31fb30e18"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownHeadFollowersProofSubsystem.h",
+        "bytes": 2179,
+        "sha256": "8cf6b5f086912c464362593c1000c6329783b3f64af804853df14516e7ae52b7"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownHismInspection.h",
+        "bytes": 559,
+        "sha256": "2433245f5e6894fd1c9ef0ba21c688ee433b18238608a5a12aeef39be17b08ed"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownLeaseSubsystem.h",
+        "bytes": 4112,
+        "sha256": "17c559507714bcc766ac4b4d45522f932ac916aae6dc4b786e516054263c972a"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownRootCorrectedSingleNodeInstance.h",
+        "bytes": 3536,
+        "sha256": "c1d3697cb59fc8bea4275e386c07a8e99b8639c61c829308d7cdeb70b7eccf8b"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownTileData.h",
+        "bytes": 7299,
+        "sha256": "f2c375456d24c29b99271d3dafe1daeef40f886fd9625c44f076865cf6d9788f"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownTileDriver.h",
+        "bytes": 1558,
+        "sha256": "9427ff5988867770adfaeae3d478755e86e70d9f776652e7b3ee26c9b9594c83"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownTilePlan.h",
+        "bytes": 961,
+        "sha256": "ec89e75897e1fb4e0c86e9a0ac0c0c9ff2d0f26a1dd27a24ea91f6d1a93b5e3d"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownTileStreamingSubsystem.h",
+        "bytes": 5443,
+        "sha256": "6c57167566e33547cf68049c59ef56cfdd43b39ebc29710ae700d93e61a8ffd9"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/Public/LivingTownViewportCsvSubsystem.h",
+        "bytes": 823,
+        "sha256": "49822e2c7fe0fc0e8122eabeca14064ddd45dcd90d02e6b5ec52872a2517e72f"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/ThirdParty/CafeBackendV3.hpp",
+        "bytes": 1025,
+        "sha256": "f311599b6bb10f4ac60281c9bb2bbaf904b62bf8fec68b1ac46d7ae7e932994d"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/ThirdParty/CafePropertyBackend.hpp",
+        "bytes": 508,
+        "sha256": "2cb17c26594ccaab753fac29ffcee29790af763b385c4ef5f8433304211e1959"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/ThirdParty/CafePropertyV2.hpp",
+        "bytes": 23961,
+        "sha256": "50adb86b5333436ff6af330ed02ca3b21b9aae0cc7f92c32d833dcdb61ec76ab"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/ThirdParty/CafeWorldV3.hpp",
+        "bytes": 48348,
+        "sha256": "4856df21feca1d51d357454cee2047e4de19e4ffa7c16aa57d459f6f0793e903"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/ThirdParty/CafeWorldV3Envelope.hpp",
+        "bytes": 20244,
+        "sha256": "0cf5fca9a0f91fbaedfa83ab8e786f5022733aa33a56ea8f954d244bb9bd2690"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/ThirdParty/DailyLifeUseV1.hpp",
+        "bytes": 13684,
+        "sha256": "3968a82beab862fdd56054d1fe6cfe08aca3c7be41003a1fdc82abae56841d06"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/ThirdParty/LeaseKernel.hpp",
+        "bytes": 12390,
+        "sha256": "942eb43c7b822da17c4949b08aa890d65324cd6d0e31bafa5d5104440641a8ac"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/ThirdParty/PILOT_CASES.json",
+        "bytes": 1647,
+        "sha256": "b5a0df51f0bb7fd1a04196d8fe1118df75b9de275b881faad71ac014c00ecf4c"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/ThirdParty/PilotWorldBinding.json",
+        "bytes": 303,
+        "sha256": "9b7866e037be2bf9f2757c1201a572b466402eb4c0f3dc5b510c0166301bbcfc"
+      },
+      {
+        "file": "unreal/Source/LivingTownNative/ThirdParty/QUALIFIED_SOURCE_BINDINGS.json",
+        "bytes": 4816,
+        "sha256": "4bb7e5572bcdb694715fa200b4d1725340c4cc778149be0a237051fbbd36aa43"
+      }
+    ],
+    "source_freeze": {
+      "artifact": "FROZEN_BUILD.json",
+      "bytes": 64450,
+      "sha256": "b069523286821138a538a9e03a29b20401612820e7ac8f0c9eb11008133a2e66"
+    }
+  },
+  "compile": {
+    "run": "Native118EditorBuild_v007",
+    "review": {
+      "artifact": "ROOT_ACTUAL_REVIEW.json",
+      "bytes": 2524,
+      "sha256": "e74259fb4326ccea10eb5d1bc0d844a861ce2833c0cceac21cc954c28efaa21c"
+    },
+    "receipt": {
+      "artifact": "BUILD_RECEIPT.json",
+      "bytes": 53792,
+      "sha256": "406c47d46ff2b7de20e89e6f4c07b80c6c3db96b0c1e11cbbfbfc86536428215"
+    },
+    "seconds": 383.84400000000096,
+    "peak_private_bytes": 4890927104,
+    "all_nine_closing_guards": {
+      "canonical_sources_exact": true,
+      "workcopy_sources_exact": true,
+      "full_source_workcopy_exact": true,
+      "preexisting_config_exact": true,
+      "engine_inputs_exact": true,
+      "producer_sources_exact": true,
+      "critical_byte_inputs_exact": true,
+      "declared_metadata_custody_exact": true,
+      "UbtRuns_terminal_exact": true
+    },
+    "root_exit_code": 0,
+    "owned_root_waited": true,
+    "remaining_owned_process_count": 0,
+    "scope": "Editor Development target only; no new Game target build or cook"
+  },
+  "regressions": {
+    "run": "Native118SixRegressions_v003",
+    "review": {
+      "artifact": "ROOT_ACTUAL_REVIEW.json",
+      "bytes": 2318,
+      "sha256": "a9079ad5df1bf1efc5cbe277c80fce9e69857af250057fb5279cac0f732a62ef"
+    },
+    "automation_report": {
+      "artifact": "index.json",
+      "bytes": 3129,
+      "sha256": "191d78fbe631e36f93387e3d3328538b8644f94c947feea56b705e9ede5fa51b"
+    },
+    "seconds": 32.125,
+    "tests": [
+      "LivingTown.FullTown.TransformAndDistance",
+      "LivingTown.FullTown.SubsetSchemaRefusals",
+      "LivingTown.FullTown.CancelledLoadRetainsReservation",
+      "LivingTown.Current61.HeadAssembly.SafeRefusal",
+      "LivingTown.Current61.HeadAssembly.DeclaredShadingProfiles",
+      "LivingTown.FullTown.FairValidationBudgetAndDeadlines"
+    ],
+    "all_six_success": true,
+    "test_errors": 0,
+    "test_warnings": 0,
+    "strict_gate_pass": true,
+    "unrelated_engine_warnings": [
+      "Non-normalized private INI path warning",
+      "External connectivity probe timed out"
+    ],
+    "all_engine_warnings_zero_claimed": false
+  },
+  "diagnostic": {
+    "run": "Current61HeadFollowersGame_v003",
+    "review": {
+      "artifact": "ROOT_ACTUAL_REVIEW.json",
+      "bytes": 2867,
+      "sha256": "704e34303ba7d9e44d5827e108345279c6a75e537b675a0d15953d365e08cdcc"
+    },
+    "host": {
+      "artifact": "HOST_PROOF_REPORT.json",
+      "bytes": 10607,
+      "sha256": "ed4caa8df32592fad712566022564e86eb3e3671d39f35de34c2d8b84e7c3fbb"
+    },
+    "capture_proof": {
+      "artifact": "CPU_CAPTURE_PROOF.json",
+      "bytes": 3177,
+      "sha256": "297a691222e399a2c39102c93943c4b088633139164fdd9ba4d90e348982c27b"
+    },
+    "capture": {
+      "artifact": "HEAD_FOLLOWERS_CAPTURE.json",
+      "bytes": 6928190,
+      "sha256": "7d8588d4c32161e5093e88ee07d58c7005539285d13b6d354dced7bbad0de516"
+    },
+    "seconds": 57.93800000000192,
+    "peak_private_bytes": 4985806848,
+    "root_exit_code": 0,
+    "owned_root_waited": true,
+    "remaining_owned_process_count": 0,
+    "all_five_closing_guards_pass": true,
+    "body_pose_evaluators": 1,
+    "followers": 2,
+    "natural_samples": 32,
+    "selected_point_observations": 512,
+    "all_named_leader_bones_equal": true,
+    "both_followers_nonconstant": true,
+    "max_selected_linear_skin_forecast_error_mm": 0.0003592358336671572,
+    "selected_linear_skin_budget_mm": 0.01,
+    "readback_scope": "CPU reconstruction of selected linear-skin points against stock component selected-vertex readbacks; all named follower bones compared to the body leader; no forced pose evaluation or full GPU mesh readback",
+    "images": [
+      {
+        "artifact": "Idle.png",
+        "bytes": 1810651,
+        "sha256": "014fab29b86985dda003caa205acb765ee18d3558c1d4e5f3f2f2b2930bb507c"
+      },
+      {
+        "artifact": "Walk.png",
+        "bytes": 1789080,
+        "sha256": "e849b2a6e602e0f129edd37935be59966d80d23a2685307c874da894ccd92acc"
+      }
+    ],
+    "root_viewed_both_actual_PNGs": true,
+    "source_and_staged_assets_unchanged": true,
+    "screen_material_prerequisite_reached": true,
+    "cap_independent_raw_Cold": "UNOBSERVED",
+    "shader_cache_mode": "Warm diagnostic preview seeded from the qualified Cap004 author cache; not a cold startup benchmark",
+    "unrelated_EditorToolset_Python_startup_errors_observed": true,
+    "zero_runtime_errors_claimed": false
+  },
+  "development_activation": {
+    "automatic_production_activation": false,
+    "requires_game_world": true,
+    "requires_command_line_flag": "LivingTownHeadFollowersProof",
+    "requires_environment_variable": "LT_HEAD_FOLLOWERS_PROOF_ROOT",
+    "requires_exact_manifest_SHA_argument": "LivingTownHeadFollowersProofSHA",
+    "diagnostic_art_mode_flag": "LivingTownHeadFollowersArtPreview",
+    "shipping_and_test_subsystem_creation_refused": true,
+    "commandlets_refused": true,
+    "owned_transient_components_lights_camera_only": true,
+    "body_material_assignment": "Eight existing saved baked materials applied as component overrides after validating ordered imported slots; serialized mesh material defaults remain empty and unchanged",
+    "full_host_or_asset_reproduction_package_supplied": false
+  },
+  "art": {
+    "final_art_accepted": false,
+    "findings": [
+      "Hair has a compact near-black silhouette and straight fringe rather than the reference brown waves.",
+      "Shirt and apron have insufficient visible linen/canvas weave, wear and stitching; upper-chest garment folds need repair.",
+      "Face/jaw/neck visible with no obvious floating hair or open neck gap in these two oblique views; front/rear remain unobserved.",
+      "A large unrelated Entry sphere intrudes at upper left and must be removed from the next presentation."
+    ],
+    "front_and_rear_views_observed": false
+  },
+  "limits": {
+    "whole_mesh_GPU_skinning": false,
+    "physical_contact": false,
+    "production_character_activation": false,
+    "full_town_streaming": false,
+    "unload_reentry": false,
+    "cold_startup_timing": false,
+    "frame_rate": false,
+    "Game_target_build": false,
+    "cooking_or_packaging": false,
+    "final_hair_skin_fabric_appearance": false
+  }
+}

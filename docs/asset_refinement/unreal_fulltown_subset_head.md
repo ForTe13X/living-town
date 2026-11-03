@@ -70,7 +70,7 @@ successful, finalized compilation in addition to their resource checks.
 
 ## Observed validation, 2026-11-02
 
-The complete 178-file source snapshot, including the scheduling and
+The earlier 178-file source snapshot, including the scheduling and
 shader-readiness corrections, compiled in Unreal 5.8.4, changelist
 58902052, on Windows. Six native automation tests passed with zero test errors
 and zero test warnings on the AMD Radeon 8060S D3D12/SM6 device:
@@ -120,10 +120,11 @@ three-section observation may include background compilation and does not
 qualify whole-town or production performance.
 
 The tests exercise production validators, cancellation reservation behavior and
-safe assembly refusal. They do not prove a successful animated head attachment,
-OS keyboard handling, unload/re-entry, collision coverage across the town,
-character appearance, startup time, frame rate or cooked packaging. Those
-remain separate checks with actual assets and runtime observations.
+safe assembly refusal. These six tests alone do not prove successful animated
+head attachment. The later diagnostic below supplies a separate, bounded
+idle/walk observation. OS keyboard handling, unload/re-entry, collision coverage
+across the town, final character appearance, startup time, frame rate and cooked
+packaging remain separate checks.
 Repository CI passed all nine checks at documentation commit `d425460`, which
 retained the qualified native source.
 
@@ -133,8 +134,9 @@ byte-exact source texture pixels passed; source and staged packages each
 retained their own byte and modification-time baseline. The material's own
 shader resource was complete, finalized and successful without fallback, with
 global compilation idle. This establishes saved data and resource readiness.
-Actual use in rendered frames, animated head attachment and final appearance
-remain pending.
+The later diagnostic below supplies two rendered frames and selected animated
+follower observations. Whole-mesh GPU skinning, physical contact, production
+activation and final appearance remain pending.
 
 The Blender preview investigation also isolated a source of broad black hair
 patches: the saved Cycles transparency depth was eight. Matched front/rear renders
@@ -144,3 +146,57 @@ Unreal shader or runtime-performance result. A separate Blender copy now saves
 that GPU preview profile and passes independent reopening and eight matched
 renders covering front, side, three-quarter and rear views. Hairline, underlayer
 edges, side strands and final character art remain under refinement.
+
+## Native118007 diagnostic head check
+
+A later qualified snapshot contains 180 source files, including 131 native
+build inputs. Its Editor Development build completed in 383.844 seconds with
+all nine closing guards passing. The same six native regressions completed in
+32.125 seconds: six successes, zero test errors and zero test warnings. Two
+unrelated engine warnings were retained; this is not a zero-warning engine log.
+The repository's complete 131 native inputs match that build's source family,
+`4ea6ade4953a5f3e4e72e49640e4fd7e86f0c5ff459205817aa6a79290a53d1c`.
+The new source adds the development observer and its private RHI dependency;
+the two inspection-source newline changes preserve the qualified file bytes.
+The earlier 178-file observations retain their original scope.
+
+The observer creates a transient body and two head followers through the
+existing production `Configure` function. It applies the body's eight saved
+baked materials as component overrides after checking their ordered imported
+slots. Serialized mesh defaults and saved assets remain unchanged. One body
+animation player evaluates the idle and walk clips; the followers retain their
+leader pose and have no independent animation instances.
+
+The actual uncooked diagnostic closed successfully after 57.938 seconds, with
+all owned processes reaped and all five closing guards passing. It recorded
+32 natural samples across idle and walk, compared every name-resolved follower
+bone with its body leader, and observed nonconstant motion in both followers.
+Across 512 selected point observations, CPU linear-skin reconstruction differed
+from stock component selected-vertex readbacks by at most 0.000359236 mm
+(the existing budget is 0.01 mm). No forced pose evaluation or whole-mesh GPU
+readback was used. This result establishes those sampled follower relationships,
+not full GPU deformation or physical contact.
+
+Both actual idle/walk PNGs were reviewed. Character art remains held: the hair
+is a compact near-black shape with a straight fringe, the shirt/apron lack
+convincing fabric detail, and upper-chest folds need repair. An unrelated Entry
+sphere intrudes into the view. Front/rear views are still missing. Cap raw
+independent Cold is **UNOBSERVED**. The preview used a warm cache from the
+qualified Cap004 author run, so its duration is not a cold-start benchmark.
+Unrelated EditorToolset Python startup errors were observed and retained; no
+zero-runtime-error claim is made.
+
+Activation requires the explicit `-LivingTownHeadFollowersProof` flag,
+`LT_HEAD_FOLLOWERS_PROOF_ROOT`, and the exact
+`-LivingTownHeadFollowersProofSHA=<manifest SHA256>` argument in an isolated
+owned Game world. `-LivingTownHeadFollowersArtPreview` selects the diagnostic
+author-only cap mode and preserves its missing-Cold status. Shipping/Test
+subsystem creation and commandlets are refused. The observer's transient camera,
+lights, components and output handling are development tooling; these switches
+do not activate a production avatar or change the saved town's presentation.
+The required host/manifest/assets are not bundled by this source change.
+
+The [sanitized source, build, test and capture evidence](evidence/native118_head_followers_diagnostic_v001.json)
+binds the actual artifacts and their limitations. Full-town residency,
+unload/re-entry, production character integration, final hair/skin/fabric art,
+whole-mesh GPU skinning, contact, FPS and cooking/packaging remain unqualified.
