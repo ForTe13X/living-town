@@ -13,5 +13,6 @@ public class LivingTownMaterialInspection : ModuleRules {
   PrivateDependencyModuleNames.Add("Landscape");
   PrivateDependencyModuleNames.Add("Foliage");
   PrivateDependencyModuleNames.Add("LivingTownNative");
+  PrivateDependencyModuleNames.Add("SlateCore");
  }
 }
