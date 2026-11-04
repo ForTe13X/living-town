@@ -69,19 +69,77 @@ TArray<FString> ALivingTownCafeWorldV3HUD::GetFeedbackRows()const{
     return Rows;
 }
 void ALivingTownCafeWorldV3HUD::DrawHUD(){
-    Super::DrawHUD();if(!Canvas||!GEngine||!GetWorld())return;auto* Font=GEngine->GetMediumFont();if(!Font)return;
+    Super::DrawHUD();if(!Canvas||!GEngine||!GetWorld())return;
+    auto* Font=GEngine->GetMediumFont();if(!Font)return;
     const auto* P=GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();
-    const float S=FMath::Clamp(FMath::Min(Canvas->ClipX/1280.f,Canvas->ClipY/720.f),.75f,1.75f),X=18*S,Pad=14*S,W=FMath::Min(640*S,Canvas->ClipX-2*X),Row=25*S;
-    const float TextScale=16*S/FMath::Max(1.f,float(Font->GetMaxCharHeight()));
-    const FLinearColor Ink(.94f,.94f,.88f,1.f),Gold(.93f,.77f,.46f,1.f),Panel(.035f,.058f,.062f,.9f);
-    const auto Line=[&](const FString& Value,float Y,FLinearColor Color){float TW=0,TH=0;GetTextSize(Value,TW,TH,Font,TextScale);DrawText(Value,Color,X+Pad,Y,Font,TW>W-2*Pad?TextScale*(W-2*Pad)/TW:TextScale);};
-    DrawRect(Panel,X,X,W,9*Row);Line(TEXT("LIVING TOWN  /  CAFE"),X+Pad,Gold);
-    if(!P||!P->IsPrepared()){Line(TEXT("Cafe interaction is unavailable."),X+Pad+Row,Ink);return;}
-    const auto& V=P->GetPresentation();Line(V.ResidentLabel,X+Pad+Row,Ink);Line(V.PropertyLabel,X+Pad+2*Row,Ink);Line(V.ListingLabel,X+Pad+3*Row,Gold);Line(V.MealLabel,X+Pad+4*Row,Gold);Line(V.Prompt,X+Pad+5*Row,Ink);
-    // Preserve the live authority notice and prompt. Historical controller
-    // feedback remains independently visible, including F5 away from the counter.
-    const auto Feedback=GetFeedbackRows();for(int32 I=0;I<Feedback.Num();++I)Line(Feedback[I],X+Pad+(6+I)*Row,Ink);
-    const float Footer=Canvas->ClipY-X-2*Row;DrawRect(Panel,X,Footer,W,2*Row);
-    Line(TEXT("WASD Move | Mouse Look | F1 Aria | F2 Ben | E Eat | X Cancel"),Footer+5*S,Ink);
-    Line(TEXT("O Sell offer | L Lease offer | B Buy | K Lease | R End | F5 Save | F9 Load"),Footer+Row,Ink);
+    // Two edge rails leave the middle 36% clear from head to feet. Font size
+    // follows a readability breakpoint, never the length of a receipt string.
+    const float Width=Canvas->ClipX,Height=Canvas->ClipY;
+    if(Width<=0.f||Height<=0.f)return;
+    const float Margin=FMath::Clamp(Width/64.f,10.f,24.f);
+    const float Rail=FMath::Min(300.f,Width*.29f),Pad=Width<960.f?10.f:14.f,Gap=10.f;
+    const float FontPixels=Width<960.f?14.f:16.f,Advance=FontPixels+4.f;
+    const float TextScale=FontPixels/FMath::Max(1.f,float(Font->GetMaxCharHeight()));
+    const FLinearColor Ink(.94f,.94f,.88f,1.f),Gold(.93f,.77f,.46f,1.f);
+    const FLinearColor Muted(.78f,.83f,.80f,1.f),Panel(.035f,.058f,.062f,.88f);
+    struct FHudLine { FString Text; FLinearColor Color; };
+    const auto Measure=[&](const FString& Value){float W=0.f,H=0.f;GetTextSize(Value,W,H,Font,TextScale);return W;};
+    const auto Wrap=[&](const FString& Value,float Available){
+        TArray<FString> Lines,Paragraphs;Value.ParseIntoArray(Paragraphs,TEXT("\n"),false);
+        for(const FString& Paragraph:Paragraphs){
+            TArray<FString> Words;Paragraph.ParseIntoArrayWS(Words);
+            FString Line;
+            for(const FString& Word:Words){
+                const FString Joined=Line.IsEmpty()?Word:Line+TEXT(" ")+Word;
+                if(Measure(Joined)<=Available){Line=Joined;continue;}
+                if(!Line.IsEmpty()){Lines.Add(Line);Line.Reset();}
+                // A long token also wraps; no tiny-font escape hatch.
+                for(TCHAR C:Word){
+                    const FString Next=Line+FString::Chr(C);
+                    if(!Line.IsEmpty()&&Measure(Next)>Available){Lines.Add(Line);Line.Reset();}
+                    Line+=FString::Chr(C);
+                }
+            }
+            if(!Line.IsEmpty())Lines.Add(Line);
+        }
+        if(Lines.IsEmpty())Lines.Add(TEXT(""));return Lines;
+    };
+    const auto Card=[&](float X,float Y,const TArray<FHudLine>& Rows,float AvailableHeight){
+        if(AvailableHeight<2.f*Pad+Advance)return Y;
+        TArray<FHudLine> Lines;
+        for(const auto& Row:Rows)for(const auto& Line:Wrap(Row.Text,FMath::Max(1.f,Rail-2.f*Pad)))Lines.Add({Line,Row.Color});
+        const int32 Limit=FMath::Max(1,FMath::FloorToInt((AvailableHeight-2.f*Pad)/Advance));
+        if(Lines.Num()>Limit){Lines.SetNum(Limit);Lines.Last().Text=TEXT("...");}
+        const float H=2.f*Pad+Advance*Lines.Num();DrawRect(Panel,X,Y,Rail,H);
+        for(int32 I=0;I<Lines.Num();++I)DrawText(Lines[I].Text,Lines[I].Color,X+Pad,Y+Pad+I*Advance,Font,TextScale);
+        return Y+H;
+    };
+    const float Left=Margin,Right=Width-Margin-Rail,Bottom=Height-Margin;
+    TArray<FHudLine> Controls={
+        {TEXT("CONTROLS"),Gold},{TEXT("WASD Move"),Ink},{TEXT("Mouse Look"),Ink},
+        {TEXT("F1 Aria  |  F2 Ben"),Ink},{TEXT("E Eat  |  X Cancel"),Ink},
+        {TEXT("PROPERTY"),Gold},{TEXT("O Offer sale"),Ink},{TEXT("L Offer lease"),Ink},
+        {TEXT("B Buy  |  K Lease"),Ink},{TEXT("R End lease"),Ink},
+        {TEXT("SAVE"),Gold},{TEXT("F5 Save  |  F9 Load"),Ink}};
+    const float ControlsBottom=Card(Right,Margin,Controls,Bottom-Margin);
+    TArray<FHudLine> Status={{TEXT("LIVING TOWN / CAFE"),Gold}};
+    if(!P||!P->IsPrepared()){
+        Status.Add({TEXT("Cafe interaction is unavailable."),Ink});Card(Left,Margin,Status,Bottom-Margin);return;
+    }
+    const auto& V=P->GetPresentation();
+    Status.Add({V.ResidentLabel,Ink});Status.Add({V.PropertyLabel,Muted});
+    Status.Add({V.ListingLabel,Gold});Status.Add({V.MealLabel,Ink});
+    const float StatusBottom=Card(Left,Margin,Status,Bottom-Margin);
+    // Keep the live prompt and authority notice together, independently from
+    // the controller's historical last-action result on the opposite rail.
+    const auto Feedback=GetFeedbackRows();
+    TArray<FHudLine> Interaction={{TEXT("NEARBY"),Gold},{V.Prompt,Ink}};
+    if(Feedback.Num()>0&&!Feedback[0].IsEmpty()){
+        Interaction.Add({TEXT("CURRENT"),Gold});Interaction.Add({Feedback[0],Ink});
+    }
+    Card(Left,StatusBottom+Gap,Interaction,Bottom-StatusBottom-Gap);
+    if(Feedback.Num()>1){
+        TArray<FHudLine> LastAction={{TEXT("LAST ACTION"),Gold},{Feedback[1],Ink}};
+        Card(Right,ControlsBottom+Gap,LastAction,Bottom-ControlsBottom-Gap);
+    }
 }

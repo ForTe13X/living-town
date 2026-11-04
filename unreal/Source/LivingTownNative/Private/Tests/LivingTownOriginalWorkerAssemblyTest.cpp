@@ -2,8 +2,11 @@
 #include "LivingTownCafeBinding.h"
 #include "LivingTownCafeCharacter.h"
 #include "LivingTownCafeWorldV3Subsystem.h"
+#include "LivingTownCafeWorldV3Scenario.h"
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Misc/AutomationTest.h"
+#include "Tests/AutomationCommon.h"
+#include "HAL/PlatformTime.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/SkeletalMesh.h"
 #include "Animation/Skeleton.h"
@@ -75,29 +78,68 @@ bool FLivingTownOriginalWorkerSaveIdentity::RunTest(const FString&)
     auto Unchanged=Base;const FLivingTownOriginalWorkerBinding Missing;TestFalse(TEXT("Missing prepared descriptor refuses"),LivingTownOriginalWorker::ApplyPreparedBinding(Unchanged,Missing,Error));TestEqual(TEXT("Refusal publishes no partial visual"),Unchanged.VisualSha256,Base.VisualSha256);
     auto Aria=Base;Aria.ResidentId=TEXT("aria");TestFalse(TEXT("Ben opt-in cannot replace another persona"),LivingTownOriginalWorker::ApplyPreparedBinding(Aria,A,Error));return true;
 }
+namespace
+{
+UWorld* FindOriginalWorkerLifecycleWorld(int32& Count)
+{
+    UWorld* World=nullptr;Count=0;
+    if(GEngine)for(const auto& Context:GEngine->GetWorldContexts())if(Context.World()&&(Context.WorldType==EWorldType::Game||Context.WorldType==EWorldType::PIE)){World=Context.World();++Count;}
+    return World;
+}
+bool RunOriginalWorkerLifecycleAssertions(FAutomationTestBase& Test,UWorld* World)
+{
+    if(!Test.TestTrue(TEXT("Actually begun standalone WorldV3 lifecycle world required"),World&&World->HasBegunPlay()&&World->GetNetMode()==NM_Standalone&&World->GetAuthGameMode()&&World->GetAuthGameMode()->GetClass()==ALivingTownCafeWorldV3GameMode::StaticClass()))return false;
+    auto* Authority=World->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();auto* PC=World->GetFirstPlayerController();
+    if(!Test.TestTrue(TEXT("Actual prepared original-worker binding and player required"),Authority&&PC&&Authority->GetBinding().OriginalWorker.IsSet()))return false;
+    const auto B=Authority->GetBinding();TWeakObjectPtr<APawn> PreviousPawn=PC->GetPawn();TWeakObjectPtr<AActor> PreviousView=PC->GetViewTarget();
+    auto* Pawn=World->SpawnActor<ALivingTownCafeCharacter>(ALivingTownCafeCharacter::StaticClass(),B.SpawnFeetCm+FVector(0,0,500),B.SpawnRotation);
+    if(!Test.TestNotNull(TEXT("Actual owned character"),Pawn))return false;
+    ON_SCOPE_EXIT{if(PC->GetPawn()==Pawn)PC->UnPossess();Pawn->Destroy();if(PreviousPawn.IsValid())PC->Possess(PreviousPawn.Get());if(PreviousView.IsValid())PC->SetViewTarget(PreviousView.Get());};
+    const auto BeforeTransform=Pawn->GetMesh()->GetRelativeTransform();const auto BeforeCollision=Pawn->GetMesh()->GetCollisionEnabled();FString Error;
+    if(!Test.TestTrue(TEXT("Actual saved assembly configures"),Pawn->ConfigureQualifiedBen(B,Error))){Test.AddError(Error);return false;}
+    auto* Assembly=Pawn->FindComponentByClass<ULivingTownOriginalWorkerAssembly>();if(!Test.TestNotNull(TEXT("Owned real assembly"),Assembly))return false;
+    auto* Mesh=Pawn->GetMesh();Mesh->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;Mesh->bEnableUpdateRateOptimizations=true;
+    PC->Possess(Pawn);Test.TestTrue(TEXT("Controlled original player refreshes actual bones"),Mesh->VisibilityBasedAnimTickOption==EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones&&!Mesh->bEnableUpdateRateOptimizations);
+    PC->UnPossess();Test.TestTrue(TEXT("UnPossess restores the exact previous tick/URO policy"),Mesh->VisibilityBasedAnimTickOption==EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered&&Mesh->bEnableUpdateRateOptimizations);
+    PC->Possess(Pawn);const bool Teleported=Pawn->TeleportTo(Pawn->GetActorLocation()+FVector(0,0,20),Pawn->GetActorRotation(),false,true);
+    Test.TestTrue(TEXT("Actual teleport requests supported cloth reset"),Teleported&&Assembly->GetApron()&&Assembly->GetApron()->NeedsReset());PC->UnPossess();Assembly->Reset();Assembly->Reset();
+    Test.TestTrue(TEXT("Owned reset restores empty body/collision/transform"),!Mesh->GetSkeletalMeshAsset()&&Mesh->GetCollisionEnabled()==BeforeCollision&&Mesh->GetRelativeTransform().Equals(BeforeTransform));
+    Test.TestFalse(TEXT("Released assembly cannot remain a qualified visual"),Pawn->HasQualifiedVisual());Test.TestNull(TEXT("Support released"),Assembly->GetUnderlay());Test.TestNull(TEXT("Apron released"),Assembly->GetApron());
+    Test.AddInfo(TEXT("Actual prepared pawn possession/UnPossess/teleport/reset checked; no movement, render, meal or Game-performance acceptance."));return true;
+}
+class FOriginalWorkerLifecycleAfterPIE final:public IAutomationLatentCommand
+{
+    FAutomationTestBase* Test;
+    double Deadline=FPlatformTime::Seconds()+120.;
+public:
+    explicit FOriginalWorkerLifecycleAfterPIE(FAutomationTestBase* InTest):Test(InTest){}
+    virtual bool Update()override
+    {
+        if(FPlatformTime::Seconds()>Deadline){Test->AddError(TEXT("Actual prepared WorldV3 lifecycle PIE startup timed out"));return true;}
+        int32 Count=0;UWorld* World=FindOriginalWorkerLifecycleWorld(Count);
+        if(Count>1){Test->AddError(TEXT("Exactly one actual lifecycle PIE/Game world required"));return true;}
+        if(!World||!World->HasBegunPlay()||!World->GetFirstPlayerController()||!World->GetFirstPlayerController()->GetPawn())return false;
+        RunOriginalWorkerLifecycleAssertions(*Test,World);return true;
+    }
+};
+}
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FLivingTownOriginalWorkerPawnLifecycle,"LivingTown.Development.OriginalWorkerPreparedPawnLifecycle",EAutomationTestFlags::EditorContext|EAutomationTestFlags::ClientContext|EAutomationTestFlags::EngineFilter)
 bool FLivingTownOriginalWorkerPawnLifecycle::RunTest(const FString&)
 {
-    // Explicit asset-backed consumer, run only in the prepared WorldV3 PIE/Game
-    // world. No success fixture, reference mesh or fabricated provider is used.
-    UWorld* World=nullptr;int32 Count=0;if(GEngine)for(const auto& C:GEngine->GetWorldContexts())if(C.World()&&(C.WorldType==EWorldType::Game||C.WorldType==EWorldType::PIE)&&C.World()->HasBegunPlay()){World=C.World();++Count;}
-    if(!TestTrue(TEXT("One actually playing prepared WorldV3 world required"),Count==1&&World))return false;
-    auto* Authority=World->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();auto* PC=World->GetFirstPlayerController();
-    if(!TestTrue(TEXT("Actual prepared original-worker binding and player required"),Authority&&PC&&Authority->GetBinding().OriginalWorker.IsSet()))return false;
-    const auto B=Authority->GetBinding();TWeakObjectPtr<APawn> PreviousPawn=PC->GetPawn();TWeakObjectPtr<AActor> PreviousView=PC->GetViewTarget();
-    auto* Pawn=World->SpawnActor<ALivingTownCafeCharacter>(ALivingTownCafeCharacter::StaticClass(),B.SpawnFeetCm+FVector(0,0,500),B.SpawnRotation);
-    if(!TestNotNull(TEXT("Actual owned character"),Pawn))return false;
-    ON_SCOPE_EXIT{if(PC->GetPawn()==Pawn)PC->UnPossess();Pawn->Destroy();if(PreviousPawn.IsValid())PC->Possess(PreviousPawn.Get());if(PreviousView.IsValid())PC->SetViewTarget(PreviousView.Get());};
-    const auto BeforeTransform=Pawn->GetMesh()->GetRelativeTransform();const auto BeforeCollision=Pawn->GetMesh()->GetCollisionEnabled();FString Error;
-    if(!TestTrue(TEXT("Actual saved assembly configures"),Pawn->ConfigureQualifiedBen(B,Error))){AddError(Error);return false;}
-    auto* Assembly=Pawn->FindComponentByClass<ULivingTownOriginalWorkerAssembly>();if(!TestNotNull(TEXT("Owned real assembly"),Assembly))return false;
-    auto* Mesh=Pawn->GetMesh();Mesh->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;Mesh->bEnableUpdateRateOptimizations=true;
-    PC->Possess(Pawn);TestTrue(TEXT("Controlled original player refreshes actual bones"),Mesh->VisibilityBasedAnimTickOption==EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones&&!Mesh->bEnableUpdateRateOptimizations);
-    PC->UnPossess();TestTrue(TEXT("UnPossess restores the exact previous tick/URO policy"),Mesh->VisibilityBasedAnimTickOption==EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered&&Mesh->bEnableUpdateRateOptimizations);
-    PC->Possess(Pawn);const bool Teleported=Pawn->TeleportTo(Pawn->GetActorLocation()+FVector(0,0,20),Pawn->GetActorRotation(),false,true);
-    TestTrue(TEXT("Actual teleport requests supported cloth reset"),Teleported&&Assembly->GetApron()&&Assembly->GetApron()->NeedsReset());PC->UnPossess();Assembly->Reset();Assembly->Reset();
-    TestTrue(TEXT("Owned reset restores empty body/collision/transform"),!Mesh->GetSkeletalMeshAsset()&&Mesh->GetCollisionEnabled()==BeforeCollision&&Mesh->GetRelativeTransform().Equals(BeforeTransform));
-    TestFalse(TEXT("Released assembly cannot remain a qualified visual"),Pawn->HasQualifiedVisual());TestNull(TEXT("Support released"),Assembly->GetUnderlay());TestNull(TEXT("Apron released"),Assembly->GetApron());
-    AddInfo(TEXT("Actual prepared pawn possession/UnPossess/teleport/reset checked; no movement, render, meal or Game-performance acceptance."));return true;
+    // The console automation wrapper stops any prior PIE before running tests.
+    // Own this Editor lifecycle world, as the existing WorldV3 boundary tests do;
+    // ordinary gameplay/movement evidence belongs to its separate earlier phase.
+#if WITH_EDITOR
+    if(GIsEditor)
+    {
+        if(!AutomationOpenMap(TEXT("/Engine/Maps/Entry"),true))return false;
+        ADD_LATENT_AUTOMATION_COMMAND(FOriginalWorkerLifecycleAfterPIE(this));return true;
+    }
+#endif
+    // Client context consumes its actually playing standalone world; it cannot
+    // create an Editor PIE world or substitute assets/authority with a fixture.
+    int32 Count=0;UWorld* World=FindOriginalWorkerLifecycleWorld(Count);
+    if(!TestTrue(TEXT("One actually playing prepared WorldV3 world required"),Count==1&&World&&World->HasBegunPlay()))return false;
+    return RunOriginalWorkerLifecycleAssertions(*this,World);
 }
 #endif
