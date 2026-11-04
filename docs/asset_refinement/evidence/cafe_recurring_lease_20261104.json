@@ -1,0 +1,121 @@
+{
+  "schema": "living_town.recurring_cafe_lease_evidence.v1",
+  "date": "2026-11-04",
+  "source_family": "afd52381191bbf4807d15781c63fe4ca6ee18425a547eae247def2c3061d4077",
+  "tested_implementation_freeze_sha256": "b4a3f7086c8794366cefd7fe8aac69a01b8f62d31b1db1204598ac0a38a3a466",
+  "post_execution_changes": "Contract documentation and this evidence/images only; all14otherimplementation inputs remain exact.",
+  "local_evidence_root": "F:/Living Town/2026-10-20_Refined_Town/root_character_pipeline_macro_review_v1_001",
+  "local_root_reviews": [
+    {
+      "file": "RECURRING_CAFE_LEASE_PORTABLE002_REVIEW.json",
+      "bytes": 6641,
+      "sha256": "a9557d845b55f7b7ca85c85d509e0acfd6893ac136da7aed0f22e06b6b1f730f"
+    },
+    {
+      "file": "RECURRING_CAFE_LEASE_EDITOR003_REVIEW.json",
+      "bytes": 2550,
+      "sha256": "87063fcccb592d5828d30513c523cca4dc8cb9a08cb6c939d8f206b1cc822754"
+    },
+    {
+      "file": "RECURRING_CAFE_LEASE_GAME003_REVIEW.json",
+      "bytes": 4969,
+      "sha256": "f154065b0cd3b879cd1278a4756014b57778575b921d36038d52e605d579bb8a"
+    },
+    {
+      "file": "RECURRING_CAFE_LEASE_JOURNEY001_REVIEW.json",
+      "bytes": 3199,
+      "sha256": "a0d58a089f6bca2f10aab558d719e1698dab83d9960e35df1ef434a44efec9de"
+    },
+    {
+      "file": "RECURRING_CAFE_LEGACY_IMPORT001_REVIEW.json",
+      "bytes": 3414,
+      "sha256": "ef78ec0c5ae2ae89224a586e6836fddb61f4053224b3bfc4af3639cda35c7db8"
+    },
+    {
+      "file": "RECURRING_CAFE_BACKEND_NOASSET001_REVIEW.json",
+      "bytes": 1519,
+      "sha256": "1d14b01a351bc0249f230c19381e2f9bc36ab60545b0965588da56da4f85d201"
+    },
+    {
+      "file": "RECURRING_CAFE_V5_REFUSAL001_REVIEW.json",
+      "bytes": 2527,
+      "sha256": "5a75b056c43e244b035aa1b92f10734cc9afb6ebfb670f2386516075a1a1ca34"
+    },
+    {
+      "file": "RECURRING_CAFE_V5_COLD001_REVIEW.json",
+      "bytes": 3400,
+      "sha256": "aad31885ef4e1037c88bc6238fa63e1547cc2c08e34cf8e823a834a2c137c64a"
+    },
+    {
+      "file": "RECURRING_CAFE_HUD705_001_REVIEW.json",
+      "bytes": 3976,
+      "sha256": "11a12dd465b29bae392a9b5b3477a5e3b44a332ac0b3e84299493149dc552472"
+    },
+    {
+      "file": "RECURRING_CAFE_HUD1280_001_REVIEW.json",
+      "bytes": 3915,
+      "sha256": "5cb268f1b9de1ac670af21e9af265a866d363a90d9016a759a1d3af06dbacad5"
+    }
+  ],
+  "images": [
+    {
+      "file": "cafe_recurring_lease_hud_705_20261104.png",
+      "bytes": 442431,
+      "sha256": "4ccfb9e6b05790c8fc75db9aebb58d28983ef02c727f2d8cf8f7d3b4ba04a78c"
+    },
+    {
+      "file": "cafe_recurring_lease_hud_1280_20261104.png",
+      "bytes": 1245581,
+      "sha256": "21267eb62423cbc303861bc7e83ed8c6d0166527ea854a236379d32c79d640f5"
+    }
+  ],
+  "portable": {
+    "property_meal_rent": "compile/run PASS",
+    "rent_checks": 4155,
+    "rent_groups": 14,
+    "compiler": "MSVC C++17 /W4 /WX"
+  },
+  "native": {
+    "Editor_UHT": "PASS",
+    "Development_Game_build": "PASS",
+    "RecurringLeaseJourney": "PASS",
+    "LegacyV4Import": "PASS_ACTUAL_OLD_UNLEASED_DEFAULT_VISUAL",
+    "backend_noasset": "PASS_4_CASES",
+    "ActualPublicBoundaryRefusal": "PASS_CURRENT_V5_PRODUCER",
+    "ColdPublicBoundaryRestore": "PASS_DISTINCT_PROCESS_CURRENT_V5_CONSUMER"
+  },
+  "ordinary_HUD": {
+    "dimensions": [
+      [
+        705,
+        464
+      ],
+      [
+        1280,
+        720
+      ]
+    ],
+    "state": "FRESH_FIXED_LISTING",
+    "root_viewed": true,
+    "frame_p50_ms": [
+      16.6666,
+      16.6667
+    ],
+    "frame_p95_ms": [
+      29.63454,
+      29.66984
+    ],
+    "GPU_p50_ms": [
+      2.1767,
+      3.8681
+    ],
+    "close": "OWNED_CONTROLLED92_AFTER_IMAGE_CSV_SEPARATE_TRACE"
+  },
+  "limitations": [
+    "Near-due saved fixtures use legitimate public authority APIs; no twelve-minute pre-load wall-time claim.",
+    "Current implementation bytes guarded on recurring journey; inherited metadata observer historical-worktree scope retained. Later sessions guard current201paths.",
+    "Actual native legacy input is unleased/default visual; active-fixed import is separately portable.",
+    "HUD review covers fresh state, not recurring-countdown pixels.",
+    "Uneven frame pacing remains; no full-town/packagedGame/performance/final-avatar/eating approval."
+  ]
+}

@@ -315,7 +315,7 @@ int main() {
         {
             auto k=enabled();w::care::ResidentUse use("ben");check(w::begin_meal_use(k,use,meal(k),observed("ben",0)).ok,"corruption source");
             for(w::Int tick=1;tick<=6;++tick)check(w::advance_meal_use(k,use,tick,care_contact(use)).ok,"corruption source progress");
-            const auto good=w::save_care_envelope(k,use,care_bindings(),{6,0});check(good.has_value(),"canonical V4 source");
+            const auto good=w::save_care_envelope(k,use,care_bindings(),{6,0});check(good.has_value(),"canonical V5 source");
             for(int i=0;i<7;++i) {
                 auto e=*w::decode_care_envelope_document(*good);
                 if(i<4){auto j=*w::decode_care_document(e.care_payload);switch(i){case 0:++j.needs.fun;break;case 1:++j.active->elapsed;break;case 2:j.history[1].contact->reservation_valid=false;break;case 3:j.active.reset();j.requests[0].end=w::care::End::Cancelled;j.requests[0].end_tick=6;j.history.push_back({w::care::Op::Cancel,6,{}, {}});break;}e.care_payload=w::encode_care_document(j);e.care_digest=w::detail::hash_bytes(14695981039346656037ULL,e.care_payload);}
@@ -328,7 +328,7 @@ int main() {
             }
             const auto legacy=w::save_envelope(k,bindings(),{6,0});check(legacy.has_value(),"old V3 API remains available");auto target=k;auto target_use=use;w::ClockMetadata clock;
             check(!w::load_care_envelope(target,target_use,*legacy,care_bindings(),clock),"V3 lacks care, requires explicit migration");
-            check(!w::load_envelope(target,*good,bindings(),clock),"old envelope reader rejects paired V4");
+            check(!w::load_envelope(target,*good,bindings(),clock),"unpaired envelope reader rejects paired V5");
             check(!w::decode_care_document(w::encode_care_document(use.export_state())+"x"),"care trailing bytes refused");
             passed("M21_paired_corruption_and_explicit_versions");
         }

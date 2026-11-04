@@ -31,12 +31,12 @@ namespace {
 namespace P=living_town::cafe_world_v3;
 namespace Care=living_town::daily_life_use_v1;
 namespace Backend=living_town::cafe_backend_v3;
-constexpr const TCHAR* CoreHash=TEXT("4856df21feca1d51d357454cee2047e4de19e4ffa7c16aa57d459f6f0793e903");
+constexpr const TCHAR* CoreHash=TEXT("9c31b82a263b389457a8d3ea00344f90e24b81f646f66a6b8377ccb4b85be46d");
 constexpr const TCHAR* RosterHash=TEXT("fda4596387cffd0eec0cab7fb021e7950afc4c6e878467712949924a630f0d8b");
 constexpr const TCHAR* ConfigHash=TEXT("d45f1b001e0177088757be4e45ee3a4910c5cd6b09b18128693058886f40637f");
 constexpr int64 MaxEnvelopeBytes=64*1024*1024;
 constexpr const TCHAR* CareHash=TEXT("3968a82beab862fdd56054d1fe6cfe08aca3c7be41003a1fdc82abae56841d06");
-constexpr const TCHAR* EnvelopeHashSource=TEXT("0cf5fca9a0f91fbaedfa83ab8e786f5022733aa33a56ea8f954d244bb9bd2690");
+constexpr const TCHAR* EnvelopeHashSource=TEXT("f003c16885a0fb8213f492114d1b9aa108791385f45a6c23f4e12e67d17b7616");
 
 FString Text(const std::string& S){return FString(UTF8_TO_TCHAR(S.c_str()));}
 std::string Utf8(const FString& S){return std::string(TCHAR_TO_UTF8(*S));}
@@ -186,21 +186,35 @@ FLivingTownCafeWorldReceipt ULivingTownCafeWorldV3Subsystem::CancelMeal(){
     Out.Message=R.ok?(R.already_applied?TEXT("There is no meal in progress."):TEXT("Meal cancelled. Progress earned so far is kept.")):TEXT("Unable to cancel this meal.");Notice=Out.Message;RefreshPresentation();return Out;
 }
 FLivingTownCafeWorldReceipt ULivingTownCafeWorldV3Subsystem::SubmitProperty(const FLivingTownCafePropertyCommand& C){
+    return SubmitPropertyInternal(C,false,false,-1,-1);
+}
+FLivingTownCafeWorldReceipt ULivingTownCafeWorldV3Subsystem::SubmitRecurringLeaseOffer(const FString& RequestId){
+    FLivingTownCafePropertyCommand C;C.RequestId=RequestId;C.Action=ELivingTownCafePropertyAction::OfferLease;
+    return SubmitPropertyInternal(C,true,false,-1,-1);
+}
+FLivingTownCafeWorldReceipt ULivingTownCafeWorldV3Subsystem::SubmitLeaseAgreement(const FString& RequestId,bool bRecurring,int64 ObservedOfferRevision,int64 ObservedTitleRevision){
+    FLivingTownCafePropertyCommand C;C.RequestId=RequestId;C.Action=ELivingTownCafePropertyAction::Lease;
+    return SubmitPropertyInternal(C,false,bRecurring,ObservedOfferRevision,ObservedTitleRevision);
+}
+FLivingTownCafeWorldReceipt ULivingTownCafeWorldV3Subsystem::SubmitPropertyInternal(const FLivingTownCafePropertyCommand& C,bool bRecurringOffer,bool bRecurringAgreement,int64 ObservedOfferRevision,int64 ObservedTitleRevision){
     if(!IsInGameThread()||!bPrepared||!State||!GetWorld()||GetWorld()->IsPaused())return Refused(TEXT("world_v3_live_unpaused_session_required"));
     bool Reach=false;FString Why;if(!ObserveCounter(Reach,Why))return Refused(Why);
     try{
         const std::string Actor=Utf8(PersonaId(SessionController->GetNativePersona()));P::Kernel Candidate=State->Kernel;
-        const auto R=Candidate.execute({Utf8(C.RequestId),Utf8(C.PropertyId),Action(C.Action)},{Actor,Actor,"cafe","1f","cafe1f_counter",State->Clock,Reach});
+        if(!bRecurringAgreement&&(ObservedOfferRevision!=-1||ObservedTitleRevision!=-1))return Refused(TEXT("invalid_lease_agreement"));
+        P::Intent Intent{Utf8(C.RequestId),Utf8(C.PropertyId),bRecurringOffer?P::Action::offer_recurring_lease:Action(C.Action)};
+        if(bRecurringAgreement){Intent.agreed_lease_kind="recurring_lease";Intent.expected_offer_revision=ObservedOfferRevision;Intent.expected_title_revision=ObservedTitleRevision;}
+        const auto R=Candidate.execute(Intent,{Actor,Actor,"cafe","1f","cafe1f_counter",State->Clock,Reach});
         if(!P::care_matches_world(Candidate,State->Use)||!P::valid_clock_for(Candidate,{State->Clock,0}))return Refused(TEXT("paired_capacity_or_reconciliation_required"));
         State->Kernel=std::move(Candidate);FLivingTownCafeWorldReceipt Out;Out.bAccepted=R.ok;Out.bAlreadyApplied=R.already_applied;Out.Reason=Text(R.reason);Out.EventId=R.event_id;
-        Out.Message=R.ok?TEXT("Property action recorded."):!Reach?TEXT("Walk closer and face the cafe counter."):TEXT("That property action is unavailable for this resident or listing.");Notice=Out.Message;RefreshPresentation();return Out;
+        Out.Message=R.ok?(bRecurringOffer?TEXT("Recurring lease offered: 4 coins every 12 minutes. The tenant can end future payments."):bRecurringAgreement?TEXT("Recurring lease agreed. 4 coins paid; next rent in 12 minutes."):TEXT("Property action recorded.")):!Reach?TEXT("Walk closer and face the cafe counter."):R.reason=="recurring_agreement_required"||R.reason=="agreement_changed"?TEXT("The lease offer changed. Check its terms and try again."):TEXT("That property action is unavailable for this resident or listing.");Notice=Out.Message;RefreshPresentation();return Out;
     }catch(const std::exception&){return Refused(TEXT("world_property_authority_exception"));}
 }
 bool ULivingTownCafeWorldV3Subsystem::AdvanceNaturalClock(int64 Whole,bool bContinuous,FString& Error){
     Error.Reset();if(!State||Whole<=0||State->Clock>P::max_tick-Whole){Error=TEXT("invalid_natural_clock");return false;}
     auto Candidate=State->Kernel;auto Use=State->Use;const int64 Next=State->Clock+Whole;
     if(Use.active()&&!bContinuous){const auto R=P::cancel_meal_use(Candidate,Use,P::ReleaseReason::Interrupted);if(!R.ok){Error=Text(R.reason);return false;}}
-    const auto Due=Candidate.expiry_request(Next);if(Due&&!Candidate.execute(*Due,{"town","town","","","",Next,false}).ok){Error=TEXT("natural_expiry_refused");return false;}
+    const auto Due=Candidate.reconcile_property_until(Next);if(!Due.ok){Error=TEXT("natural_property_reconciliation_refused");return false;}
     if(Use.active()){
         // At most one contact sample from this actual frame. No loop reuses it.
         bool Reach=false;FString Why;const bool Scene=ObserveCounter(Reach,Why);auto* Provider=MealProvider();
@@ -213,7 +227,11 @@ bool ULivingTownCafeWorldV3Subsystem::AdvanceNaturalClock(int64 Whole,bool bCont
         else if(R.outcome==Care::Outcome::Interrupted)Notice=TEXT("Meal interrupted. Progress earned so far is kept.");
     }else if(!Use.advance_idle_to(Next)){Error=TEXT("idle_care_clock_refused");return false;}
     if(!P::care_matches_world(Candidate,Use)||!P::valid_clock_for(Candidate,{Next,0})){Error=TEXT("natural_care_reconciliation_failed");return false;}
-    State->Kernel=std::move(Candidate);State->Use=std::move(Use);State->Clock=Next;if(!State->Use.active())StopPhysicalMeal();return true;
+    State->Kernel=std::move(Candidate);State->Use=std::move(Use);State->Clock=Next;
+    if(Due.reason=="rent_paid")Notice=TEXT("Rent paid: 4 coins. The cafe lease continues.");
+    else if(Due.reason=="rent_unpaid")Notice=TEXT("The next rent could not be paid. No payment was taken for that period; the cafe lease ended.");
+    else if(Due.reason=="term_limit_reached")Notice=TEXT("The cafe lease reached its final term and ended.");
+    if(!State->Use.active())StopPhysicalMeal();return true;
 }
 void ULivingTownCafeWorldV3Subsystem::Tick(float Delta){
     Super::Tick(Delta);if(!bPrepared||!State||!GetWorld())return;
@@ -246,10 +264,14 @@ void ULivingTownCafeWorldV3Subsystem::RefreshPresentation(){
     V.ResidentLabel=Name(V.Persona);if(V.bSessionReady)V.ResidentLabel+=FString::Printf(TEXT("  |  %lld coins"),(long long)(V.Persona==TEXT("aria")?V.AriaCoins:V.BenCoins));
     V.PropertyLabel=TEXT("Owned by ")+Name(V.Owner)+TEXT("  |  Run by ")+Name(V.Operator);
     const auto& Offer=State->Kernel.offer();const auto& Terms=State->Kernel.terms();
-    V.ListingLabel=State->Kernel.lease().active?TEXT("Lease active"):!Offer.present?TEXT("No property listing"):Offer.kind=="sale"?FString::Printf(TEXT("For sale: %lld coins"),(long long)Terms.sale_price):FString::Printf(TEXT("For lease: %lld coins"),(long long)Terms.lease_fee);
+    V.bRecurringOffer=Offer.present&&!State->Kernel.lease().active&&Offer.kind=="recurring_lease";V.OfferRevision=Offer.revision;V.OfferTitleRevision=Offer.title_revision;
+    V.bRecurringLease=State->Kernel.recurring_lease();V.RentAmount=V.bRecurringLease||V.bRecurringOffer?Terms.lease_fee:0;
+    V.RentDueTick=V.bRecurringLease?State->Kernel.lease().end:-1;
+    if(V.bRecurringLease){const int64 Left=FMath::Max<int64>(0,V.RentDueTick-State->Clock);V.ListingLabel=FString::Printf(TEXT("Rent: 4 coins / 12 min | Next in %lld:%02lld"),(long long)(Left/60),(long long)(Left%60));}
+    else V.ListingLabel=State->Kernel.lease().active?TEXT("Fixed lease active"):!Offer.present?TEXT("No property listing"):Offer.kind=="sale"?FString::Printf(TEXT("For sale: %lld coins"),(long long)Terms.sale_price):V.bRecurringOffer?TEXT("Recurring lease: 4 coins / 12 min | K Agree"):FString::Printf(TEXT("Fixed lease: %lld coins / 12 min"),(long long)Terms.lease_fee);
     const FString Price=V.Persona==V.Operator?TEXT("Own meal stock"):TEXT("Meal: 2 coins");
     V.MealLabel=Price+FString::Printf(TEXT("  |  %lld left  |  Ben hunger %.2f  fun %.2f"),(long long)V.Stock,V.Hunger/100.f,V.Fun/100.f);
-    V.Prompt=V.bMealActive?FString::Printf(TEXT("Eating %d / 18  |  X Cancel"),V.ProgressTicks):!V.bSessionReady?TEXT("Choose Ben or Aria."):!V.bReachable?TEXT("Walk closer and face the cafe counter."):V.Persona==TEXT("aria")?TEXT("O Offer sale  |  L Offer lease  |  R End lease"):!V.bMealAvailable?TEXT("Eating is not available yet. E checks availability."):TEXT("E Eat a meal  |  B Buy property  |  K Lease  |  R End lease");
+    V.Prompt=V.bMealActive?FString::Printf(TEXT("Eating %d / 18  |  X Cancel"),V.ProgressTicks):!V.bSessionReady?TEXT("Choose Ben or Aria."):!V.bReachable?TEXT("Walk closer and face the cafe counter."):V.Persona==TEXT("aria")?TEXT("O Sale | L Fixed lease | N Recurring lease | R End lease"):!V.bMealAvailable?TEXT("Eating is not available yet. E checks availability."):TEXT("E Eat a meal  |  B Buy property  |  K Lease  |  R End lease");
 }
 namespace {
 // Native outer envelope adds SHA256 and atomic disk custody to the portable V4
@@ -257,7 +279,7 @@ namespace {
 FString Fingerprint(std::initializer_list<FString> Fields){P::detail::Writer W;for(const auto& F:Fields)W.s(Utf8(F));FString H;LivingTownCafeJournal::Sha256(Bytes(W.bytes),H);return H;}
 P::CareBindings CareSources(const FLivingTownCafeBinding& B){
     P::CareBindings Out;Out.world.core_sha256=Utf8(CoreHash);Out.care_core_sha256=Utf8(CareHash);
-    Out.world.fixture_sha256=Utf8(Fingerprint({RosterHash,ConfigHash,EnvelopeHashSource,TEXT("native_cafe_world_v3_adapter_v1")}));
+    Out.world.fixture_sha256=Utf8(Fingerprint({RosterHash,ConfigHash,EnvelopeHashSource,TEXT("native_cafe_world_rent_v5_adapter_v1")}));
     Out.world.physical_sha256=Utf8(Fingerprint({B.BindingFileSha256,B.PhysicalSceneSha256,B.PhysicalQualificationSha256,B.VisualSha256}));
     // This is the fingerprint of an UNAVAILABLE provider policy, not an eat
     // certificate. It never authorizes a clip. An eventual reviewed producer
@@ -282,36 +304,51 @@ bool NativeEnvelopeHash(const FJsonObject& O,FString& Out){
     }return LivingTownCafeJournal::Sha256(Bytes(W.bytes),Out);
 }
 FString NativeSourceHash(const P::CareBindings& Sources){P::detail::Writer W;P::write_bindings(W,Sources.world);W.s(Sources.care_core_sha256);FString H;LivingTownCafeJournal::Sha256(Bytes(W.bytes),H);return H;}
+P::CareBindings LegacyV4Sources(const P::CareBindings& Current){
+    auto Legacy=Current;
+    Legacy.world.core_sha256="4856df21feca1d51d357454cee2047e4de19e4ffa7c16aa57d459f6f0793e903";
+    Legacy.world.fixture_sha256=Utf8(Fingerprint({RosterHash,ConfigHash,TEXT("0cf5fca9a0f91fbaedfa83ab8e786f5022733aa33a56ea8f954d244bb9bd2690"),TEXT("native_cafe_world_v3_adapter_v1")}));
+    // Exact current physical/visual/roster/recipe bindings remain required.
+    return Legacy;
 }
-FString ULivingTownCafeWorldV3Subsystem::SlotPath()const{return FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldMealCareV4.slot.json");}
+}
+FString ULivingTownCafeWorldV3Subsystem::SlotPath()const{return FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldRentCareV5.slot.json");}
 bool ULivingTownCafeWorldV3Subsystem::EncodeJournal(FString& Json,FString& Error)const{
     Json.Reset();Error.Reset();bool Reach=false;FString Why;
     if(!IsInGameThread()||!bPrepared||!State||!ObserveCounter(Reach,Why)){Error=Why.IsEmpty()?TEXT("source_bound_native_world_session_required"):Why;return false;}
     uint64 Bits=0;FMemory::Memcpy(&Bits,&ClockRemainder,sizeof(Bits));
     const auto Encoded=P::save_care_envelope(State->Kernel,State->Use,State->Sources,{State->Clock,Bits},Utf8(PersonaId(SessionController->GetNativePersona())));
-    if(!Encoded){Error=TEXT("paired_v4_source_or_replay_refused_save");return false;}
+    if(!Encoded){Error=TEXT("paired_v5_source_or_replay_refused_save");return false;}
     const auto Payload=Bytes(*Encoded);FString Hash;if(!LivingTownCafeJournal::Sha256(Payload,Hash)){Error=TEXT("world_payload_hash_failed");return false;}
-    auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("format"),TEXT("LivingTown.CafeWorldMealCare.NativeJournal"));O->SetStringField(TEXT("version"),TEXT("4"));O->SetStringField(TEXT("capability"),TEXT("cafe.world_meal_care.v4"));O->SetStringField(TEXT("source_sha256"),NativeSourceHash(State->Sources));O->SetStringField(TEXT("payload_sha256"),Hash);O->SetStringField(TEXT("payload_base64"),FBase64::Encode(Payload));
+    auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("format"),TEXT("LivingTown.CafeWorldMealCare.NativeJournal"));O->SetStringField(TEXT("version"),TEXT("5"));O->SetStringField(TEXT("capability"),TEXT("cafe.world_rent_care.v5"));O->SetStringField(TEXT("source_sha256"),NativeSourceHash(State->Sources));O->SetStringField(TEXT("payload_sha256"),Hash);O->SetStringField(TEXT("payload_base64"),FBase64::Encode(Payload));
     FString EnvelopeHash;if(!NativeEnvelopeHash(*O,EnvelopeHash)){Error=TEXT("world_envelope_hash_failed");return false;}O->SetStringField(TEXT("envelope_sha256"),EnvelopeHash);
     if(!FJsonSerializer::Serialize(O,TJsonWriterFactory<TCHAR,TCondensedJsonPrintPolicy<TCHAR>>::Create(&Json))||Json.Len()>MaxEnvelopeBytes){Error=TEXT("world_envelope_encoding_failed");return false;}return true;
 }
 bool ULivingTownCafeWorldV3Subsystem::LoadJournal(const FString& Json,FString& Error){
+    return DecodeJournal(Json,false,Error);
+}
+bool ULivingTownCafeWorldV3Subsystem::ImportLegacyV4Journal(const FString& Json,FString& Error){
+    return DecodeJournal(Json,true,Error);
+}
+bool ULivingTownCafeWorldV3Subsystem::DecodeJournal(const FString& Json,bool bLegacyImport,FString& Error){
     Error.Reset();auto Fail=[&](const TCHAR* Why){Error=Why;return false;};bool Reach=false;FString Why;
     if(!IsInGameThread()||!bPrepared||!State||!ObserveCounter(Reach,Why))return Fail(TEXT("source_bound_native_world_session_required"));
     if(Json.Len()>MaxEnvelopeBytes||!LivingTownCafeJournal::HasUniqueObjectKeys(Json))return Fail(TEXT("world_envelope_size_or_duplicate_fields"));
     TSharedPtr<FJsonObject> O;if(!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json),O)||!O||!Keys(*O,{TEXT("format"),TEXT("version"),TEXT("capability"),TEXT("source_sha256"),TEXT("payload_sha256"),TEXT("payload_base64"),TEXT("envelope_sha256")}))return Fail(TEXT("world_envelope_schema_required"));
     const auto Equal=[&](const TCHAR* K,const FString& Expected){FString V;return String(*O,K,V)&&V==Expected;};
-    FString H;if(!NativeEnvelopeHash(*O,H)||!Equal(TEXT("envelope_sha256"),H)||!Equal(TEXT("format"),TEXT("LivingTown.CafeWorldMealCare.NativeJournal"))||!Equal(TEXT("version"),TEXT("4"))||!Equal(TEXT("capability"),TEXT("cafe.world_meal_care.v4"))||!Equal(TEXT("source_sha256"),NativeSourceHash(State->Sources)))return Fail(TEXT("world_envelope_sha_version_or_source_mismatch"));
+    const auto Expected=bLegacyImport?LegacyV4Sources(State->Sources):State->Sources;
+    FString H;if(!NativeEnvelopeHash(*O,H)||!Equal(TEXT("envelope_sha256"),H)||!Equal(TEXT("format"),TEXT("LivingTown.CafeWorldMealCare.NativeJournal"))||!Equal(TEXT("version"),bLegacyImport?TEXT("4"):TEXT("5"))||!Equal(TEXT("capability"),bLegacyImport?TEXT("cafe.world_meal_care.v4"):TEXT("cafe.world_rent_care.v5"))||!Equal(TEXT("source_sha256"),NativeSourceHash(Expected)))return Fail(TEXT("world_envelope_sha_version_or_source_mismatch"));
     FString Encoded,PayloadHash;TArray<uint8> Payload;
     if(!String(*O,TEXT("payload_base64"),Encoded)||!String(*O,TEXT("payload_sha256"),PayloadHash)||!FBase64::Decode(Encoded,Payload)||Payload.IsEmpty()||Payload.Num()>int32(P::max_paired_bytes)||FBase64::Encode(Payload)!=Encoded||!LivingTownCafeJournal::Sha256(Payload,H)||PayloadHash!=H)return Fail(TEXT("world_payload_bytes_or_sha_mismatch"));
     auto Candidate=State->Kernel;auto Use=State->Use;P::ClockMetadata Clock;
     const std::string Raw(reinterpret_cast<const char*>(Payload.GetData()),size_t(Payload.Num()));
-    if(!P::load_care_envelope(Candidate,Use,Raw,State->Sources,Clock))return Fail(TEXT("paired_v4_strict_replay_or_binding_mismatch"));
+    const bool Loaded=bLegacyImport?P::import_legacy_care_envelope(Candidate,Use,Raw,Expected,Clock):P::load_care_envelope(Candidate,Use,Raw,Expected,Clock);
+    if(!Loaded)return Fail(TEXT("paired_strict_replay_or_binding_mismatch"));
     double Fraction=0;FMemory::Memcpy(&Fraction,&Clock.fraction_bits,sizeof(Fraction));
     // Publication occurs only after both independent replays, source/clock and
     // reservations reconcile; saved persona/position/observations grant nothing.
     StopPhysicalMeal();State->Kernel=std::move(Candidate);State->Use=std::move(Use);State->Clock=Clock.tick;ClockRemainder=Fraction;
-    Notice=TEXT("Cafe restored. Previous meals stay stopped; earned progress is kept. Your resident and position are unchanged.");RefreshPresentation();return true;
+    Notice=bLegacyImport?TEXT("Older cafe save imported. Fixed leases stay fixed. Previous meals stay stopped; earned progress is kept."):TEXT("Cafe restored. Previous meals stay stopped; earned progress is kept. Your resident and position are unchanged.");RefreshPresentation();return true;
 }
 bool ULivingTownCafeWorldV3Subsystem::SaveSlot(FString& Error,FString* SavedSha)const{
     FString Json;if(!EncodeJournal(Json,Error)||!LivingTownCafeSlot::WriteAtomic(SlotPath(),Json,Error))return false;
@@ -320,4 +357,11 @@ bool ULivingTownCafeWorldV3Subsystem::SaveSlot(FString& Error,FString* SavedSha)
 bool ULivingTownCafeWorldV3Subsystem::LoadSlot(FString& Error){
     if(!IsInGameThread()){Error=TEXT("wrong_thread");return false;}const FString Path=SlotPath();const int64 Size=IFileManager::Get().FileSize(*Path);
     if(Size<=0||Size>MaxEnvelopeBytes){Error=TEXT("world_slot_missing_or_oversize");return false;}FString Json;if(!FFileHelper::LoadFileToString(Json,*Path)){Error=TEXT("world_slot_read_failed");return false;}return LoadJournal(Json,Error);
+}
+bool ULivingTownCafeWorldV3Subsystem::ImportLegacyV4Slot(FString& Error){
+    if(!IsInGameThread()){Error=TEXT("wrong_thread");return false;}
+    const FString Path=FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldMealCareV4.slot.json");const int64 Size=IFileManager::Get().FileSize(*Path);
+    if(Size<=0||Size>MaxEnvelopeBytes){Error=TEXT("older_world_slot_missing_or_oversize");return false;}
+    FString Json;if(!FFileHelper::LoadFileToString(Json,*Path)){Error=TEXT("older_world_slot_read_failed");return false;}
+    return ImportLegacyV4Journal(Json,Error);
 }

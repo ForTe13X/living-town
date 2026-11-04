@@ -32,10 +32,14 @@ public:
     FLivingTownCafeWorldReceipt SubmitMeal(const FLivingTownCafeMealCommand& Command);
     FLivingTownCafeWorldReceipt CancelMeal();
     FLivingTownCafeWorldReceipt SubmitProperty(const FLivingTownCafePropertyCommand& Command);
+    FLivingTownCafeWorldReceipt SubmitRecurringLeaseOffer(const FString& RequestId);
+    FLivingTownCafeWorldReceipt SubmitLeaseAgreement(const FString& RequestId,bool bRecurring,int64 ObservedOfferRevision,int64 ObservedTitleRevision);
     bool SaveSlot(FString& Error,FString* SavedSha256=nullptr)const;
     bool LoadSlot(FString& Error);
     bool EncodeJournal(FString& Json,FString& Error)const;
     bool LoadJournal(const FString& Json,FString& Error);
+    bool ImportLegacyV4Journal(const FString& Json,FString& Error);
+    bool ImportLegacyV4Slot(FString& Error);
 private:
     struct FState;
     struct FStateDeleter{void operator()(FState* Pointer)const;};
@@ -65,4 +69,6 @@ private:
     bool AdvanceNaturalClock(int64 Whole,bool bContinuous,FString& Error);
     void RefreshPresentation();
     FString SlotPath()const;
+    FLivingTownCafeWorldReceipt SubmitPropertyInternal(const FLivingTownCafePropertyCommand& Command,bool bRecurringOffer,bool bRecurringAgreement,int64 ObservedOfferRevision,int64 ObservedTitleRevision);
+    bool DecodeJournal(const FString& Json,bool bLegacyImport,FString& Error);
 };
