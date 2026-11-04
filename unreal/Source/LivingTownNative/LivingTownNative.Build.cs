@@ -30,8 +30,8 @@ public class LivingTownNative : ModuleRules
         // native V2 adapter. Byte binding does not qualify a native meal journey.
         string[,] MealCareSources = {
             { "DailyLifeUseV1.hpp", "3968a82beab862fdd56054d1fe6cfe08aca3c7be41003a1fdc82abae56841d06" },
-            { "CafeWorldV3.hpp", "4856df21feca1d51d357454cee2047e4de19e4ffa7c16aa57d459f6f0793e903" },
-            { "CafeWorldV3Envelope.hpp", "0cf5fca9a0f91fbaedfa83ab8e786f5022733aa33a56ea8f954d244bb9bd2690" },
+            { "CafeWorldV3.hpp", "9c31b82a263b389457a8d3ea00344f90e24b81f646f66a6b8377ccb4b85be46d" },
+            { "CafeWorldV3Envelope.hpp", "f003c16885a0fb8213f492114d1b9aa108791385f45a6c23f4e12e67d17b7616" },
             { "CafeBackendV3.hpp", "f311599b6bb10f4ac60281c9bb2bbaf904b62bf8fec68b1ac46d7ae7e932994d" }
         };
         for (int Index = 0; Index < MealCareSources.GetLength(0); ++Index)

@@ -18,13 +18,15 @@ public:
     const FString& GetOperationNotice()const{return OperationNotice;}
     FLivingTownCafeWorldReceipt RequestMeal(const FLivingTownCafeMealCommand& Command);
     FLivingTownCafeWorldReceipt RequestCancelMeal();
+    FLivingTownCafeWorldReceipt RequestRecurringLeaseOffer(const FString& RequestId);
+    FLivingTownCafeWorldReceipt RequestLeaseAgreement(const FString& RequestId,bool bRecurring,int64 ObservedOfferRevision,int64 ObservedTitleRevision);
 private:
     friend class ALivingTownCafeWorldV3GameMode;
     bool bAuthorized=false;
     ELivingTownCafeWorldPersona Persona=ELivingTownCafeWorldPersona::Ben;
     FString OperationNotice;
-    void SelectAria();void SelectBen();void Eat();void Cancel();void Save();void Load();
-    void OfferSale();void OfferLease();void Buy();void Lease();void EndLease();
+    void SelectAria();void SelectBen();void Eat();void Cancel();void Save();void Load();void ImportOlderSave();
+    void OfferSale();void OfferLease();void OfferRecurringLease();void Buy();void Lease();void EndLease();
     void SendProperty(ELivingTownCafePropertyAction Action);
 };
 UCLASS(NotBlueprintable)

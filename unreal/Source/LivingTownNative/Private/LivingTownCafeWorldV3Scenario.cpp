@@ -45,7 +45,9 @@ void ALivingTownCafeWorldV3Controller::SetupInputComponent(){
     InputComponent->BindKey(EKeys::F1,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::SelectAria);InputComponent->BindKey(EKeys::F2,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::SelectBen);
     InputComponent->BindKey(EKeys::E,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::Eat);InputComponent->BindKey(EKeys::X,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::Cancel);
     InputComponent->BindKey(EKeys::O,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::OfferSale);InputComponent->BindKey(EKeys::L,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::OfferLease);InputComponent->BindKey(EKeys::B,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::Buy);InputComponent->BindKey(EKeys::K,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::Lease);InputComponent->BindKey(EKeys::R,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::EndLease);
+    InputComponent->BindKey(EKeys::N,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::OfferRecurringLease);
     InputComponent->BindKey(EKeys::F5,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::Save);InputComponent->BindKey(EKeys::F9,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::Load);
+    InputComponent->BindKey(EKeys::I,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::ImportOlderSave);
 }
 void ALivingTownCafeWorldV3Controller::SelectAria(){FString Error;auto* G=GetWorld()?GetWorld()->GetAuthGameMode<ALivingTownCafeWorldV3GameMode>():nullptr;OperationNotice=G&&G->SelectPersona(this,ELivingTownCafeWorldPersona::Aria,Error)?TEXT("Playing Aria."):TEXT("Unable to select Aria.");}
 void ALivingTownCafeWorldV3Controller::SelectBen(){FString Error;auto* G=GetWorld()?GetWorld()->GetAuthGameMode<ALivingTownCafeWorldV3GameMode>():nullptr;OperationNotice=G&&G->SelectPersona(this,ELivingTownCafeWorldPersona::Ben,Error)?TEXT("Playing Ben."):TEXT("Unable to select Ben.");}
@@ -58,8 +60,23 @@ void ALivingTownCafeWorldV3Controller::Eat(){auto* P=GetWorld()?GetWorld()->GetS
 void ALivingTownCafeWorldV3Controller::Cancel(){RequestCancelMeal();}
 void ALivingTownCafeWorldV3Controller::Save(){FString Error;auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;OperationNotice=P&&P->SaveSlot(Error)?TEXT("Cafe saved."):TEXT("Unable to save the cafe.");}
 void ALivingTownCafeWorldV3Controller::Load(){FString Error;auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;OperationNotice=P&&P->LoadSlot(Error)?TEXT("Cafe restored. Previous meals stay stopped; earned progress is kept."):TEXT("Unable to restore this cafe save.");}
+void ALivingTownCafeWorldV3Controller::ImportOlderSave(){FString Error;auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;OperationNotice=P&&P->ImportLegacyV4Slot(Error)?TEXT("Older cafe save imported. Fixed leases stay fixed."):TEXT("Unable to import this older cafe save. Your current cafe is unchanged.");}
+FLivingTownCafeWorldReceipt ALivingTownCafeWorldV3Controller::RequestRecurringLeaseOffer(const FString& RequestId){
+    auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;FLivingTownCafeWorldReceipt R;
+    if(P&&GetWorld()->GetFirstPlayerController()==this)R=P->SubmitRecurringLeaseOffer(RequestId);else R.Message=TEXT("The cafe is unavailable.");
+    OperationNotice=P&&P->GetPresentation().Notice==R.Message?FString():R.Message;return R;
+}
+FLivingTownCafeWorldReceipt ALivingTownCafeWorldV3Controller::RequestLeaseAgreement(const FString& RequestId,bool bRecurring,int64 ObservedOfferRevision,int64 ObservedTitleRevision){
+    auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;FLivingTownCafeWorldReceipt R;
+    if(P&&GetWorld()->GetFirstPlayerController()==this)R=P->SubmitLeaseAgreement(RequestId,bRecurring,ObservedOfferRevision,ObservedTitleRevision);else R.Message=TEXT("The cafe is unavailable.");
+    OperationNotice=P&&P->GetPresentation().Notice==R.Message?FString():R.Message;return R;
+}
 void ALivingTownCafeWorldV3Controller::SendProperty(ELivingTownCafePropertyAction A){auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;if(!P){OperationNotice=TEXT("The cafe is unavailable.");return;}FLivingTownCafePropertyCommand C;C.Action=A;C.RequestId=TEXT("ui/property/")+FGuid::NewGuid().ToString(EGuidFormats::Digits);const auto R=P->SubmitProperty(C);OperationNotice=P->GetPresentation().Notice==R.Message?FString():R.Message;}
-void ALivingTownCafeWorldV3Controller::OfferSale(){SendProperty(ELivingTownCafePropertyAction::OfferSale);}void ALivingTownCafeWorldV3Controller::OfferLease(){SendProperty(ELivingTownCafePropertyAction::OfferLease);}void ALivingTownCafeWorldV3Controller::Buy(){SendProperty(ELivingTownCafePropertyAction::Buy);}void ALivingTownCafeWorldV3Controller::Lease(){SendProperty(ELivingTownCafePropertyAction::Lease);}void ALivingTownCafeWorldV3Controller::EndLease(){SendProperty(ELivingTownCafePropertyAction::EndLease);}
+void ALivingTownCafeWorldV3Controller::OfferSale(){SendProperty(ELivingTownCafePropertyAction::OfferSale);}void ALivingTownCafeWorldV3Controller::OfferLease(){SendProperty(ELivingTownCafePropertyAction::OfferLease);}
+void ALivingTownCafeWorldV3Controller::OfferRecurringLease(){RequestRecurringLeaseOffer(TEXT("ui/recurring-offer/")+FGuid::NewGuid().ToString(EGuidFormats::Digits));}
+void ALivingTownCafeWorldV3Controller::Buy(){SendProperty(ELivingTownCafePropertyAction::Buy);}
+void ALivingTownCafeWorldV3Controller::Lease(){auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;if(!P)return;const auto View=P->GetPresentation();RequestLeaseAgreement(TEXT("ui/lease/")+FGuid::NewGuid().ToString(EGuidFormats::Digits),View.bRecurringOffer,View.bRecurringOffer?View.OfferRevision:-1,View.bRecurringOffer?View.OfferTitleRevision:-1);}
+void ALivingTownCafeWorldV3Controller::EndLease(){SendProperty(ELivingTownCafePropertyAction::EndLease);}
 TArray<FString> ALivingTownCafeWorldV3HUD::GetFeedbackRows()const{
     TArray<FString> Rows;const auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;
     if(!P||!P->IsPrepared())return Rows;
@@ -118,9 +135,9 @@ void ALivingTownCafeWorldV3HUD::DrawHUD(){
     TArray<FHudLine> Controls={
         {TEXT("CONTROLS"),Gold},{TEXT("WASD Move"),Ink},{TEXT("Mouse Look"),Ink},
         {TEXT("F1 Aria  |  F2 Ben"),Ink},{TEXT("E Eat  |  X Cancel"),Ink},
-        {TEXT("PROPERTY"),Gold},{TEXT("O Offer sale"),Ink},{TEXT("L Offer lease"),Ink},
+        {TEXT("PROPERTY"),Gold},{TEXT("O Offer sale"),Ink},{TEXT("L Fixed | N Recurring lease"),Ink},
         {TEXT("B Buy  |  K Lease"),Ink},{TEXT("R End lease"),Ink},
-        {TEXT("SAVE"),Gold},{TEXT("F5 Save  |  F9 Load"),Ink}};
+        {TEXT("SAVE"),Gold},{TEXT("F5 Save  |  F9 Load"),Ink},{TEXT("I Import older save"),Ink}};
     const float ControlsBottom=Card(Right,Margin,Controls,Bottom-Margin);
     TArray<FHudLine> Status={{TEXT("LIVING TOWN / CAFE"),Gold}};
     if(!P||!P->IsPrepared()){

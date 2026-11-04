@@ -40,7 +40,7 @@ inline bool valid_clock_for(const Kernel& k,const ClockMetadata& clock) {
         k.events().size()+pending+(k.lease().active?1U:0U)<=max_events;
 }
 struct Envelope {
-    std::string format="LivingTown.CafeWorldMeal.PortableEnvelope", version="3";
+    std::string format="LivingTown.CafeWorldMeal.PortableEnvelope", version="5";
     std::string integrity="fnv64_canonical_not_authentication";
     SourceBindings bindings;
     ClockMetadata clock;
@@ -80,7 +80,7 @@ inline std::optional<std::string> save_envelope(const Kernel& k,const SourceBind
 }
 inline bool load_envelope(Kernel& live,const std::string& bytes,const SourceBindings& expected,ClockMetadata& live_clock) {
     const auto e=decode_envelope_document(bytes);if(!e||!valid_bindings(expected)||!valid_bindings(e->bindings)||
-        !same_bindings(e->bindings,expected)||e->format!="LivingTown.CafeWorldMeal.PortableEnvelope"||e->version!="3"||
+        !same_bindings(e->bindings,expected)||e->format!="LivingTown.CafeWorldMeal.PortableEnvelope"||e->version!="5"||
         e->integrity!="fnv64_canonical_not_authentication"||e->session_policy!="live_native_identity_position_unchanged"||
         (e->saved_persona!="aria"&&e->saved_persona!="ben")||
         detail::hash_bytes(14695981039346656037ULL,e->payload)!=e->payload_digest)return false;
@@ -90,9 +90,9 @@ inline bool load_envelope(Kernel& live,const std::string& bytes,const SourceBind
     live=std::move(candidate);live_clock=e->clock;return true;
 }
 
-// First paired durable-care format. The original V3 envelope API/bytes remain
-// unchanged. This V4 seam covers ONE resident's meals, not a new simulation or
-// native persistence backend. Native adoption still needs SHA256 + WriteAtomic.
+// Paired V5 retains one resident's meals and the same world authority while
+// distinguishing explicit recurring agreements. Legacy V4 needs explicit import;
+// native persistence still validates SHA256/source and uses WriteAtomic.
 namespace care=living_town::daily_life_use_v1;
 constexpr std::size_t max_care_bytes=32*1024*1024;
 constexpr std::size_t max_paired_bytes=max_journal_bytes+max_care_bytes+16384;
@@ -214,7 +214,7 @@ inline Receipt cancel_meal_use(Kernel& live,care::ResidentUse& use,ReleaseReason
 struct CareBindings {SourceBindings world;std::string care_core_sha256;};
 inline bool valid_care_bindings(const CareBindings& b){return valid_bindings(b.world)&&sha_token(b.care_core_sha256);}
 struct CareEnvelope {
-    std::string format="LivingTown.CafeWorldMealCare.PortableEnvelope",version="4",integrity="fnv64_canonical_not_authentication";
+    std::string format="LivingTown.CafeWorldMealCare.PortableEnvelope",version="5",integrity="fnv64_canonical_not_authentication";
     CareBindings bindings;ClockMetadata clock;
     std::string saved_persona="ben",session_policy="live_native_identity_position_unchanged";
     std::string world_payload,care_payload;
@@ -250,7 +250,7 @@ inline bool load_care_envelope(Kernel& live,care::ResidentUse& use,const std::st
     const auto e=decode_care_envelope_document(bytes);
     if(!e||!valid_care_bindings(expected)||!valid_care_bindings(e->bindings)||
        !same_bindings(expected.world,e->bindings.world)||expected.care_core_sha256!=e->bindings.care_core_sha256||
-       e->format!="LivingTown.CafeWorldMealCare.PortableEnvelope"||e->version!="4"||e->integrity!="fnv64_canonical_not_authentication"||
+        e->format!="LivingTown.CafeWorldMealCare.PortableEnvelope"||e->version!="5"||e->integrity!="fnv64_canonical_not_authentication"||
        e->session_policy!="live_native_identity_position_unchanged"||(e->saved_persona!="aria"&&e->saved_persona!="ben")||
        detail::hash_bytes(14695981039346656037ULL,e->world_payload)!=e->world_digest||detail::hash_bytes(14695981039346656037ULL,e->care_payload)!=e->care_digest)return false;
     const auto journal=decode_care_document(e->care_payload);if(!journal)return false;
@@ -262,6 +262,23 @@ inline bool load_care_envelope(Kernel& live,care::ResidentUse& use,const std::st
     if(!candidate.interrupt_loaded_grants(e->clock.tick))return false;
     care_candidate.invalidate_use_after_load();
     if(!care_matches_world(candidate,care_candidate))return false;
+    live=std::move(candidate);use=std::move(care_candidate);clock=e->clock;return true;
+}
+// The native caller separately verifies the OLD SHA256 envelope/source/scene.
+// This explicit API never makes ordinary V5 loading fall back to V4.
+inline bool import_legacy_care_envelope(Kernel& live,care::ResidentUse& use,const std::string& bytes,const CareBindings& expected_legacy,ClockMetadata& clock) {
+    const auto e=decode_care_envelope_document(bytes);
+    if(!e||!valid_care_bindings(expected_legacy)||!valid_care_bindings(e->bindings)||
+        !same_bindings(expected_legacy.world,e->bindings.world)||expected_legacy.care_core_sha256!=e->bindings.care_core_sha256||
+        e->format!="LivingTown.CafeWorldMealCare.PortableEnvelope"||e->version!="4"||e->integrity!="fnv64_canonical_not_authentication"||
+        e->session_policy!="live_native_identity_position_unchanged"||(e->saved_persona!="aria"&&e->saved_persona!="ben")||
+        detail::hash_bytes(14695981039346656037ULL,e->world_payload)!=e->world_digest||detail::hash_bytes(14695981039346656037ULL,e->care_payload)!=e->care_digest)return false;
+    const auto journal=decode_care_document(e->care_payload);if(!journal)return false;
+    Kernel candidate=live;care::ResidentUse care_candidate=use;
+    if(!candidate.import_legacy_v3_bytes(e->world_payload)||!care_candidate.restore_state(*journal)||
+        !valid_clock_for(candidate,e->clock)||e->clock.tick!=care_candidate.tick()||!care_matches_world(candidate,care_candidate))return false;
+    if(!candidate.interrupt_loaded_grants(e->clock.tick))return false;
+    care_candidate.invalidate_use_after_load();if(!care_matches_world(candidate,care_candidate))return false;
     live=std::move(candidate);use=std::move(care_candidate);clock=e->clock;return true;
 }
 } // namespace living_town::cafe_world_v3

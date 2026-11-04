@@ -29,8 +29,10 @@ struct FLivingTownCafeWorldReceipt {
 };
 struct FLivingTownCafeWorldView {
     bool bPrepared=false,bSessionReady=false,bReachable=false,bMealActive=false,bMealAvailable=false;
+    bool bRecurringOffer=false,bRecurringLease=false;
     FString Persona,Owner,Operator,ResidentLabel,PropertyLabel,ListingLabel,MealLabel,Prompt,Notice,Diagnostic;
     int64 AriaCoins=0,BenCoins=0,Clock=0,Revision=0,Stock=0;
+    int64 OfferRevision=-1,OfferTitleRevision=-1,RentDueTick=-1,RentAmount=0;
     int32 Hunger=0,Fun=0,ProgressTicks=0;
 };
 

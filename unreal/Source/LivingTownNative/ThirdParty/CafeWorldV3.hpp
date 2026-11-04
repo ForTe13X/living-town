@@ -21,8 +21,10 @@ using Int = std::int64_t;
 constexpr Int max_tick = 9007199254740991LL;
 constexpr std::size_t max_events = 1024;
 constexpr std::size_t max_journal_bytes = 12*1024*1024; // new bounded V3, includes preserved V2 lineage
-inline constexpr const char* schema = "living_town.cafe_world_meal.v3";
-inline constexpr const char* capability = "cafe.world_meal.v3";
+inline constexpr const char* schema = "living_town.cafe_world_rent.v5";
+inline constexpr const char* capability = "cafe.world_rent.v5";
+inline constexpr const char* legacy_schema = "living_town.cafe_world_meal.v3";
+inline constexpr const char* legacy_capability = "cafe.world_meal.v3";
 inline constexpr const char* source_config_sha256 = "d45f1b001e0177088757be4e45ee3a4910c5cd6b09b18128693058886f40637f";
 
 struct Account { std::string id; Int opening=0, coin=0; };
@@ -32,22 +34,28 @@ struct Terms {
     std::string config_sha256=source_config_sha256;
     Int lease_fee=4, lease_duration=720, sale_price=12;
 };
-enum class Action { offer_lease, offer_sale, buy, lease, end_lease, expire };
+enum class Action { offer_lease, offer_sale, buy, lease, end_lease, expire, offer_recurring_lease, collect_rent };
 inline std::string action_name(Action a) {
     switch(a) {
     case Action::offer_lease: return "offer_lease"; case Action::offer_sale: return "offer_sale";
     case Action::buy: return "buy"; case Action::lease: return "lease";
     case Action::end_lease: return "end_lease"; case Action::expire: return "expire";
+    case Action::offer_recurring_lease:return "offer_recurring_lease";
+    case Action::collect_rent:return "collect_rent";
     }
     return {};
 }
 inline std::optional<Action> parse_action(const std::string& s) {
-    for(Action a: {Action::offer_lease,Action::offer_sale,Action::buy,Action::lease,Action::end_lease,Action::expire})
+    for(Action a: {Action::offer_lease,Action::offer_sale,Action::buy,Action::lease,Action::end_lease,Action::expire,Action::offer_recurring_lease,Action::collect_rent})
         if(action_name(a)==s) return a;
     return {};
 }
-// The native UI supplies only these three fields. Context is authority-only.
-struct Intent { std::string request_id, property_id; Action action=Action::lease; };
+// Recurring acceptance additionally names the offer the player actually saw.
+// No client field chooses actor, price, payee, period or payment success.
+struct Intent {
+    std::string request_id, property_id; Action action=Action::lease;
+    std::string agreed_lease_kind{};Int expected_offer_revision=-1,expected_title_revision=-1;
+};
 struct Context {
     std::string actor, authenticated_actor, space_id, floor_id, interaction_id;
     Int tick=0;
@@ -429,7 +437,9 @@ class Kernel {
     }
     Event base(const Intent& i,const Context& c) const {
         Event e;e.tick=c.tick;e.actor=c.actor;e.target=i.property_id;e.subject=i.property_id;e.request_id=i.request_id;
-        e.action=action_name(i.action);e.context=c;e.owner_before=title_.owner;e.title_revision=title_.revision;return e;
+        e.action=action_name(i.action);e.context=c;e.owner_before=title_.owner;e.title_revision=title_.revision;
+        if(i.action==Action::lease&&i.agreed_lease_kind=="recurring_lease"){e.offer_kind=i.agreed_lease_kind;e.offer_revision=i.expected_offer_revision;}
+        return e;
     }
     void append(Event e) {
         if(events_.size()>=max_events)throw std::overflow_error("event capacity");
@@ -454,7 +464,8 @@ class Kernel {
             Event actual;
             if(!transfer(*p.payment,actual)) {
                 e.type="property_refused";e.accepted=false;e.note="settlement_rejected";e.txid.clear();
-                e.amount.reset();e.end_tick.reset();e.owner_after.clear();e.offer_revision.reset();
+                e.amount.reset();e.end_tick.reset();e.owner_after.clear();
+                if(i.agreed_lease_kind=="recurring_lease")e.offer_revision=i.expected_offer_revision;else e.offer_revision.reset();
                 return commit(i,c,std::move(e),false,"settlement_rejected");
             }
             if(fault==FaultPoint::after_payment_before_property)throw std::runtime_error("injected_postpay");
@@ -467,6 +478,8 @@ class Kernel {
             title_={e.owner_after,title_.revision+1,r.event_id};offer_={false,"","",0,0,-1};
         } else if(e.type=="property_lease_granted") {
             lease_={true,c.actor,e.owner_before,c.tick,*e.end_tick,r.event_id,*e.pay_event_id,-1,-1};
+        } else if(e.type=="property_rent_paid") {
+            lease_.end=*e.end_tick;
         } else if(e.type=="property_lease_ended") {lease_.active=false;lease_.end_event_id=r.event_id;lease_.ended_tick=c.tick;}
         return r;
     }
@@ -483,28 +496,67 @@ public:
         auto invalid=[](const std::string& why){Plan p;p.receipt.reason=why;return p;};
         if(!token(i.request_id)||!token(i.property_id,64)||action_name(i.action).empty())return invalid("malformed_request");
         if(i.property_id!=terms_.property_id)return invalid("unknown_property");
-        if(c.actor!=c.authenticated_actor||(!find(c.actor)&&!(c.actor=="town"&&i.action==Action::expire)))return invalid("unauthenticated_actor");
+        const bool trusted_due=i.action==Action::expire||i.action==Action::collect_rent;
+        if(c.actor!=c.authenticated_actor||(!find(c.actor)&&!(c.actor=="town"&&trusted_due)))return invalid("unauthenticated_actor");
         if(c.space_id.size()>128||c.floor_id.size()>128||c.interaction_id.size()>128)return invalid("malformed_context");
-        if(c.tick<last_tick_||c.tick<import_clock_||c.tick>max_tick)return invalid("invalid_command_tick");
-        for(const auto& old:meal_requests_)if(old.command.request_id==i.request_id)return invalid("request_id_conflict");
-        for(const auto& old:requests_)if(old.intent.request_id==i.request_id) {
+        if(c.tick<0||c.tick>max_tick)return invalid("invalid_command_tick");
+        if(i.action!=Action::lease&&(!i.agreed_lease_kind.empty()||i.expected_offer_revision!=-1||i.expected_title_revision!=-1))return invalid("malformed_agreement");
+        if(i.action==Action::lease&&!((i.agreed_lease_kind.empty()&&i.expected_offer_revision==-1&&i.expected_title_revision==-1)||
+            (i.agreed_lease_kind=="recurring_lease"&&i.expected_offer_revision>=0&&i.expected_offer_revision<=max_tick&&
+                i.expected_title_revision>=0&&i.expected_title_revision<=max_tick)))return invalid("malformed_agreement");
+        // A retried authority due returns the recorded outcome even after later
+        // periods. It never supplies fresh rights or another payment.
+        if(i.action==Action::collect_rent)for(const auto& old:requests_)if(old.intent.request_id==i.request_id) {
             if(old.actor!=c.actor||old.intent.property_id!=i.property_id||old.intent.action!=i.action)return invalid("request_id_conflict");
             Plan p;p.receipt=old.receipt;p.receipt.already_applied=true;return p;
         }
+        if(c.tick<last_tick_||c.tick<import_clock_||c.tick>max_tick)return invalid("invalid_command_tick");
+        for(const auto& old:meal_requests_)if(old.command.request_id==i.request_id)return invalid("request_id_conflict");
+        for(const auto& old:requests_)if(old.intent.request_id==i.request_id) {
+            if(old.actor!=c.actor||old.intent.property_id!=i.property_id||old.intent.action!=i.action||
+                old.intent.agreed_lease_kind!=i.agreed_lease_kind||old.intent.expected_offer_revision!=i.expected_offer_revision||
+                old.intent.expected_title_revision!=i.expected_title_revision)return invalid("request_id_conflict");
+            Plan p;p.receipt=old.receipt;p.receipt.already_applied=true;return p;
+        }
+        // A local offer revision may restart after a deed. The title/offer pair
+        // identifies a generation across ownership round trips without changing
+        // released fixed-contract wire fields. Reject stale titles before logging
+        // a new refusal so its existing title_revision also records the intent.
+        if(i.agreed_lease_kind=="recurring_lease"&&i.expected_title_revision!=title_.revision)return invalid("recurring_agreement_required");
         Event e=base(i,c);
         auto refuse=[&](const std::string& why){Plan p;Event denied=base(i,c);denied.type="property_refused";denied.note=why;denied.accepted=false;p.event=denied;p.receipt.reason=why;return p;};
-        if(i.action!=Action::expire&&(c.space_id!=terms_.space_id||c.floor_id!=terms_.floor_id||c.interaction_id!=terms_.interaction_id||!c.within_reach))return refuse("not_at_commercial_counter");
+        if(!trusted_due&&(c.space_id!=terms_.space_id||c.floor_id!=terms_.floor_id||c.interaction_id!=terms_.interaction_id||!c.within_reach))return refuse("not_at_commercial_counter");
+        if(recurring_lease()&&c.tick>=lease_.end&&!trusted_due)return invalid("property_due_required");
         e.accepted=true;e.note=action_name(i.action);Plan p;p.receipt.ok=true;
-        if(i.action==Action::offer_lease||i.action==Action::offer_sale) {
+        if(i.action==Action::collect_rent) {
+            if(c.actor!="town"||!recurring_lease()||c.tick!=lease_.end||i.request_id!=rent_request_id())return invalid("rent_not_due");
+            e.lease_event_id=lease_.event_id;
+            const auto* from=find(lease_.tenant);const auto* to=find(lease_.owner);
+            if(!from||!to||from==to||to->coin>std::numeric_limits<Int>::max()-terms_.lease_fee)return invalid("rent_ledger_unavailable");
+            if(from->coin<terms_.lease_fee||lease_.end>max_tick-terms_.lease_duration) {
+                e.type="property_lease_ended";e.note=from->coin<terms_.lease_fee?"rent_unpaid":"term_limit_reached";
+                e.amount=0;p.receipt.reason=e.note;
+            } else {
+                e.type="property_rent_paid";e.note="rent_paid";e.amount=terms_.lease_fee;e.end_tick=lease_.end+terms_.lease_duration;
+                e.txid="property/"+i.request_id;p.receipt.reason="rent_paid";
+                p.payment=PaymentIntent{lease_.tenant,lease_.owner,"property_rent:"+terms_.property_id+"*"+std::to_string(terms_.lease_fee),e.txid,terms_.lease_fee,c.tick};
+            }
+        } else if(i.action==Action::offer_lease||i.action==Action::offer_sale||i.action==Action::offer_recurring_lease) {
             if(c.actor!=title_.owner)return refuse("not_owner");
             if(lease_.active)return refuse("lease_must_end_first");
             if(offer_.revision>=max_tick)return refuse("offer_revision_overflow");
-            e.type="property_offer_opened";e.offer_kind=i.action==Action::offer_lease?"lease":"sale";e.offer_revision=offer_.revision+1;
+            e.type="property_offer_opened";e.offer_kind=i.action==Action::offer_sale?"sale":i.action==Action::offer_recurring_lease?"recurring_lease":"lease";e.offer_revision=offer_.revision+1;
         } else if(i.action==Action::buy||i.action==Action::lease) {
             if(c.actor==title_.owner)return refuse("self_transaction");
             if(lease_.active)return refuse("lease_must_end_first");
             const bool buying=i.action==Action::buy;
-            if(!offer_.present||offer_.kind!=(buying?"sale":"lease")||offer_.owner!=title_.owner||offer_.title_revision!=title_.revision)return refuse("no_owner_offer");
+            const bool recurring=!buying&&offer_.kind=="recurring_lease";
+            if(!offer_.present||(buying?offer_.kind!="sale":offer_.kind!="lease"&&!recurring)||offer_.owner!=title_.owner||offer_.title_revision!=title_.revision)return refuse("no_owner_offer");
+            if(recurring) {
+                if(i.agreed_lease_kind!="recurring_lease"||i.expected_offer_revision!=offer_.revision||
+                    i.expected_title_revision!=offer_.title_revision)return invalid("recurring_agreement_required");
+                e.offer_kind="recurring_lease";
+            } else if(!i.agreed_lease_kind.empty()||i.expected_offer_revision!=-1||i.expected_title_revision!=-1)return invalid("agreement_changed");
             if(buying&&title_.revision>=max_tick)return refuse("title_revision_overflow");
             e.type=buying?"property_deed_transferred":"property_lease_granted";e.offer_revision=offer_.revision;
             e.amount=buying?terms_.sale_price:terms_.lease_fee;
@@ -514,6 +566,7 @@ public:
             p.payment=PaymentIntent{c.actor,title_.owner,(buying?"property_sale:":"property_lease:")+terms_.property_id+"*"+std::to_string(*e.amount),e.txid,*e.amount,c.tick};
         } else {
             if(!lease_.active)return refuse("no_active_lease");
+            if(i.action==Action::expire&&recurring_lease())return invalid("recurring_rent_reconciliation_required");
             if(i.action==Action::end_lease&&c.actor!=lease_.tenant)return refuse("not_tenant");
             if(i.action==Action::expire&&(c.actor!="town"||c.tick<lease_.end))return refuse("lease_not_due");
             e.type="property_lease_ended";e.note=i.action==Action::expire?"expired":"surrendered";e.lease_event_id=lease_.event_id;
@@ -531,7 +584,9 @@ public:
     Receipt execute(const Intent& i,const Context& c,FaultPoint fault=FaultPoint::none) {
         Kernel candidate=*this;
         try {
-            if(candidate.care_enabled_){const auto p=candidate.prepare(i,c);if(p.event){const bool ending=p.receipt.ok&&(i.action==Action::end_lease||i.action==Action::expire);candidate.reserve_events(p.payment?2U:1U,p.receipt.ok&&i.action==Action::lease?1U:0U,!ending);}}
+            if(candidate.care_enabled_||candidate.recurring_lease()||(i.action==Action::lease&&candidate.offer_.kind=="recurring_lease")) {
+                const auto p=candidate.prepare(i,c);if(p.event){const bool ending=p.receipt.ok&&p.event->type=="property_lease_ended";candidate.reserve_events(p.payment?2U:1U,p.receipt.ok&&i.action==Action::lease?1U:0U,!ending);}
+            }
             Receipt r=candidate.apply(i,c,fault);
             if(!candidate.verify_ledger()||!candidate.verify_care())throw std::logic_error("ledger_or_care_reconciliation");
             *this=std::move(candidate);return r;
@@ -561,12 +616,40 @@ public:
     const Title& title()const{return title_;}
     const Offer& offer()const{return offer_;}
     const Lease& lease()const{return lease_;}
+    bool recurring_lease()const {
+        return lease_.active&&lease_.event_id>0&&static_cast<std::uint64_t>(lease_.event_id)<=events_.size()&&
+            events_[static_cast<std::size_t>(lease_.event_id-1)].type=="property_lease_granted"&&
+            events_[static_cast<std::size_t>(lease_.event_id-1)].offer_kind=="recurring_lease";
+    }
+    std::string rent_request_id()const {
+        return "rent/"+terms_.property_id+"/"+std::to_string(lease_.event_id)+"/"+std::to_string(lease_.end);
+    }
     // The native natural-clock consumer executes this authority-generated request
     // before other commands/projection at a due tick. No player supplies town.
     std::optional<Intent> expiry_request(Int trusted_tick) const {
         if(trusted_tick<minimum_authority_tick()||trusted_tick>max_tick)throw std::invalid_argument("expiry tick");
-        if(!lease_.active||trusted_tick<lease_.end)return {};
+        if(!lease_.active||recurring_lease()||trusted_tick<lease_.end)return {};
         return Intent{"expire/"+terms_.property_id+"/"+std::to_string(lease_.event_id),terms_.property_id,Action::expire};
+    }
+    std::optional<Intent> due_request(Int trusted_tick)const {
+        if(trusted_tick<minimum_authority_tick()||trusted_tick>max_tick)throw std::invalid_argument("property due tick");
+        if(!lease_.active||trusted_tick<lease_.end)return {};
+        if(recurring_lease())return Intent{rent_request_id(),terms_.property_id,Action::collect_rent};
+        return expiry_request(trusted_tick);
+    }
+    Receipt reconcile_property_until(Int trusted_tick,FaultPoint fault=FaultPoint::none,std::size_t fault_period_index=0) {
+        if(trusted_tick<minimum_authority_tick()||trusted_tick>max_tick)return {false,false,"invalid_due_clock",-1};
+        Kernel candidate=*this;Receipt last{true,true,"no_property_due",-1};
+        try {
+            for(std::size_t n=0;n<=max_events;++n) {
+                const auto due=candidate.due_request(trusted_tick);if(!due){*this=std::move(candidate);return last;}
+                if(n==max_events)throw std::overflow_error("bounded due reconciliation");
+                const Int scheduled=candidate.lease_.end;
+                last=candidate.execute(*due,{"town","town","","","",scheduled,false},n==fault_period_index?fault:FaultPoint::none);
+                if(!last.ok)return last;
+            }
+        }catch(const std::exception&){return {false,false,"due_reconciliation_exception",-1};}
+        return {false,false,"due_reconciliation_capacity",-1};
     }
     Int last_tick()const{return last_tick_;}
     std::uint64_t digest()const{return digest_;}
@@ -723,7 +806,12 @@ public:
                         terminal=first.type=="pay"?at+1:at;if(terminal>=incoming.events.size())return false;
                         const auto& e=incoming.events[terminal];if(!e.context||e.context->actor!=e.actor||e.context->tick!=e.tick)return false;
                         const auto action=parse_action(e.action);if(!action)return false;
-                        candidate.execute({e.request_id,e.subject,*action},*e.context);
+                        Intent intent{e.request_id,e.subject,*action};
+                        if(*action==Action::lease&&e.offer_kind=="recurring_lease") {
+                            intent.agreed_lease_kind="recurring_lease";intent.expected_offer_revision=e.offer_revision.value_or(-1);
+                            intent.expected_title_revision=e.title_revision.value_or(-1);
+                        }
+                        candidate.execute(intent,*e.context);
                     }
                 }
                 const auto added=candidate.events_.size()-before;if(added==0||at+added>incoming.events.size())return false;
@@ -737,5 +825,20 @@ public:
         }catch(const std::exception&){return false;}
     }
     bool restore_bytes(const std::string& bytes){const auto j=decode(bytes);return j&&restore(*j);}
+    // Explicit migration only. The old wire shape is unchanged; new agreement
+    // actions/kinds must never be accepted under the released legacy schema.
+    bool import_legacy_v3_bytes(const std::string& bytes) {
+        const auto old=decode(bytes);if(!old||old->document_schema!=legacy_schema||old->document_capability!=legacy_capability)return false;
+        for(const auto& e:old->events) {
+            if(e.action=="offer_recurring_lease"||e.action=="collect_rent"||e.type=="property_rent_paid"||
+                (!e.offer_kind.empty()&&e.offer_kind!="lease"&&e.offer_kind!="sale"))return false;
+        }
+        if(old->offer.kind!=""&&old->offer.kind!="lease"&&old->offer.kind!="sale")return false;
+        Journal converted=*old;converted.document_schema=schema;converted.document_capability=capability;
+        Kernel candidate=*this;if(!candidate.restore(converted))return false;
+        Journal roundtrip=candidate.journal();roundtrip.document_schema=legacy_schema;roundtrip.document_capability=legacy_capability;
+        if(encode(roundtrip)!=bytes)return false;
+        *this=std::move(candidate);return true;
+    }
 };
 } // living_town::cafe_world_v3
