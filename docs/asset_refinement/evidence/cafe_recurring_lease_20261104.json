@@ -3,7 +3,7 @@
   "date": "2026-11-04",
   "source_family": "afd52381191bbf4807d15781c63fe4ca6ee18425a547eae247def2c3061d4077",
   "tested_implementation_freeze_sha256": "b4a3f7086c8794366cefd7fe8aac69a01b8f62d31b1db1204598ac0a38a3a466",
-  "post_execution_changes": "Contract documentation and this evidence/images only; all14otherimplementation inputs remain exact.",
+  "post_execution_changes": "Contract documentation, evidence/images and brace-only formatting of the portable rent replay loop. All Unreal runtime, core and fixture inputs remain exact; GCC CI rechecks the portable cases.",
   "local_evidence_root": "F:/Living Town/2026-10-20_Refined_Town/root_character_pipeline_macro_review_v1_001",
   "local_root_reviews": [
     {

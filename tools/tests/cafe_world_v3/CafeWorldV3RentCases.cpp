@@ -50,7 +50,10 @@ int main(int argc,char** argv){try{
  }
  {
   auto k=recurring();check(k.reconcile_property_until(730).ok,"make actual rent history");auto j=k.journal();const auto good=k.save_bytes();
-  for(auto& e:j.events)if(e.type=="property_rent_paid"){e.pay_event_id=1;break;}check(!k.restore(j)&&k.save_bytes()==good,"forged payment reference cannot replay");j=k.journal();++j.lease.end;check(!k.restore(j)&&k.save_bytes()==good,"cached due tampering refused");j=k.journal();j.events.push_back(j.events.back());check(!k.restore(j)&&k.save_bytes()==good,"duplicate rent event refused");passed("R08_strict_financial_replay");
+  for(auto& e:j.events){
+   if(e.type=="property_rent_paid"){e.pay_event_id=1;break;}
+  }
+  check(!k.restore(j)&&k.save_bytes()==good,"forged payment reference cannot replay");j=k.journal();++j.lease.end;check(!k.restore(j)&&k.save_bytes()==good,"cached due tampering refused");j=k.journal();j.events.push_back(j.events.back());check(!k.restore(j)&&k.save_bytes()==good,"duplicate rent event refused");passed("R08_strict_financial_replay");
  }
  {
   auto k=recurring();w::care::ResidentUse use("ben");check(use.advance_idle_to(729),"legitimate near-due public care advancement");const auto saved=w::save_care_envelope(k,use,bindings(),{729,bits(.25)});check(bool(saved),"paired near-due save");w::Kernel loaded;w::care::ResidentUse resumed("ben");w::ClockMetadata clock;
