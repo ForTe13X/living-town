@@ -4,6 +4,7 @@
 #include "LivingTownCafeBinding.h"
 #include "LivingTownCafeVenue.generated.h"
 class UStaticMeshComponent;
+class ULightComponentBase;
 
 UCLASS(NotBlueprintable)
 class LIVINGTOWNNATIVE_API ALivingTownCafeVenue final : public AActor
@@ -18,6 +19,7 @@ public:
     bool FloorAt(const FVector& Feet,FHitResult& Hit,const AActor* Ignore=nullptr) const;
 private:
     UPROPERTY() TArray<TObjectPtr<UStaticMeshComponent>> Parts;
+    UPROPERTY() TArray<TObjectPtr<ULightComponentBase>> OriginalWorkerLights;
     TSet<const UPrimitiveComponent*> FloorParts;
     TSet<const UPrimitiveComponent*> CounterParts;
     bool bQualified=false;

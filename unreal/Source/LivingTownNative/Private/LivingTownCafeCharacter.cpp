@@ -1,5 +1,6 @@
 #include "LivingTownCafeCharacter.h"
 #include "LivingTownRootCorrectedSingleNodeInstance.h"
+#include "LivingTownOriginalWorkerAssembly.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "ReferenceSkeleton.h"
 #include "Materials/Material.h"
@@ -60,6 +61,7 @@ ALivingTownCafeCharacter::ALivingTownCafeCharacter()
 bool ALivingTownCafeCharacter::ConfigureQualifiedBen(const FLivingTownCafeBinding& B,FString& Error)
 {
     Error.Reset(); if(bVisualQualified||B.ResidentId!=TEXT("ben")){Error=TEXT("exact_Ben_roster_binding_required");return false;}
+    if(B.MotionStrategy==ELivingTownCafeMotionStrategy::OriginalWorkerSingleNode)return ConfigureOriginalWorkerBen(B,Error);
     const bool bWorker110=B.MotionStrategy==ELivingTownCafeMotionStrategy::CafeWorker110RootAligned;
     const bool bCurrent61Baked=B.MotionStrategy==ELivingTownCafeMotionStrategy::Current61BakedSingleNode;
     if(B.MotionStrategy!=ELivingTownCafeMotionStrategy::LegacySingleNode&&!bWorker110&&!bCurrent61Baked){Error=TEXT("unsupported_cafe_motion_strategy");return false;}
@@ -225,6 +227,8 @@ bool ALivingTownCafeCharacter::ConfigureQualifiedBen(const FLivingTownCafeBindin
 void ALivingTownCafeCharacter::RestorePossessedBonePolicy()
 {
     if(bPossessedBonePolicyApplied&&GetMesh())GetMesh()->VisibilityBasedAnimTickOption=static_cast<EVisibilityBasedAnimTickOption>(PreviousPossessedBonePolicy);
+    if(bOriginalWorkerRatePolicyApplied&&GetMesh())GetMesh()->bEnableUpdateRateOptimizations=PreviousOriginalWorkerUpdateRateOptimization;
+    bOriginalWorkerRatePolicyApplied=false;
     bPossessedBonePolicyApplied=false;
 }
 void ALivingTownCafeCharacter::UpdatePossessedBonePolicy()
@@ -234,11 +238,13 @@ void ALivingTownCafeCharacter::UpdatePossessedBonePolicy()
     RestorePossessedBonePolicy();
     const bool bQualifiedRootPlayer=bWorker110VisualQualified&&GetMesh()&&Cast<ULivingTownRootCorrectedSingleNodeInstance>(GetMesh()->GetAnimInstance());
     const bool bQualifiedBakedPlayer=bCurrent61BakedVisualQualified&&GetMesh()&&GetMesh()->GetAnimationMode()==EAnimationMode::AnimationSingleNode&&GetMesh()->GetSingleNodeInstance()&&GetMesh()->GetSingleNodeInstance()->GetClass()==UAnimSingleNodeInstance::StaticClass();
-    if(bVisualQualified&&Controller&&Controller->IsPlayerController()&&(bQualifiedRootPlayer||bQualifiedBakedPlayer))
+    const bool bOriginalPlayer=HasOriginalWorkerAssembly()&&GetMesh()&&GetMesh()->GetAnimationMode()==EAnimationMode::AnimationSingleNode&&GetMesh()->GetSingleNodeInstance()&&GetMesh()->GetSingleNodeInstance()->GetClass()==UAnimSingleNodeInstance::StaticClass();
+    if(bVisualQualified&&Controller&&Controller->IsPlayerController()&&(bQualifiedRootPlayer||bQualifiedBakedPlayer||bOriginalPlayer))
     {
         PreviousPossessedBonePolicy=static_cast<uint8>(GetMesh()->VisibilityBasedAnimTickOption);
         GetMesh()->VisibilityBasedAnimTickOption=EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
         bPossessedBonePolicyApplied=true;
+        if(bOriginalPlayer){PreviousOriginalWorkerUpdateRateOptimization=GetMesh()->bEnableUpdateRateOptimizations;GetMesh()->bEnableUpdateRateOptimizations=false;bOriginalWorkerRatePolicyApplied=true;}
     }
 }
 void ALivingTownCafeCharacter::PossessedBy(AController* NewController)
@@ -251,10 +257,34 @@ void ALivingTownCafeCharacter::UnPossessed()
 }
 void ALivingTownCafeCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    RestorePossessedBonePolicy();if(OriginalWorkerAssembly)OriginalWorkerAssembly->Reset();
     LivingTownCurrent61HeadAssembly::Reset(HairCards,HairUnderlayer);bCurrent61HeadBound=false;
-    RestorePossessedBonePolicy();Super::EndPlay(EndPlayReason);
+    Super::EndPlay(EndPlayReason);
 }
-FVector ALivingTownCafeCharacter::InteractionHand()const{return bVisualQualified?GetMesh()->GetSocketLocation(FName(*UseSocket)):FVector::ZeroVector;}
+bool ALivingTownCafeCharacter::ConfigureOriginalWorkerBen(const FLivingTownCafeBinding& B,FString& Error)
+{
+    if(!IsInGameThread()||!B.OriginalWorker.IsSet()||!B.OriginalWorker->IsValidated()||B.Current61Head.IsSet()||
+        B.VisualAssetPath!=LivingTownOriginalWorker::Body||B.IdleWalkBlendSpacePath!=LivingTownOriginalWorker::Motion||
+        B.IdleAnimationPath!=LivingTownOriginalWorker::Idle||B.WalkAnimationPath!=LivingTownOriginalWorker::Walk||
+        B.UseSocket!=LivingTownOriginalWorker::Palm||B.VisualSha256!=B.OriginalWorker->DescriptorSha256||
+        !B.MeshRelativeTransform.Equals(B.OriginalWorker->MeshRelative,1.e-8)||B.IdleRootDeltaCm!=FVector::ZeroVector||
+        B.WalkSpeedCmPerSecond!=float(LivingTownOriginalWorker::WalkSpeedCmS)||B.CapsuleRadiusCm!=float(B.OriginalWorker->CapsuleRadiusCm)||
+        B.CapsuleHalfHeightCm!=float(B.OriginalWorker->CapsuleHalfHeightCm))
+    {Error=TEXT("original_worker_prepared_visual_binding_required");return false;}
+    auto* Assembly=NewObject<ULivingTownOriginalWorkerAssembly>(this,TEXT("OriginalWorkerAssembly"));
+    if(!Assembly){Error=TEXT("original_worker_assembly_creation_failed");return false;}AddInstanceComponent(Assembly);
+    if(!Assembly->Configure(GetMesh(),B.OriginalWorker.GetValue(),Error)){Assembly->DestroyComponent();return false;}
+    OriginalWorkerAssembly=Assembly;Assembly->RegisterComponent();IdleWalk=Assembly->GetMotion();UseSocket=B.UseSocket;
+    GetCapsuleComponent()->SetCapsuleSize(B.CapsuleRadiusCm,B.CapsuleHalfHeightCm,true);GetCharacterMovement()->MaxWalkSpeed=B.WalkSpeedCmPerSecond;
+    CameraArm->TargetArmLength=B.CameraArmCm; // existing physical camera/input remain the pawn's owners
+    bVisualQualified=true;SetActorTickEnabled(true);UpdatePossessedBonePolicy();return true;
+}
+bool ALivingTownCafeCharacter::HasOriginalWorkerAssembly() const{return OriginalWorkerAssembly&&OriginalWorkerAssembly->IsConfigured();}
+void ALivingTownCafeCharacter::TeleportSucceeded(bool bIsATest)
+{
+    Super::TeleportSucceeded(bIsATest);if(!bIsATest&&OriginalWorkerAssembly)OriginalWorkerAssembly->ResetAfterTeleport();
+}
+FVector ALivingTownCafeCharacter::InteractionHand()const{return HasQualifiedVisual()?GetMesh()->GetSocketLocation(FName(*UseSocket)):FVector::ZeroVector;}
 void ALivingTownCafeCharacter::Tick(float Delta)
 {
     Super::Tick(Delta);if(bVisualQualified&&GetMesh()->GetSingleNodeInstance())GetMesh()->GetSingleNodeInstance()->SetBlendSpacePosition(FVector(GetVelocity().Size2D(),0,0));

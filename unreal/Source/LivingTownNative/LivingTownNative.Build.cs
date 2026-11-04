@@ -14,6 +14,7 @@ public class LivingTownNative : ModuleRules
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
         PrivateDependencyModuleNames.Add("Json");
         PrivateDependencyModuleNames.Add("RHI");
+        PrivateDependencyModuleNames.AddRange(new string[] { "ChaosClothAssetEngine", "PhysicsCore" });
         AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL");
         string CoreFile = Path.Combine(ModuleDirectory, "ThirdParty", "LeaseKernel.hpp");
         string Actual = Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(CoreFile))).ToLowerInvariant();
