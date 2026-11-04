@@ -4,6 +4,8 @@
   "Category": "Living Town",
   "Description": "Unreal-primary editor bootstrap with native MCP; portable room import is separately qualified",
   "Plugins": [
+    { "Name": "ChaosClothAsset", "Enabled": true },
+    { "Name": "ACLPlugin", "Enabled": true },
     {
       "Name": "ModelContextProtocol",
       "Enabled": true,

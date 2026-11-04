@@ -1,5 +1,24 @@
 # P1-z hosted visual required-policy promotion
 
+## November 4 runtime refresh
+
+[PR #117 run 41812582812](https://github.com/ForTe13X/living-town/actions/runs/41812582812)
+failed its final runtime policy check because the runner image changed to
+`20261101.360.1` and Python to `3.11.18`. The positive capture passed with
+75 PNGs and zero scanned runtime errors. The same-runtime negative caught
+exactly A1+A2; the inline identical-floor negative retained its B-only failure.
+All 98 manifest entries verify, and all 77 PNGs match the previously reviewed
+hashes. Representative day, night, winter, grove, interior and coast images
+were inspected. The [review receipt](hosted-runtime-profile-review-2026-11-04.json)
+binds the head, event checkout, complete archive digest and runtime identities.
+
+The sixth profile adds only this exact thirteen-line runtime combination and
+preserves the five earlier profiles. No golden, threshold, workflow or detector
+changes. The actual artifact passes the unchanged checker with the new profile;
+all fifteen policy tests pass. A fresh full workflow is still required. This
+qualifies the archived 2D raster runtime only, with no Unreal art or performance
+claim.
+
 ## Reviewed evidence and scope
 
 This separate policy change starts from RC-B PR #78 head
@@ -30,9 +49,9 @@ Checkout and artifact-upload failures also remain red.
 
 `hosted_visual_runtime_policy.json` records complete reviewed runtime profiles:
 image, Godot archive and binary, Python/Pillow, six apt packages, and Mesa GLX
-identity. Schema v2 currently contains exactly four profiles reviewed from runs
-`39399019945`, `39402759057`, `40417538860` and `40582042993` (previous refresh `38254349222`; original
-promotion `37122904593`). The final checker requires every listed receipt line
+identity. Schema v2 keeps the complete, separately reviewed profiles listed in
+the policy JSON; the dated reviews below record their provenance. The final
+checker requires every listed receipt line
 exactly once, with the whole receipt matching one complete profile. It does
 not combine accepted values from different profiles. If GitHub supplies an
 unreviewed image or package combination, CI fails with a

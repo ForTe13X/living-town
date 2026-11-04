@@ -4,8 +4,9 @@
   "engine": "Unreal Engine 5.8.4",
   "blender": "5.2.2",
   "product_baseline": {
-    "merge_commit": "654e46424ce930c7bd352a68457e571fb407e8bf",
-    "pull_request": "https://github.com/ForTe13X/living-town/pull/115"
+    "merge_commit": "698339628dcd28d6cfc09f0e0479314ae6510dad",
+    "pull_request": "https://github.com/ForTe13X/living-town/pull/116",
+    "gameplay_foundation_pull_request": "https://github.com/ForTe13X/living-town/pull/115"
   },
   "local_review_directory": "root_character_pipeline_macro_review_v1_001",
   "local_receipts": [
@@ -56,6 +57,186 @@
       "bytes": 3832,
       "sha256": "38819e1cb45fe3aed47d5792cc6be014938002d25b042e049b120d4c460604e5",
       "status": "ROOT_ACCEPTS_ACTUAL_REST_PUBLIC_CLOTH_COLLISION_INPUT_UNITS_AND_NAME_REMAP"
+    },
+    {
+      "file": "INNER_SUPPORT_CLOTH_ACTUAL001_REVIEW.json",
+      "bytes": 7007,
+      "sha256": "8c3f98b0b5d7657e715a7bc6101b471d2620bc208f912e1f8bbcc505d744645a",
+      "status": "ACCEPT_NATIVE_INNER_SUPPORT_CORRECTION_FOR_CONTROLLED_GAME_INTEGRATION_FINAL_ART_OPEN"
+    },
+    {
+      "file": "ORIGINAL_APPEARANCE_ACTUAL002_REVIEW.json",
+      "bytes": 3854,
+      "sha256": "15bba91db6fc34bba7783eb6f5c21771b33fcb7d8809fd2e3c4367f781685f40",
+      "status": "HOLD_WHOLE_ASSEMBLY_RETAIN_ORIGINAL_COLOUR_FACE_FEASIBILITY"
+    },
+    {
+      "file": "ORIGINAL_ASSEMBLY_TRIM_ACTUAL002_REVIEW.json",
+      "bytes": 3417,
+      "sha256": "c8b3ad5dd196495e688d44dd86d12ce6e6e96f383306d596d6164075676044f0",
+      "status": "HOLD_NECK_ASSEMBLY_RETAIN_SHIRT_SILHOUETTE_IMPROVEMENT_STOP_MASK_FAMILY"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_EDITOR_BUILD002_REVIEW.json",
+      "bytes": 2952,
+      "sha256": "1b288f15f03047b189e6a23aae665ad9acf31076d282e39c1cdb0fe2a1f31e4f",
+      "status": "ROOT_ACCEPTS_ORIGINAL_WORKER_BEN_EDITOR_BUILD"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_GAME_BUILD002_REVIEW.json",
+      "bytes": 1138,
+      "sha256": "4288e4c064c90e645fce35acee909bb1770c03470d3b9efb41c509afa9e9e099",
+      "status": "ROOT_ACCEPTS_ORIGINAL_WORKER_BEN_GAME_TARGET_BUILD_ONLY"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_ASSETS001_REVIEW.json",
+      "bytes": 4354,
+      "sha256": "1a02e25d4f02012fb57312e874b711e1fb0ee6d88ae4c36240f22cc824edac2e",
+      "status": "ROOT_ACCEPTS_FOUR_ORIGINAL_BEN_EDITOR_ASSETS_FOR_COLD_SAME_PAWN_TRIAL"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_NOASSET001_REVIEW.json",
+      "bytes": 1199,
+      "sha256": "71e5ac9f2cd7ab2fa19be98a1a40825287acc3a8b71f664d30a08952fe63f05b",
+      "status": "ROOT_PRESERVES_NOASSET_STRICT_WARNING_FAILURE"
+    },
+    {
+      "file": "COUPLED_BEDDING_ACTUAL001_REVIEW.json",
+      "bytes": 2716,
+      "sha256": "7fae905761c3e5759298c6a1dc067881836e45abaf4f199f18a9327a58517a6a",
+      "status": "ROOT_ACCEPTS_LOCAL_PORTABLE_BEDDING_COUPLED_LAYER_APPEARANCE"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_COLD_ROUTE001_REVIEW.json",
+      "bytes": 2019,
+      "sha256": "0e0c6936034e5c7d1f06e0ba46634fdc623be708525624b3ac551b8d0aae3755",
+      "status": "ROOT_ACCEPTS_EDITOR_PIE_COLD_ORIGINAL_BEN_CONFIGURE_MOVEMENT_AND_REFUSAL_ROUTE"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_VIEWPORT001_REVIEW.json",
+      "bytes": 2889,
+      "sha256": "4b4da5f9589d33238907c01bae9a4278fdda8a5a801d64e697f0e2a3c3e3c968",
+      "status": "ROOT_REFUSES_CHARACTER_ART_ACCEPTANCE_FROM_BLACK_SCENE_AND_WRONG_STARTUP_VIEWPORT"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_UNLIT001_REVIEW.json",
+      "bytes": 2498,
+      "sha256": "6702414e13a13f3012d18ded665c0af6a975d03119e9f5b217f65f3950bb5f8a",
+      "status": "ROOT_ACCEPTS_UNLIT_RENDER_DIAGNOSTIC_FROM_RETAINED_READER_FAILURE_ART_HELD"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_EDITOR_BUILD003_REVIEW.json",
+      "bytes": 3050,
+      "sha256": "698c6c96f497dfae6529a89901758503d4f602a3babd953d7550aac7704328d4",
+      "status": "ROOT_ACCEPTS_ORIGINAL_WORKER_BEN_EDITOR_BUILD"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_GAME_BUILD003_REVIEW.json",
+      "bytes": 1398,
+      "sha256": "2989981070d7f42821ea5f2f7a3c40515d99e6fac4885a2419c8773527a54bea",
+      "status": "ROOT_ACCEPTS_ORIGINAL_WORKER_BEN_GAME_TARGET_COMPILE"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_NOASSET002_REVIEW.json",
+      "bytes": 1147,
+      "sha256": "0bf28722a8f284a8392b1ee098cffacce302714643c2840bcfdc4c01e448ca1f",
+      "status": "ROOT_ACCEPTS_ORIGINAL_WORKER_BEN_NOASSET002_EXACT_TWO_TESTS"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_LIT001_REVIEW.json",
+      "bytes": 3384,
+      "sha256": "e3651a28aba8421932ed186bfe0a09e0d68ca5765666ccada84f7c478038a927",
+      "status": "ROOT_ACCEPTS_OPT_IN_ILLUMINATION_VISIBILITY_FIX_FROM_THREE_LIT_VIEWS_ART_HELD"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_SETTLED001_LIFETIME_REVIEW.json",
+      "bytes": 1983,
+      "sha256": "5c27f1e79f43cac8594f8ef51b48af807b1bcb6dc1cc2c9d2c57707bd5826ad7",
+      "status": "ROOT_STOPS_TEST_DERIVED_POST_COMPLETION_CAPTURE_FAMILY"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_EDITOR_BUILD004_REVIEW.json",
+      "bytes": 3102,
+      "sha256": "652f2ccd2a6b0a51c7b3faf104479f5112ed36c33f479ba093a2c5450344cdf0",
+      "status": "ROOT_ACCEPTS_ORIGINAL_WORKER_BEN_EDITOR_BUILD"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_GAME_BUILD004_REVIEW.json",
+      "bytes": 1754,
+      "sha256": "fa2b56f8c0119bb659891b2ff13fc550745819426ecdbb6c52cba0c9fc3ee15d",
+      "status": "ROOT_ACCEPTS_ORIGINAL_WORKER_BEN_GAME_TARGET_COMPILE"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_NOASSET004_REVIEW.json",
+      "bytes": 1166,
+      "sha256": "ebc3cee2496fe208165a3e07bafe7d9ef810f54bdb278902e8628cb8349394ce",
+      "status": "ROOT_ACCEPTS_ORIGINAL_WORKER_BEN_NOASSET004_EXACT_TWO_TESTS"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_LIFECYCLE004_REVIEW.json",
+      "bytes": 1395,
+      "sha256": "24c91f3fef03d5c8e7e7ca8b665e7051bfdec4f1d32340059a5a308c3f76e6e2",
+      "status": "ROOT_ACCEPTS_ORIGINAL_WORKER_BEN_SELF_CONTAINED_EDITOR_LIFECYCLE004"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_HUD705004_SIZE_REFUSAL_REVIEW.json",
+      "bytes": 2164,
+      "sha256": "c80eb27a03dc76f175d95220260fdf0acea0687f8264052a67cfa942d75404b4",
+      "status": "ROOT_RETAINS_HUD705004_FAILURE_NO_IMAGE"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_EDITOR_BUILD006_REVIEW.json",
+      "bytes": 3086,
+      "sha256": "554ee536af2a5439039882bd58ca2b28853046746e83623a0b61575781623068",
+      "status": "ROOT_ACCEPTS_ORIGINAL_WORKER_BEN_EDITOR_BUILD"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_NATIVE_PREVIEW006_TWO_SIZES_REVIEW.json",
+      "bytes": 5561,
+      "sha256": "a81e0a3258e1c7f96fcab8811d3f252154c80e9d5ed2ad597ec17e6e4da4ca93",
+      "status": "ROOT_ACCEPTS_NATIVE006_ORDINARY_PREVIEW_AND_RESPONSIVE_HUD_AT_TWO_EXACT_SIZES"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_WINDOW_DIAGNOSTIC001_SCOPED_REVIEW.json",
+      "bytes": 4749,
+      "sha256": "a0e088ac8c09c9b6e73ee706f3aacc042a2f15fd148dc710f7a6c8ac45f2cced",
+      "status": "ROOT_ACCEPTS_SCOPED_ORDINARY_HUD_MOVEMENT_AND_CSV_EVIDENCE_ORIGINAL_HOST_FAIL_RETAINED"
+    },
+    {
+      "file": "ORIGINAL_WORKER_COLLAR_SEAM_INSPECTION001_REVIEW.json",
+      "bytes": 3855,
+      "sha256": "ee7f334d01136da226a45336172fcdd11daaa9c991510e3965f2f4634c980076",
+      "status": "ROOT_VIEWED_SIX_CANONICAL_COLLAR_PBR_WIRE_VIEWS_AUTHOR_ONE_GARMENT_BAND"
+    },
+    {
+      "file": "ORIGINAL_WORKER_SEWN_COLLAR_CANDIDATE001_ART_REVIEW.json",
+      "bytes": 3577,
+      "sha256": "c8a92aa8c286817186128bdcb494965a0600d2a4beae48be57b16b79fd069bdc",
+      "status": "ROOT_REJECTS_NEUTRAL_ASSEMBLY_RETAINS_GEOMETRIC_COLLAR_DESIGN"
+    },
+    {
+      "file": "ORIGINAL_WORKER_COLLAR_TARGETED002_SCOPED_REVIEW.json",
+      "bytes": 3786,
+      "sha256": "16cbfc87783fcca7571fefd175890e4fe6a3749a2ba82b47b9271fa4dc7da6cf",
+      "status": "ROOT_ACCEPTS_NUMERICAL_COLOUR_FIX_AND_MEASURED_GAP_CLOSURE_NEUTRAL_ART_HELD"
+    },
+    {
+      "file": "ORIGINAL_WORKER_SKIN_TILE001_PARTIAL_DATA_ADMISSION.json",
+      "bytes": 2577,
+      "sha256": "1b54f6ef1efa6051e4a1963763abc3c3e87b1c35b39674e8c6459d997d0b5c25",
+      "status": "ROOT_ADMITS_CLOSED_NUMERIC_TILE_REUSE_ONLY_NOT_CHARACTER_ASSET"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_MINIMIZED_EDITOR705001_SCOPED_REVIEW.json",
+      "bytes": 3929,
+      "sha256": "cd55567b37f79bf14b115d1f8095eff644877abe0d885b658dd269bb7fb82b8d",
+      "status": "ROOT_ACCEPTS_SCOPED_MINIMIZED_EDITOR705_IMAGE_AND_QUIET_COST_WITH_ORIGINAL_HOST_FAILURE_RETAINED"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_PRESENT_COMPARISON001_REVIEW.json",
+      "bytes": 2285,
+      "sha256": "29682c821d23fa8710c2da7f8cbd6c01d5815d6c988d5f93bb3f079b9c7feae0",
+      "status": "ROOT_ACCEPTS_CLOSED_PRESENT_COMPARISON_AND_FRESH_USER_MINIMIZE_DEFAULT_NOT_FINAL_FPS"
     }
   ],
   "bundled_inspection_images": [
@@ -82,14 +263,69 @@
     "bedding_source_triangles": 111744,
     "bedding_near_triangles": 48000,
     "bedding_mid_triangles": 18000,
-    "bedding_far_triangles": 6000
+    "bedding_far_triangles": 6000,
+    "native_cloth_min_support_gap_m": 0.003108,
+    "native_added_pelvis_capsule_max_penetration_m": 0.000796345,
+    "prepared_character_packages": 4,
+    "preserved_character_source_packages": 18,
+    "cold_same_Ben_walk_cm": 507.22294559206614,
+    "cold_same_Ben_natural_samples": 101,
+    "ordinary_native_705_Frame_p50_ms": 52.42525,
+    "ordinary_native_1280_Frame_p50_ms": 52.8024,
+    "minimized_editor_705_Frame_p50_ms": 16.6668,
+    "minimized_editor_705_Frame_p95_ms": 16.6736,
+    "Present_baseline_p50_ms": 24.794,
+    "Present_minimized_p50_ms": 0.3823
   },
   "scope": {
     "new_character_product_adoption": false,
     "generic_replacement_head_route": "Stopped after whole-character art review",
-    "live_native_cloth": false,
-    "near_bedding_local_art": "Reviewed; portable roundtrip and engine adoption pending",
-    "mid_far_bedding_visual": "Pending distance views",
-    "full_town_Game_FPS": false
+    "live_native_cloth": "Chronological playback reviewed; same-pawn cold Editor/PIE movement passes; viewport art and Game cost pending.",
+    "near_bedding_local_art": "Coupled duvet/throw correction and portable roundtrip reviewed; native adoption pending",
+    "mid_far_bedding_visual": "Portable roundtrip reviewed; native distance switching pending",
+    "full_town_Game_FPS": false,
+    "character_Game_target": "Source004 Editor/Game compiled;006Editorcompiled;no006Game/cooked/packaged acceptance",
+    "character_four_asset_preparation": "Saved once;22objects cold-load and same-pawn Editor/PIE route passes; viewport art pending.",
+    "functional_face": "Identity fit/bake useful;local encoding/gap repair accepted only;source correspondence and normal continuity hold neutral art",
+    "noasset_tests": "Source004 two exact cases pass zero testwarnings/errors; original001failure retained",
+    "character_cold_same_pawn_route": "Editor/PIE cold22 objects, same Ben naturally walked507.223cm/101 samples, refusal and paired V4 save pass. Pixels, physical eating, actual Game/performance pending.",
+    "character_GameViewport": "Source006 actual ordinary705x464/1280x720 images accepted for ownership/readableHUD only. Sceneoverexposure/postturncloth/finalart held.",
+    "visual_session_lifetime": "Automation framework endsPIE after tests; post-test settledcapturefamily STOPPED. Use independent persistent gameplay world."
+  },
+  "updated_date": "2026-11-04",
+  "updated": "2026-11-04",
+  "source004_scope": {
+    "Editor_and_Game_compile": "PASS",
+    "exact_two_noasset_tests": "PASS; zero testwarnings/errors",
+    "self_contained_actual_asset_Editor_lifecycle": "PASS; zero testwarnings/errors",
+    "responsive_HUD_pixels": "Superseded by Source006 exact705x464 and1280x720 actual ordinary game images; readable rails/headfeet clear.",
+    "character_assets_reimported": false,
+    "final_face_actions_cook_performance": "OPEN"
+  },
+  "source006_scope": {
+    "Editor_compile": "PASS;9closingguards",
+    "Game_compile": "Not run;14gameplay implementationfiles identical to Source004",
+    "ordinary_native_preview_and_HUD": "PASS at exact705x464 and1280x720;2natural-frame sizewitnesses each",
+    "source_assets_changed": false,
+    "final_art_actions_cook_fulltown_performance": "OPEN"
+  },
+  "skin_repair_scope": {
+    "sewn_collar_candidate001": "Neutral art rejected;useful deliberate garment boundary retained",
+    "targeted002": "Only fallback color encoding and measured welded gap closure accepted;neutral art held",
+    "semantic_transfer": "Full used UV footprint required;143507closed tile data reusable;fullatlasnotcomplete",
+    "stopped_families": [
+      "UVchart anatomical cuts",
+      "constantpalette/fillvariants",
+      "genericheadswap",
+      "parametergrids"
+    ]
+  },
+  "performance_scope": {
+    "baseline": "Separate30squietCSV at705/1280;Editor diagnostics only",
+    "trace": "Approximate late15swindow:GTwait->RTocclusion-submissionfence->DXGIPresentCPUblocking;exactswapchain/drivercauseunproven",
+    "minimized_editor_AB": "Closedscopeddataaccepted:1794quietrowsFramep50=16.6668msvs52.42525;GPU2.55185ms;sameassets/camera/quality/source006. OriginalhostFAIL exact2startupDataflowDatelinesretained/no waiver;notcleanPASS/fulltownFPS.",
+    "asset_simplification_justified": false,
+    "fulltown_packaged_FPS_accepted": false,
+    "project_adoption": "Fresh-user DefaultEditorPerProjectUserSettings enables same standardminimizeproperty;Savedoverridesretainprecedence;Source00617implementationfilesunchanged,broaderconfigclosureexpanded."
   }
 }
