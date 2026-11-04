@@ -231,6 +231,12 @@
       "bytes": 3929,
       "sha256": "cd55567b37f79bf14b115d1f8095eff644877abe0d885b658dd269bb7fb82b8d",
       "status": "ROOT_ACCEPTS_SCOPED_MINIMIZED_EDITOR705_IMAGE_AND_QUIET_COST_WITH_ORIGINAL_HOST_FAILURE_RETAINED"
+    },
+    {
+      "file": "ORIGINAL_WORKER_BEN_PRESENT_COMPARISON001_REVIEW.json",
+      "bytes": 2285,
+      "sha256": "29682c821d23fa8710c2da7f8cbd6c01d5815d6c988d5f93bb3f079b9c7feae0",
+      "status": "ROOT_ACCEPTS_CLOSED_PRESENT_COMPARISON_AND_FRESH_USER_MINIMIZE_DEFAULT_NOT_FINAL_FPS"
     }
   ],
   "bundled_inspection_images": [
@@ -267,7 +273,9 @@
     "ordinary_native_705_Frame_p50_ms": 52.42525,
     "ordinary_native_1280_Frame_p50_ms": 52.8024,
     "minimized_editor_705_Frame_p50_ms": 16.6668,
-    "minimized_editor_705_Frame_p95_ms": 16.6736
+    "minimized_editor_705_Frame_p95_ms": 16.6736,
+    "Present_baseline_p50_ms": 24.794,
+    "Present_minimized_p50_ms": 0.3823
   },
   "scope": {
     "new_character_product_adoption": false,
@@ -317,6 +325,7 @@
     "trace": "Approximate late15swindow:GTwait->RTocclusion-submissionfence->DXGIPresentCPUblocking;exactswapchain/drivercauseunproven",
     "minimized_editor_AB": "Closedscopeddataaccepted:1794quietrowsFramep50=16.6668msvs52.42525;GPU2.55185ms;sameassets/camera/quality/source006. OriginalhostFAIL exact2startupDataflowDatelinesretained/no waiver;notcleanPASS/fulltownFPS.",
     "asset_simplification_justified": false,
-    "fulltown_packaged_FPS_accepted": false
+    "fulltown_packaged_FPS_accepted": false,
+    "project_adoption": "Fresh-user DefaultEditorPerProjectUserSettings enables same standardminimizeproperty;Savedoverridesretainprecedence;Source00617implementationfilesunchanged,broaderconfigclosureexpanded."
   }
 }
