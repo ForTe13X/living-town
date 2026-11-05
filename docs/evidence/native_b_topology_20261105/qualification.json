@@ -1,0 +1,273 @@
+{
+  "schema": "LivingTown.NativeBMapTopologyQualification.v1",
+  "qualified_through": "saved007_root_review",
+  "as_of_utc": "2026-11-05T16:38:28.791238+00:00",
+  "states": {
+    "editor018_build": "PASS",
+    "exact_old_v002_native_topology_observation": "PASS",
+    "saved007_851_producer": "PASS",
+    "independent_new_map_cold_reopen": "HELD",
+    "normal_PIE_capture_and_closure": "HELD",
+    "final_art_and_production_lighting": "HELD",
+    "later_material_adoption": "HELD",
+    "gameplay_performance_and_residency": "NOT_QUALIFIED"
+  },
+  "source": {
+    "family": "b8e0154615c547186fc937f0e88587e2aa7a2e4a90dc4097ae8899d7f85f53cc",
+    "full_files": 205,
+    "native_files": 156,
+    "changed_editor_files": [
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownBMaterialInspection.h",
+        "bytes": 1348,
+        "sha256": "790fd06be81eb96273905b3927df7e6c6038b26d93e03432097c19c123adca40"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownBMaterialInspection.cpp",
+        "bytes": 20948,
+        "sha256": "ff123a532e7ad35b41e8491b6a1848ef431d504b780ba2acc752fe46fec46e0c"
+      }
+    ],
+    "other203_files_byte_identical_to017": true,
+    "existing_B_API_bodies_and_declarations_unchanged": true,
+    "Game018_qualified": false
+  },
+  "api": {
+    "python": "unreal.LivingTownBMaterialInspection.read_b_source_map_save_topology()",
+    "scope": "Exact original saved v002 B Editor World only; game thread/clean/current registered native viewport/no commandlet or PIE",
+    "schema": "LivingTown.BSourceMapSaveTopology.v1",
+    "native_refused_status": "REFUSED",
+    "native_refusal_reasons": [
+      "exact_clean_B_source_Editor_world_viewport_game_thread_no_PIE_required",
+      "exact_single_owned_persistent_level_required"
+    ],
+    "actual_observed_packet": {
+      "schema": "LivingTown.BSourceMapSaveTopology.v1",
+      "status": "READ_ONLY_B_SOURCE_MAP_SAVE_TOPOLOGY_OBSERVED",
+      "asset_loaded_duplicated_edited_or_saved": false,
+      "world": "/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_StaticFinish_v002/MillCourtB_StaticFinishInspection_v002.MillCourtB_StaticFinishInspection_v002",
+      "persistent_level": "/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_StaticFinish_v002/MillCourtB_StaticFinishInspection_v002.MillCourtB_StaticFinishInspection_v002:PersistentLevel",
+      "loaded_level_count": 1,
+      "persistent_level_outer_is_world": true,
+      "uses_external_actors": false,
+      "has_world_partition": false,
+      "map_build_data_present": false,
+      "map_build_data": null
+    },
+    "producer_additional_required_flags": {
+      "uses_external_actors": false,
+      "has_world_partition": false,
+      "map_build_data_present": false,
+      "map_build_data": null
+    },
+    "no_asset_load_duplicate_edit_save": true,
+    "no_old_texture_or_viewport_API_allowlist_widening": true,
+    "Python_property_visibility_reason": "Actual attempts002/003 refused Python reads of World.PersistentLevel and Level.MapBuildData; typed native field/ownership read replaces those reads without reflected bypass"
+  },
+  "editor018": {
+    "seconds": 463.219,
+    "native_exit_code": 0,
+    "reaped_empty": true,
+    "guards": {
+      "canonical_sources_exact": true,
+      "workcopy_sources_exact": true,
+      "full_source_workcopy_exact": true,
+      "preexisting_config_exact": true,
+      "engine_inputs_exact": true,
+      "producer_sources_exact": true,
+      "critical_byte_inputs_exact": true,
+      "declared_metadata_custody_exact": true,
+      "UbtRuns_terminal_exact": true
+    },
+    "source_metadata_rows": 410,
+    "scope": "Editor compile/link only; no Game018 claim"
+  },
+  "saved007": {
+    "seconds": 73.11,
+    "controlled_exit_code": 92,
+    "reaped_empty": true,
+    "source_global_preserved": true,
+    "closed_files": 851,
+    "original850_bytes_preserved": true,
+    "source_raw_actors_unchanged": 763,
+    "protected_duplicate_actors_exact_except_authorized_translation": 760,
+    "placements_preserved": 750,
+    "material_overrides_preserved": 205,
+    "point_light_properties_unchanged": 32,
+    "graphs": 4,
+    "textures": 9,
+    "only_point_translation_cm": [
+      -3520.0,
+      -3620.0,
+      786.3258934020996
+    ],
+    "new_map": {
+      "asset": "/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_LightFix_v001/MillCourtB_LightFixInspection_v001",
+      "bytes": 1355114,
+      "sha256": "587717e29fbc85fdb607db3c15a6022064536d9e661db7574dad0b0012b4f49d"
+    },
+    "packet": {
+      "bytes": 1229654,
+      "sha256": "58224aa3ccdc3211d35f7dbba7f9733721a6982aa30463ea2352eb3a57775732"
+    },
+    "producer_finishes_at_original_source_world": true,
+    "retained_saved_inactive_duplicate": true,
+    "same_process_newmap_load_attempted": false,
+    "new_world_activated": false,
+    "viewport_restoration_across_world_switch_claimed": false,
+    "no_failed006_map_or_DDC_donor": true
+  },
+  "engine_service_contract": {
+    "source_raw_count": 763,
+    "protected_count": 760,
+    "roles": [
+      {
+        "role": "abstract_navigation_data",
+        "source_name": "AbstractNavData-Default",
+        "class_path": "/Script/NavigationSystem.AbstractNavData",
+        "identity_transform": {
+          "translation_cm": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation_xyzw": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      {
+        "role": "water_buoyancy_manager",
+        "source_name": "BuoyancyManager_0",
+        "class_path": "/Script/Water.BuoyancyManager",
+        "identity_transform": {
+          "translation_cm": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation_xyzw": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      {
+        "role": "gameplay_debugger_player_manager",
+        "source_name": "GameplayDebuggerPlayerManager_0",
+        "class_path": "/Script/GameplayDebugger.GameplayDebuggerPlayerManager",
+        "identity_transform": {
+          "translation_cm": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation_xyzw": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "scale": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      }
+    ],
+    "scope": "Only these literal names/classes/identity states and roster triples; source all3, inactive duplicate0, cold loaded presence awaits independent qualification",
+    "no_general_actor_filter_or_epsilon": true,
+    "primary_proof_note": "Navigation explicitly setsRF_Transient; Water subsystem spawnsRF_Transient (class isMinimalAPI); GameplayDebugger classTransient propagatesRF_Transient; persistent Level serialization omitsRF_Transient"
+  },
+  "lifecycle_boundary": {
+    "failed_attempt": "006",
+    "seconds": 75.812,
+    "native_exit_code": 3,
+    "reaped_empty": true,
+    "source_global_preserved": true,
+    "saved_once_and_reported_file_stable": true,
+    "failure": "Same-process LoadLevel: EditorServer2544 World Memory Leaks:2",
+    "failed_map_or_cache_is_donor": false,
+    "World_flag_GC_undo_standalone_manipulation_added": false,
+    "resolution": "007 produces and closes a newly regenerated saved packet; independent process must cold-read and run PIE"
+  },
+  "proofs": [
+    {
+      "id": "editor018_root_review",
+      "filename": "NATIVE_B_MAP_TOPOLOGY_EDITOR018_ROOT_REVIEW.json",
+      "bytes": 3000,
+      "sha256": "9a852685f72880b55306e80964d8940a5d3f9fb40bec11fef2307f88eabe0e75"
+    },
+    {
+      "id": "editor018_build_receipt",
+      "filename": "BUILD_RECEIPT.json",
+      "bytes": 59482,
+      "sha256": "d187a655b57a8ec95444185d275e705bb4fdf6ff4d65f2fd7c8d17e376b31ada"
+    },
+    {
+      "id": "saved007_root_review",
+      "filename": "LIGHTFIX_ASSET007_SAVED851_ROOT_REVIEW.json",
+      "bytes": 2984,
+      "sha256": "c14523f9e72aba2aac2d486cfc49a117493d53bcd6307dce190fe92fc7bcf636"
+    },
+    {
+      "id": "saved007_host",
+      "filename": "HOST_LIGHTFIX_ASSET_PRODUCER_REPORT.json",
+      "bytes": 2087,
+      "sha256": "f45797d8333c83f0194b4545af5e4810df90412861a1421efa3f4a11432c6b44"
+    },
+    {
+      "id": "saved007_completion",
+      "filename": "LIGHTFIX_ASSET_PRODUCER_COMPLETE.json",
+      "bytes": 1559,
+      "sha256": "0427aa6f1f979274597547574252d42a233a3ca8fcddd88efd1dc1ad73008cde"
+    },
+    {
+      "id": "saved007_packet",
+      "filename": "COMPLETED_ASSET_PHASE.json",
+      "bytes": 1229654,
+      "sha256": "58224aa3ccdc3211d35f7dbba7f9733721a6982aa30463ea2352eb3a57775732"
+    },
+    {
+      "id": "native_topology_observation",
+      "filename": "AGGREGATE_PRODUCER_EXPORT_PROPERTY_PREFLIGHT.json",
+      "bytes": 10854,
+      "sha256": "aca9dae25ad6453d8eb2400f95c389369d82b15a806de73c3486a36ac618ac97"
+    },
+    {
+      "id": "failed006_boundary_provenance",
+      "filename": "FAILED006_PROVENANCE.json",
+      "bytes": 2552,
+      "sha256": "db982dc899c1d8f8b17028654c5a2ddc898269250150bc28a458a7843a8e9360"
+    },
+    {
+      "id": "actual005_name_based_service_admission",
+      "filename": "ACTUAL005_DATA_ADMISSION.json",
+      "bytes": 4562,
+      "sha256": "52f84dcc20bf7a5b8764038a39d63adc697344a78ede0fba181bf23ec01ab8a5"
+    },
+    {
+      "id": "three_service_primary_sdk_proof",
+      "filename": "PRIMARY_TRANSIENT_SERVICE_PROOF.json",
+      "bytes": 7641,
+      "sha256": "00ea1821bb83c5f820d73aa0ac99e8c0f81ffabbc54d01cd9261366f1be9a5fa"
+    }
+  ],
+  "limits": "No accepted independent cold/PIE, final art, production lighting, gameplay, frame-rate, residency or complete-town result is claimed. No README/demo GIF update in this qualification."
+}

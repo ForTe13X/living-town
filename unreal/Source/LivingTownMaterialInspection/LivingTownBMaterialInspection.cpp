@@ -2,6 +2,8 @@
 #include "Editor.h"
 #include "LevelEditorViewport.h"
 #include "Engine/World.h"
+#include "Engine/Level.h"
+#include "Engine/MapBuildDataRegistry.h"
 #include "Engine/Texture2D.h"
 #include "Engine/TextureLODSettings.h"
 #include "DeviceProfiles/DeviceProfile.h"
@@ -240,6 +242,43 @@ FString ULivingTownBMaterialInspection::BeginBTextureRead(UTexture2D* Texture)
     Out->SetStringField(TEXT("status"),TEXT("PENDING_RENDER_THREAD_SCALARS"));Out->SetStringField(TEXT("token"),Pending->Token);
     Out->SetObjectField(TEXT("before"),Pending->Before);Out->SetNumberField(TEXT("deadline_seconds"),DeadlineSeconds);
     Out->SetBoolField(TEXT("flush_wait_or_force_stream_called"),false);return Json(Out);
+}
+
+FString ULivingTownBMaterialInspection::ReadBSourceMapSaveTopology()
+{
+    using namespace LivingTownBMaterial;
+    const auto Out=MakeShared<FJsonObject>();
+    Out->SetStringField(TEXT("schema"),TEXT("LivingTown.BSourceMapSaveTopology.v1"));
+    Out->SetStringField(TEXT("status"),TEXT("REFUSED"));
+    Out->SetBoolField(TEXT("asset_loaded_duplicated_edited_or_saved"),false);
+    UWorld* World=CurrentWorld();
+    if(!World)
+    {
+        Out->SetStringField(TEXT("reason"),TEXT("exact_clean_B_source_Editor_world_viewport_game_thread_no_PIE_required"));
+        return Json(Out);
+    }
+    ULevel* Level=World->PersistentLevel;
+    const auto& Levels=World->GetLevels();
+    if(!IsValid(Level)||Level->GetOuter()!=World||Level->GetPathName()!=World->GetPathName()+TEXT(":PersistentLevel")||
+        Levels.Num()!=1||Levels[0]!=Level)
+    {
+        Out->SetStringField(TEXT("reason"),TEXT("exact_single_owned_persistent_level_required"));
+        return Json(Out);
+    }
+    // C++ reads the native public fields directly. Python cannot read these
+    // protected scripting properties; no reflected-property bypass is used.
+    UMapBuildDataRegistry* BuildData=Level->MapBuildData.Get();
+    Out->SetStringField(TEXT("status"),TEXT("READ_ONLY_B_SOURCE_MAP_SAVE_TOPOLOGY_OBSERVED"));
+    Out->SetStringField(TEXT("world"),World->GetPathName());
+    Out->SetStringField(TEXT("persistent_level"),Level->GetPathName());
+    Out->SetNumberField(TEXT("loaded_level_count"),Levels.Num());
+    Out->SetBoolField(TEXT("persistent_level_outer_is_world"),true);
+    Out->SetBoolField(TEXT("uses_external_actors"),Level->IsUsingExternalActors());
+    Out->SetBoolField(TEXT("has_world_partition"),World->GetWorldPartition()!=nullptr);
+    Out->SetBoolField(TEXT("map_build_data_present"),BuildData!=nullptr);
+    if(BuildData)Out->SetStringField(TEXT("map_build_data"),BuildData->GetPathName());
+    else Out->SetField(TEXT("map_build_data"),MakeShared<FJsonValueNull>());
+    return Json(Out);
 }
 
 FString ULivingTownBMaterialInspection::PollBTextureRead(const FString& Token)
