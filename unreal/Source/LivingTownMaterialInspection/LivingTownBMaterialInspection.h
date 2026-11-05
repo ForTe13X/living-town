@@ -12,6 +12,11 @@ class LIVINGTOWNMATERIALINSPECTION_API ULivingTownBMaterialInspection final : pu
 {
     GENERATED_BODY()
 public:
+    // Exact clean saved B source world, Editor game thread and no PIE only.
+    // Reads native level/build-data ownership; never duplicates, edits or saves.
+    UFUNCTION(BlueprintCallable, Category="LivingTown|BMaterialInspection")
+    static FString ReadBSourceMapSaveTopology();
+
     // Already-loaded exact-nine Texture2D roster and exact saved B editor world.
     // One pending token, once per asset in this Editor process; no synchronous wait.
     UFUNCTION(BlueprintCallable, Category="LivingTown|BMaterialInspection")
