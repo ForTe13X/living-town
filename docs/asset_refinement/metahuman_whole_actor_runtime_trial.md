@@ -10,9 +10,11 @@ This is a source candidate for a controlled development trial. It does not
 approve final workwear, art, eating, asset closure, packaged builds or frame rate.
 The complete Build 017 source family passed Editor and Development Game
 compilation. The three descriptor/identity/refusal tests below and four existing
-backend/original-worker regressions executed successfully. Actual whole-actor
-persona lifecycle, possessed movement/render, measured calibration and cold
-Game startup remain required before enabling this visual in a playable build.
+backend/original-worker regressions executed successfully. The actual whole-actor
+WorldV3 lifecycle test also succeeded with the single expected blocked-placement
+warning described below. Possessed movement/render, measured production
+calibration and cold Game startup remain required before enabling this visual
+in a playable build.
 
 ## Explicit opt-in and identity
 
@@ -136,7 +138,20 @@ normally ticking standalone WorldV3 PIE world. Run it explicitly with
 -CafeWorldPersona=aria -LivingTownMetaHumanPersonaGateTest`. It checks pending
 selection/cancellation, blocked-candidate retention, exact native possession,
 complete actor ownership, idle continuity, unsupported meal refusal, paired
-save/load and cleanup. Its source being present does not mean it has run.
+save/load and cleanup. On 2026-11-05 it completed successfully in 19.913 seconds
+inside a 55.625-second native process, with native exit 0, no test errors and one
+warning: `actual_persona_spawn_capsule_overlap`. That exact warning belongs to
+the deliberate blocked-candidate case, which must retain Aria and her session.
+The inherited host required zero warnings and retained its failure; independent
+root review admitted only this exact single diagnostic, with no native rerun or
+change to the original report. Source/global custody and process cleanup passed.
+
+This lifecycle fixture uses explicitly test-only inherited capsule, speed and
+camera values. Passive actor measurements established the anatomical forward
+direction, but did not measure production surface/sole fit or stride. The test
+qualifies mechanical ownership and switching with those reference parameters;
+it does not establish a production prepared descriptor, movement presentation,
+frame rate, final art or cooked content closure.
 
 The existing FullTown exact GameMode/pawn/profile guards are unchanged. A native
 FullTown possessed-player consumer must still verify that route, motion, body /

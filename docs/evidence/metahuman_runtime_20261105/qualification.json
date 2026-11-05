@@ -65,8 +65,41 @@
     "bytes": 312575,
     "sha256": "4ed2abc5ce2f6822e9dff8e94c60f6afee3c0af87027f3cfe6f1006934dd3574"
   },
+  "actual_whole_actor_lifecycle": {
+    "name": "LivingTown.MetaHuman.WorldV3PersonaGate",
+    "state": "Success",
+    "test_duration_seconds": 19.913454055786133,
+    "native_process_seconds": 55.625,
+    "root_exit_code": 0,
+    "root_waited": true,
+    "remaining_descendants": 0,
+    "errors": 0,
+    "warnings": 1,
+    "exact_expected_warning": "LogTemp: World v3 prepared persona refused: actual_persona_spawn_capsule_overlap",
+    "warning_scope": "Deliberately blocked candidate must retain Aria and her paired session. Only this exact single diagnostic was admitted by independent root review.",
+    "original_host_status": "FAIL_RETAINED_METAHUMAN_WORLDV3_LIFECYCLE_TEST_ONLY",
+    "original_host_reason": "Inherited automation gate requires zero warnings; the expected negative placement case emitted one warning.",
+    "root_review": {
+      "artifact": "METAHUMAN_WORLD_V3_LIFECYCLE001_ROOT_REVIEW.json",
+      "sha256": "6818c32baf247298959ac3e64a7881e0ebf2eebfef8ccc82140a25cc2e663b24"
+    },
+    "actual_export": {
+      "bytes": 1483,
+      "sha256": "e81d1b27fe26a3a1ee0a5db3a9efbc587159904c6b1d4c6ded884577462221f3"
+    },
+    "actual_log": {
+      "bytes": 451236,
+      "sha256": "735004edf4231ca0f725b60c0c1854f8e524f3cd22bb1f316c9835e39f14c587"
+    },
+    "descriptor_sha256": "d61c4f6db09c3eda42b613ad26809d357acb52682a9645f2dda01a5c05b47b87",
+    "test_only_reference_calibration": true,
+    "source_and_meaningful_global_custody": true,
+    "hardware": "AMD Radeon(TM) 8060S Graphics / D3D12 SM6",
+    "maximum_observed_shader_workers": 2,
+    "native_rerun": false,
+    "accepted": "Async pending/cancellation and invalid-caller refusal, blocked-candidate retention, complete child actor ownership/normal BeginPlay, possession and idle continuity, body/face/outfit policy preservation, unsupported meal refusal without charge, paired journal encode/load identity, unpossess/repossess/reset/EndPlay cleanup."
+  },
   "not_qualified": [
-    "WorldV3PersonaGate actual whole-actor lifecycle",
     "Measured prepared descriptor, capsule fit and facing/stride/camera",
     "Possessed movement/render and eating/sleep contact",
     "Cooked/plugin/content closure",
