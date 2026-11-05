@@ -1,0 +1,279 @@
+{
+  "schema": "living_town.character_representation_review.v1",
+  "time_UTC": "2026-11-05T03:40:08.928856+00:00",
+  "goal_complete": false,
+  "decision": "ADMIT_SCOPED_NATIVE_SOURCE_AND_PROJECTION_DIAGNOSIS; REFUSE_CARDS_AND_STOCK_CHARACTER_AS_FINAL_ART",
+  "source_master": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\WorkerCoherentSockLayerFit_v001\\Worker_Coherent_SockLayerFit_v001.blend",
+    "bytes": 45954524,
+    "sha256": "071170fac00e2af1201b271272007caf238fffaa83bdab6b37e5057124e6cf84"
+  },
+  "native_character_data": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativePreview_v001\\Project\\Content\\LivingTown_UEPilot\\MetaHumanWorker_v001\\CH_CafeWorker_Dominic_Review.uasset",
+    "bytes": 9422919,
+    "sha256": "a0f1d97cb55b4c8a5a056e98429f80bfa65b31644348cd49c7d37ca6f6239abc"
+  },
+  "native_source": "Complete native Dominic preset; vendor-intended face/body components, no legacy graft.",
+  "core_data": {
+    "manifest_plan": {
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\metahuman_core_data_preflight_v1_001\\CORE_DATA_MANIFEST_PLAN.json",
+      "bytes": 550154,
+      "sha256": "25c2b0df9ce288c9e1d76a08ef4f08c47073c4df5cc45cb53502201e5431b56e"
+    },
+    "verification": {
+      "path": "F:\\Living Town\\2026-10-20_Refined_Town\\metahuman_core_data_preflight_v1_001\\CORE_DATA_DOWNLOAD_VERIFICATION.json",
+      "bytes": 456984,
+      "sha256": "4de6d8b94b123f086b8ed8463589a2c9a31ce4834a2817da243cb41f577a3b3d"
+    },
+    "files": 1816,
+    "bytes": 6177414710,
+    "data_only_no_executables": true
+  },
+  "hosts": [
+    {
+      "name": "MetaHumanNativePreview_v001",
+      "report": {
+        "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativePreview_v001\\HOST_METAHUMAN_PREVIEW_REPORT.json",
+        "bytes": 1214,
+        "sha256": "406ff9a623d3b3acdb3c13ac1bedebd93170893092726430824e40522885c5f9"
+      },
+      "status": "PASS_NATIVE_METAHUMAN_SOURCE_PREVIEW_PENDING_ART_REVIEW",
+      "sources_canonical_global_preserved": true,
+      "seconds": 135.56200000000536,
+      "peak_private_bytes": 14054039552,
+      "peak_RSS_bytes": 10699108352
+    },
+    {
+      "name": "MetaHumanNativeCaptureControl_v001",
+      "report": {
+        "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeCaptureControl_v001\\HOST_METAHUMAN_PREVIEW_REPORT.json",
+        "bytes": 4745,
+        "sha256": "0fc058e490ffa32b949c71b1ddb423d834cd5bb97805180e5a6a37678b7f6b22"
+      },
+      "status": "FAIL_RETAINED_NATIVE_METAHUMAN_SOURCE_PREVIEW",
+      "sources_canonical_global_preserved": null,
+      "seconds": 92.20299999997951,
+      "peak_private_bytes": 13832830976,
+      "peak_RSS_bytes": 10441195520
+    },
+    {
+      "name": "MetaHumanNativeCaptureControl_v002",
+      "report": {
+        "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeCaptureControl_v002\\HOST_METAHUMAN_PREVIEW_REPORT.json",
+        "bytes": 1261,
+        "sha256": "11b446f1096002cfe531a0f618d3916eea685ed6ae1009dbc74fcc11ba1dd73b"
+      },
+      "status": "PASS_NATIVE_METAHUMAN_FRAMEBUFFER_CONTROL_PENDING_VISUAL_REVIEW",
+      "sources_canonical_global_preserved": true,
+      "seconds": 92.56299999999464,
+      "peak_private_bytes": 13815754752,
+      "peak_RSS_bytes": 9939828736
+    },
+    {
+      "name": "MetaHumanNativeProjectionControl_v001",
+      "report": {
+        "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeProjectionControl_v001\\HOST_METAHUMAN_PREVIEW_REPORT.json",
+        "bytes": 6197,
+        "sha256": "273f22b0e165fd2b3f0efa54253cd7b01747a38aa8230a356798bbd4ac9bf678"
+      },
+      "status": "FAIL_RETAINED_NATIVE_METAHUMAN_SOURCE_PREVIEW",
+      "sources_canonical_global_preserved": true,
+      "seconds": 83.56200000000536,
+      "peak_private_bytes": 12064374784,
+      "peak_RSS_bytes": 9912782848
+    },
+    {
+      "name": "MetaHumanNativeProjectionControl_v002",
+      "report": {
+        "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeProjectionControl_v002\\HOST_METAHUMAN_PREVIEW_REPORT.json",
+        "bytes": 5709,
+        "sha256": "b3770f8e15c856c35b4e96beee5db71fb532c105a954f0509590699e5ffc7f91"
+      },
+      "status": "FAIL_RETAINED_NATIVE_METAHUMAN_SOURCE_PREVIEW",
+      "sources_canonical_global_preserved": true,
+      "seconds": 81.25,
+      "peak_private_bytes": 12972097536,
+      "peak_RSS_bytes": 10462146560
+    },
+    {
+      "name": "MetaHumanNativeProjectionControl_v003",
+      "report": {
+        "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeProjectionControl_v003\\HOST_METAHUMAN_PREVIEW_REPORT.json",
+        "bytes": 4931,
+        "sha256": "e135cb8f628dc9441862498cb2c1f748bc7f21555f32f7810640e0f62da6053f"
+      },
+      "status": "FAIL_RETAINED_NATIVE_METAHUMAN_SOURCE_PREVIEW",
+      "sources_canonical_global_preserved": true,
+      "seconds": 87.89099999997416,
+      "peak_private_bytes": 13759819776,
+      "peak_RSS_bytes": 9890377728
+    },
+    {
+      "name": "MetaHumanNativeCardsControl_v001",
+      "report": {
+        "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeCardsControl_v001\\HOST_METAHUMAN_PREVIEW_REPORT.json",
+        "bytes": 1411,
+        "sha256": "496342071bfef6550dedc865ae49fac728d8e84fb1f031f1d384410dd5724242"
+      },
+      "status": "PASS_NATIVE_METAHUMAN_EXISTING_CARDS_CONTROL_PENDING_VISUAL_REVIEW",
+      "sources_canonical_global_preserved": true,
+      "seconds": 93.90700000000652,
+      "peak_private_bytes": 13895323648,
+      "peak_RSS_bytes": 10060623872
+    }
+  ],
+  "images": [
+    {
+      "file": "metahuman_orthographic_strands_20261105.png",
+      "source": {
+        "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeCardsControl_v001\\Native_Face_Strands.png",
+        "bytes": 423551,
+        "sha256": "0f71e0142b42fd34ca13ac2146859172136590cf93ba56f7a3364cc43569c330"
+      },
+      "published": {
+        "path": "D:\\Dev\\living-town-coherent-checkpoint\\docs\\asset_refinement\\evidence\\metahuman_orthographic_strands_20261105.png",
+        "bytes": 423551,
+        "sha256": "0f71e0142b42fd34ca13ac2146859172136590cf93ba56f7a3364cc43569c330"
+      },
+      "root_viewed": true
+    },
+    {
+      "file": "metahuman_perspective_strands_20261105.png",
+      "source": {
+        "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeProjectionControl_v003\\Native_Face_Perspective.png",
+        "bytes": 339591,
+        "sha256": "b46f764aaed6d3b16bc4e2e6696ab7b4a2d643081907f9a1e33221f94e5bdd19"
+      },
+      "published": {
+        "path": "D:\\Dev\\living-town-coherent-checkpoint\\docs\\asset_refinement\\evidence\\metahuman_perspective_strands_20261105.png",
+        "bytes": 339591,
+        "sha256": "b46f764aaed6d3b16bc4e2e6696ab7b4a2d643081907f9a1e33221f94e5bdd19"
+      },
+      "root_viewed": true
+    },
+    {
+      "file": "metahuman_orthographic_cards_refused_20261105.png",
+      "source": {
+        "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeCardsControl_v001\\Native_Face_Cards.png",
+        "bytes": 436162,
+        "sha256": "1c7ad623470db1d959c7b7bccd54295869cf2d4420fd26179351e31cfa21e630"
+      },
+      "published": {
+        "path": "D:\\Dev\\living-town-coherent-checkpoint\\docs\\asset_refinement\\evidence\\metahuman_orthographic_cards_refused_20261105.png",
+        "bytes": 436162,
+        "sha256": "1c7ad623470db1d959c7b7bccd54295869cf2d4420fd26179351e31cfa21e630"
+      },
+      "root_viewed": true
+    },
+    {
+      "file": "metahuman_whole_person_refused_20261105.png",
+      "source": {
+        "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeCardsControl_v001\\Native_Face_WholePerson_Cards.png",
+        "bytes": 285231,
+        "sha256": "47fbde408d89a3dfc733d228431ee7a55691d439ac1b882c2d121a39be41938e"
+      },
+      "published": {
+        "path": "D:\\Dev\\living-town-coherent-checkpoint\\docs\\asset_refinement\\evidence\\metahuman_whole_person_refused_20261105.png",
+        "bytes": 285231,
+        "sha256": "47fbde408d89a3dfc733d228431ee7a55691d439ac1b882c2d121a39be41938e"
+      },
+      "root_viewed": true
+    }
+  ],
+  "projection": {
+    "comparison_valid_as_scoped_visual_evidence": true,
+    "host_complete": false,
+    "actual_camera_initialization": {
+      "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeProjectionControl_v003\\NATIVE_CAMERA_INITIALIZATION.json",
+      "bytes": 335,
+      "sha256": "b0d0d04bda5be0e514acc1f38e6963d0fd8414ddb502c63ef3e29c55689d8ac0"
+    },
+    "orthographic_capture": {
+      "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeProjectionControl_v003\\FRAMEBUFFER_CAPTURE_RECEIPT_capture.json",
+      "bytes": 548,
+      "sha256": "fd28f2b0feb55ce5bb7f8a4b56921c8b77024f6cf7fb595e3548506d16cc8f57"
+    },
+    "perspective_capture": {
+      "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeProjectionControl_v003\\FRAMEBUFFER_CAPTURE_RECEIPT_perspective.json",
+      "bytes": 547,
+      "sha256": "56306a5cd3d4b4edafdcc7139e5b41cb43359130ef0b09b4de3bdfe81a45b1cf"
+    },
+    "readback": {
+      "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeProjectionControl_v003\\FRAMEBUFFER_READY.json",
+      "bytes": 4216,
+      "sha256": "45ba84cbe738b5c592c4cb5d180243543a40e32856ff19abea6b5a894e9a47df"
+    },
+    "failure_cleanup": {
+      "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeProjectionControl_v003\\FAILURE_VIEWPORT_CLEANUP.json",
+      "bytes": 1628,
+      "sha256": "6ef63a5d598861613cfb05e07c8a32d4a01f259aaa01b54f471c896a658051cb"
+    },
+    "same_source_maps_lights_camera_location": true,
+    "head_plane_width_cm": 70,
+    "settled_actual_frames": 32,
+    "conclusion": "Projection-dependent hair collapse/stippling in the orthographic review; exact renderer cause not isolated; no engine-bug assertion."
+  },
+  "cards": {
+    "selection": {
+      "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeCardsControl_v001\\CARDS_SELECTION.json",
+      "bytes": 7740,
+      "sha256": "66748e1f796c181b8a4c45c9909a8ee8c3fb8c3e216dcad90766118d16bb05c7"
+    },
+    "changed_components": [
+      "Hair",
+      "Eyebrows",
+      "Beard",
+      "Mustache"
+    ],
+    "visual": "REFUSED: hair volume returns with conspicuous bright checker pattern; material/sampling/lighting cause not isolated.",
+    "whole_person": "REFUSED as target: stock proportions, pulled-back hair, temporary white shirt/shorts, barefoot.",
+    "completion": {
+      "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeCardsControl_v001\\METAHUMAN_PREVIEW_COMPLETE.json",
+      "bytes": 448,
+      "sha256": "2eae42261e37a3ce04ee2d567df26b6ae1b86bd345e6ae9f69e1ba345bef1c7e"
+    }
+  },
+  "assembly": {
+    "can_build": false,
+    "actual_log_reason": "[2026.11.05-03.35.08:917][140]LogMetaHumanCharacterEditor: Error: Failed to build MetaHuman Character 'CH_CafeWorker_Dominic_Review: Character is not rigged.",
+    "rig_and_texture_requests_performed": false,
+    "game_or_DCC_assembly": false
+  },
+  "observer_regression": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\metahuman_native_cards_control_v1_001\\OBSERVER_REGRESSION.json",
+    "bytes": 476,
+    "sha256": "db64838b2d237c815550c0e8543620159365b99975de7272d4815a93607d3132"
+  },
+  "first_capture_failure_custody_recovery": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\metahuman_native_capture_control_v1_001\\CUSTODY_AFTER_FAILURE_CPU.json",
+    "bytes": 5435,
+    "sha256": "61fa5283ce4d9fa7f24a435a62641f0061f70b467231ac6de6fd8ad4cf6aac2e"
+  },
+  "embedded_image_interpretation": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\metahuman_core_data_preflight_v1_001\\EMBEDDED_PNG_INTERPRETATION.json",
+    "bytes": 645,
+    "sha256": "689012d6e837e38c635e6b23f96aef2cdbb65a2a80ae6a17cfc4d0ff0a152e8c"
+  },
+  "production_asset_or_pawn_adoption": false,
+  "runtime_performance_or_loading_qualification": false,
+  "license": "Epic MetaHuman terms, not CC0; raw payload not published.",
+  "actual_native_GPU": {
+    "adapter": "AMD Radeon(TM) 8060S Graphics",
+    "vendor": "1002",
+    "RHI": "D3D12",
+    "feature_level": "SM6",
+    "shader_worker_counts": [
+      2
+    ]
+  },
+  "remaining": [
+    "Coherent styled complete worker",
+    "Appropriate hair representation/materials at actual camera scales",
+    "Production rig/texture/assembly viability",
+    "Fitted workwear and clothed actions",
+    "Native cloth/contacts and eating/sleep",
+    "LOD/actual game CPU/GPU/loading qualification",
+    "Town interiors/terrain/reserve/vegetation/roadmap",
+    "Narrated subtitled MP4/GIF/README"
+  ]
+}

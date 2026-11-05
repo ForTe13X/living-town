@@ -1,0 +1,26 @@
+{
+  "status": "FAIL_RETAINED_NATIVE_METAHUMAN_SOURCE_PREVIEW",
+  "failure": "Traceback (most recent call last):\n  File \"F:\\Living Town\\2026-10-20_Refined_Town\\metahuman_native_projection_control_v1_003\\run_host.py\", line 98, in <module>\n    print('NATIVE_HOST_PHASE '+phase,flush=True);ack=call('begin_'+phase);need(ack['status']=='QUEUED'and ack['callback_handle_present'],'Once-only deferred mutation ACK');state=wait_state(min(time.monotonic()+300,LIMIT-35));need(state['status']=='COMPLETE'and state['error']is None and not state['callback_handle_present'],'Actual deferred phase completed: '+str(state));confirmed=call('read_status');need(confirmed['status']=='COMPLETE'and confirmed['task']==phase,'Serialized MCP confirms actual completed phase')\n                                                                                                                                                                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"F:\\Living Town\\2026-10-20_Refined_Town\\native_worker110_skin_uv1_adoption_prepare_v1_001\\blender_author_v002\\support\\common.py\", line 6, in need\n    if not ok:raise ValueError(msg)\n              ^^^^^^^^^^^^^^^^^^^^^\nValueError: Actual deferred phase completed: {'status': 'FAILED', 'task': 'finish', 'callback_handle_present': False, 'error': 'Traceback (most recent call last):\\n  File \"D:\\\\Dev/LivingTownNativeRuns/2026-11-04/MetaHumanNativeProjectionControl_v003/Project/Content/Python\\\\coherent_tools.py\", line 15, in deferred\\n    u.unregister_slate_post_tick_callback(S[\\'callback\\']);S[\\'callback\\']=None;S[\\'status\\']=\\'RUNNING\\';complete=TASKS[S[\\'task\\']]()is not False\\n                                                                                                           ^^^^^^^^^^^^^^^^^^\\n  File \"D:\\\\Dev/LivingTownNativeRuns/2026-11-04/MetaHumanNativeProjectionControl_v003/Project/Content/Python\\\\preview_worker.py\", line 83, in finish\\n    X[\\'phase\\']=\\'FINISH\\';need(all((O/(\\'FRAMEBUFFER_CAPTURE_RECEIPT_\\'+n+\\'.json\\')).is_file()for n in(\\'capture\\',\\'perspective\\')),\\'Both native framebuffer results before release\\');X[\\'intent\\'].done(X[\\'cam\\']);X[\\'intent\\'].restore();X[\\'tools\\'].end_edit(X[\\'session\\']);X[\\'session\\']=None;emit(\\'METAHUMAN_PREVIEW_COMPLETE.json\\',dict(status=\\'COMPLETE_SAME_SOURCE_PROJECTION_CONTROL\\',character=X[\\'char\\'].get_path_name(),preset=P[\\'preset\\'],captures=[str(O/\\'Native_Face_Orthographic.png\\'),str(O/\\'Native_Face_Perspective.png\\')],all_viewport_scope_restored=True,saved_character_not_resaved=True,source_preset_unchanged=True,cloud_rig_or_texture_request=False,final_character_or_pawn_adoption=False));X[\\'phase\\']=\\'COMPLETE\\';return True\\n                                                                                                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"D:\\\\Dev/LivingTownNativeRuns/2026-11-04/MetaHumanNativeProjectionControl_v003/Project/Content/Python\\\\viewport_lit.py\", line 76, in done\\n    lit_packet(p,n,self.scope,self.identity,active[\\'pilot\\']==own,own if active[\\'pilot\\']==own else None)\\n  File \"D:\\\\Dev/LivingTownNativeRuns/2026-11-04/MetaHumanNativeProjectionControl_v003/Project/Content/Python\\\\viewport_lit.py\", line 25, in lit_packet\\n    need(active[\\'pilot\\']==camera_path and native[\\'perspective\\']is expected_perspective,\\'Exact own camera pilot/dynamic orthographic mode while capture pending\\')\\n  File \"D:\\\\Dev/LivingTownNativeRuns/2026-11-04/MetaHumanNativeProjectionControl_v003/Project/Content/Python\\\\viewport_lit.py\", line 5, in need\\n    if not v:raise ValueError(s)\\n             ^^^^^^^^^^^^^^^^^^^\\nValueError: Exact own camera pilot/dynamic orthographic mode while capture pending\\n', 'business': {'phase': 'FINISH', 'shots_completed': 0, 'screenshot_pending': False, 'character': '/Game/LivingTown_UEPilot/MetaHumanWorker_v001/CH_CafeWorker_Dominic_Review.CH_CafeWorker_Dominic_Review'}}\n",
+  "source_family": "de0beb35e3b683fb9f381676af8aa65d9763d90d650b00f3b12598296cc5198d",
+  "owned_reap": {
+    "root_exit_code": 92,
+    "owned_root_waited": true,
+    "remaining_owned_pids": [],
+    "controlled_job_termination": true,
+    "includes_ShaderCompileWorker_descendants": true
+  },
+  "seconds": 87.89099999997416,
+  "peak_private_bytes": 13759819776,
+  "peak_RSS_bytes": 9890377728,
+  "monitor_errors": [],
+  "sources_canonical_global_preserved": true,
+  "GPU": {
+    "adapter": "AMD Radeon(TM) 8060S Graphics",
+    "vendor": "1002",
+    "RHI": "D3D12",
+    "feature_level": "SM6",
+    "shader_worker_counts": [
+      2
+    ]
+  }
+}

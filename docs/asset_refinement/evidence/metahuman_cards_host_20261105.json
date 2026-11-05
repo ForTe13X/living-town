@@ -1,0 +1,48 @@
+{
+  "status": "PASS_NATIVE_METAHUMAN_EXISTING_CARDS_CONTROL_PENDING_VISUAL_REVIEW",
+  "failure": null,
+  "source_family": "de0beb35e3b683fb9f381676af8aa65d9763d90d650b00f3b12598296cc5198d",
+  "completion": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\MetaHumanNativeCardsControl_v001\\METAHUMAN_PREVIEW_COMPLETE.json",
+    "bytes": 448,
+    "sha256": "2eae42261e37a3ce04ee2d567df26b6ae1b86bd345e6ae9f69e1ba345bef1c7e"
+  },
+  "actual_MCP_calls": [
+    "begin_probe_api",
+    "read_status",
+    "begin_create_preview",
+    "read_status",
+    "begin_capture",
+    "read_status",
+    "EditorApp.CaptureViewport",
+    "begin_cards",
+    "read_status",
+    "EditorApp.CaptureViewport",
+    "begin_whole",
+    "read_status",
+    "EditorApp.CaptureViewport",
+    "begin_finish",
+    "read_status"
+  ],
+  "owned_reap": {
+    "root_exit_code": 92,
+    "owned_root_waited": true,
+    "remaining_owned_pids": [],
+    "controlled_job_termination": true,
+    "includes_ShaderCompileWorker_descendants": true
+  },
+  "seconds": 93.90700000000652,
+  "peak_private_bytes": 13895323648,
+  "peak_RSS_bytes": 10060623872,
+  "monitor_errors": [],
+  "sources_canonical_global_preserved": true,
+  "GPU": {
+    "adapter": "AMD Radeon(TM) 8060S Graphics",
+    "vendor": "1002",
+    "RHI": "D3D12",
+    "feature_level": "SM6",
+    "shader_worker_counts": [
+      2
+    ]
+  }
+}

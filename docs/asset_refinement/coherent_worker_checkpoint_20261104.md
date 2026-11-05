@@ -2,6 +2,8 @@
 
 4 November 2026. **Technical transport has advanced; character appearance is still unapproved.** The coherent worker now opens in a separate, cold-loaded Unreal review scene. The latest appearance candidate is rejected. Neither result replaces the existing café pawn or completes the town roadmap.
 
+The [5 November representation review](character_representation_review_20261105.md) adds actual native whole-preset, projection and card controls. It distinguishes camera readiness from rendering and assembly readiness; the trial remains unapproved as a replacement. The construction and transport findings below remain retained.
+
 ## The recurring failure is choosing the wrong next problem
 
 The repeated defects are related, but they do not all belong to textures. A skin atlas cannot repair competing neck surfaces. A darker complexion cannot supply an adult facial structure. Bone weights cannot make a loose apron simulate. A faithful export cannot make a generic person match the concept.

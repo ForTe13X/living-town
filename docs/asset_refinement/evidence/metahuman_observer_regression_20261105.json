@@ -1,0 +1,17 @@
+{
+  "status": "PASS_CAMERA_RELEASE_REGRESSION_WITH_ACTUAL_PERSPECTIVE_AND_AMBIGUOUS_ZERO_RECEIPTS",
+  "old": {
+    "passed": false,
+    "reason": "Exact own camera pilot/dynamic orthographic mode while capture pending",
+    "ejected": []
+  },
+  "corrected": {
+    "passed": true,
+    "ejected": [
+      "FourPanes2x2.Viewport 1.Viewport1"
+    ],
+    "shot_closed": true
+  },
+  "ambiguous_four_zero_cameras_still_refused": true,
+  "no_engine_launched": true
+}
