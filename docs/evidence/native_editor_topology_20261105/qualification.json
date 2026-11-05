@@ -1,0 +1,224 @@
+{
+  "schema": "LivingTown.NativeCurrentEditorWorldTopologyQualification.v1",
+  "qualified_through": "material176_saved859_producer_review",
+  "as_of_utc": "2026-11-05T17:40:38.489128+00:00",
+  "states": {
+    "editor019_build": "PASS",
+    "generic_observer_lightfix_source_preflight": "PASS",
+    "material176_saved859_producer": "PASS",
+    "independent_saved859_cold_read": "PENDING",
+    "saved859_final_art": "PENDING",
+    "performance_residency_navigation_collision_cook": "NOT_QUALIFIED"
+  },
+  "source": {
+    "family": "02932de2dff07dc6aaedb70d8067e2ab872d5587b51829d5172fb72dc5759b50",
+    "full_files": 205,
+    "native_inputs": 156,
+    "hash_scope": "Actual qualified Windows source bytes; checkout line endings may differ",
+    "changed_files": [
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownViewportInspection.h",
+        "bytes": 2159,
+        "sha256": "9c14c612c99f0deb64bd297617aa589e6b41175732f23ce083059f2eb090a837"
+      },
+      {
+        "file": "unreal/Source/LivingTownMaterialInspection/LivingTownViewportInspection.cpp",
+        "bytes": 22011,
+        "sha256": "92ec07c3e1e2882231409295d60c6c4f80f39486cdb2688bb08bd61b4ad51d5b"
+      }
+    ],
+    "other203_files_byte_identical_to_positive018": true,
+    "prior_viewport_B_texture_topology_and_mutator_scopes_unchanged": true,
+    "Game019_qualified": false
+  },
+  "api": {
+    "python": "unreal.LivingTownViewportInspection.read_current_editor_world_topology()",
+    "schema": "LivingTown.CurrentEditorWorldTopology.v1",
+    "outer_fields": [
+      "schema",
+      "status",
+      "error",
+      "readback"
+    ],
+    "success_status": "READ_CURRENT_EDITOR_WORLD_TOPOLOGY",
+    "refused_status": "REFUSED",
+    "scope": "Existing clean Editor World with matching live registered current viewport; Editor game thread; no commandlet/PIE/game context",
+    "existing_contexts_only_no_autocreation": true,
+    "valid_WorldSettings_required_before_partition_read": true,
+    "nonnull_invalid_build_data_refuses": true,
+    "loaded_count_and_membership_reported_not_authoring_policy": true,
+    "no_disk_hash_or_asset_identity_proof": true,
+    "no_asset_load_duplicate_edit_save": true,
+    "no_scope_mutator_or_allowlist_changes": true,
+    "caller_responsibilities": [
+      "Bind admitted exact source World and logical package",
+      "Bind approved disk package hash and staging/source custody",
+      "Require success then parse nested readback",
+      "Apply count/membership/external actors/partition/build-data authoring rules",
+      "Validate scene contents separately; logical names are not loaded-byte identity"
+    ],
+    "actual_source_observation": {
+      "schema": "LivingTown.CurrentEditorWorldTopology.v1",
+      "status": "READ_CURRENT_EDITOR_WORLD_TOPOLOGY",
+      "error": "",
+      "readback": {
+        "world": "/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_LightFix_v001/MillCourtB_LightFixInspection_v001.MillCourtB_LightFixInspection_v001",
+        "world_package": "/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_LightFix_v001/MillCourtB_LightFixInspection_v001",
+        "world_package_dirty": false,
+        "persistent_level": "/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_LightFix_v001/MillCourtB_LightFixInspection_v001.MillCourtB_LightFixInspection_v001:PersistentLevel",
+        "persistent_level_outer_is_world": true,
+        "loaded_level_count": 1,
+        "persistent_level_in_loaded_levels": true,
+        "uses_external_actors": false,
+        "has_world_partition": false,
+        "map_build_data_present": false,
+        "map_build_data": null,
+        "asset_loaded_duplicated_edited_or_saved": false
+      }
+    },
+    "observation_sanitization": {
+      "omitted_pointer_fields": [
+        "client_identity_diagnostic_only",
+        "viewport_identity_diagnostic_only"
+      ],
+      "scope": "Only process-local diagnostic pointer values omitted; full private observation hash retained"
+    }
+  },
+  "editor019": {
+    "seconds": 458.781,
+    "root_exit_code": 0,
+    "reaped_empty": true,
+    "source_metadata_rows": 410,
+    "guards": {
+      "canonical_sources_exact": true,
+      "workcopy_sources_exact": true,
+      "full_source_workcopy_exact": true,
+      "preexisting_config_exact": true,
+      "engine_inputs_exact": true,
+      "producer_sources_exact": true,
+      "critical_byte_inputs_exact": true,
+      "declared_metadata_custody_exact": true,
+      "UbtRuns_terminal_exact": true
+    },
+    "scope": "Editor compile/link only; native observation is a separate later producer receipt"
+  },
+  "material176_saved859": {
+    "seconds": 121.437,
+    "controlled_exit_code": 92,
+    "reaped_empty": true,
+    "custody_checks": {
+      "source_bytes_and_mtimes": true,
+      "immutable_staging": true,
+      "assets_and_inputs": true,
+      "canonical_before_after": true,
+      "Blender_globals_before_after": true,
+      "meaningful_UE_global_custody": true,
+      "owned_UI_exact_paths_and_JSON": true
+    },
+    "source_input_files": 851,
+    "source851_bytes_mtimes_preserved": true,
+    "new_package_count": 8,
+    "closed_files": 859,
+    "new_texture_assets": 4,
+    "new_material_assets": 3,
+    "new_maps": 1,
+    "material_overrides_added": 176,
+    "accepted205_preserved": true,
+    "placements_preserved": 750,
+    "protected_ordinary_actor_states": 760,
+    "point_light_properties_unchanged": 32,
+    "source_full_raw_actor_state_and_roster_unchanged": true,
+    "delta": "Copied component material overrides only",
+    "mesh_UV_TBN_LOD_geometry_changes": false,
+    "source_world": "/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_LightFix_v001/MillCourtB_LightFixInspection_v001.MillCourtB_LightFixInspection_v001",
+    "saved_map": "/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_Material176_v001/MillCourtB_Material176Inspection_v001",
+    "producer_finishes_at_source_world": true,
+    "same_process_newmap_load_attempted": false,
+    "new_world_activated": false,
+    "original_viewport_restoration_claimed": false,
+    "packet": {
+      "bytes": 1239274,
+      "sha256": "451ae9843d6fe567b6de3868560efd6b3aed27d502c1ee421328869a2991cbbe"
+    },
+    "shader_author_records": {
+      "new_material_count": 3,
+      "new_texture_count": 4,
+      "reported_compile_errors_empty": true,
+      "full_independent_saved_graph_readback_pending": true
+    },
+    "independent_cold_and_art_still_required": true
+  },
+  "proofs": [
+    {
+      "id": "editor019_root_review",
+      "filename": "NATIVE_CURRENT_EDITOR_WORLD_TOPOLOGY_EDITOR019_ROOT_REVIEW.json",
+      "bytes": 2980,
+      "sha256": "70f58b22d22a722c4e3b26c0c4ec31f678083d136a28f014a4060666d559f83d"
+    },
+    {
+      "id": "editor019_build_receipt",
+      "filename": "BUILD_RECEIPT.json",
+      "bytes": 59758,
+      "sha256": "3df0547df398dd42665cc859a84ae66d3be4dda2986df7b5855e333e009baca0"
+    },
+    {
+      "id": "editor019_source_freeze",
+      "filename": "FROZEN_BUILD.json",
+      "bytes": 75553,
+      "sha256": "95461755df64d76853da5c785f3703021a5bfba42f5ff71742d9a92ebe25d681"
+    },
+    {
+      "id": "saved859_root_review",
+      "filename": "MATERIAL176_ASSET002_SAVED859_ROOT_REVIEW.json",
+      "bytes": 3421,
+      "sha256": "bd2986bcb77d4b54895c9459707641b1d053d2a96bf297b89bb6a71cd4c11081"
+    },
+    {
+      "id": "saved859_root_admission",
+      "filename": "MATERIAL176859_ROOT_ADMISSION.json",
+      "bytes": 1585,
+      "sha256": "461ee453b5763698ef436fa47d9921f5667826582d9125681f42e1d235bacba8"
+    },
+    {
+      "id": "saved859_host",
+      "filename": "HOST_MATERIAL176_PRODUCER_REPORT.json",
+      "bytes": 2304,
+      "sha256": "318c7b59548820db3e681e1b2c1ef4ac865d6fc379b9809c4944e1394fa72abb"
+    },
+    {
+      "id": "saved859_completion",
+      "filename": "MATERIAL176_PRODUCER_COMPLETE.json",
+      "bytes": 824,
+      "sha256": "b27d1a847b8d5d2b697afa9df4d3df033b78448e620ed1d15ced6893c4b34000"
+    },
+    {
+      "id": "saved859_packet",
+      "filename": "COMPLETED_ASSET_PHASE.json",
+      "bytes": 1239274,
+      "sha256": "451ae9843d6fe567b6de3868560efd6b3aed27d502c1ee421328869a2991cbbe"
+    },
+    {
+      "id": "saved859_post_reap_custody",
+      "filename": "POST_REAP_CUSTODY.json",
+      "bytes": 6126,
+      "sha256": "85f9943cc08149ca36f48a474fb524ff8c503b4a01a7282bf4f7b44be99c63f3"
+    },
+    {
+      "id": "actual_generic_topology_source_observation",
+      "filename": "MATERIAL176_SOURCE_NATIVE_TOPOLOGY.json",
+      "bytes": 1081,
+      "sha256": "b691690eb83591715833131129cec6b76b6405f29681892f3446f9a5467cfd35"
+    },
+    {
+      "id": "producer_graph_texture_records",
+      "filename": "NEW_MATERIAL176_GRAPH_TEXTURE_RECORDS.json",
+      "bytes": 5783,
+      "sha256": "353934380b808163ce92cba4effbc25a73aef41bbe77089eb8fad66cfa52f37a"
+    }
+  ],
+  "limits": [
+    "Native observation qualifies the LightFix source preflight, not activation or cold reopening of the saved material map",
+    "Producer records/saving are not final appearance or loaded-byte identity approval",
+    "No accepted859 cold read, final art, performance, residency, navigation/collision, cook or whole-town readiness claim"
+  ]
+}
