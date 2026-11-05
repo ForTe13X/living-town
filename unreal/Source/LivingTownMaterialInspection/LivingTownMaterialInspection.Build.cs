@@ -15,5 +15,6 @@ public class LivingTownMaterialInspection : ModuleRules {
   PrivateDependencyModuleNames.Add("LivingTownNative");
   PrivateDependencyModuleNames.Add("SlateCore");
   PrivateDependencyModuleNames.AddRange(new string[]{"Slate","EditorConfig","MetaHumanSDKEditor"});
+  PrivateDependencyModuleNames.AddRange(new string[]{"MetaHumanCharacterPalette","MetaHumanDefaultPipeline","MetaHumanDefaultEditorPipeline","Blutility","MetaHumanCharacterEditor","MetaHumanCharacter"});
  }
 }
