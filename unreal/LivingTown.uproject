@@ -61,6 +61,13 @@
       "TargetAllowList": [
         "Editor"
       ]
+    },
+    {
+      "Name": "MetaHumanCharacter",
+      "Enabled": true,
+      "TargetAllowList": [
+        "Editor"
+      ]
     }
   ],
   "Modules": [

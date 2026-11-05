@@ -1,0 +1,60 @@
+{
+  "schema": "LivingTown.MetaHumanCore2KCheckpoint.v1",
+  "date": "2026-11-05",
+  "engine": "5.8.4 CL58902052 BuildId55116800",
+  "scope": "Verified native output budget, saved core packages and independent Editor consumer; shared dependencies and final gameplay adoption remain open.",
+  "source_family": "7f86cf435e934e7a8228ebcd7a8e901e174b8802b322be9c7543ae1f4aa331f4",
+  "qualified_editor_build": {
+    "run": "NativeMetaHumanBakeBudgetEditorBuild_v014",
+    "seconds": 426.406,
+    "root_review_sha256": "ff57b83fad9c1c1d635397e199b841effb1a1a0a0f6da70c1ec5a957e5e2a015",
+    "root_exit_code": 0,
+    "owned_tree_reaped": true
+  },
+  "source_character": {
+    "bytes": 145316588,
+    "sha256": "87380c3ab8c4be4a1d6e758f69e6bce2b9cf945ec3eb4f3b1cc2b5479125dbeb",
+    "preserved": true,
+    "included_in_cold_consumer": false
+  },
+  "closed_core_packet": {
+    "run": "MetaHumanNativeCoreAssemblyCheckpoint_v001",
+    "manifest_bytes": 77033,
+    "manifest_sha256": "2b60d109df4f6a99e0a746b8907fe89f16f5c3aa46aeb1db59f543c23f5b3c5c",
+    "packages": 102,
+    "package_bytes": 142333341,
+    "five_targeted_saved_texture_sizes": [2048, 2048],
+    "shared_plugin_dependencies_remain": true,
+    "assembly_host_global_audit": "FAILED_RETAINED_LAUNCHER_SETTINGS_MTIME_CHANGE",
+    "scope": "Completed closed asset phase only; not an overall host pass."
+  },
+  "independent_cold_consumer": {
+    "run": "MetaHumanColdCoreConsumer_v018",
+    "status": "PASS_COLD_CORE_BLUEPRINT_SPAWN_RENDER_PENDING_DEPENDENCY_CLOSURE_ART_RUNTIME",
+    "root_review_sha256": "c3cc6f719abb8f92feb3fd60babe6477549e35b9d6b5c46fa29b3d9274bd3dfd",
+    "completion_sha256": "a81c3d65a98769fff519fc75146c72ae69929575bb57d3be4b81c0d4eaa88a9b",
+    "seconds": 98.047,
+    "peak_aggregate_private_bytes": 9217626112,
+    "source_and_global_preservation_pass": true,
+    "viewport_exactly_restored": true,
+    "perspective_renders": 2,
+    "render_resolution": [1024, 1024],
+    "GPU": "AMD Radeon(TM) 8060S Graphics",
+    "RHI": "D3D12 SM6",
+    "shader_workers": 2,
+    "owned_tree_reaped": true,
+    "cloud_requests": false
+  },
+  "excluded_experiment": {
+    "run": "MetaHumanColdSharedConsumer_v019",
+    "result": "FAIL_RETAINED_CONTROL_RIG_GRAPH_LINK_ERRORS_DURING_SDK_DUPLICATION",
+    "copy_wrapper_shipped": false,
+    "partial_output_admitted": false
+  },
+  "final_art_approval": false,
+  "gameplay_adopted": false,
+  "packaged_game_performance_verified": false,
+  "engine_independent_delivery_complete": false,
+  "full_goal_complete": false,
+  "raw_epic_assets_in_repository": false
+}
