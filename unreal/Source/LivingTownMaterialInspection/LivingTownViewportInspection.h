@@ -12,6 +12,12 @@ public:
     UFUNCTION(BlueprintCallable, Category="LivingTown|Viewport Review")
     static FString ReadCurrentLevelViewport();
 
+    // Passive native topology of the one existing Editor world/current viewport.
+    // Callers bind their own expected world and on-disk package; this reports
+    // loaded topology only and never authorizes an asset edit or save.
+    UFUNCTION(BlueprintCallable, Category="LivingTown|Viewport Review")
+    static FString ReadCurrentEditorWorldTopology();
+
     // Exact GCurrent client used by installed MCP CaptureViewport. Fixed Mid
     // camera; perspective/Lit/GameView off; real-time temporary override;
     // scene-driven exposure and standard atmosphere/lighting flags.

@@ -3,6 +3,10 @@
 #include "EditorViewportClient.h"
 #include "LevelEditorViewport.h"
 #include "Engine/World.h"
+#include "Engine/Engine.h"
+#include "Engine/Level.h"
+#include "Engine/MapBuildDataRegistry.h"
+#include "GameFramework/WorldSettings.h"
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
@@ -132,6 +136,73 @@ FString ULivingTownViewportInspection::ReadCurrentLevelViewport()
     if (!Registered(Client) || !Client->Viewport)
         return Result(TEXT("REFUSED"), TEXT("No registered live GCurrent level viewport on the game thread."));
     return Result(TEXT("READ_EXACT_CURRENT_LEVEL_VIEWPORT"), TEXT(""), Observe(Client));
+}
+
+FString ULivingTownViewportInspection::ReadCurrentEditorWorldTopology()
+{
+    const auto Reply = [](const TCHAR* Status, const TCHAR* Error, JObject Data = MakeShared<FJsonObject>())
+    {
+        JObject Root = MakeShared<FJsonObject>();
+        Root->SetStringField(TEXT("schema"), TEXT("LivingTown.CurrentEditorWorldTopology.v1"));
+        Root->SetStringField(TEXT("status"), Status);
+        Root->SetStringField(TEXT("error"), Error);
+        Root->SetObjectField(TEXT("readback"), Data);
+        FString Out;
+        const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&Out);
+        FJsonSerializer::Serialize(Root.ToSharedRef(), Writer);
+        return Out;
+    };
+    if (!IsInGameThread() || IsRunningCommandlet() || !GIsEditor || !GEditor || GEditor->PlayWorld)
+        return Reply(TEXT("REFUSED"), TEXT("Existing Editor game thread without commandlet or PIE required."));
+
+    // GetEditorWorldContext may create a context when none exists. Enumerate
+    // existing contexts instead so even the refused path stays an observer.
+    UWorld* World = nullptr;
+    int32 EditorContexts = 0;
+    for (const FWorldContext& Context : GEditor->GetWorldContexts())
+    {
+        if (Context.WorldType == EWorldType::PIE || Context.WorldType == EWorldType::Game ||
+            Context.WorldType == EWorldType::GamePreview || Context.WorldType == EWorldType::GameRPC)
+            return Reply(TEXT("REFUSED"), TEXT("A play or game context exists."));
+        if (Context.WorldType == EWorldType::Editor)
+        {
+            ++EditorContexts;
+            World = Context.World();
+        }
+    }
+    auto* Client = GCurrentLevelEditingViewportClient;
+    if (EditorContexts != 1 || !IsValid(World) || World->WorldType != EWorldType::Editor ||
+        !Registered(Client) || !Client->Viewport || Client->GetWorld() != World)
+        return Reply(TEXT("REFUSED"), TEXT("One valid existing Editor world and matching current registered viewport required."));
+
+    UPackage* Package = World->GetOutermost();
+    ULevel* Level = World->PersistentLevel;
+    if (!IsValid(Package) || Package->IsDirty() || Package->HasAnyPackageFlags(PKG_PlayInEditor) ||
+        !IsValid(Level) || Level->GetOuter() != World || Level->GetOutermost() != Package ||
+        !IsValid(Level->GetWorldSettings(false)))
+        return Reply(TEXT("REFUSED"), TEXT("Clean world package, owned persistent level and valid WorldSettings required."));
+    UMapBuildDataRegistry* BuildData = Level->MapBuildData;
+    if (BuildData && !IsValid(BuildData))
+        return Reply(TEXT("REFUSED"), TEXT("Nonnull map build data reference is invalid."));
+
+    const TArray<ULevel*>& Levels = World->GetLevels();
+    JObject Data = MakeShared<FJsonObject>();
+    Data->SetStringField(TEXT("world"), World->GetPathName());
+    Data->SetStringField(TEXT("world_package"), Package->GetName());
+    Data->SetBoolField(TEXT("world_package_dirty"), Package->IsDirty());
+    Data->SetStringField(TEXT("persistent_level"), Level->GetPathName());
+    Data->SetBoolField(TEXT("persistent_level_outer_is_world"), true);
+    Data->SetNumberField(TEXT("loaded_level_count"), Levels.Num());
+    Data->SetBoolField(TEXT("persistent_level_in_loaded_levels"), Levels.Contains(Level));
+    Data->SetBoolField(TEXT("uses_external_actors"), Level->IsUsingExternalActors());
+    Data->SetBoolField(TEXT("has_world_partition"), World->GetWorldPartition() != nullptr);
+    Data->SetBoolField(TEXT("map_build_data_present"), BuildData != nullptr);
+    if (BuildData) Data->SetStringField(TEXT("map_build_data"), BuildData->GetPathName());
+    else Data->SetField(TEXT("map_build_data"), MakeShared<FJsonValueNull>());
+    Data->SetStringField(TEXT("client_identity_diagnostic_only"), FString::Printf(TEXT("%p"), static_cast<void*>(Client)));
+    Data->SetStringField(TEXT("viewport_identity_diagnostic_only"), FString::Printf(TEXT("%p"), static_cast<void*>(Client->Viewport)));
+    Data->SetBoolField(TEXT("asset_loaded_duplicated_edited_or_saved"), false);
+    return Reply(TEXT("READ_CURRENT_EDITOR_WORLD_TOPOLOGY"), TEXT(""), Data);
 }
 
 FString ULivingTownViewportInspection::ConfigureFixedMidViewport()
