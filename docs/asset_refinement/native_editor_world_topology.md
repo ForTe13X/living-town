@@ -1,4 +1,4 @@
-`LivingTownViewportInspection.read_current_editor_world_topology()` is a passive native observer for the existing clean Editor World. Editor019 compiled it successfully, and the material176 producer subsequently observed the LightFix source World through it. That producer saved a family containing 859 files while preserving its 851 inputs. Independent cold validation of the new 859-file family, final art, performance and cooking remain **pending**. [qualification.json](../evidence/native_editor_topology_20261105/qualification.json) records portable proof hashes and the scope of each result.
+`LivingTownViewportInspection.read_current_editor_world_topology()` is a passive native observer for the existing clean Editor World. Editor019 compiled it, and material176 used it before saving a family of 859 files while preserving its 851 inputs. A separate fresh process then verified all 859 packages, 381 finish overrides, seven saved graphs and thirteen public texture settings, and captured the two views below. Final art, full-town performance and cooking remain **held**. [qualification.json](../evidence/native_editor_topology_20261105/qualification.json) records portable proof hashes and each result's scope.
 
 The new method is separate from the existing map-specific B topology reader. Existing texture readers, viewport configuration/restoration APIs, map allowlists and shared scope ownership remain unchanged. See the [declaration](../../unreal/Source/LivingTownMaterialInspection/LivingTownViewportInspection.h) and [implementation](../../unreal/Source/LivingTownMaterialInspection/LivingTownViewportInspection.cpp).
 
@@ -44,4 +44,10 @@ The new saved map is:
 /Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_Material176_v001/MillCourtB_Material176Inspection_v001
 ```
 
-The producer finished with its LightFix source World active and the saved duplicate retained. It performed no same-process map reload and makes no viewport-restoration claim across a World switch. The next consumer must independently reopen the exact admitted 859-file family and read the saved graphs/textures and scene state. Producer shader records and successful saving do not establish final appearance, texture residency, frame rate, navigation/collision, cooking or whole-town readiness.
+The producer finished with its LightFix source World active and the saved duplicate retained. It performed no same-process map reload and makes no viewport-restoration claim across a World switch. The independent consumer completed in 125.969 seconds with all 760 protected actor states, 381 overrides, seven saved graphs, thirteen public texture settings and all 859 package bytes/mtimes verified. It returned its hidden game-camera fixture to the observed Editor pose before normal EndPIE. All nonrotation viewport fields matched exactly; the explicit orientation round-trip path bound was 0.000003735 degrees, within 0.00001 degrees. This bound applies only to camera representation; actor and asset checks remain exact. Seven custody closures and full post-reap PNG decoding passed.
+
+The views show an asset checkpoint. Wall plaster is now visible, while opaque glazing, simplified roof finish, hard lighting and the isolated ground/background need further art and town integration. This is not a final presentation or whole-town performance qualification.
+
+![Native saved room view](../evidence/native_editor_topology_20261105/material176_room.png)
+
+![Native isolated exterior inspection](../evidence/native_editor_topology_20261105/material176_exterior.png)

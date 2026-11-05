@@ -1,13 +1,13 @@
 {
   "schema": "LivingTown.NativeCurrentEditorWorldTopologyQualification.v1",
-  "qualified_through": "material176_saved859_producer_review",
-  "as_of_utc": "2026-11-05T17:40:38.489128+00:00",
+  "qualified_through": "material176_cold859_two_view_root_review",
+  "as_of_utc": "2026-11-05T18:01:18.570278+00:00",
   "states": {
     "editor019_build": "PASS",
     "generic_observer_lightfix_source_preflight": "PASS",
     "material176_saved859_producer": "PASS",
-    "independent_saved859_cold_read": "PENDING",
-    "saved859_final_art": "PENDING",
+    "independent_saved859_cold_read": "PASS",
+    "saved859_final_art": "HELD",
     "performance_residency_navigation_collision_cook": "NOT_QUALIFIED"
   },
   "source": {
@@ -144,9 +144,10 @@
       "new_material_count": 3,
       "new_texture_count": 4,
       "reported_compile_errors_empty": true,
-      "full_independent_saved_graph_readback_pending": true
+      "full_independent_saved_graph_readback_pending": false
     },
-    "independent_cold_and_art_still_required": true
+    "independent_cold_completed": true,
+    "final_art_still_required": true
   },
   "proofs": [
     {
@@ -214,11 +215,104 @@
       "filename": "NEW_MATERIAL176_GRAPH_TEXTURE_RECORDS.json",
       "bytes": 5783,
       "sha256": "353934380b808163ce92cba4effbc25a73aef41bbe77089eb8fad66cfa52f37a"
+    },
+    {
+      "id": "cold859_root_review",
+      "filename": "MATERIAL176_COLD001_SAVED859_AND_TWO_VIEWS_ROOT_REVIEW.json",
+      "bytes": 4922,
+      "sha256": "f12453a2379cfb09ae4aec2640e757be32628e9727e4201945fbeb7a1ffbbf5b"
+    },
+    {
+      "id": "cold859_host",
+      "filename": "HOST_MATERIAL176_COLD_PIE_REPORT.json",
+      "bytes": 3326,
+      "sha256": "fce25e61d4abcc18c055684e8f83aa6b8d6ee59d36b970e08b3ede01f479a7cf"
+    },
+    {
+      "id": "cold859_completion",
+      "filename": "MATERIAL176_COLD_PIE_COMPLETE.json",
+      "bytes": 5483,
+      "sha256": "a3175595f9cb911dfbae8d2d29c8d0dcab1da9f0fc565e4110cddfb3f6c2cf76"
+    },
+    {
+      "id": "cold859_post_reap_custody",
+      "filename": "POST_REAP_CUSTODY.json",
+      "bytes": 6030,
+      "sha256": "e40ef267d34d82a041ee0d176633a83b91ba945b6ffd0bcea22272b6935a7561"
+    },
+    {
+      "id": "cold859_saved_seven_graphs",
+      "filename": "COLD_SEVEN_GRAPH_READBACK.json",
+      "bytes": 41529,
+      "sha256": "e1e8c2d766e745218d7dd9c80fdfc3ab377d2633a80014413a8e6f277be9ecba"
+    },
+    {
+      "id": "cold859_public_thirteen_textures",
+      "filename": "COLD_THIRTEEN_TEXTURE_READBACK.json",
+      "bytes": 19475,
+      "sha256": "02606b5aea482c1f6731299a7170a4f989fa4e2f2a15a001cb5ae7250b03b58b"
     }
   ],
   "limits": [
-    "Native observation qualifies the LightFix source preflight, not activation or cold reopening of the saved material map",
-    "Producer records/saving are not final appearance or loaded-byte identity approval",
-    "No accepted859 cold read, final art, performance, residency, navigation/collision, cook or whole-town readiness claim"
-  ]
+    "The generic native observation qualifies the LightFix source preflight; the independent consumer separately opened and inspected the new saved material map",
+    "Loaded object names are not proof of a disk-file identity; package hashes/staging custody and strict scene checks are separately qualified",
+    "Final art, whole-town runtime/frame rate, native texture residency/RHI, navigation/collision and cooking remain unqualified"
+  ],
+  "cold859": {
+    "seconds": 125.96900000001187,
+    "controlled_exit_code": 92,
+    "reaped_empty": true,
+    "packages": 859,
+    "placements": 750,
+    "finish_overrides": 381,
+    "protected760_states_and_roster_exact": true,
+    "saved_graphs": 7,
+    "public_texture_settings": 13,
+    "point_properties_unchanged": 32,
+    "all859_bytes_and_mtimes_exact": true,
+    "postPIE_graphs_and_texture_settings_unchanged": true,
+    "normal_EndPIE": true,
+    "game_camera_return_before_EndPIE": true,
+    "all_nonrotation_viewport_fields_exact": true,
+    "orientation_path_bound_deg": 3.7350364436861128e-06,
+    "orientation_maximum_deg": 1e-05,
+    "custody_checks": {
+      "source_bytes_and_mtimes": true,
+      "immutable_staging": true,
+      "assets_and_inputs": true,
+      "canonical_before_after": true,
+      "Blender_globals_before_after": true,
+      "meaningful_UE_global_custody": true,
+      "owned_UI_exact_paths_and_JSON": true
+    },
+    "photos": [
+      {
+        "file": "material176_room.png",
+        "bytes": 2650762,
+        "sha256": "d646f45bd6b664179e474a878fc027dad0fd248cdc582039d984b2ffdf7a9667",
+        "pixels": [
+          1920,
+          1080
+        ],
+        "native_capture": true,
+        "post_reap_full_pixel_decode": true,
+        "root_visually_reviewed": true
+      },
+      {
+        "file": "material176_exterior.png",
+        "bytes": 1658848,
+        "sha256": "4a63c5b07c11f83577239091942ca4faec7e1561952b80bf6bc6b68f33ba92e1",
+        "pixels": [
+          1920,
+          1080
+        ],
+        "native_capture": true,
+        "post_reap_full_pixel_decode": true,
+        "root_visually_reviewed": true
+      }
+    ],
+    "art_review": "Plaster detail now visible across room walls; bed and furniture remain coherent. Exterior envelope fits frame and plaster reads, but glazing opaque, roof finish simplified, hard lighting and isolated neon ground/black inspection background lack town/landscape context. Accept the asset/data advance, hold final art and product presentation.",
+    "final_art_approved": false,
+    "texture_native_Source_platform_residency_RHI_qualified": false
+  }
 }
