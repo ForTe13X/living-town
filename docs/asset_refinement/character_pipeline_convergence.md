@@ -1,5 +1,9 @@
 # Character pipeline and local asset checkpoint
 
+**Current review, 4 November 2026:** [the coherent worker checkpoint and macroscopic process decision](coherent_worker_checkpoint_20261104.md) supersedes the character next-step statements below. One continuous body/matching 53-joint source now has portable PBR/export checks and an independently cold-loaded, separate Unreal review scene. Native face/hair material-mode corrections are useful; adult likeness, final hair/fabric and native cloth remain unapproved. A new strand/card/complexion candidate was visually refused rather than promoted after successful execution. The existing café pawn remains the runtime fallback.
+
+The sections below retain the earlier source-family history and scoped gameplay/interior observations. They do not reopen the stopped legacy Head/Body/Facing assembly or direct another neck/atlas-cutting pass. Follow the linked current review for the next bounded art and interaction work.
+
 Updated 4 November 2026. The full [town roadmap](../active-town-roadmap.md) remains active. The [evidence index](evidence/character_pipeline_convergence_20261103.json) binds the local reviews and two inspection images below. It indexes evidence; it does not bundle the Blender masters, native projects or complete test output.
 
 The main bottleneck is assembly coherence and suitability for animation. Local refinements have often improved one part while weakening the complete person. More texture generation, isolated portraits and exhaustive transport tests cannot resolve that relationship. Progress means a visible defect removed from the consuming character, or a necessary boundary closed so that the next visible test can run.

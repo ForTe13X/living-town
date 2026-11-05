@@ -1,0 +1,24 @@
+{
+  "status": "PASS_CLOSED_IDENTITY_LOOKDEV_NOT_ART_OR_ENGINE_ADOPTED",
+  "failure": null,
+  "Builder": {
+    "status": "PASS_CLOSED_OWNED_STEP",
+    "failure": null,
+    "reap": {
+      "root_exit_code": 0,
+      "owned_root_waited": true,
+      "remaining_owned_pids": [],
+      "controlled_job_termination": true,
+      "includes_ShaderCompileWorker_descendants": true
+    },
+    "seconds": 28.5,
+    "peak_private_bytes": 3788333056,
+    "peak_RSS_bytes": 2392211456
+  },
+  "completion": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\WorkerCoherentIdentityLookdev_v001\\IDENTITY_LOOKDEV_COMPLETE.json",
+    "bytes": 3902,
+    "sha256": "83c426c1390a4a04302559313449b9059c03a043d03d15f9952f494f7bd8d7af"
+  },
+  "all_source_canonical_global_unchanged": true
+}

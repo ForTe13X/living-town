@@ -1,0 +1,92 @@
+{
+  "schema": "living_town.coherent_worker.checkpoint.v1",
+  "date": "2026-11-04",
+  "goal_complete": false,
+  "runtime_replacement": false,
+  "decisions": {
+    "native": "Scoped transport/material correction/saved-scene cold read admitted; final art and gameplay held.",
+    "identity": "Latest source strand/card/complexion appearance refused, no export."
+  },
+  "native_root_review": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\root_character_pipeline_macro_review_v1_001\\COHERENT_NATIVE_PREVIEW006_ROOT_REVIEW.json",
+    "bytes": 32878,
+    "sha256": "4bf4de37bf8863ab629f6f576402f05e5222d218be4424d571110c1c8c0e72bc"
+  },
+  "identity_root_review": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\root_character_pipeline_macro_review_v1_001\\COHERENT_IDENTITY_LOOKDEV001_VISUAL_REFUSAL.json",
+    "bytes": 4718,
+    "sha256": "89a05fe50ef2680be2ba56a1635174d1ce7463a1e79f46610f634b24decdd16e"
+  },
+  "source_master": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\WorkerCoherentSockLayerFit_v001\\Worker_Coherent_SockLayerFit_v001.blend",
+    "bytes": 45954524,
+    "sha256": "071170fac00e2af1201b271272007caf238fffaa83bdab6b37e5057124e6cf84"
+  },
+  "portable_source": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\WorkerCoherentPortableExport_v003\\Worker_Coherent_PortableSource_v003.blend",
+    "bytes": 42578755,
+    "sha256": "108a27fb17747429ab2ed4804cc1f8a5f4023227623176649fdf741f12a001d5"
+  },
+  "portable_bundle": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\WorkerCoherentPortableBundle_v002\\LivingTown_CoherentWorker_PortablePreview_v002.zip",
+    "bytes": 83306769,
+    "sha256": "93cd678b1a6f5f970f6523f9106a8ee2ae3a6a5d3f15f007ae145935df58f4e9"
+  },
+  "native_bundle": {
+    "status": "PASS_CLOSED_COLD_READ_NATIVE_PREVIEW_BUNDLE_NOT_FINAL_ART",
+    "archive": {
+      "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\WorkerCoherentUnrealBundle_v001\\LivingTown_CoherentWorker_UnrealPreview_v001.zip",
+      "bytes": 24203544,
+      "sha256": "df4e433d9e0478314e06b8755c4ecef17a6834fd54ab0cb4803f74ed0fa996d9"
+    },
+    "members": 48,
+    "native_packages": 31,
+    "CRC_and_member_sha256": true,
+    "sources_unchanged": true,
+    "no_engine_binaries_caches": true,
+    "seconds": 1.125
+  },
+  "native_host": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\WorkerCoherentUnrealPreview_v006\\HOST_NATIVE_PREVIEW_REPORT.json",
+    "bytes": 1313,
+    "sha256": "0fba8a7949aa74d93e6c4b039b7ba979d30b97c7517e57ee36c64601c57fec34"
+  },
+  "cold_host": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\WorkerCoherentUnrealColdScene_v001\\HOST_COLD_SCENE_REPORT.json",
+    "bytes": 1100,
+    "sha256": "46fee86ac8fb2558f149077778ef9cabddf008e8ea3b90d0a6497e749a60cfe3"
+  },
+  "cold_completion": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\WorkerCoherentUnrealColdScene_v001\\COLD_SAVED_SCENE_COMPLETE.json",
+    "bytes": 17315,
+    "sha256": "fa4bee93989a5ae9376dffcdaf5db760e2ce5982e5737755bee4dc13203498a6"
+  },
+  "lookdev_host": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\WorkerCoherentIdentityLookdev_v001\\HOST_IDENTITY_LOOKDEV_REPORT.json",
+    "bytes": 798,
+    "sha256": "2a8ebc7dfb912d4bbd4f59930b751f46a1e3fd01ba0960e679edf7d9ee4c3a00"
+  },
+  "local_artifacts_not_hosted_downloads": true,
+  "images": [
+    {
+      "file": "coherent_worker_cards_refused_20261104.png",
+      "bytes": 736938,
+      "sha256": "77fc7f1a433551500d9ab3bed9d6c4db224a24bf21c7cb6c630ba53336e5e28f"
+    },
+    {
+      "file": "coherent_worker_masked_preview_20261104.png",
+      "bytes": 441999,
+      "sha256": "f7487935849c82f06137f58208f3966c440656e08464a1be2fb42b022f59f8af"
+    },
+    {
+      "file": "coherent_worker_rigid_apron_hold_20261104.png",
+      "bytes": 390281,
+      "sha256": "dd33d91b50d266be3cd2ab8fc818a22986e423e4dafff22df7c3737cc9c48861"
+    },
+    {
+      "file": "coherent_worker_translucent_control_20261104.png",
+      "bytes": 408570,
+      "sha256": "fc378c00c1e6ed73d65dbd5dd47ae9f290e212eed1039b25f5b45926184bb457"
+    }
+  ]
+}

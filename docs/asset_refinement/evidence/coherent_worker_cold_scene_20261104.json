@@ -1,0 +1,441 @@
+{
+  "status": "PASS_INDEPENDENT_SAVED31PACKAGE_WORLD_ACTORS_CAMERAS_MATERIALS_BIND_ACTIONS",
+  "scene_and_dependency_readback": true,
+  "world": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Review_Studio.Review_Studio",
+  "actor_classes": [
+    {
+      "label": "CoherentWorker53_ProvisionalPreview",
+      "class_name": "SkeletalMeshActor"
+    },
+    {
+      "label": "Whole_Quarter",
+      "class_name": "CameraActor"
+    },
+    {
+      "label": "Face_Close",
+      "class_name": "CameraActor"
+    },
+    {
+      "label": "StaticMeshActor",
+      "class_name": "StaticMeshActor"
+    },
+    {
+      "label": "Key",
+      "class_name": "RectLight"
+    },
+    {
+      "label": "Fill",
+      "class_name": "RectLight"
+    },
+    {
+      "label": "Rim",
+      "class_name": "RectLight"
+    },
+    {
+      "label": "PostProcessVolume",
+      "class_name": "PostProcessVolume"
+    }
+  ],
+  "mesh": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Model/SK_CoherentWorker53_MaskedPreview.SK_CoherentWorker53_MaskedPreview",
+  "skeleton": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Model/SK_CoherentWorker53_Skeleton.SK_CoherentWorker53_Skeleton",
+  "bone_count": 54,
+  "extra_wrapper": [
+    "LT_Coherent_ExportRig53"
+  ],
+  "materials": [
+    {
+      "group": "Apron",
+      "path": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Apron.M_Coherent_Apron",
+      "maps": [
+        {
+          "kind": "BaseColor",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Apron_BaseColor.T_Apron_BaseColor",
+          "sRGB": true
+        },
+        {
+          "kind": "Normal",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Apron_Normal.T_Apron_Normal",
+          "sRGB": false
+        },
+        {
+          "kind": "Roughness",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Apron_Roughness.T_Apron_Roughness",
+          "sRGB": false
+        }
+      ],
+      "pixel_instructions": 353,
+      "vertex_instructions": 331,
+      "samplers": 6
+    },
+    {
+      "group": "Face",
+      "path": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Face_Masked.M_Coherent_Face_Masked",
+      "maps": [
+        {
+          "kind": "BaseColor",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_BaseColor.T_Face_BaseColor",
+          "sRGB": true
+        },
+        {
+          "kind": "Normal",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_Normal.T_Face_Normal",
+          "sRGB": false
+        },
+        {
+          "kind": "Roughness",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_Roughness.T_Face_Roughness",
+          "sRGB": false
+        },
+        {
+          "kind": "Alpha",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_Alpha.T_Face_Alpha",
+          "sRGB": false
+        }
+      ],
+      "pixel_instructions": 353,
+      "vertex_instructions": 331,
+      "samplers": 6
+    },
+    {
+      "group": "HairMask",
+      "path": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_HairMask_Masked.M_Coherent_HairMask_Masked",
+      "maps": [
+        {
+          "kind": "BaseColor",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_BaseColor.T_HairMask_BaseColor",
+          "sRGB": true
+        },
+        {
+          "kind": "Normal",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_Normal.T_HairMask_Normal",
+          "sRGB": false
+        },
+        {
+          "kind": "Roughness",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_Roughness.T_HairMask_Roughness",
+          "sRGB": false
+        },
+        {
+          "kind": "Alpha",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_Alpha.T_HairMask_Alpha",
+          "sRGB": false
+        }
+      ],
+      "pixel_instructions": 353,
+      "vertex_instructions": 331,
+      "samplers": 6
+    },
+    {
+      "group": "Outfit",
+      "path": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Outfit.M_Coherent_Outfit",
+      "maps": [
+        {
+          "kind": "BaseColor",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Outfit_BaseColor.T_Outfit_BaseColor",
+          "sRGB": true
+        },
+        {
+          "kind": "Normal",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Outfit_Normal.T_Outfit_Normal",
+          "sRGB": false
+        },
+        {
+          "kind": "Roughness",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Outfit_Roughness.T_Outfit_Roughness",
+          "sRGB": false
+        }
+      ],
+      "pixel_instructions": 353,
+      "vertex_instructions": 331,
+      "samplers": 6
+    },
+    {
+      "group": "Skin",
+      "path": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Skin.M_Coherent_Skin",
+      "maps": [
+        {
+          "kind": "BaseColor",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Skin_BaseColor.T_Skin_BaseColor",
+          "sRGB": true
+        },
+        {
+          "kind": "Normal",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Skin_Normal.T_Skin_Normal",
+          "sRGB": false
+        },
+        {
+          "kind": "Roughness",
+          "texture": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Skin_Roughness.T_Skin_Roughness",
+          "sRGB": false
+        }
+      ],
+      "pixel_instructions": 353,
+      "vertex_instructions": 331,
+      "samplers": 6
+    }
+  ],
+  "actions": [
+    {
+      "path": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Animations/LT_Coherent_Idle_24fps.LT_Coherent_Idle_24fps",
+      "seconds": 15.333333015441895
+    },
+    {
+      "path": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Animations/LT_Coherent_Walk_24fps.LT_Coherent_Walk_24fps",
+      "seconds": 2.3333332538604736
+    }
+  ],
+  "cameras": [
+    {
+      "label": "Whole_Quarter",
+      "location_cm": [
+        170.0,
+        432.623619556427,
+        125.19362357258797
+      ],
+      "rotation": "<Struct 'Rotator' (0x00000226A7986E00) {pitch: -4.417074, yaw: -112.036227, roll: -0.000000}>",
+      "width_cm": 164.0
+    },
+    {
+      "label": "Face_Close",
+      "location_cm": [
+        3.0,
+        167.11779619503287,
+        170.85332483734894
+      ],
+      "rotation": "<Struct 'Rotator' (0x00000226A7986E00) {pitch: 0.000000, yaw: -91.074170, roll: 0.000000}>",
+      "width_cm": 46.0
+    }
+  ],
+  "lights": [
+    {
+      "name": "Key",
+      "location": [
+        180.0,
+        252.623619556427,
+        320.19362357258797
+      ],
+      "lumens": 650.0,
+      "size_cm": 240.0
+    },
+    {
+      "name": "Fill",
+      "location": [
+        -220.0,
+        212.623619556427,
+        210.19362357258797
+      ],
+      "lumens": 300.0,
+      "size_cm": 220.0
+    },
+    {
+      "name": "Rim",
+      "location": [
+        -100.0,
+        -167.376380443573,
+        300.19362357258797
+      ],
+      "lumens": 500.0,
+      "size_cm": 180.0
+    }
+  ],
+  "dependencies": {
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Animations/LT_Coherent_Idle_24fps": [
+      "/Script/MovieScene",
+      "/Script/AnimationModifiers",
+      "/Script/ControlRig",
+      "/Script/AnimationData",
+      "/ACLPlugin/ACLAnimBoneCompressionSettings",
+      "/ACLPlugin/ACLAnimCurveCompressionSettings",
+      "/Engine/Animation/DefaultVariableFrameStrippingSettings",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Model/SK_CoherentWorker53_Skeleton"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Animations/LT_Coherent_Walk_24fps": [
+      "/Script/MovieScene",
+      "/Script/AnimationModifiers",
+      "/Script/ControlRig",
+      "/Script/AnimationData",
+      "/ACLPlugin/ACLAnimBoneCompressionSettings",
+      "/ACLPlugin/ACLAnimCurveCompressionSettings",
+      "/Engine/Animation/DefaultVariableFrameStrippingSettings",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Model/SK_CoherentWorker53_Skeleton"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Apron": [
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Apron_BaseColor",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Apron_Normal",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Apron_Roughness"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Face": [
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_Alpha",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_BaseColor",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_Normal",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_Roughness"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Face_Masked": [
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_Alpha",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_BaseColor",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_Normal",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_Roughness"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_HairMask": [
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_Alpha",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_BaseColor",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_Normal",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_Roughness"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_HairMask_Masked": [
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_Alpha",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_BaseColor",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_Normal",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_Roughness"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Outfit": [
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Outfit_BaseColor",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Outfit_Normal",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Outfit_Roughness"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Skin": [
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Skin_BaseColor",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Skin_Normal",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Skin_Roughness"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_StudioNeutral": [],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Model/SK_CoherentWorker53": [
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Apron",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Face",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_HairMask",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Outfit",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Skin",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Model/SK_CoherentWorker53_Skeleton"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Model/SK_CoherentWorker53_MaskedPreview": [
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Apron",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Face_Masked",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_HairMask_Masked",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Outfit",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_Coherent_Skin",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Model/SK_CoherentWorker53_Skeleton"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Model/SK_CoherentWorker53_Skeleton": [
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Model/SK_CoherentWorker53"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Review_Studio": [
+      "/Script/NavigationSystem",
+      "/Engine/BasicShapes/Plane",
+      "/Engine/EditorResources/LightIcons/S_LightError",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Materials/M_StudioNeutral",
+      "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Model/SK_CoherentWorker53_MaskedPreview"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Apron_BaseColor": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Apron_Normal": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Apron_Roughness": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_Alpha": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_BaseColor": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_Normal": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Face_Roughness": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_Alpha": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_BaseColor": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_Normal": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_HairMask_Roughness": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Outfit_BaseColor": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Outfit_Normal": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Outfit_Roughness": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Skin_BaseColor": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Skin_Normal": [
+      "/Script/InterchangeEngine"
+    ],
+    "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Textures/T_Skin_Roughness": [
+      "/Script/InterchangeEngine"
+    ]
+  },
+  "missing_game_dependencies": [],
+  "own_viewport_readback": {
+    "schema": "living_town.current_viewport_review.v1",
+    "status": "READ_EXACT_CURRENT_LEVEL_VIEWPORT",
+    "error": "",
+    "readback": {
+      "client_identity_diagnostic_only": "00000225A2410000",
+      "viewport_identity_diagnostic_only": "0000022685C0A010",
+      "is_exact_current_MCP_client": true,
+      "world_path": "/Game/LivingTown_UEPilot/CoherentWorker53_v001/Review_Studio.Review_Studio",
+      "API_viewport_type": 3,
+      "perspective": true,
+      "API_view_mode": 3,
+      "lit": true,
+      "game_view": false,
+      "realtime": true,
+      "temporary_realtime_override_present": false,
+      "showflag_override_function_present": false,
+      "location_cm": [
+        1105.8564141081656,
+        -2.4554945072695013e-13,
+        296.31333310506017
+      ],
+      "rotation_pitch_yaw_roll": [
+        -14.999999999999982,
+        -179.99999740717342,
+        -1.0319561994614695e-06
+      ],
+      "fov": 90,
+      "viewport_width": 1014,
+      "viewport_height": 550,
+      "client_show_flags": {
+        "Atmosphere": true,
+        "SkyLighting": true,
+        "Lighting": true,
+        "Materials": true,
+        "Tonemapper": true,
+        "EyeAdaptation": true
+      },
+      "showflag_console_overrides": {
+        "Atmosphere": 2,
+        "SkyLighting": 2,
+        "Lighting": 2,
+        "Materials": 2,
+        "Tonemapper": 2,
+        "EyeAdaptation": 2
+      },
+      "showflag_readback_scope": "Exact live client flags and console overrides; later view extensions/render-family adjustments are not observed.",
+      "current_exposure_settings": {
+        "fixed": false,
+        "fixed_ev100": 1
+      },
+      "scope_active": false,
+      "scope_token": "",
+      "asset_or_runtime_acceptance": false
+    }
+  },
+  "no_reimport_resave_or_capture": true,
+  "fresh_DDC": true,
+  "intentional_compilation_barrier_not_FPS_measurement": true,
+  "final_art_groom_cloth_Game_adoption": false
+}
