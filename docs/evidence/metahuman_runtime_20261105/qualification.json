@@ -1,0 +1,109 @@
+{
+  "schema": "LivingTown.MetaHumanRuntimeQualification.v1",
+  "source_family": "548cc64286066dfb349cfcf467771b4b83f37a4feddc1aca076e6b1f45f85094",
+  "scope": "Controlled development opt-in; no final character or possessed-player acceptance",
+  "build_evidence": "../native_b_texture_20261105/evidence.json",
+  "native_test_process": {
+    "seconds": 39.296999999991385,
+    "root_exit_code": 0,
+    "root_waited": true,
+    "remaining_descendants": 0,
+    "tests": [
+      {
+        "name": "LivingTown.MetaHuman.PreparedDescriptorStrictness",
+        "state": "Success",
+        "duration": 0.04751669988036156
+      },
+      {
+        "name": "LivingTown.MetaHuman.PreparedVisualSaveIdentity",
+        "state": "Success",
+        "duration": 0.016160599887371063
+      },
+      {
+        "name": "LivingTown.MetaHuman.SafeRefusal",
+        "state": "Success",
+        "duration": 0.016226500272750854
+      },
+      {
+        "name": "LivingTown.OriginalWorker.PreparedVisualSaveIdentity",
+        "state": "Success",
+        "duration": 0.01791759952902794
+      },
+      {
+        "name": "LivingTown.OriginalWorker.SafeRefusal",
+        "state": "Success",
+        "duration": 0.016196399927139282
+      },
+      {
+        "name": "LivingTown.PropertyV2.ExclusiveBackendSelection",
+        "state": "Success",
+        "duration": 0.016252096742391586
+      },
+      {
+        "name": "LivingTown.WorldV3.ExclusiveBackendSelection",
+        "state": "Success",
+        "duration": 0.016009699553251266
+      }
+    ],
+    "warnings_or_errors_in_tests": 0,
+    "serialized_character_assets_staged": false,
+    "native_process_rerun": false
+  },
+  "host_report_status": "FAIL_RETAINED_RECURRING_SOURCEV3_REGRESSION_CASE",
+  "host_report_reason": "Inherited automation report gate accepted only one or four tests; seven actual tests had completed successfully.",
+  "independent_root_result_review": {
+    "checks": "Exact seven names/count/success states/zero warning-error entries, matching log starts and completions, queue-empty7, clean critical log, actual modules/hardware, source and meaningful global custody. Original host failure retained.",
+    "artifact": "METAHUMAN_NOASSET002_ACTUAL_SEVEN_ROOT_REVIEW.json",
+    "bytes": 9055,
+    "sha256": "9b705733d9ffc5adb6a1342d6cd6ceefa4f9ac19d5f4b8de51a96d2bb2b1de90"
+  },
+  "actual_export": {
+    "bytes": 3494,
+    "sha256": "4fb0a69150c2fff105011b73885c9709c3df60fb0718ed2499663208b6b9b423"
+  },
+  "actual_log": {
+    "bytes": 312575,
+    "sha256": "4ed2abc5ce2f6822e9dff8e94c60f6afee3c0af87027f3cfe6f1006934dd3574"
+  },
+  "actual_whole_actor_lifecycle": {
+    "name": "LivingTown.MetaHuman.WorldV3PersonaGate",
+    "state": "Success",
+    "test_duration_seconds": 19.913454055786133,
+    "native_process_seconds": 55.625,
+    "root_exit_code": 0,
+    "root_waited": true,
+    "remaining_descendants": 0,
+    "errors": 0,
+    "warnings": 1,
+    "exact_expected_warning": "LogTemp: World v3 prepared persona refused: actual_persona_spawn_capsule_overlap",
+    "warning_scope": "Deliberately blocked candidate must retain Aria and her paired session. Only this exact single diagnostic was admitted by independent root review.",
+    "original_host_status": "FAIL_RETAINED_METAHUMAN_WORLDV3_LIFECYCLE_TEST_ONLY",
+    "original_host_reason": "Inherited automation gate requires zero warnings; the expected negative placement case emitted one warning.",
+    "root_review": {
+      "artifact": "METAHUMAN_WORLD_V3_LIFECYCLE001_ROOT_REVIEW.json",
+      "sha256": "6818c32baf247298959ac3e64a7881e0ebf2eebfef8ccc82140a25cc2e663b24"
+    },
+    "actual_export": {
+      "bytes": 1483,
+      "sha256": "e81d1b27fe26a3a1ee0a5db3a9efbc587159904c6b1d4c6ded884577462221f3"
+    },
+    "actual_log": {
+      "bytes": 451236,
+      "sha256": "735004edf4231ca0f725b60c0c1854f8e524f3cd22bb1f316c9835e39f14c587"
+    },
+    "descriptor_sha256": "d61c4f6db09c3eda42b613ad26809d357acb52682a9645f2dda01a5c05b47b87",
+    "test_only_reference_calibration": true,
+    "source_and_meaningful_global_custody": true,
+    "hardware": "AMD Radeon(TM) 8060S Graphics / D3D12 SM6",
+    "maximum_observed_shader_workers": 2,
+    "native_rerun": false,
+    "accepted": "Async pending/cancellation and invalid-caller refusal, blocked-candidate retention, complete child actor ownership/normal BeginPlay, possession and idle continuity, body/face/outfit policy preservation, unsupported meal refusal without charge, paired journal encode/load identity, unpossess/repossess/reset/EndPlay cleanup."
+  },
+  "not_qualified": [
+    "Measured prepared descriptor, capsule fit and facing/stride/camera",
+    "Possessed movement/render and eating/sleep contact",
+    "Cooked/plugin/content closure",
+    "Cold game loading and town frame rate",
+    "Final workwear/hair/character or room art"
+  ]
+}

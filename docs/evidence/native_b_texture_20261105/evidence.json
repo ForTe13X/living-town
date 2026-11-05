@@ -1,0 +1,367 @@
+{
+  "schema": "living_town.native_b_texture_evidence.v1",
+  "observed_UTC": "2026-11-05T12:23:12.260353+00:00",
+  "technical_status": "CLOSED_PASS_NATIVE_EDITOR_OBSERVATION",
+  "final_room_art": "HELD",
+  "source_family": "548cc64286066dfb349cfcf467771b4b83f37a4feddc1aca076e6b1f45f85094",
+  "builds": [
+    {
+      "target": "Editor",
+      "scope": "BUILD_ONLY",
+      "seconds": 459.282,
+      "root_exit_code": 0,
+      "descendants_remaining": 0,
+      "review": {
+        "artifact": "NATIVE_RUNTIME_B_EDITOR017_ROOT_REVIEW.json",
+        "bytes": 2809,
+        "sha256": "49ce04fdfed9665fcfcb25579665b233b7de9b67c00a5f422fdf167e5fbce004"
+      },
+      "receipt": {
+        "bytes": 59714,
+        "sha256": "4975f2afe985f4a6cf5cb6fcfc17f7e1d7d6fc729a8f488ce46997f19a6bfbe2"
+      }
+    },
+    {
+      "target": "Game",
+      "scope": "BUILD_ONLY",
+      "seconds": 254.469,
+      "root_exit_code": 0,
+      "descendants_remaining": 0,
+      "review": {
+        "artifact": "NATIVE_RUNTIME_B_GAME017_ROOT_REVIEW.json",
+        "bytes": 4719,
+        "sha256": "b882f953623e3d43f306f71f43acfc4da83a4e81f59d2505e68410b8eaba6540"
+      },
+      "receipt": {
+        "bytes": 59226,
+        "sha256": "74fb96dc2694b9b611648d78c39e2259068f7ac61e0204b5d21ecd2911f2dbe2"
+      }
+    }
+  ],
+  "consumer": {
+    "run": "MillCourtBTypedCaptureConsumer_v001",
+    "seconds": 88.234,
+    "root_exit_code": 92,
+    "descendants_remaining": 0,
+    "source_and_global_custody_preserved": true,
+    "packages": 850,
+    "original_placements": 750,
+    "accepted_finish_overrides": 205,
+    "material_graphs": 4,
+    "native_textures": 9,
+    "clean_map_and_content": true,
+    "original_actor_roster_exact": true,
+    "original_public_native_viewport_exact_restored": true,
+    "no_camera_actors_created": true,
+    "GPU": {
+      "adapter": "AMD Radeon(TM) 8060S Graphics",
+      "vendor": "1002",
+      "RHI": "D3D12",
+      "feature_level": "SM6",
+      "shader_worker_counts": [
+        2
+      ]
+    },
+    "timing_is_startup_readback_capture_cleanup_not_FPS": true
+  },
+  "texture_read_scope": "Initial overview, before closeup viewport movement; no shot-specific sampled-LOD readback.",
+  "asset_max_texture_size": 2048,
+  "textures": [
+    {
+      "role": "Plaster",
+      "semantic": "BaseColor",
+      "source_px": [
+        4096,
+        4096
+      ],
+      "platform_px": [
+        2048,
+        2048
+      ],
+      "resident_allowed": [
+        12,
+        12
+      ],
+      "cached_wanted_debug": 12,
+      "RHI_px": [
+        2048,
+        2048
+      ],
+      "full_within_asset_limits": true
+    },
+    {
+      "role": "Plaster",
+      "semantic": "Normal",
+      "source_px": [
+        2048,
+        2048
+      ],
+      "platform_px": [
+        2048,
+        2048
+      ],
+      "resident_allowed": [
+        12,
+        12
+      ],
+      "cached_wanted_debug": 12,
+      "RHI_px": [
+        2048,
+        2048
+      ],
+      "full_within_asset_limits": true
+    },
+    {
+      "role": "Plaster",
+      "semantic": "Roughness",
+      "source_px": [
+        2048,
+        2048
+      ],
+      "platform_px": [
+        2048,
+        2048
+      ],
+      "resident_allowed": [
+        12,
+        12
+      ],
+      "cached_wanted_debug": 12,
+      "RHI_px": [
+        2048,
+        2048
+      ],
+      "full_within_asset_limits": true
+    },
+    {
+      "role": "OakJoinery",
+      "semantic": "BaseColor",
+      "source_px": [
+        4096,
+        4096
+      ],
+      "platform_px": [
+        2048,
+        2048
+      ],
+      "resident_allowed": [
+        12,
+        12
+      ],
+      "cached_wanted_debug": 12,
+      "RHI_px": [
+        2048,
+        2048
+      ],
+      "full_within_asset_limits": true
+    },
+    {
+      "role": "OakJoinery",
+      "semantic": "Normal",
+      "source_px": [
+        2048,
+        2048
+      ],
+      "platform_px": [
+        2048,
+        2048
+      ],
+      "resident_allowed": [
+        12,
+        12
+      ],
+      "cached_wanted_debug": 12,
+      "RHI_px": [
+        2048,
+        2048
+      ],
+      "full_within_asset_limits": true
+    },
+    {
+      "role": "OakJoinery",
+      "semantic": "Roughness",
+      "source_px": [
+        2048,
+        2048
+      ],
+      "platform_px": [
+        2048,
+        2048
+      ],
+      "resident_allowed": [
+        12,
+        12
+      ],
+      "cached_wanted_debug": 12,
+      "RHI_px": [
+        2048,
+        2048
+      ],
+      "full_within_asset_limits": true
+    },
+    {
+      "role": "OakFloor",
+      "semantic": "BaseColor",
+      "source_px": [
+        2048,
+        2048
+      ],
+      "platform_px": [
+        2048,
+        2048
+      ],
+      "resident_allowed": [
+        10,
+        12
+      ],
+      "cached_wanted_debug": 10,
+      "RHI_px": [
+        512,
+        512
+      ],
+      "full_within_asset_limits": false
+    },
+    {
+      "role": "OakFloor",
+      "semantic": "Normal",
+      "source_px": [
+        2048,
+        2048
+      ],
+      "platform_px": [
+        2048,
+        2048
+      ],
+      "resident_allowed": [
+        10,
+        12
+      ],
+      "cached_wanted_debug": 10,
+      "RHI_px": [
+        512,
+        512
+      ],
+      "full_within_asset_limits": false
+    },
+    {
+      "role": "OakFloor",
+      "semantic": "Roughness",
+      "source_px": [
+        2048,
+        2048
+      ],
+      "platform_px": [
+        2048,
+        2048
+      ],
+      "resident_allowed": [
+        10,
+        12
+      ],
+      "cached_wanted_debug": 10,
+      "RHI_px": [
+        512,
+        512
+      ],
+      "full_within_asset_limits": false
+    }
+  ],
+  "all_nine_full_residency": false,
+  "early_public_producer_size": {
+    "px": [
+      32,
+      32
+    ],
+    "meaning": "Blueprint_GetSizeX/Y during construction, not Source.GetSizeX/Y. Native Source was later observed intact at 4K/2K, platform 2K. Early 32 is not missing-source evidence."
+  },
+  "root_visual_review": {
+    "all_four_images_viewed": true,
+    "plaster": "Visible mottling and fine grain.",
+    "joinery": "Visible long grain/rounded edge; pale contrast and tonal/roughness balance held.",
+    "floor": "Visible grain/knots; plank definition and shot-specific sampledLOD not approved.",
+    "context": "Dark ceiling and opaque pale-gray window panes require source audit; daylight/material balance held against Rohmer/Breton summer concept. Image does not establish cause."
+  },
+  "not_qualified": [
+    "All-nine full residency",
+    "Closeup sampledLOD or texel/pixel parity",
+    "Final room or concept art acceptance",
+    "Native player integration or playable journey",
+    "Town loading/FPS",
+    "Full-town Game/collision/navigation/cook or goal completion"
+  ],
+  "images": [
+    {
+      "file": "Plaster_Wall_Detail.png",
+      "role": "Plaster",
+      "subject": "Building::M0652",
+      "pixels": [
+        1600,
+        1200
+      ],
+      "bytes": 3221691,
+      "sha256": "7a29a710c9648300119886523579f5e03f318cd0d6feb8fdd8f019832df287a0"
+    },
+    {
+      "file": "OakJoinery_Desk_Detail.png",
+      "role": "OakJoinery",
+      "subject": "Building::M0707",
+      "pixels": [
+        1600,
+        1200
+      ],
+      "bytes": 2280789,
+      "sha256": "3adbfa0ebe3ef2df9089c49ea4d57f7a644011dab284e7f36d5b11ee8000c552"
+    },
+    {
+      "file": "OakFloor_Primary_Detail.png",
+      "role": "OakFloor",
+      "subject": "Building::M0700",
+      "pixels": [
+        1600,
+        1200
+      ],
+      "bytes": 2410902,
+      "sha256": "b8ffbe0064dd346b278f4eb79eb40e29edd7a563f779a4a2066b2b8ee7023ca9"
+    },
+    {
+      "file": "B_Upper_Full_Room_Context.png",
+      "role": "Context",
+      "subject": null,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "bytes": 2698230,
+      "sha256": "5b5d0603c4ac3412e17b27475556ad6e3ede21a743e06e9019a4b94173c8ce76"
+    }
+  ],
+  "evidence_proofs": [
+    {
+      "artifact": "MILL_COURT_B_TYPED_CAPTURE001_ROOT_REVIEW.json",
+      "bytes": 10427,
+      "sha256": "961a2936c734c19bab878f3e91a6b46ea772824713ed4c95fd089b1543ce6e80"
+    },
+    {
+      "artifact": "HOST_B_TYPED_CAPTURE_REPORT.json",
+      "bytes": 1513,
+      "sha256": "6ca86ab42572f92d73d42cba2417a0c3afcaef4b64264457541302bdc806f148"
+    },
+    {
+      "artifact": "B_TYPED_CAPTURE_COMPLETE.json",
+      "bytes": 2632,
+      "sha256": "e46892c51e7d01224354e3dc2e71ca2e055cc16a7bf498e2dd6f77c233531b90"
+    },
+    {
+      "artifact": "NINE_NATIVE_TEXTURE_READS_COMPLETE.json",
+      "bytes": 68575,
+      "sha256": "fe66c665c71c666ad254b40352b3a0c0c121b35f87218470d2e1ba4efebb8b81"
+    }
+  ],
+  "image_custody": {
+    "copied_bytes_unchanged": true,
+    "total_bytes": 10611612,
+    "image_edits": false,
+    "git_filter_for_all_four": "unspecified",
+    "git_text_and_diff_attributes_for_all_four": "unspecified"
+  }
+}

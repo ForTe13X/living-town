@@ -1,6 +1,8 @@
 #include "LivingTownCafeCharacter.h"
 #include "LivingTownRootCorrectedSingleNodeInstance.h"
 #include "LivingTownOriginalWorkerAssembly.h"
+#include "LivingTownMetaHumanVisualAssembly.h"
+#include "GameFramework/GameModeBase.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "ReferenceSkeleton.h"
 #include "Materials/Material.h"
@@ -61,6 +63,9 @@ ALivingTownCafeCharacter::ALivingTownCafeCharacter()
 bool ALivingTownCafeCharacter::ConfigureQualifiedBen(const FLivingTownCafeBinding& B,FString& Error)
 {
     Error.Reset(); if(bVisualQualified||B.ResidentId!=TEXT("ben")){Error=TEXT("exact_Ben_roster_binding_required");return false;}
+    if(B.MetaHumanActor.IsSet()!=(B.MotionStrategy==ELivingTownCafeMotionStrategy::MetaHumanWholeActor)){Error=TEXT("metahuman_whole_actor_strategy_and_descriptor_must_match");return false;}
+    if(B.MetaHumanActor.IsSet()&&(B.OriginalWorker.IsSet()||B.Current61Head.IsSet())){Error=TEXT("exclusive_Ben_visual_family_required");return false;}
+    if(B.MotionStrategy==ELivingTownCafeMotionStrategy::MetaHumanWholeActor)return ConfigureMetaHumanBen(B,Error);
     if(B.MotionStrategy==ELivingTownCafeMotionStrategy::OriginalWorkerSingleNode)return ConfigureOriginalWorkerBen(B,Error);
     const bool bWorker110=B.MotionStrategy==ELivingTownCafeMotionStrategy::CafeWorker110RootAligned;
     const bool bCurrent61Baked=B.MotionStrategy==ELivingTownCafeMotionStrategy::Current61BakedSingleNode;
@@ -226,6 +231,7 @@ bool ALivingTownCafeCharacter::ConfigureQualifiedBen(const FLivingTownCafeBindin
 }
 void ALivingTownCafeCharacter::RestorePossessedBonePolicy()
 {
+    if(MetaHumanVisual)MetaHumanVisual->SetPossessedPlayer(false);
     if(bPossessedBonePolicyApplied&&GetMesh())GetMesh()->VisibilityBasedAnimTickOption=static_cast<EVisibilityBasedAnimTickOption>(PreviousPossessedBonePolicy);
     if(bOriginalWorkerRatePolicyApplied&&GetMesh())GetMesh()->bEnableUpdateRateOptimizations=PreviousOriginalWorkerUpdateRateOptimization;
     bOriginalWorkerRatePolicyApplied=false;
@@ -236,6 +242,7 @@ void ALivingTownCafeCharacter::UpdatePossessedBonePolicy()
     // Gameplay uses this active player's palm/socket and body bones even when occluded.
     // Do not expand full bone evaluation to legacy visuals, AI or unpossessed workers.
     RestorePossessedBonePolicy();
+    if(MetaHumanVisual){MetaHumanVisual->SetPossessedPlayer(Controller&&Controller->IsPlayerController());return;}
     const bool bQualifiedRootPlayer=bWorker110VisualQualified&&GetMesh()&&Cast<ULivingTownRootCorrectedSingleNodeInstance>(GetMesh()->GetAnimInstance());
     const bool bQualifiedBakedPlayer=bCurrent61BakedVisualQualified&&GetMesh()&&GetMesh()->GetAnimationMode()==EAnimationMode::AnimationSingleNode&&GetMesh()->GetSingleNodeInstance()&&GetMesh()->GetSingleNodeInstance()->GetClass()==UAnimSingleNodeInstance::StaticClass();
     const bool bOriginalPlayer=HasOriginalWorkerAssembly()&&GetMesh()&&GetMesh()->GetAnimationMode()==EAnimationMode::AnimationSingleNode&&GetMesh()->GetSingleNodeInstance()&&GetMesh()->GetSingleNodeInstance()->GetClass()==UAnimSingleNodeInstance::StaticClass();
@@ -257,7 +264,7 @@ void ALivingTownCafeCharacter::UnPossessed()
 }
 void ALivingTownCafeCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    RestorePossessedBonePolicy();if(OriginalWorkerAssembly)OriginalWorkerAssembly->Reset();
+    RestorePossessedBonePolicy();if(OriginalWorkerAssembly)OriginalWorkerAssembly->Reset();if(MetaHumanVisual)MetaHumanVisual->Reset();
     LivingTownCurrent61HeadAssembly::Reset(HairCards,HairUnderlayer);bCurrent61HeadBound=false;
     Super::EndPlay(EndPlayReason);
 }
@@ -280,14 +287,37 @@ bool ALivingTownCafeCharacter::ConfigureOriginalWorkerBen(const FLivingTownCafeB
     bVisualQualified=true;SetActorTickEnabled(true);UpdatePossessedBonePolicy();return true;
 }
 bool ALivingTownCafeCharacter::HasOriginalWorkerAssembly() const{return OriginalWorkerAssembly&&OriginalWorkerAssembly->IsConfigured();}
+bool ALivingTownCafeCharacter::HasMetaHumanVisual() const{return MetaHumanVisual&&MetaHumanVisual->IsConfigured();}
+bool ALivingTownCafeCharacter::HasQualifiedVisual() const{return bVisualQualified&&(!OriginalWorkerAssembly||HasOriginalWorkerAssembly())&&(!MetaHumanVisual||HasMetaHumanVisual());}
+USkeletalMeshComponent* ALivingTownCafeCharacter::GetVisualBody() const{return MetaHumanVisual?MetaHumanVisual->GetBody():GetMesh();}
+bool ALivingTownCafeCharacter::ConfigureMetaHumanBen(const FLivingTownCafeBinding& B,FString& Error)
+{
+    if(!IsInGameThread()||!B.MetaHumanActor.IsSet()||!B.MetaHumanActor->IsValidated()||B.OriginalWorker.IsSet()||B.Current61Head.IsSet()||
+       B.VisualAssetPath!=B.MetaHumanActor->ActorClassPath||!B.IdleWalkBlendSpacePath.IsEmpty()||B.VisualSha256!=B.MetaHumanActor->DescriptorSha256||
+       B.UseSocket!=B.MetaHumanActor->HandBone.ToString()||B.IdleAnimationPath!=B.MetaHumanActor->IdleAnimationPath||B.WalkAnimationPath!=B.MetaHumanActor->WalkAnimationPath||
+       !B.MeshRelativeTransform.Equals(B.MetaHumanActor->ActorRelative,1.e-8)||B.IdleRootDeltaCm!=FVector::ZeroVector||
+       B.CapsuleRadiusCm!=float(B.MetaHumanActor->CapsuleRadiusCm)||B.CapsuleHalfHeightCm!=float(B.MetaHumanActor->CapsuleHalfHeightCm)||
+       B.WalkSpeedCmPerSecond!=float(B.MetaHumanActor->WalkSpeedCmPerSecond)||B.CameraArmCm!=float(B.MetaHumanActor->CameraArmCm))
+    {Error=TEXT("metahuman_exclusive_prepared_visual_binding_required");return false;}
+    const auto* Mode=GetWorld()?GetWorld()->GetAuthGameMode():nullptr;
+    const auto* Preload=Mode?Mode->FindComponentByClass<ULivingTownMetaHumanVisualPreload>():nullptr;
+    if(!Preload||!Preload->IsReadyFor(B.MetaHumanActor.GetValue())){Error=TEXT("metahuman_visual_preload_required_before_pawn_spawn");return false;}
+    auto* Visual=NewObject<ULivingTownMetaHumanVisualAssembly>(this,TEXT("MetaHumanVisualAssembly"));
+    if(!Visual){Error=TEXT("metahuman_visual_assembly_creation_failed");return false;}AddInstanceComponent(Visual);
+    if(!Visual->Configure(B.MetaHumanActor.GetValue(),Preload,Error)){Visual->DestroyComponent();return false;}
+    MetaHumanVisual=Visual;Visual->RegisterComponent();UseSocket=B.UseSocket;
+    GetCapsuleComponent()->SetCapsuleSize(B.CapsuleRadiusCm,B.CapsuleHalfHeightCm,true);GetCharacterMovement()->MaxWalkSpeed=B.WalkSpeedCmPerSecond;
+    CameraArm->TargetArmLength=B.CameraArmCm;CameraArm->TargetOffset.Z=0.f;
+    bVisualQualified=true;SetActorTickEnabled(true);UpdatePossessedBonePolicy();return true;
+}
 void ALivingTownCafeCharacter::TeleportSucceeded(bool bIsATest)
 {
-    Super::TeleportSucceeded(bIsATest);if(!bIsATest&&OriginalWorkerAssembly)OriginalWorkerAssembly->ResetAfterTeleport();
+    Super::TeleportSucceeded(bIsATest);if(!bIsATest&&OriginalWorkerAssembly)OriginalWorkerAssembly->ResetAfterTeleport();if(!bIsATest&&MetaHumanVisual)MetaHumanVisual->ResetAfterTeleport();
 }
-FVector ALivingTownCafeCharacter::InteractionHand()const{return HasQualifiedVisual()?GetMesh()->GetSocketLocation(FName(*UseSocket)):FVector::ZeroVector;}
+FVector ALivingTownCafeCharacter::InteractionHand()const{return HasQualifiedVisual()?(MetaHumanVisual?MetaHumanVisual->InteractionHand():GetMesh()->GetSocketLocation(FName(*UseSocket))):FVector::ZeroVector;}
 void ALivingTownCafeCharacter::Tick(float Delta)
 {
-    Super::Tick(Delta);if(bVisualQualified&&GetMesh()->GetSingleNodeInstance())GetMesh()->GetSingleNodeInstance()->SetBlendSpacePosition(FVector(GetVelocity().Size2D(),0,0));
+    Super::Tick(Delta);if(MetaHumanVisual){if(bVisualQualified&&!MetaHumanVisual->UpdateMotion(GetVelocity().Size2D())){MetaHumanVisual->Reset();bVisualQualified=false;}return;}if(bVisualQualified&&GetMesh()->GetSingleNodeInstance())GetMesh()->GetSingleNodeInstance()->SetBlendSpacePosition(FVector(GetVelocity().Size2D(),0,0));
 }
 void ALivingTownCafeCharacter::Forward(float V){if(bVisualQualified&&Controller&&V!=0)AddMovementInput(FRotationMatrix(FRotator(0,Controller->GetControlRotation().Yaw,0)).GetUnitAxis(EAxis::X),V);}
 void ALivingTownCafeCharacter::Right(float V){if(bVisualQualified&&Controller&&V!=0)AddMovementInput(FRotationMatrix(FRotator(0,Controller->GetControlRotation().Yaw,0)).GetUnitAxis(EAxis::Y),V);}

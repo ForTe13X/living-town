@@ -265,6 +265,7 @@ bool FLivingTownCafeBinding::ReadQualifiedFile(const FString& Path,FLivingTownCa
     if(!bExplicitPartContract) { B.DeclaredPartCount=289;B.DeclaredPartIds=Seen;B.DeclaredFloorPartIds=FloorIds;B.DeclaredCounterPartIds=CounterIds; }
     B.bPartRosterValidated=true;if(!B.HasValidatedPartRoster())return Fail(TEXT("authored_roster_asset_alias_or_material_scope_mismatch"));
     if(!LivingTownOriginalWorker::ApplyCommandLineOptIn(B,Error))return false;
+    if(!LivingTownMetaHumanVisual::ApplyCommandLineOptIn(B,Error))return false;
     Out=MoveTemp(B); return true; // no partially accepted binding escapes
 }
 

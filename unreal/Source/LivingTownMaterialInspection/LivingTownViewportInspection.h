@@ -23,6 +23,12 @@ public:
     UFUNCTION(BlueprintCallable, Category="LivingTown|Viewport Review")
     static FString ConfigureWallLightingViewport();
 
+    // Separate exact saved Mill Court B finish inspection map. Same reversible
+    // shared-owner scope; never widens ConfigureWallLightingViewport's Entry guard.
+    // Caller must release any capture camera lock before the common restore API.
+    UFUNCTION(BlueprintCallable, Category="LivingTown|Viewport Review")
+    static FString ConfigureBMaterialViewport();
+
     // ScopeToken must equal the sole active scope. Original client must still
     // be registered with the same viewport/world; never dereference a stale one.
     UFUNCTION(BlueprintCallable, Category="LivingTown|Viewport Review")
