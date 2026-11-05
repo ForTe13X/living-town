@@ -2,6 +2,7 @@
 #include "CoreMinimal.h"
 #include "LivingTownCurrent61HeadAssembly.h"
 #include "LivingTownOriginalWorkerAssembly.h"
+#include "LivingTownMetaHumanVisualAssembly.h"
 
 // A physical projection contract, separate from the unchanged logical lease terms.
 // Only the scene/calibration producer supplies this. HUDs submit actions only.
@@ -19,7 +20,7 @@ struct FLivingTownCafePartBinding
 class UBlendSpace;
 
 // V1 stays the default. V2 explicitly selects this reviewed physical appearance/motion family.
-enum class ELivingTownCafeMotionStrategy : uint8 { LegacySingleNode, CafeWorker110RootAligned, Current61BakedSingleNode, OriginalWorkerSingleNode };
+enum class ELivingTownCafeMotionStrategy : uint8 { LegacySingleNode, CafeWorker110RootAligned, Current61BakedSingleNode, OriginalWorkerSingleNode, MetaHumanWholeActor };
 namespace LivingTownCafeWorker110
 {
     inline constexpr TCHAR Strategy[] = TEXT("cafe_worker61_root_aligned_110_v1");
@@ -82,6 +83,7 @@ struct FLivingTownCafeBinding
     FLivingTownCurrent61BakedCalibration Current61BakedCalibration;
     TOptional<FLivingTownCurrent61HeadBinding> Current61Head; // trusted transient opt-in; serialized V1–V3 loader remains literal
     TOptional<FLivingTownOriginalWorkerBinding> OriginalWorker; // explicit prepared development opt-in only
+    TOptional<FLivingTownMetaHumanVisualBinding> MetaHumanActor; // explicit whole-actor trial; never a V1-V3 mesh alias
     FTransform MeshRelativeTransform = FTransform::Identity;
     TArray<FLivingTownCafePartBinding> Parts;
     // Legacy files retain their exact 289-source-node contract. An explicit,

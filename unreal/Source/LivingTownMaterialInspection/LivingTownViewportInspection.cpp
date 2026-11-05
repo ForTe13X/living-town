@@ -7,11 +7,13 @@
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
 #include "HAL/IConsoleManager.h"
+#include "UObject/Package.h"
 
 namespace
 {
 using JObject = TSharedPtr<FJsonObject>;
 const TCHAR* ReviewWorldPath = TEXT("/Game/LivingTown_UEPilot/Review_v001/L_TownSlice_Stage_v001.L_TownSlice_Stage_v001");
+const TCHAR* BMaterialWorldPath = TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_StaticFinish_v002/MillCourtB_StaticFinishInspection_v002.MillCourtB_StaticFinishInspection_v002");
 const FText RealtimeTag = FText::FromString(TEXT("LivingTown.ClosedMidViewportReview.v1"));
 
 struct FSavedViewport
@@ -32,6 +34,7 @@ struct FSavedViewport
     bool ShowWidget;
     bool Realtime;
     FString Token;
+    bool bBMaterialScope = false;
     explicit FSavedViewport(FLevelEditorViewportClient* In)
         : Client(In), Viewport(In->Viewport), World(In->GetWorld()),
           Perspective(In->ViewTransformPerspective), Orthographic(In->ViewTransformOrthographic),
@@ -173,6 +176,14 @@ FString ULivingTownViewportInspection::RestoreCurrentLevelViewport(const FString
     auto* Client = Saved->Client;
     if (!Registered(Client) || Client->Viewport != Saved->Viewport || Client->GetWorld() != Saved->World.Get())
         return Result(TEXT("REFUSED"), TEXT("Owned original client/viewport/world no longer live; no stale pointer dereference."));
+    // B's new entry point additionally binds the current editor context. Leave
+    // the pre-existing Entry/FixedMid restore contract unchanged.
+    if (Saved->bBMaterialScope && (!Saved->World.IsValid() || !Client->GetWorld() ||
+        Client != GCurrentLevelEditingViewportClient || GEditor->PlayWorld ||
+        Client->GetWorld()->WorldType != EWorldType::Editor ||
+        GEditor->GetEditorWorldContext().World() != Client->GetWorld() ||
+        Client->GetWorld()->GetPathName() != BMaterialWorldPath))
+        return Result(TEXT("REFUSED"), TEXT("Exact original B editor world/current client required for B scope restore; PIE forbidden."));
     if (Client->IsAnyActorLocked())
         return Result(TEXT("REFUSED"), TEXT("Release the owned review camera before restoring; actor locks are never cleared implicitly."));
     // Actor unlock can leave cached controlling-camera projection information.
@@ -206,7 +217,9 @@ FString ULivingTownViewportInspection::RestoreCurrentLevelViewport(const FString
     return Result(Restored ? TEXT("RESTORED_EXACT_ORIGINAL_VIEWPORT") : TEXT("RESTORE_READBACK_MISMATCH"), Restored ? TEXT("") : TEXT("Restored fields did not match saved values."), Data);
 }
 
-FString ULivingTownViewportInspection::ConfigureWallLightingViewport()
+// One implementation preserves the same saved-state/flag/identity guards.
+// The old public Entry API always passes false; it has no caller-selected path.
+static FString ConfigureLightingViewport(const bool bBMaterial)
 {
     if (!IsInGameThread() || !GIsEditor || IsRunningCommandlet())
         return Result(TEXT("REFUSED"), TEXT("Wall lighting requires the Editor game thread, not a commandlet."));
@@ -215,13 +228,17 @@ FString ULivingTownViewportInspection::ConfigureWallLightingViewport()
     auto* Client = GCurrentLevelEditingViewportClient;
     if (!Registered(Client) || !Client->Viewport || !Client->GetWorld() || GEditor->PlayWorld ||
         Client->GetWorld()->WorldType != EWorldType::Editor ||
-        Client->GetWorld()->GetPathName() != TEXT("/Engine/Maps/Entry.Entry") || !Client->IsPerspective())
-        return Result(TEXT("REFUSED"), TEXT("Exact current registered perspective Entry editor viewport required; PIE forbidden."));
+        Client->GetWorld()->GetPathName() != (bBMaterial ? BMaterialWorldPath : TEXT("/Engine/Maps/Entry.Entry")) || !Client->IsPerspective())
+        return Result(TEXT("REFUSED"), bBMaterial ? TEXT("Exact current registered perspective B inspection editor viewport required; PIE forbidden.") :
+            TEXT("Exact current registered perspective Entry editor viewport required; PIE forbidden."));
+    if (bBMaterial && (GEditor->GetEditorWorldContext().World() != Client->GetWorld() || Client->GetWorld()->GetOutermost()->IsDirty()))
+        return Result(TEXT("REFUSED"), TEXT("Exact clean saved B editor context required; no temporary/dirty map capture scope."));
     if (Client->IsAnyActorLocked() || Client->IsEngineShowFlagsOverrideEnabled() || Client->HasRealtimeOverride(RealtimeTag) ||
         Client->ViewTransformPerspective.IsPlaying() || Client->ViewTransformOrthographic.IsPlaying())
         return Result(TEXT("REFUSED"), TEXT("Actor lock, animated camera, external showflag override or duplicate owned realtime scope prevents reversible wall review."));
     const JObject Before = Observe(Client);
     Saved = MakeUnique<FSavedViewport>(Client);
+    Saved->bBMaterialScope = bBMaterial;
     Client->SetViewMode(VMI_Lit);
     Client->SetGameView(true);
     Client->ExposureSettings.bFixed = false;
@@ -236,6 +253,8 @@ FString ULivingTownViewportInspection::ConfigureWallLightingViewport()
     const bool Configured = Registered(Client) && Client == GCurrentLevelEditingViewportClient &&
         Client->Viewport == Saved->Viewport && Client->GetWorld() == Saved->World.Get() &&
         Client->IsPerspective() && Client->GetViewMode() == VMI_Lit && Client->IsInGameView() &&
+        (!bBMaterial || (!GEditor->PlayWorld && GEditor->GetEditorWorldContext().World() == Client->GetWorld() &&
+            Client->GetWorld()->GetPathName() == BMaterialWorldPath)) &&
         Client->IsRealtime() && Client->HasRealtimeOverride(RealtimeTag) && !Client->ExposureSettings.bFixed &&
         Client->EngineShowFlags.Atmosphere && Client->EngineShowFlags.SkyLighting && Client->EngineShowFlags.Lighting &&
         Client->EngineShowFlags.Materials && Client->EngineShowFlags.Tonemapper && Client->EngineShowFlags.EyeAdaptation &&
@@ -245,11 +264,22 @@ FString ULivingTownViewportInspection::ConfigureWallLightingViewport()
     Data->SetObjectField(TEXT("before"), Before);
     Data->SetObjectField(TEXT("after"), Observe(Client));
     Data->SetStringField(TEXT("scope_token"), Saved->Token);
-    Data->SetStringField(TEXT("scope_kind"), TEXT("WallLighting.Entry.CurrentClient.v1"));
+    Data->SetStringField(TEXT("scope_kind"), bBMaterial ? TEXT("MaterialLighting.MillCourtB.CurrentClient.v1") : TEXT("WallLighting.Entry.CurrentClient.v1"));
     Data->SetBoolField(TEXT("shared_private_owner_tag_mutually_exclusive_with_fixed_mid"), true);
     Data->SetBoolField(TEXT("camera_location_rotation_FOV_unchanged"), Client->ViewFOV == Saved->FOV &&
         SameTransform(Client->ViewTransformPerspective, Saved->Perspective) && SameTransform(Client->ViewTransformOrthographic, Saved->Orthographic));
     Data->SetBoolField(TEXT("configured_readback_matches"), Configured);
-    return Result(Configured ? TEXT("CONFIGURED_WALL_LIGHTING_EXACT_CURRENT_VIEWPORT") : TEXT("WALL_LIGHTING_CONFIGURE_READBACK_MISMATCH"),
+    return Result(Configured ? (bBMaterial ? TEXT("CONFIGURED_B_MATERIAL_EXACT_CURRENT_VIEWPORT") : TEXT("CONFIGURED_WALL_LIGHTING_EXACT_CURRENT_VIEWPORT")) :
+        (bBMaterial ? TEXT("B_MATERIAL_CONFIGURE_READBACK_MISMATCH") : TEXT("WALL_LIGHTING_CONFIGURE_READBACK_MISMATCH")),
         Configured ? TEXT("") : TEXT("Scope remains active; inspect the retained token/readback. Do not retry configuration."), Data);
+}
+
+FString ULivingTownViewportInspection::ConfigureWallLightingViewport()
+{
+    return ConfigureLightingViewport(false);
+}
+
+FString ULivingTownViewportInspection::ConfigureBMaterialViewport()
+{
+    return ConfigureLightingViewport(true);
 }

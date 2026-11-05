@@ -1,0 +1,76 @@
+{
+  "schema": "LivingTown.MetaHumanRuntimeQualification.v1",
+  "source_family": "548cc64286066dfb349cfcf467771b4b83f37a4feddc1aca076e6b1f45f85094",
+  "scope": "Controlled development opt-in; no final character or possessed-player acceptance",
+  "build_evidence": "../native_b_texture_20261105/evidence.json",
+  "native_test_process": {
+    "seconds": 39.296999999991385,
+    "root_exit_code": 0,
+    "root_waited": true,
+    "remaining_descendants": 0,
+    "tests": [
+      {
+        "name": "LivingTown.MetaHuman.PreparedDescriptorStrictness",
+        "state": "Success",
+        "duration": 0.04751669988036156
+      },
+      {
+        "name": "LivingTown.MetaHuman.PreparedVisualSaveIdentity",
+        "state": "Success",
+        "duration": 0.016160599887371063
+      },
+      {
+        "name": "LivingTown.MetaHuman.SafeRefusal",
+        "state": "Success",
+        "duration": 0.016226500272750854
+      },
+      {
+        "name": "LivingTown.OriginalWorker.PreparedVisualSaveIdentity",
+        "state": "Success",
+        "duration": 0.01791759952902794
+      },
+      {
+        "name": "LivingTown.OriginalWorker.SafeRefusal",
+        "state": "Success",
+        "duration": 0.016196399927139282
+      },
+      {
+        "name": "LivingTown.PropertyV2.ExclusiveBackendSelection",
+        "state": "Success",
+        "duration": 0.016252096742391586
+      },
+      {
+        "name": "LivingTown.WorldV3.ExclusiveBackendSelection",
+        "state": "Success",
+        "duration": 0.016009699553251266
+      }
+    ],
+    "warnings_or_errors_in_tests": 0,
+    "serialized_character_assets_staged": false,
+    "native_process_rerun": false
+  },
+  "host_report_status": "FAIL_RETAINED_RECURRING_SOURCEV3_REGRESSION_CASE",
+  "host_report_reason": "Inherited automation report gate accepted only one or four tests; seven actual tests had completed successfully.",
+  "independent_root_result_review": {
+    "checks": "Exact seven names/count/success states/zero warning-error entries, matching log starts and completions, queue-empty7, clean critical log, actual modules/hardware, source and meaningful global custody. Original host failure retained.",
+    "artifact": "METAHUMAN_NOASSET002_ACTUAL_SEVEN_ROOT_REVIEW.json",
+    "bytes": 9055,
+    "sha256": "9b705733d9ffc5adb6a1342d6cd6ceefa4f9ac19d5f4b8de51a96d2bb2b1de90"
+  },
+  "actual_export": {
+    "bytes": 3494,
+    "sha256": "4fb0a69150c2fff105011b73885c9709c3df60fb0718ed2499663208b6b9b423"
+  },
+  "actual_log": {
+    "bytes": 312575,
+    "sha256": "4ed2abc5ce2f6822e9dff8e94c60f6afee3c0af87027f3cfe6f1006934dd3574"
+  },
+  "not_qualified": [
+    "WorldV3PersonaGate actual whole-actor lifecycle",
+    "Measured prepared descriptor, capsule fit and facing/stride/camera",
+    "Possessed movement/render and eating/sleep contact",
+    "Cooked/plugin/content closure",
+    "Cold game loading and town frame rate",
+    "Final workwear/hair/character or room art"
+  ]
+}

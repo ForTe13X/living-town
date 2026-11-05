@@ -41,6 +41,9 @@ constexpr const TCHAR* EnvelopeHashSource=TEXT("f003c16885a0fb8213f492114d1b9aa1
 FString Text(const std::string& S){return FString(UTF8_TO_TCHAR(S.c_str()));}
 std::string Utf8(const FString& S){return std::string(TCHAR_TO_UTF8(*S));}
 FString PersonaId(ELivingTownCafeWorldPersona Pn){return Pn==ELivingTownCafeWorldPersona::Aria?TEXT("aria"):TEXT("ben");}
+USkeletalMeshComponent* ActualVisualBody(ACharacter* Pawn){
+    const auto* Ben=Cast<ALivingTownCafeCharacter>(Pawn);return Ben?Ben->GetVisualBody():Pawn?Pawn->GetMesh():nullptr;
+}
 bool ValidPersona(ELivingTownCafeWorldPersona Pn){return Pn==ELivingTownCafeWorldPersona::Aria||Pn==ELivingTownCafeWorldPersona::Ben;}
 bool Keys(const FJsonObject& O,std::initializer_list<const TCHAR*> K){if(O.Values.Num()!=static_cast<int32>(K.size()))return false;for(const auto* S:K)if(!O.HasField(FStringView(S)))return false;return true;}
 bool String(const FJsonObject& O,const TCHAR* Key,FString& Value){return O.HasTypedField<EJson::String>(Key)&&O.TryGetStringField(Key,Value);}
@@ -113,8 +116,11 @@ ULivingTownCafeMealContactComponent* ULivingTownCafeWorldV3Subsystem::MealProvid
 }
 bool ULivingTownCafeWorldV3Subsystem::StartPhysicalMeal(FString& Error){
     auto* Pawn=SessionPawn.Get();auto* Provider=MealProvider();
+    // The old socket/clip recipe proves a different body. A readable MetaHuman
+    // hand and locomotion player grant no reviewed eating/contact capability.
+    if(Binding.MetaHumanActor.IsSet()){Error=TEXT("metahuman_reviewed_eating_contact_recipe_required");return false;}
     if(!Pawn||!Provider||!Provider->ValidateRecipe(Pawn,Binding.BindingFileSha256,Error)){if(Error.IsEmpty())Error=TEXT("reviewed_eat_clip_contact_recipe_required");return false;}
-    auto* Mesh=Pawn->GetMesh();auto* Player=Mesh?Mesh->GetSingleNodeInstance():nullptr;FLivingTownCafeMealClipRecipe R;
+    auto* Mesh=ActualVisualBody(Pawn);auto* Player=Mesh?Mesh->GetSingleNodeInstance():nullptr;FLivingTownCafeMealClipRecipe R;
     if(!Player||!Provider->ReviewedRecipe(R)||!R.Clip||Utf8(R.RecipeFileSha256)!=State->Sources.world.clip_sha256||MealAnimationPlayer.IsValid()||!Mesh->bEnableAnimation||Mesh->bPauseAnims||!FMath::IsNearlyEqual(Mesh->GlobalAnimRateScale,1.f,.001f)){
         Error=TEXT("enabled_single_native_animation_owner_required");return false;
     }
@@ -131,18 +137,20 @@ bool ULivingTownCafeWorldV3Subsystem::StartPhysicalMeal(FString& Error){
     if(!FMath::IsFinite(LastObservedClipTime)){Error=TEXT("actual_eat_playback_time_invalid");StopPhysicalMeal();return false;}return true;
 }
 void ULivingTownCafeWorldV3Subsystem::StopPhysicalMeal(){
-    auto* Pawn=SessionPawn.Get();auto* Mesh=Pawn?Pawn->GetMesh():nullptr;auto* Player=MealAnimationPlayer.Get();
+    auto* Pawn=SessionPawn.Get();auto* Mesh=ActualVisualBody(Pawn);auto* Player=MealAnimationPlayer.Get();
     // Restore our still-installed instance, including partial start failures.
     // A foreign replacement player is never overwritten. The original custom
     // instance's class, proxy and root-correction configuration were never reset.
-    if(Mesh&&Player&&Mesh->GetSingleNodeInstance()==Player){
+    if(!Binding.MetaHumanActor.IsSet()&&Mesh&&Player&&Mesh->GetSingleNodeInstance()==Player){
         Player->SetAnimationAsset(PreviousAnimation.Get(),bPreviousLooping,PreviousAnimationPlayRate);
         Player->SetPosition(PreviousAnimationTime,false);Player->SetPlaying(bPreviousPlaying);
     }
     PreviousAnimation=nullptr;PlayingMealClip.Reset();MealAnimationPlayer.Reset();bClipAdvancedThisFrame=false;
 }
 bool ULivingTownCafeWorldV3Subsystem::ObservePhysicalMeal(FString& Error){
-    bClipAdvancedThisFrame=false;auto* Pawn=SessionPawn.Get();auto* Mesh=Pawn?Pawn->GetMesh():nullptr;auto* Player=MealAnimationPlayer.Get();auto* Clip=PlayingMealClip.Get();auto* Provider=MealProvider();
+    bClipAdvancedThisFrame=false;
+    if(Binding.MetaHumanActor.IsSet()){Error=TEXT("metahuman_reviewed_eating_contact_recipe_required");return false;}
+    auto* Pawn=SessionPawn.Get();auto* Mesh=ActualVisualBody(Pawn);auto* Player=MealAnimationPlayer.Get();auto* Clip=PlayingMealClip.Get();auto* Provider=MealProvider();
     if(!Mesh||!Player||!Clip||Mesh->GetSingleNodeInstance()!=Player||Player->GetCurrentAsset()!=Clip||!Provider||!Provider->ObserveContact(Pawn,Binding.BindingFileSha256,Error))return false;
     const double Now=GetWorld()->GetTimeSeconds(),Elapsed=Now-LastObservedWorldTime;const float Time=Player->GetCurrentTime(),Length=Clip->GetPlayLength();
     if(!FMath::IsFinite(Elapsed)||Elapsed<0||!FMath::IsFinite(Time)||!FMath::IsFinite(Length)||Length<=0||Time<0||Time>Length){Error=TEXT("actual_eat_playback_time_invalid");return false;}
@@ -167,6 +175,10 @@ FLivingTownCafeWorldReceipt ULivingTownCafeWorldV3Subsystem::SubmitMeal(const FL
     const P::MealCommand Command{Utf8(C.RequestId),Utf8(C.SiteId),C.Kind==ELivingTownCafeMealKind::PurchaseMeal?P::MealKind::PurchaseMeal:P::MealKind::PublicMeal,C.ExpectedRevision};
     // Let the core return original receipts before attempting a new animation.
     bool Known=false;for(const auto& E:State->Kernel.events())if(E.meal_command&&E.meal_command->request_id==Command.request_id){Known=true;break;}
+    if(Binding.MetaHumanActor.IsSet()&&!Known){
+        auto Out=Refused(TEXT("metahuman_reviewed_eating_contact_recipe_required"));
+        Out.Message=TEXT("Eating is not available for this character yet. You have not been charged.");Notice=Out.Message;RefreshPresentation();return Out;
+    }
     bool ClipReady=false,Started=false;
     if(!Known&&Reach&&!State->Use.active()&&Command.expected_revision==State->Kernel.revision()&&Command.site_id==P::meal_site&&P::token(Command.request_id)){
         ClipReady=StartPhysicalMeal(Why);Started=ClipReady;
@@ -259,7 +271,7 @@ void ULivingTownCafeWorldV3Subsystem::RefreshPresentation(){
     FString Why;ObserveCounter(V.bReachable,Why);V.Diagnostic=Why;
     // Recipe presence is an availability hint only. Submission independently
     // validates source bytes and the natural ticks observe actual animation.
-    FLivingTownCafeMealClipRecipe Recipe;auto* Provider=MealProvider();V.bMealAvailable=V.Persona==TEXT("ben")&&Provider&&Provider->ReviewedRecipe(Recipe)&&Recipe.Clip;
+    FLivingTownCafeMealClipRecipe Recipe;auto* Provider=MealProvider();V.bMealAvailable=!Binding.MetaHumanActor.IsSet()&&V.Persona==TEXT("ben")&&Provider&&Provider->ReviewedRecipe(Recipe)&&Recipe.Clip;
     const auto Name=[](const FString& S){return S==TEXT("aria")?FString(TEXT("Aria")):S==TEXT("ben")?FString(TEXT("Ben")):FString(TEXT("Choose a resident"));};
     V.ResidentLabel=Name(V.Persona);if(V.bSessionReady)V.ResidentLabel+=FString::Printf(TEXT("  |  %lld coins"),(long long)(V.Persona==TEXT("aria")?V.AriaCoins:V.BenCoins));
     V.PropertyLabel=TEXT("Owned by ")+Name(V.Owner)+TEXT("  |  Run by ")+Name(V.Operator);
@@ -288,7 +300,16 @@ P::CareBindings CareSources(const FLivingTownCafeBinding& B){
     Out.world.roster_sha256=Utf8(RosterHash);return Out;
 }
 bool ReadMealSource(const FLivingTownCafeBinding& B,P::CareBindings& Sources,FString& Error){
-    Sources=CareSources(B);const FString Path=FPaths::ProjectContentDir()/TEXT("LivingTown/CafeWorldV3MealContact.json");
+    Sources=CareSources(B);
+    // This explicit visual family has no eating capability. A leftover recipe
+    // for a mesh family cannot qualify its actor or prevent the rest of WorldV3
+    // from starting. Keep the source-bound unavailable-provider policy instead.
+    if(B.MetaHumanActor.IsSet()){
+        if(B.MotionStrategy!=ELivingTownCafeMotionStrategy::MetaHumanWholeActor||!B.MetaHumanActor->IsValidated()||B.VisualSha256!=B.MetaHumanActor->DescriptorSha256)
+        {Error=TEXT("metahuman_prepared_unavailable_meal_policy_required");return false;}
+        return true;
+    }
+    const FString Path=FPaths::ProjectContentDir()/TEXT("LivingTown/CafeWorldV3MealContact.json");
     if(!IFileManager::Get().FileExists(*Path))return true;
     const int64 Size=IFileManager::Get().FileSize(*Path);TArray<uint8> Data;FString Json,H;
     if(Size<=0||Size>64*1024||!FFileHelper::LoadFileToArray(Data,*Path)||!LivingTownCafeJournal::Sha256(Data,H)){Error=TEXT("meal_recipe_source_unreadable");return false;}

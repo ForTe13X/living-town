@@ -8,6 +8,7 @@ class UCameraComponent;
 class UBlendSpace;
 class USkeletalMeshComponent;
 class ULivingTownOriginalWorkerAssembly;
+class ULivingTownMetaHumanVisualAssembly;
 
 UCLASS(NotBlueprintable)
 class LIVINGTOWNNATIVE_API ALivingTownCafeCharacter final : public ACharacter
@@ -16,9 +17,11 @@ class LIVINGTOWNNATIVE_API ALivingTownCafeCharacter final : public ACharacter
 public:
     ALivingTownCafeCharacter();
     bool ConfigureQualifiedBen(const FLivingTownCafeBinding& Binding,FString& Error);
-    bool HasQualifiedVisual() const {return bVisualQualified&&(!OriginalWorkerAssembly||HasOriginalWorkerAssembly());}
+    bool HasQualifiedVisual() const;
     bool HasBoundCurrent61HeadParts() const { return bCurrent61HeadBound; }
     bool HasOriginalWorkerAssembly() const;
+    bool HasMetaHumanVisual() const;
+    USkeletalMeshComponent* GetVisualBody() const;
     FVector InteractionHand() const;
     virtual void PossessedBy(AController* NewController) override;
     virtual void UnPossessed() override;
@@ -33,6 +36,7 @@ private:
     UPROPERTY() TObjectPtr<USkeletalMeshComponent> HairCards;
     UPROPERTY() TObjectPtr<USkeletalMeshComponent> HairUnderlayer;
     UPROPERTY() TObjectPtr<ULivingTownOriginalWorkerAssembly> OriginalWorkerAssembly;
+    UPROPERTY() TObjectPtr<ULivingTownMetaHumanVisualAssembly> MetaHumanVisual;
     bool bCurrent61HeadBound=false;
     FString UseSocket;
     bool bVisualQualified=false;
@@ -43,6 +47,7 @@ private:
     void RestorePossessedBonePolicy();
     void UpdatePossessedBonePolicy();
     bool ConfigureOriginalWorkerBen(const FLivingTownCafeBinding& Binding,FString& Error);
+    bool ConfigureMetaHumanBen(const FLivingTownCafeBinding& Binding,FString& Error);
     void Forward(float Value);
     void Right(float Value);
     void Yaw(float Value);

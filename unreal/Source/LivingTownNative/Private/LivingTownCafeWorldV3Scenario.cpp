@@ -2,6 +2,7 @@
 #include "LivingTownCafeWorldV3Subsystem.h"
 #include "LivingTownCafePropertyV2Scenario.h"
 #include "LivingTownCafeCharacter.h"
+#include "LivingTownMetaHumanVisualAssembly.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/Canvas.h"
@@ -18,17 +19,167 @@ ALivingTownCafeWorldV3GameMode::ALivingTownCafeWorldV3GameMode(){DefaultPawnClas
 APawn* ALivingTownCafeWorldV3GameMode::SpawnDefaultPawnAtTransform_Implementation(AController*,const FTransform&){return nullptr;}
 void ALivingTownCafeWorldV3GameMode::StartPlay(){Super::StartPlay();FString Error;auto* P=GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();if(!P||!P->PrepareScenario(Error)){UE_LOG(LogTemp,Error,TEXT("World v3 scenario refused: %s"),*Error);return;}for(FConstPlayerControllerIterator It=GetWorld()->GetPlayerControllerIterator();It;++It)StartScenarioPlayer(It->Get());}
 void ALivingTownCafeWorldV3GameMode::HandleStartingNewPlayer_Implementation(APlayerController* PC){Super::HandleStartingNewPlayer_Implementation(PC);StartScenarioPlayer(PC);}
-void ALivingTownCafeWorldV3GameMode::StartScenarioPlayer(APlayerController* PC){auto* P=GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();auto* C=Cast<ALivingTownCafeWorldV3Controller>(PC);if(!C||C->GetPawn()||!P||!P->IsPrepared())return;FString Choice=TEXT("ben"),Error;FParse::Value(FCommandLine::Get(),TEXT("CafeWorldPersona="),Choice);if(Choice!=TEXT("aria")&&Choice!=TEXT("ben")){UE_LOG(LogTemp,Error,TEXT("Exact authored cafe persona aria or ben required"));return;}if(!SelectPersona(C,Choice==TEXT("aria")?ELivingTownCafeWorldPersona::Aria:ELivingTownCafeWorldPersona::Ben,Error))UE_LOG(LogTemp,Error,TEXT("World v3 persona start refused: %s"),*Error);}
-bool ALivingTownCafeWorldV3GameMode::SelectPersona(ALivingTownCafeWorldV3Controller* PC,ELivingTownCafeWorldPersona Persona,FString& Error){
-    Error.Reset();auto* P=GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();if(!IsInGameThread()||!PC||PC!=GetWorld()->GetFirstPlayerController()||GetWorld()->GetNetMode()!=NM_Standalone||!P||!P->IsPrepared()||(Persona!=ELivingTownCafeWorldPersona::Aria&&Persona!=ELivingTownCafeWorldPersona::Ben)){Error=TEXT("owned_standalone_authored_persona_selection_required");return false;}
-    if(PC->bAuthorized&&PC->Persona==Persona&&PC->GetPawn())return true;
-    P->DetachNativeSession();PC->bAuthorized=false;if(APawn* Old=PC->GetPawn()){PC->UnPossess();Old->Destroy();}
-    const auto& B=P->GetBinding();const FTransform Spawn(B.SpawnRotation,B.SpawnFeetCm+FVector(0,0,B.CapsuleHalfHeightCm));ACharacter* Pawn=nullptr;
-    if(Persona==ELivingTownCafeWorldPersona::Ben){auto* Ben=GetWorld()->SpawnActorDeferred<ALivingTownCafeCharacter>(ALivingTownCafeCharacter::StaticClass(),Spawn,nullptr,nullptr,ESpawnActorCollisionHandlingMethod::AlwaysSpawn);if(!Ben||!Ben->ConfigureQualifiedBen(B,Error)){if(Ben)Ben->Destroy();return false;}Pawn=Ben;}
-    else {auto* OwnerPawn=GetWorld()->SpawnActorDeferred<ALivingTownCafePropertyOwnerProxy>(ALivingTownCafePropertyOwnerProxy::StaticClass(),Spawn,nullptr,nullptr,ESpawnActorCollisionHandlingMethod::AlwaysSpawn);if(!OwnerPawn||!OwnerPawn->ConfigureFunctionalOwner(B,Error)){if(OwnerPawn)OwnerPawn->Destroy();return false;}Pawn=OwnerPawn;}
-    Pawn->FinishSpawning(Spawn);FCollisionQueryParams Q(SCENE_QUERY_STAT(WorldV3PersonaSpawn),true);Q.AddIgnoredActor(Pawn);if(GetWorld()->OverlapBlockingTestByChannel(Pawn->GetActorLocation(),FQuat::Identity,ECC_Pawn,FCollisionShape::MakeCapsule(B.CapsuleRadiusCm,B.CapsuleHalfHeightCm),Q)){Pawn->Destroy();Error=TEXT("actual_persona_spawn_capsule_overlap");return false;}
+void ALivingTownCafeWorldV3GameMode::EndPlay(const EEndPlayReason::Type Reason)
+{
+    bEndingPlay=true;CancelPendingPersonaRequest(true);Super::EndPlay(Reason);
+}
+void ALivingTownCafeWorldV3GameMode::StartScenarioPlayer(APlayerController* PC)
+{
+    auto* P=GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();auto* C=Cast<ALivingTownCafeWorldV3Controller>(PC);
+    if(!C||C->GetPawn()||!P||!P->IsPrepared()||(PersonaRequestResult==ELivingTownCafePersonaRequestResult::Pending&&PendingController.Get()==C))return;
+    FString Choice=TEXT("ben"),Error;FParse::Value(FCommandLine::Get(),TEXT("CafeWorldPersona="),Choice);
+    if(Choice!=TEXT("aria")&&Choice!=TEXT("ben")){UE_LOG(LogTemp,Error,TEXT("Exact authored cafe persona aria or ben required"));return;}
+    if(RequestPersona(C,Choice==TEXT("aria")?ELivingTownCafeWorldPersona::Aria:ELivingTownCafeWorldPersona::Ben,Error)==ELivingTownCafePersonaRequestResult::Refused)
+        UE_LOG(LogTemp,Error,TEXT("World v3 persona start refused: %s"),*Error);
+}
+bool ALivingTownCafeWorldV3GameMode::ValidatePersonaSelection(ALivingTownCafeWorldV3Controller* PC,ELivingTownCafeWorldPersona Persona,FString& Error)const
+{
+    Error.Reset();auto* W=GetWorld();auto* P=W?W->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;
+    if(!IsInGameThread()||bEndingPlay||!W||!IsValid(PC)||PC!=W->GetFirstPlayerController()||W->GetNetMode()!=NM_Standalone||!P||!P->IsPrepared()||
+       (Persona!=ELivingTownCafeWorldPersona::Aria&&Persona!=ELivingTownCafeWorldPersona::Ben))
+    {Error=TEXT("owned_standalone_authored_persona_selection_required");return false;}
+    return true;
+}
+void ALivingTownCafeWorldV3GameMode::CancelPendingPersonaRequest(bool bReleaseReadyPreload)
+{
+    const bool bWasPending=PersonaRequestResult==ELivingTownCafePersonaRequestResult::Pending;
+    ++PersonaSelectionEpoch;PendingController.Reset();PendingDescriptorSha256.Empty();PersonaRequestResult=ELivingTownCafePersonaRequestResult::Refused;
+    if(MetaHumanPreload&&(bWasPending||bReleaseReadyPreload))MetaHumanPreload->Reset();
+}
+ELivingTownCafePersonaRequestResult ALivingTownCafeWorldV3GameMode::RequestPersona(ALivingTownCafeWorldV3Controller* PC,ELivingTownCafeWorldPersona Persona,FString& Error)
+{
+    // Invalidate an earlier completion even when selecting the already-current Aria.
+    if(!IsInGameThread()){Error=TEXT("owned_standalone_authored_persona_selection_required");return ELivingTownCafePersonaRequestResult::Refused;}
+    if(!ValidatePersonaSelection(PC,Persona,Error))return ELivingTownCafePersonaRequestResult::Refused;
+    CancelPendingPersonaRequest(Persona!=ELivingTownCafeWorldPersona::Ben);
+    const auto& B=GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>()->GetBinding();
+    if((PC->bAuthorized&&PC->Persona==Persona&&IsValid(PC->GetPawn()))||Persona!=ELivingTownCafeWorldPersona::Ben||!B.MetaHumanActor.IsSet())
+    {
+        PersonaRequestResult=SelectPersonaImmediate(PC,Persona,Error)?ELivingTownCafePersonaRequestResult::Selected:ELivingTownCafePersonaRequestResult::Refused;
+        return PersonaRequestResult;
+    }
+    if(!MetaHumanPreload)
+    {
+        MetaHumanPreload=NewObject<ULivingTownMetaHumanVisualPreload>(this);
+        AddInstanceComponent(MetaHumanPreload);MetaHumanPreload->RegisterComponent();
+    }
+    if(!MetaHumanPreload->IsRegistered()||MetaHumanPreload->GetOwner()!=this)
+    {Error=TEXT("metahuman_owned_preload_component_required");return PersonaRequestResult;}
+    if(MetaHumanPreload->IsReadyFor(B.MetaHumanActor.GetValue()))
+    {
+        PersonaRequestResult=SelectPersonaImmediate(PC,Persona,Error)?ELivingTownCafePersonaRequestResult::Selected:ELivingTownCafePersonaRequestResult::Refused;
+        return PersonaRequestResult;
+    }
+    // Failed loads are explicitly retryable; an older pending handle was already
+    // cancelled above. A ready identity is never discarded on a Ben retry.
+    MetaHumanPreload->Reset();
+    PendingController=PC;PendingDescriptorSha256=B.MetaHumanActor->DescriptorSha256;PersonaRequestResult=ELivingTownCafePersonaRequestResult::Pending;
+    PC->OperationNotice=TEXT("Loading Ben's complete character. Your current resident remains active.");
+    const uint64 E=PersonaSelectionEpoch;TWeakObjectPtr<ALivingTownCafeWorldV3GameMode> Weak(this);
+    const auto State=MetaHumanPreload->Request(B.MetaHumanActor.GetValue(),FSimpleDelegate::CreateLambda([Weak,E]()
+    {if(auto* Self=Weak.Get())Self->CompletePersonaRequest(E);}),Error);
+    // Also handles immediate failure or already-loaded completion without committing twice.
+    if(State!=ELivingTownMetaHumanPreloadState::Pending&&PersonaRequestResult==ELivingTownCafePersonaRequestResult::Pending)CompletePersonaRequest(E);
+    if(PersonaRequestResult==ELivingTownCafePersonaRequestResult::Refused&&Error.IsEmpty())Error=TEXT("metahuman_persona_preload_or_selection_refused");
+    return PersonaRequestResult;
+}
+void ALivingTownCafeWorldV3GameMode::CompletePersonaRequest(uint64 ExpectedEpoch)
+{
+    if(!IsInGameThread()||bEndingPlay||ExpectedEpoch!=PersonaSelectionEpoch||PersonaRequestResult!=ELivingTownCafePersonaRequestResult::Pending)return;
+    auto* PC=PendingController.Get();FString Error;
+    auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;
+    if(!ValidatePersonaSelection(PC,ELivingTownCafeWorldPersona::Ben,Error)||!P->GetBinding().MetaHumanActor.IsSet()||
+       P->GetBinding().MetaHumanActor->DescriptorSha256!=PendingDescriptorSha256||!MetaHumanPreload||!MetaHumanPreload->IsReadyFor(P->GetBinding().MetaHumanActor.GetValue()))
+    {
+        PersonaRequestResult=ELivingTownCafePersonaRequestResult::Refused;PendingController.Reset();PendingDescriptorSha256.Empty();
+        if(PC)PC->OperationNotice=TEXT("Unable to load Ben. Your current resident remains active.");return;
+    }
+    PendingController.Reset();PendingDescriptorSha256.Empty();
+    const bool bSelected=SelectPersonaImmediate(PC,ELivingTownCafeWorldPersona::Ben,Error);
+    PersonaRequestResult=bSelected?ELivingTownCafePersonaRequestResult::Selected:ELivingTownCafePersonaRequestResult::Refused;
+    PC->OperationNotice=bSelected?TEXT("Playing Ben."):TEXT("Unable to select Ben. Your current resident remains active.");
+    if(!bSelected)UE_LOG(LogTemp,Warning,TEXT("World v3 prepared persona refused: %s"),*Error);
+}
+bool ALivingTownCafeWorldV3GameMode::SelectPersona(ALivingTownCafeWorldV3Controller* PC,ELivingTownCafeWorldPersona Persona,FString& Error)
+{
+    if(!IsInGameThread()){Error=TEXT("owned_standalone_authored_persona_selection_required");return false;}
+    if(!ValidatePersonaSelection(PC,Persona,Error))return false;
+    CancelPendingPersonaRequest(Persona!=ELivingTownCafeWorldPersona::Ben);
+    const bool bSelected=SelectPersonaImmediate(PC,Persona,Error);
+    PersonaRequestResult=bSelected?ELivingTownCafePersonaRequestResult::Selected:ELivingTownCafePersonaRequestResult::Refused;return bSelected;
+}
+bool ALivingTownCafeWorldV3GameMode::SelectPersonaImmediate(ALivingTownCafeWorldV3Controller* PC,ELivingTownCafeWorldPersona Persona,FString& Error)
+{
+    if(!ValidatePersonaSelection(PC,Persona,Error))return false;
+    auto* P=GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();const auto& B=P->GetBinding();
+    if(PC->bAuthorized&&PC->Persona==Persona&&IsValid(PC->GetPawn()))
+    {
+        if(B.MetaHumanActor.IsSet()&&Persona==ELivingTownCafeWorldPersona::Ben)
+        {
+            const auto* Current=Cast<ALivingTownCafeCharacter>(PC->GetPawn());
+            if(!Current||!Current->HasQualifiedVisual()||!Current->HasMetaHumanVisual())
+            {Error=TEXT("current_metahuman_persona_visual_lost");return false;}
+        }
+        return true;
+    }
+    if(Persona==ELivingTownCafeWorldPersona::Ben&&B.MetaHumanActor.IsSet()&&(!MetaHumanPreload||!MetaHumanPreload->IsReadyFor(B.MetaHumanActor.GetValue())))
+    {Error=TEXT("metahuman_persona_preload_required");return false;}
+    // Ordinary families keep their existing synchronous lifecycle. The opt-in
+    // complete actor validates a candidate while the previous authority stays live.
+    const bool bTransactional=B.MetaHumanActor.IsSet();
+    if(bTransactional&&P->GetPresentation().bMealActive)
+    {Error=TEXT("metahuman_persona_switch_requires_no_active_meal");return false;}
+    TWeakObjectPtr<APawn> OldPawn=PC->GetPawn();TWeakObjectPtr<AActor> OldView=PC->GetViewTarget();
+    const bool bOldAuthorized=PC->bAuthorized;const auto OldPersona=PC->Persona;const FRotator OldControl=PC->GetControlRotation();
+    if(!bTransactional)
+    {P->DetachNativeSession();PC->bAuthorized=false;if(OldPawn.IsValid()){PC->UnPossess();OldPawn->Destroy();}}
+    const FTransform Spawn(B.SpawnRotation,B.SpawnFeetCm+FVector(0,0,B.CapsuleHalfHeightCm));ACharacter* Pawn=nullptr;bool bFinishedSpawning=false;
+    if(Persona==ELivingTownCafeWorldPersona::Ben)
+    {
+        auto* Ben=GetWorld()->SpawnActorDeferred<ALivingTownCafeCharacter>(ALivingTownCafeCharacter::StaticClass(),Spawn,nullptr,nullptr,ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+        // A complete child actor may BeginPlay only after its native parent.
+        // The SDK's normal component setup must precede holder validation.
+        if(Ben&&B.MetaHumanActor.IsSet()){Ben->FinishSpawning(Spawn);bFinishedSpawning=true;}
+        if(!Ben||!Ben->ConfigureQualifiedBen(B,Error)){if(Ben)Ben->Destroy();return false;}Pawn=Ben;
+    }
+    else
+    {
+        auto* OwnerPawn=GetWorld()->SpawnActorDeferred<ALivingTownCafePropertyOwnerProxy>(ALivingTownCafePropertyOwnerProxy::StaticClass(),Spawn,nullptr,nullptr,ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+        if(!OwnerPawn||!OwnerPawn->ConfigureFunctionalOwner(B,Error)){if(OwnerPawn)OwnerPawn->Destroy();return false;}Pawn=OwnerPawn;
+    }
+    if(!bFinishedSpawning)Pawn->FinishSpawning(Spawn);
+    const auto* Ben=Cast<ALivingTownCafeCharacter>(Pawn);const auto* OwnerCandidate=Cast<ALivingTownCafePropertyOwnerProxy>(Pawn);
+    if(bTransactional&&(!IsValid(Pawn)||(Persona==ELivingTownCafeWorldPersona::Ben?(!Ben||!Ben->HasQualifiedVisual()||!Ben->HasMetaHumanVisual()):(!OwnerCandidate||!OwnerCandidate->IsFunctionalOwnerConfigured()))))
+    {if(IsValid(Pawn))Pawn->Destroy();Error=TEXT("finished_persona_candidate_visual_required");return false;}
+    FCollisionQueryParams Q(SCENE_QUERY_STAT(WorldV3PersonaSpawn),true);Q.AddIgnoredActor(Pawn);
+    if(bTransactional&&OldPawn.IsValid())Q.AddIgnoredActor(OldPawn.Get());
+    if(GetWorld()->OverlapBlockingTestByChannel(Pawn->GetActorLocation(),FQuat::Identity,ECC_Pawn,FCollisionShape::MakeCapsule(B.CapsuleRadiusCm,B.CapsuleHalfHeightCm),Q))
+    {Pawn->Destroy();Error=TEXT("actual_persona_spawn_capsule_overlap");return false;}
+    // This family has no qualified eating/contact recipe. Do not cancel paired
+    // authority to attempt a visual switch: Bind publishes only after validation.
+    if(bTransactional&&P->GetPresentation().bMealActive)
+    {Pawn->Destroy();Error=TEXT("metahuman_persona_switch_requires_no_active_meal");return false;}
     PC->Possess(Pawn);PC->SetViewTarget(Pawn);PC->SetControlRotation(B.SpawnRotation);PC->Persona=Persona;PC->bAuthorized=PC->GetPawn()==Pawn;
-    if(!PC->bAuthorized||!P->BindNativeSession(PC,Pawn,Error)){PC->bAuthorized=false;PC->UnPossess();Pawn->Destroy();return false;}return true;
+    if(!PC->bAuthorized||!P->BindNativeSession(PC,Pawn,Error))
+    {
+        const FString SelectionError=Error.IsEmpty()?TEXT("actual_persona_possession_required"):Error;
+        PC->bAuthorized=false;if(PC->GetPawn()==Pawn)PC->UnPossess();Pawn->Destroy();
+        if(bTransactional)
+        {
+            PC->Persona=OldPersona;PC->SetControlRotation(OldControl);
+            if(OldPawn.IsValid())
+            {
+                PC->Possess(OldPawn.Get());PC->bAuthorized=bOldAuthorized&&PC->GetPawn()==OldPawn.Get();
+                PC->SetViewTarget(OldView.IsValid()?OldView.Get():OldPawn.Get());
+                FString RestoreError;auto* Previous=Cast<ACharacter>(OldPawn.Get());
+                if(PC->bAuthorized&&(!Previous||!P->BindNativeSession(PC,Previous,RestoreError)))
+                {PC->bAuthorized=false;UE_LOG(LogTemp,Error,TEXT("World v3 old persona session restore refused: %s"),*RestoreError);}
+            }
+            else if(OldView.IsValid())PC->SetViewTarget(OldView.Get());
+        }
+        Error=SelectionError;return false;
+    }
+    if(bTransactional&&OldPawn.IsValid())OldPawn->Destroy();return true;
 }
 ALivingTownCafeWorldV3Controller::ALivingTownCafeWorldV3Controller(){bAutoManageActiveCameraTarget=false;}
 void ALivingTownCafeWorldV3Controller::BeginPlay(){Super::BeginPlay();bShowMouseCursor=false;SetInputMode(FInputModeGameOnly());if(PlayerCameraManager){PlayerCameraManager->ViewPitchMin=-55;PlayerCameraManager->ViewPitchMax=25;}}
@@ -49,8 +200,8 @@ void ALivingTownCafeWorldV3Controller::SetupInputComponent(){
     InputComponent->BindKey(EKeys::F5,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::Save);InputComponent->BindKey(EKeys::F9,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::Load);
     InputComponent->BindKey(EKeys::I,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::ImportOlderSave);
 }
-void ALivingTownCafeWorldV3Controller::SelectAria(){FString Error;auto* G=GetWorld()?GetWorld()->GetAuthGameMode<ALivingTownCafeWorldV3GameMode>():nullptr;OperationNotice=G&&G->SelectPersona(this,ELivingTownCafeWorldPersona::Aria,Error)?TEXT("Playing Aria."):TEXT("Unable to select Aria.");}
-void ALivingTownCafeWorldV3Controller::SelectBen(){FString Error;auto* G=GetWorld()?GetWorld()->GetAuthGameMode<ALivingTownCafeWorldV3GameMode>():nullptr;OperationNotice=G&&G->SelectPersona(this,ELivingTownCafeWorldPersona::Ben,Error)?TEXT("Playing Ben."):TEXT("Unable to select Ben.");}
+void ALivingTownCafeWorldV3Controller::SelectAria(){FString Error;auto* G=GetWorld()?GetWorld()->GetAuthGameMode<ALivingTownCafeWorldV3GameMode>():nullptr;const auto R=G?G->RequestPersona(this,ELivingTownCafeWorldPersona::Aria,Error):ELivingTownCafePersonaRequestResult::Refused;OperationNotice=R==ELivingTownCafePersonaRequestResult::Selected?TEXT("Playing Aria."):R==ELivingTownCafePersonaRequestResult::Pending?TEXT("Loading Aria. Your current resident remains active."):TEXT("Unable to select Aria.");}
+void ALivingTownCafeWorldV3Controller::SelectBen(){FString Error;auto* G=GetWorld()?GetWorld()->GetAuthGameMode<ALivingTownCafeWorldV3GameMode>():nullptr;const auto R=G?G->RequestPersona(this,ELivingTownCafeWorldPersona::Ben,Error):ELivingTownCafePersonaRequestResult::Refused;OperationNotice=R==ELivingTownCafePersonaRequestResult::Selected?TEXT("Playing Ben."):R==ELivingTownCafePersonaRequestResult::Pending?TEXT("Loading Ben's complete character. Your current resident remains active."):TEXT("Unable to select Ben.");}
 FLivingTownCafeWorldReceipt ALivingTownCafeWorldV3Controller::RequestMeal(const FLivingTownCafeMealCommand& C){
     auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;FLivingTownCafeWorldReceipt R;
     if(P&&GetWorld()->GetFirstPlayerController()==this)R=P->SubmitMeal(C);else {R.Reason=TEXT("native_world_controller_required");R.Message=TEXT("The cafe is unavailable.");}OperationNotice=P&&P->GetPresentation().Notice==R.Message?FString():R.Message;return R;
