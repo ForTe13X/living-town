@@ -54,6 +54,13 @@
       "TargetAllowList": [
         "Editor"
       ]
+    },
+    {
+      "Name": "MetaHumanSDK",
+      "Enabled": true,
+      "TargetAllowList": [
+        "Editor"
+      ]
     }
   ],
   "Modules": [

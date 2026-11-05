@@ -7,7 +7,14 @@
 #include "Serialization/JsonSerializer.h"
 #include "Modules/ModuleManager.h"
 
-IMPLEMENT_MODULE(FDefaultModuleImpl, LivingTownMaterialInspection)
+#include "LivingTownMetaHumanAuth.h"
+class FLivingTownMaterialInspectionModule final : public IModuleInterface
+{
+public:
+ virtual void StartupModule() override { ULivingTownMetaHumanAuth::RegisterPrivateEditorConfig(); }
+ virtual bool SupportsDynamicReloading() override { return false; }
+};
+IMPLEMENT_MODULE(FLivingTownMaterialInspectionModule, LivingTownMaterialInspection)
 UObject* ULivingTownMaterialInspection::ReadRerouteDeclaration(UObject* Expression) {
  if (!IsInGameThread()) return nullptr;
  const auto* Usage=Cast<UMaterialExpressionNamedRerouteUsage>(Expression);
