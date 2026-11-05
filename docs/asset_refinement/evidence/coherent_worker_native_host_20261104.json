@@ -1,0 +1,45 @@
+{
+  "status": "PASS_NATIVE_COHERENT53_PREVIEW_PENDING_ROOT_VISUAL_REVIEW",
+  "failure": null,
+  "source_family": "de0beb35e3b683fb9f381676af8aa65d9763d90d650b00f3b12598296cc5198d",
+  "completion": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\WorkerCoherentUnrealPreview_v006\\NATIVE_PREVIEW_COMPLETE.json",
+    "bytes": 3517,
+    "sha256": "da742c00627462acdc17a3e57bed7f81ef3637c070f7788cceae46f3ffe58d0b"
+  },
+  "actual_MCP_calls": [
+    "begin_probe_api",
+    "read_status",
+    "begin_import_assets",
+    "read_status",
+    "begin_build_materials",
+    "read_status",
+    "begin_build_studio",
+    "read_status",
+    "begin_capture",
+    "read_status",
+    "begin_finish",
+    "read_status"
+  ],
+  "owned_reap": {
+    "root_exit_code": 92,
+    "owned_root_waited": true,
+    "remaining_owned_pids": [],
+    "controlled_job_termination": true,
+    "includes_ShaderCompileWorker_descendants": true
+  },
+  "seconds": 56.485000000015134,
+  "peak_private_bytes": 6878257152,
+  "peak_RSS_bytes": 4510289920,
+  "monitor_errors": [],
+  "sources_canonical_global_preserved": true,
+  "GPU": {
+    "adapter": "AMD Radeon(TM) 8060S Graphics",
+    "vendor": "1002",
+    "RHI": "D3D12",
+    "feature_level": "SM6",
+    "shader_worker_counts": [
+      2
+    ]
+  }
+}
