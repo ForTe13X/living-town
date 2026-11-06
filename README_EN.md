@@ -26,6 +26,8 @@ Large runtime assets use a checksum-bound [release manifest](docs/town_walkthrou
 
 ## Latest changes
 
+- Software Lumen improves café and house lighting, wall detail and character colour in Unreal. The full 27-point walking route passes; a 30-second 1080p movement window measures 11.90 ms median and 12.89 ms at the 95th percentile, with one 45.50 ms hitch still under investigation. [Actual views, configuration and measurement scope](docs/asset_refinement/unreal_lumen_presentation.md).
+
 - Added an opt-in native cafe title-sale and prepaid-lease journey with conserved payments and independently verified cold-process restore. Aria uses a functional prototype; art, keyboard walkthrough and performance remain under review. [Scope and evidence](docs/asset_refinement/unreal_native_cafe_property_v2.md).
 
 - The 61-bone native cafe worker now passes natural idle/walk/stop and full-body framing checks in a controlled Unreal preview. Source geometry, UVs, skin and full clips remain intact; foot/counter contact, final art and performance remain in progress. [Pipeline and evidence](docs/asset_refinement/native_worker110.md).
