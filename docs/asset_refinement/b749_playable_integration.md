@@ -1,6 +1,6 @@
 # Mill Court B: connected native slice
 
-This slice connects the furnished Mill Court B house and corrected entrance terrain to the existing native café journey. The building, corrected-ground unit maps, connected root scene and 971-role descriptor have passed independent cold reads. The C++ profile binds their actual saved package identities, compiles and passes seven focused native tests. After a terrain collision repair, an ordinary Game run loaded all three units and walked 99.57 m before a facade hull blocked the entrance. The two doorway facade meshes now have saved triangle-collision policies with their native render buffers preserved; fresh physical passage and readable exposure remain pending. The complete route and presentation remain unqualified. The legacy profile remains available.
+This slice connects the furnished Mill Court B house and corrected entrance terrain to the existing native café journey. The building, corrected-ground unit maps, connected root scene and 971-role descriptor have passed independent cold reads. The C++ profile binds their actual saved package identities, compiles and passes seven focused native tests. After isolated terrain and doorway collision repairs, a fresh ordinary Game run completed the 27-waypoint café → house room → café journey with normal movement input. Its four captures also demonstrate the removal of the earlier gross overexposure. Final art, full-town performance and cooked startup remain unfinished. The legacy profile remains available.
 
 ## Intended composition
 
@@ -71,4 +71,21 @@ That run's initial 1920 × 1080 image is grossly overexposed and is rejected for
 
 A subsequent isolated author inspected sixteen concave wall and four concave floor candidates. All twenty used default collision complexity with one convex hull. Only the doorway's lower M0142 and upper M0143 facade assets were saved with explicit complex-as-simple collision. The 190 cm capsule overlaps both pieces' heights. Independent review replayed all twenty BodySetup observations, preserved the other eighteen bodies, compared complete native LOD0 buffers and metadata before/after, and rehashed the coherent 5,844-package scope. Maps, descriptor, root lighting and transforms remain unchanged. This establishes the saved collision-policy repair; a new Game process still needs to demonstrate entrance and exit contact. The remaining concave candidates require their own physical-use qualification.
 
-Before this new slice is admitted for gameplay, complete café → public approach → entrance seam → open leaf → M0231 room → café. Observe actual floor contacts and capsule clearance in both directions. Lighting, final art, expanded-town performance and the narrated walkthrough/README GIF remain unfinished.
+## Fresh gameplay and exposure result
+
+Game008 completed café → public approach → entrance seam → open leaf → M0231 room → café, then exited naturally with code 0 and no remaining owned processes. Independent review verified all 27 waypoints, 14,205 normal `Force=False` movement submissions and 1,043 sampled grounded, walkable observations. The authored route is 202.575 m; the sampled 3D path is 202.357 m. Outward and return terrain crossings, entrance observations and settled room support all passed. The room floor is the actual `MCB::Building::M0231` component, with the 28 cm radius, 95 cm half-height capsule intact. No teleport or runtime collision repair was used.
+
+The same run reopened both ground meshes and both facade meshes with mesh-owned BodySetup complexity 3. Four 1920 × 1080 captures retain the normal pawn camera and unchanged quality: café before departure, house approach, room and café after return. Two explicit eight-second photo pauses are recorded separately from movement; no FPS result is inferred. PNG byte/timestamp seals, CRCs and complete image decoding passed. The independent review also rehashed all seven preservation scopes, including 18,363 source rows, 179 immutable staging rows and 5,858 asset/input rows.
+
+The exposure comparison uses this explicit setting in the isolated test project's startup engine configuration:
+
+```ini
+[/Script/Engine.RendererSettings]
+r.DefaultFeature.AutoExposure.ExtendDefaultLuminanceRange=True
+```
+
+The saved 35,000 lux sun, sky, atmosphere and camera properties remain unchanged. All four runtime observations confirm that the extended-range setting is enabled, automatic exposure is active, native constructor bounds are -10 to 20 EV100, and the camera has no competing exposure override. The project configuration remained exact after exit. Unreal removed the private generated user-layer Engine.ini on shutdown; preservation of that generated file is not claimed. Repository Config and the compiled source family were unchanged by this controlled test. Final SceneView/GPU exposure was not directly read.
+
+![Game008 entry into the furnished house](../media/mill-court-b-room-game008.png)
+
+The image shows the actual room-entry checkpoint with visible plaster, joinery, cabinetry and flooring. Root review accepts the removal of gross white clipping and the physical route. The café interior remains too dark, the return image has blur, and character appearance, lighting and material polish remain open. This is a bounded 971-role plus 262-part consumer, with fresh private caches and an assisted shader/texture preparation barrier; it does not qualify natural startup, a cooked build or full-town frame rate. The narrated walkthrough and README GIF remain unfinished.
