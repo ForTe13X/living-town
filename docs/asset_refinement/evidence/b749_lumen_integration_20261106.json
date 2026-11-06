@@ -1,0 +1,90 @@
+{
+  "schema": "LivingTown.LumenPresentationEvidence.v1",
+  "status": "ROOT_ACCEPTED_CONFIG_ROUTE_AND_SCOPED_MOTION",
+  "date_UTC": "2026-11-06",
+  "engine": "Unreal5.8.4",
+  "adapter": "AMD Radeon(TM)8060S",
+  "RHI": "D3D12/SM6",
+  "resolution": [
+    1920,
+    1080
+  ],
+  "profile": "B749_U0131_66_Ground156_ExternalCafe81_v001",
+  "source_family": "0c72ac389f03fa0804f6a794c406a5ab1475def2cab90fccdbadf2bb8925611d",
+  "root_admission": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\root_character_pipeline_macro_review_v1_001\\B749_LUMEN_INTEGRATION001_ROOT_ADMISSION.json",
+    "bytes": 3780,
+    "sha256": "b9e050827ef97c4bbabd195da50aa6dfaec1880db5679879d7d82461e747b250"
+  },
+  "independent_review": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\root_b749_lumen_integration_reader_v1_001\\ACTUAL_LUMEN_INTEGRATION001_CLOSED_REVIEW_v002.json",
+    "bytes": 26267,
+    "sha256": "fbb8aef2e6e62a38645c5a81bae19bb01dd6885ee058841f97f2a71716edb34e"
+  },
+  "host": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\B749LumenIntegration_v001\\HOST_B749_LUMEN_INTEGRATION_REPORT.json",
+    "bytes": 3108,
+    "sha256": "371d035053fcadcd87fbffe400ff56e9e21c19b9f9192b8170dac1da78d6c203"
+  },
+  "completion": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\B749LumenIntegration_v001\\NATIVE_SUBSET_PERF_COMPLETE.json",
+    "bytes": 10809,
+    "sha256": "4e3e28b8ef59953c0bdd9a36acf58fa9508bf7ecac70315f1ec9386c8b5c5ccb"
+  },
+  "CSV_replay": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\B749LumenIntegration_v001\\POST_REAP_CSV_DECODE.json",
+    "bytes": 2150133,
+    "sha256": "db391191b6d6e0432be4406cc8da217be935c002b09675412d757e5706215cde"
+  },
+  "project_config_sha256": "80a12873334ccede0648072d2ebd06fdeca4b6b9c5f015d747d87a087fa084cd",
+  "motion": {
+    "retained_frames": 2508,
+    "native_duration_seconds": 29.997972,
+    "FrameTime_median_ms": 11.9001,
+    "FrameTime_p95_ms": 12.8937,
+    "FrameTime_max_ms": 45.5005,
+    "GPUTime_median_ms": 10.261,
+    "exact_GPU_phase_freshness_qualified": false
+  },
+  "actual_route": {
+    "waypoints": 27,
+    "planned_metres": 202.5748404711402,
+    "observed_sampled_3D_metres": 202.38323246726384,
+    "observations": 1039,
+    "ordinary_input_frames": 9752,
+    "room_support": "MCB::Building::M0231"
+  },
+  "photos": [
+    {
+      "path": "docs/media/b749-lumen-cafe-quarter-20261106.png",
+      "bytes": 3019758,
+      "sha256": "e146480782f0fc18c84958c07a086ca02d394db2a62f4bc0cb1e528a64432949"
+    },
+    {
+      "path": "docs/media/b749-lumen-room-20261106.png",
+      "bytes": 3131100,
+      "sha256": "42df6c7cdc378c8543ad2f9c3698417d97406a61ab362bc1f6c7781a607508e5"
+    }
+  ],
+  "generated_private_INI": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\B749LumenIntegration_v001\\private\\Config\\Engine.ini",
+    "write_time_binding": {
+      "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\B749LumenIntegration_v001\\private\\Config\\Engine.ini",
+      "bytes": 1792,
+      "sha256": "ed462ac04602ac6760d4cdadf571c13e64cfa7f8df20c423ea87173456eb8559"
+    },
+    "frozen_write_derivation_reproduced": true,
+    "postquit_exists": false,
+    "byte_preservation_qualified": false,
+    "deletion_caller": "UNOBSERVED",
+    "restored_or_recreated_in_native_project": false,
+    "scope": "Owned generated runtime config, outside immutable staged project/source inputs"
+  },
+  "limits": [
+    "One timed moving window on the B749 slice; whole-town and packaged frame/loading budgets unqualified.",
+    "Single 45.50ms hitch with neighboring GC observation still requires attribution.",
+    "Final character identity, furniture layout, bright exterior and wider-town art remain open.",
+    "Generated private Engine.ini was absent after normal quit; no preservation or exact deletion caller claimed.",
+    "Native roof inspection candidate not transferred to playable unit."
+  ]
+}

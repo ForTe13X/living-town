@@ -26,6 +26,8 @@
 
 ## 最近更新
 
+- Unreal 软件 Lumen 改善咖啡馆与住宅室内的照明、墙面和角色色彩。完整 27 点实走路线已通过；1080p 的 30 秒行走窗口帧耗时中位数 11.90 ms、95 分位 12.89 ms，单次 45.50 ms 卡顿继续分析。[实机画面、配置与测量范围](docs/asset_refinement/unreal_lumen_presentation.md)。
+
 - Mill Court 两栋住宅提供四层[带家具平面方案](docs/asset_refinement/mill_court_furnished_plan.md)和可独立运行的 [Blender 模型生成器](docs/asset_refinement/mill_court_generator.md)：包含真实门窗洞口、楼梯与楼板开洞、家具、有方向的木纹和更柔和的床垫／坐垫边缘，并附实际渲染预览。精细材质烘焙与 Unreal 场景接入继续推进。
 
 - 新增可选原生咖啡馆产权流程：真实柜台办理出售、购买与预付租赁，账款守恒与独立进程读档已通过。Aria 暂用功能原型角色，美术、键盘导览与性能继续验证。[范围与证据](docs/asset_refinement/unreal_native_cafe_property_v2.md)。
