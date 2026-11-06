@@ -22,6 +22,7 @@
 #include "GameFramework/Actor.h"
 #include "Editor.h"
 #include "UObject/Class.h"
+#include "Misc/PackageName.h"
 
 namespace LivingTownStaticMeshCollisionInspectionInternal
 {
@@ -378,6 +379,173 @@ FString ULivingTownStaticMeshCollisionInspection::ReadAuthorComponentCollisionRe
     return Snapshot.Finish(TEXT(""));
 }
 
+namespace LivingTownOwnedWorldCollisionResponsesInternal
+{
+using namespace LivingTownAuthorCollisionResponsesInternal;
+constexpr EObjectFlags PendingLoadFlags=RF_NeedLoad|RF_NeedPostLoad|RF_NeedPostLoadSubobjects;
+
+bool DeclaredPackage(const FString& Name)
+{
+    return Name.Len()<=4096 && Name.StartsWith(TEXT("/Game/"),ESearchCase::CaseSensitive) &&
+        FPackageName::IsValidLongPackageName(Name,false);
+}
+bool LoadedObject(const UObject* Object)
+{
+    return IsValid(Object) && !Object->IsTemplate() && !Object->HasAnyFlags(PendingLoadFlags);
+}
+bool ExactWorld(UWorld* World,const FString& Name)
+{
+    // UObjectBaseUtility.cpp: GetPackage follows external-package associations;
+    // GetOutermost is its legacy alias in this SDK. Reject external bindings
+    // explicitly instead of treating an outer-chain name as ownership proof.
+    // This declares no cooked-physics residency or pedestrian contact result.
+    // Persisted collision-policy repairs still need a fresh process/contact proof.
+    return LoadedObject(World) && !World->GetExternalPackage() &&
+        (World->WorldType==EWorldType::Editor || World->WorldType==EWorldType::Inactive) &&
+        IsValid(World->GetPackage()) && !World->GetPackage()->HasAnyPackageFlags(PKG_PlayInEditor) &&
+        World->GetPackage()->GetName()==Name;
+}
+bool InDeclaredWorld(const UObject* Object,UWorld* World,UPackage* Package)
+{
+    return LoadedObject(Object) && !Object->GetExternalPackage() &&
+        Object->GetPackage()==Package && Object->IsIn(World);
+}
+struct FOwnedComponentRead
+{
+    UStaticMeshComponent* Component=nullptr;
+    AActor* Actor=nullptr;
+    FString ComponentPath,ActorPath;
+    bool Registered=false,PhysicsState=false;
+};
+struct FOwnedRead
+{
+    TSharedRef<FJsonObject> Object=MakeShared<FJsonObject>();
+    TSharedRef<FJsonObject> Readback=MakeShared<FJsonObject>();
+    UWorld* World=nullptr;
+    UPackage* Package=nullptr;
+    FString WorldPath,PackageName;
+    EWorldType::Type WorldType=EWorldType::None;
+    bool Dirty=false;
+    TArray<FOwnedComponentRead> Inputs;
+    TArray<TSharedPtr<FJsonValue>> Rows;
+    FOwnedRead()
+    {
+        Object->SetStringField(TEXT("schema"),TEXT("LivingTown.OwnedWorldComponentCollisionResponses.v1"));
+        Object->SetBoolField(TEXT("operation_writes_or_repairs"),false);
+        Object->SetBoolField(TEXT("caller_source_binding_required"),true);
+        Object->SetBoolField(TEXT("expected_package_is_caller_declared_scope"),true);
+        Object->SetBoolField(TEXT("automatic_ownership_or_source_admission_verified"),false);
+        Object->SetBoolField(TEXT("saved_Cold_contact_Game_art_or_FPS_qualified"),false);
+        Object->SetObjectField(TEXT("readback"),Readback);
+        Readback->SetNumberField(TEXT("serialized_channel_count"),MaxNumCollisionChannels);
+        Readback->SetNumberField(TEXT("deprecated_channel_sentinel"),int32(ECC_OverlapAll_Deprecated));
+        Readback->SetNumberField(TEXT("ECC_MAX_enum_sentinel_not_container_length"),int32(ECC_MAX));
+        Readback->SetNumberField(TEXT("maximum_components"),MaximumComponents);
+        Readback->SetNumberField(TEXT("maximum_JSON_bytes"),MaximumJsonBytes);
+    }
+    FString Finish(FString Error)
+    {
+        TArray<TSharedPtr<FJsonValue>> Packages;
+        if (World)
+        {
+            if (!ExactWorld(World,PackageName) || World->GetPathName()!=WorldPath ||
+                World->GetPackage()!=Package || World->WorldType!=WorldType)
+                Error=TEXT("read_changed_expected_world_identity_or_scope");
+            auto Row=MakeShared<FJsonObject>();
+            Row->SetStringField(TEXT("package_path"),PackageName);
+            Row->SetBoolField(TEXT("dirty_before"),Dirty);
+            Row->SetBoolField(TEXT("dirty_after"),Package->IsDirty());
+            Packages.Add(MakeShared<FJsonValueObject>(Row));
+            if (Package->IsDirty()!=Dirty) Error=TEXT("read_changed_package_dirty_state");
+            for (const auto& I:Inputs)
+                if (!InDeclaredWorld(I.Component,World,Package) || !InDeclaredWorld(I.Actor,World,Package) ||
+                    I.Component->GetOwner()!=I.Actor || I.Component->GetWorld()!=World || I.Actor->GetWorld()!=World ||
+                    I.Component->GetPathName()!=I.ComponentPath || I.Actor->GetPathName()!=I.ActorPath ||
+                    I.Component->IsRegistered()!=I.Registered || I.Component->IsPhysicsStateCreated()!=I.PhysicsState)
+                    Error=TEXT("read_changed_component_owner_world_or_physics_state");
+        }
+        Readback->SetArrayField(TEXT("packages"),Packages);
+        Readback->SetArrayField(TEXT("components"),Rows);
+        Readback->SetNumberField(TEXT("returned_components"),Rows.Num());
+        Object->SetBoolField(TEXT("readback_complete"),Error.IsEmpty());
+        Object->SetStringField(TEXT("status"),Error.IsEmpty()?TEXT("READ_ONLY_OWNED_WORLD_COMPONENT_COLLISION_RESPONSES"):TEXT("ERROR"));
+        Object->SetStringField(TEXT("error"),Error);
+        FString Text;FJsonSerializer::Serialize(Object,TJsonWriterFactory<TCHAR,TCondensedJsonPrintPolicy<TCHAR>>::Create(&Text));
+        if (FTCHARToUTF8(*Text).Length()>MaximumJsonBytes)
+            return TEXT("{\"schema\":\"LivingTown.OwnedWorldComponentCollisionResponses.v1\",\"status\":\"ERROR\",\"error\":\"bounded_JSON_size_exceeded\",\"operation_writes_or_repairs\":false,\"caller_source_binding_required\":true,\"expected_package_is_caller_declared_scope\":true,\"automatic_ownership_or_source_admission_verified\":false,\"readback_complete\":false,\"readback\":{}}");
+        return Text;
+    }
+};
+}
+
+FString ULivingTownStaticMeshCollisionInspection::ReadOwnedWorldComponentCollisionResponses(
+    UWorld* ExpectedWorld,const FString& ExpectedWorldPackage,const TArray<UStaticMeshComponent*>& Components)
+{
+    using namespace LivingTownOwnedWorldCollisionResponsesInternal;
+    FOwnedRead Snapshot;
+    // The non-GT refusal touches neither ExpectedWorld nor any component.
+    if (!IsInGameThread()) return Snapshot.Finish(TEXT("game_thread_required"));
+    if (!ContextFlags(true,GIsEditor,IsRunningCommandlet(),GEditor!=nullptr,
+        GEditor && GEditor->PlayWorld!=nullptr,GEngine!=nullptr))
+        return Snapshot.Finish(TEXT("existing_non_commandlet_Editor_without_play_required"));
+    for (const FWorldContext& Context:GEngine->GetWorldContexts())
+        if (Context.WorldType==EWorldType::PIE || Context.WorldType==EWorldType::Game ||
+            Context.WorldType==EWorldType::GamePreview || Context.WorldType==EWorldType::GameRPC)
+            return Snapshot.Finish(TEXT("game_or_PIE_context_exists"));
+    if (!DeclaredPackage(ExpectedWorldPackage))
+        return Snapshot.Finish(TEXT("valid_declared_Game_long_package_required"));
+    if (!ExactWorld(ExpectedWorld,ExpectedWorldPackage))
+        return Snapshot.Finish(TEXT("exact_loaded_non_PIE_Editor_or_Inactive_expected_world_required"));
+    Snapshot.World=ExpectedWorld;Snapshot.Package=ExpectedWorld->GetPackage();
+    Snapshot.PackageName=ExpectedWorldPackage;Snapshot.WorldPath=ExpectedWorld->GetPathName();
+    Snapshot.WorldType=ExpectedWorld->WorldType;Snapshot.Dirty=Snapshot.Package->IsDirty();
+    Snapshot.Object->SetStringField(TEXT("expected_world_package"),ExpectedWorldPackage);
+    Snapshot.Object->SetStringField(TEXT("expected_world_path"),Snapshot.WorldPath);
+    if (Snapshot.WorldPath.Len()>4096) return Snapshot.Finish(TEXT("bounded_expected_world_path_required"));
+    if (!InputCount(Components.Num())) return Snapshot.Finish(TEXT("unique_component_count_must_be_1_to_64"));
+    TSet<const UStaticMeshComponent*> Seen;
+    for (int32 Index=0;Index<Components.Num();++Index)
+    {
+        UStaticMeshComponent* C=Components[Index];
+        if (!LoadedObject(C) || C->GetClass()!=UStaticMeshComponent::StaticClass())
+            return Snapshot.Finish(TEXT("already_loaded_exact_non_template_StaticMeshComponent_required"));
+        if (Seen.Contains(C)) return Snapshot.Finish(TEXT("duplicate_component_input"));
+        Seen.Add(C);AActor* Actor=C->GetOwner();
+        if (!InDeclaredWorld(C,ExpectedWorld,Snapshot.Package) || !InDeclaredWorld(Actor,ExpectedWorld,Snapshot.Package) ||
+            C->GetWorld()!=ExpectedWorld || Actor->GetWorld()!=ExpectedWorld)
+            return Snapshot.Finish(TEXT("exact_expected_world_owner_and_same_non_external_package_required"));
+        const FString CP=C->GetPathName(),AP=Actor->GetPathName();
+        const FString ClassPath=Actor->GetClass()->GetPathName(),Profile=C->GetCollisionProfileName().ToString();
+        if (CP.Len()>4096 || AP.Len()>4096 || ClassPath.Len()>4096 || Profile.Len()>4096)
+            return Snapshot.Finish(TEXT("bounded_component_owner_class_and_profile_paths_required"));
+        Snapshot.Inputs.Add({C,Actor,CP,AP,C->IsRegistered(),C->IsPhysicsStateCreated()});
+        TArray<TSharedPtr<FJsonValue>> Responses;FString Error;
+        // PrimitiveComponentPhysics.cpp1580-1587: const getters read
+        // BodyInstance/ResponseToChannels;
+        // no body-setup accessor, registration, physics creation or setter runs.
+        if (!ResponseRows(*C,Responses,Error)) return Snapshot.Finish(Error);
+        const int32 Enabled=int32(C->GetCollisionEnabled()),ObjectType=int32(C->GetCollisionObjectType());
+        if (Enabled<int32(ECollisionEnabled::NoCollision) || Enabled>int32(ECollisionEnabled::QueryAndProbe) ||
+            ObjectType<0 || ObjectType>=MaxNumCollisionChannels)
+            return Snapshot.Finish(TEXT("invalid_collision_enabled_or_object_type_domain"));
+        const FString ObjectName=StaticEnum<ECollisionChannel>()->GetNameStringByValue(ObjectType);
+        if (ObjectName.IsEmpty()) return Snapshot.Finish(TEXT("invalid_collision_object_type_name"));
+        auto Row=MakeShared<FJsonObject>();Row->SetNumberField(TEXT("input_index"),Index);
+        Row->SetStringField(TEXT("component_path"),CP);Row->SetStringField(TEXT("component_class"),C->GetClass()->GetPathName());
+        Row->SetStringField(TEXT("owner_path"),AP);Row->SetStringField(TEXT("owner_class"),ClassPath);
+        Row->SetStringField(TEXT("world_path"),Snapshot.WorldPath);Row->SetStringField(TEXT("world_package"),ExpectedWorldPackage);
+        Row->SetStringField(TEXT("world_type"),LexToString(ExpectedWorld->WorldType));
+        Row->SetStringField(TEXT("component_package"),C->GetPackage()->GetName());
+        Row->SetStringField(TEXT("owner_package"),Actor->GetPackage()->GetName());
+        Row->SetStringField(TEXT("collision_profile"),Profile);Row->SetNumberField(TEXT("collision_enabled"),Enabled);
+        Row->SetNumberField(TEXT("object_type"),ObjectType);Row->SetStringField(TEXT("object_type_cpp_name"),ObjectName);
+        Row->SetBoolField(TEXT("actor_enable_collision"),Actor->GetActorEnableCollision());
+        Row->SetBoolField(TEXT("registered"),C->IsRegistered());Row->SetBoolField(TEXT("physics_state_created"),C->IsPhysicsStateCreated());
+        Row->SetArrayField(TEXT("responses"),Responses);Snapshot.Rows.Add(MakeShared<FJsonValueObject>(Row));
+    }
+    return Snapshot.Finish(TEXT(""));
+}
+
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Misc/AutomationTest.h"
 #include "UObject/StrongObjectPtr.h"
@@ -467,6 +635,209 @@ bool FLivingTownAuthorCollisionResponsesThread::RunTest(const FString&)
         return ULivingTownStaticMeshCollisionInspection::ReadAuthorComponentCollisionResponses({});
     }).Get();
     TestTrue(TEXT("offGT exits before UObject/Editor reads"),Result.Contains(TEXT("\"error\":\"game_thread_required\"")));
+    return true;
+}
+
+#include "Engine/Scene.h"
+#include "HAL/IConsoleManager.h"
+#include "Misc/ConfigCacheIni.h"
+#include "Misc/Paths.h"
+
+namespace LivingTownOwnedWorldCollisionResponsesTests
+{
+TSharedPtr<FJsonObject> Decode(const FString& Text)
+{
+    TSharedPtr<FJsonObject> Object;
+    FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Object);
+    return Object;
+}
+bool ErrorIs(const FString& Text,const TCHAR* Error)
+{
+    const auto Object=Decode(Text);
+    return Object.IsValid() && Object->GetStringField(TEXT("status"))==TEXT("ERROR") &&
+        Object->GetStringField(TEXT("error"))==Error && !Object->GetBoolField(TEXT("readback_complete"));
+}
+struct FWorldFixture
+{
+    FString PackageName;
+    TStrongObjectPtr<UWorld> World;
+    AActor* Actor=nullptr;
+    TArray<UStaticMeshComponent*> Components;
+    explicit FWorldFixture(EWorldType::Type Type,UPackage* ExistingPackage=nullptr)
+    {
+        PackageName=ExistingPackage?ExistingPackage->GetName():
+            TEXT("/Game/LivingTown_InspectionAutomation/OwnedCollision_")+FGuid::NewGuid().ToString(EGuidFormats::Digits);
+        UPackage* Package=ExistingPackage?ExistingPackage:CreatePackage(*PackageName);
+        UWorld::InitializationValues Values;
+        Values.InitializeScenes(false).AllowAudioPlayback(false).RequiresHitProxies(false)
+            .CreatePhysicsScene(false).CreateNavigation(false).CreateAISystem(false)
+            .ShouldSimulatePhysics(false).CreateFXSystem(false).SetTransactional(false);
+        const FName WorldName=MakeUniqueObjectName(Package,UWorld::StaticClass(),TEXT("OwnedCollisionWorld"));
+        World.Reset(UWorld::CreateWorld(Type,false,WorldName,Package,false,ERHIFeatureLevel::Num,&Values));
+        if (World.Get())
+        {
+            World->SetFlags(RF_Transient);
+            FActorSpawnParameters Spawn;Spawn.ObjectFlags=RF_Transient;
+            Actor=World->SpawnActor<AActor>(AActor::StaticClass(),FTransform::Identity,Spawn);
+        }
+    }
+    UStaticMeshComponent* Add()
+    {
+        UStaticMeshComponent* C=NewObject<UStaticMeshComponent>(Actor,NAME_None,RF_Transient);
+        Components.Add(C);return C; // No mesh asset, registration or physics state.
+    }
+    ~FWorldFixture()
+    {
+        if (World.Get()) World->DestroyWorld(false);
+    }
+};
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FLivingTownOwnedWorldCollisionRead,
+    "LivingTown.OwnedWorldComponentCollisionResponses.BoundedReadOnly",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FLivingTownOwnedWorldCollisionRead::RunTest(const FString&)
+{
+    using namespace LivingTownOwnedWorldCollisionResponsesTests;
+    using namespace LivingTownOwnedWorldCollisionResponsesInternal;
+    if (!TestTrue(TEXT("existing non-play Editor context"),ContextFlags(IsInGameThread(),GIsEditor,
+        IsRunningCommandlet(),GEditor!=nullptr,GEditor && GEditor->PlayWorld!=nullptr,GEngine!=nullptr))) return false;
+    for (const EWorldType::Type Type:{EWorldType::Inactive,EWorldType::Editor})
+    {
+        FWorldFixture Fixture(Type);
+        if (!TestNotNull(TEXT("isolated synthetic world"),Fixture.World.Get()) ||
+            !TestNotNull(TEXT("world-owned actor"),Fixture.Actor)) return false;
+        for (int32 Index=0;Index<64;++Index) Fixture.Add();
+        UStaticMeshComponent* C=Fixture.Components[0];
+        C->SetCollisionResponseToChannel(ECC_GameTraceChannel50,ECR_Overlap);
+        const bool Dirty=Fixture.World->GetPackage()->IsDirty();
+        const FString Text=ULivingTownStaticMeshCollisionInspection::ReadOwnedWorldComponentCollisionResponses(
+            Fixture.World.Get(),Fixture.PackageName,Fixture.Components);
+        const auto Result=Decode(Text);
+        if (!TestTrue(TEXT("actual public API success JSON"),Result.IsValid())) return false;
+        TestEqual(TEXT("owned-world schema"),Result->GetStringField(TEXT("schema")),FString(TEXT("LivingTown.OwnedWorldComponentCollisionResponses.v1")));
+        TestEqual(TEXT("complete read-only status"),Result->GetStringField(TEXT("status")),FString(TEXT("READ_ONLY_OWNED_WORLD_COMPONENT_COLLISION_RESPONSES")));
+        if (!TestTrue(TEXT("all64 components completed"),Result->GetBoolField(TEXT("readback_complete")))) return false;
+        TestTrue(TEXT("scope is caller declared"),Result->GetBoolField(TEXT("expected_package_is_caller_declared_scope")));
+        TestFalse(TEXT("no automatic ownership admission"),Result->GetBoolField(TEXT("automatic_ownership_or_source_admission_verified")));
+        TestFalse(TEXT("no write authority"),Result->GetBoolField(TEXT("operation_writes_or_repairs")));
+        const auto Readback=Result->GetObjectField(TEXT("readback"));
+        const auto& Rows=Readback->GetArrayField(TEXT("components"));
+        TestEqual(TEXT("64 component boundary"),Rows.Num(),64);
+        TestEqual(TEXT("64 serialized channels"),Readback->GetIntegerField(TEXT("serialized_channel_count")),64);
+        TestEqual(TEXT("ECC_MAX65 is not array length"),Readback->GetIntegerField(TEXT("ECC_MAX_enum_sentinel_not_container_length")),65);
+        for (int32 Index=0;Index<Rows.Num();++Index)
+        {
+            const auto Row=Rows[Index]->AsObject();const auto& Responses=Row->GetArrayField(TEXT("responses"));
+            TestEqual(TEXT("same declared world package"),Row->GetStringField(TEXT("world_package")),Fixture.PackageName);
+            TestEqual(TEXT("same owner package"),Row->GetStringField(TEXT("owner_package")),Fixture.PackageName);
+            TestEqual(TEXT("same component package"),Row->GetStringField(TEXT("component_package")),Fixture.PackageName);
+            TestEqual(TEXT("all64 ordered native responses"),Responses.Num(),64);
+            for (int32 Channel=0;Channel<Responses.Num();++Channel)
+            {
+                const auto Value=Responses[Channel]->AsObject();
+                TestEqual(TEXT("channel order"),Value->GetIntegerField(TEXT("channel")),Channel);
+                TestEqual(TEXT("source CPP enum name"),Value->GetStringField(TEXT("channel_cpp_name")),StaticEnum<ECollisionChannel>()->GetNameStringByValue(Channel));
+                TestEqual(TEXT("actual native response"),Value->GetIntegerField(TEXT("response")),int32(Fixture.Components[Index]->GetCollisionResponseToChannel(static_cast<ECollisionChannel>(Channel))));
+            }
+            TestFalse(TEXT("no implicit registration"),Fixture.Components[Index]->IsRegistered());
+            TestFalse(TEXT("no physics state created"),Fixture.Components[Index]->IsPhysicsStateCreated());
+        }
+        TestEqual(TEXT("hidden final serialized channel preserved"),Rows[0]->AsObject()->GetArrayField(TEXT("responses"))[63]->AsObject()->GetIntegerField(TEXT("response")),int32(ECR_Overlap));
+        TestEqual(TEXT("same dirty state"),Fixture.World->GetPackage()->IsDirty(),Dirty);
+        TestEqual(TEXT("same repeated snapshot"),ULivingTownStaticMeshCollisionInspection::ReadOwnedWorldComponentCollisionResponses(Fixture.World.Get(),Fixture.PackageName,Fixture.Components),Text);
+        TestTrue(TEXT("one component boundary"),Decode(ULivingTownStaticMeshCollisionInspection::ReadOwnedWorldComponentCollisionResponses(Fixture.World.Get(),Fixture.PackageName,{C}))->GetBoolField(TEXT("readback_complete")));
+        Fixture.World->GetPackage()->SetDirtyFlag(true);
+        const auto DirtyRead=Decode(ULivingTownStaticMeshCollisionInspection::ReadOwnedWorldComponentCollisionResponses(Fixture.World.Get(),Fixture.PackageName,{C}));
+        TestTrue(TEXT("already dirty package remains dirty"),DirtyRead.IsValid() && DirtyRead->GetBoolField(TEXT("readback_complete")) && Fixture.World->GetPackage()->IsDirty());
+        Fixture.World->GetPackage()->SetDirtyFlag(Dirty);
+        TestTrue(TEXT("old API still rejects the unlisted synthetic map"),ULivingTownStaticMeshCollisionInspection::ReadAuthorComponentCollisionResponses({C}).Contains(TEXT("valid_owner_and_exact_allowed_Editor_or_Inactive_world_required")));
+    }
+    FOwnedRead Oversized;
+    Oversized.Object->SetStringField(TEXT("test_only_oversized_field"),FString::ChrN(MaximumJsonBytes,TEXT('x')));
+    TestTrue(TEXT("2MiB UTF8 overflow emits bounded refusal"),ErrorIs(Oversized.Finish(TEXT("")),TEXT("bounded_JSON_size_exceeded")));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FLivingTownOwnedWorldCollisionRefusals,
+    "LivingTown.OwnedWorldComponentCollisionResponses.ScopeRefusals",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FLivingTownOwnedWorldCollisionRefusals::RunTest(const FString&)
+{
+    using namespace LivingTownOwnedWorldCollisionResponsesTests;
+    FWorldFixture Fixture(EWorldType::Inactive),Foreign(EWorldType::Inactive);
+    if (!TestNotNull(TEXT("expected fixture"),Fixture.Actor) || !TestNotNull(TEXT("foreign fixture"),Foreign.Actor)) return false;
+    UStaticMeshComponent* C=Fixture.Add();UStaticMeshComponent* Other=Foreign.Add();
+    FWorldFixture SamePackage(EWorldType::Inactive,Fixture.World->GetPackage());
+    if (!TestNotNull(TEXT("distinct world in same package"),SamePackage.Actor)) return false;
+    UStaticMeshComponent* SamePackageOther=SamePackage.Add();
+    const auto Read=[&](UWorld* World,const FString& Package,const TArray<UStaticMeshComponent*>& Inputs)
+    {return ULivingTownStaticMeshCollisionInspection::ReadOwnedWorldComponentCollisionResponses(World,Package,Inputs);};
+    for (const FString& Package:TArray<FString>{TEXT(""),TEXT("/Engine/Maps/Entry"),TEXT("/Game/Bad.Name"),TEXT("/Game/"),TEXT("relative"),TEXT("/Game/")+FString::ChrN(4096,TEXT('a'))})
+        TestTrue(TEXT("invalid declared scope refuses"),ErrorIs(Read(Fixture.World.Get(),Package,{C}),TEXT("valid_declared_Game_long_package_required")));
+    TestTrue(TEXT("null expected world"),ErrorIs(Read(nullptr,Fixture.PackageName,{C}),TEXT("exact_loaded_non_PIE_Editor_or_Inactive_expected_world_required")));
+    TestTrue(TEXT("package string must match pointer"),ErrorIs(Read(Fixture.World.Get(),Foreign.PackageName,{C}),TEXT("exact_loaded_non_PIE_Editor_or_Inactive_expected_world_required")));
+    TestTrue(TEXT("component cannot select a different world"),ErrorIs(Read(Fixture.World.Get(),Fixture.PackageName,{Other}),TEXT("exact_expected_world_owner_and_same_non_external_package_required")));
+    TestTrue(TEXT("matching package cannot replace exact world pointer"),ErrorIs(Read(Fixture.World.Get(),Fixture.PackageName,{SamePackageOther}),TEXT("exact_expected_world_owner_and_same_non_external_package_required")));
+    TestTrue(TEXT("zero components"),ErrorIs(Read(Fixture.World.Get(),Fixture.PackageName,{}),TEXT("unique_component_count_must_be_1_to_64")));
+    TArray<UStaticMeshComponent*> TooMany;TooMany.Init(C,65);
+    TestTrue(TEXT("65 components before duplicate traversal"),ErrorIs(Read(Fixture.World.Get(),Fixture.PackageName,TooMany),TEXT("unique_component_count_must_be_1_to_64")));
+    TestTrue(TEXT("duplicate component"),ErrorIs(Read(Fixture.World.Get(),Fixture.PackageName,{C,C}),TEXT("duplicate_component_input")));
+    TestTrue(TEXT("null component"),ErrorIs(Read(Fixture.World.Get(),Fixture.PackageName,{nullptr}),TEXT("already_loaded_exact_non_template_StaticMeshComponent_required")));
+    TestTrue(TEXT("component CDO"),ErrorIs(Read(Fixture.World.Get(),Fixture.PackageName,{GetMutableDefault<UStaticMeshComponent>()}),TEXT("already_loaded_exact_non_template_StaticMeshComponent_required")));
+    TStrongObjectPtr<UStaticMeshComponent> Ownerless(NewObject<UStaticMeshComponent>(Fixture.World->GetPackage()));
+    TestTrue(TEXT("ownerless component"),ErrorIs(Read(Fixture.World.Get(),Fixture.PackageName,{Ownerless.Get()}),TEXT("exact_expected_world_owner_and_same_non_external_package_required")));
+    C->SetFlags(RF_NeedPostLoad);
+    TestTrue(TEXT("pending component cannot trigger load"),ErrorIs(Read(Fixture.World.Get(),Fixture.PackageName,{C}),TEXT("already_loaded_exact_non_template_StaticMeshComponent_required")));
+    C->ClearFlags(RF_NeedPostLoad);
+    Fixture.World->WorldType=EWorldType::PIE;
+    TestTrue(TEXT("PIE world"),ErrorIs(Read(Fixture.World.Get(),Fixture.PackageName,{C}),TEXT("exact_loaded_non_PIE_Editor_or_Inactive_expected_world_required")));
+    Fixture.World->WorldType=EWorldType::Game;
+    TestTrue(TEXT("Game world"),ErrorIs(Read(Fixture.World.Get(),Fixture.PackageName,{C}),TEXT("exact_loaded_non_PIE_Editor_or_Inactive_expected_world_required")));
+    Fixture.World->WorldType=EWorldType::Inactive;UPackage* Package=Fixture.World->GetPackage();
+    Package->SetPackageFlags(PKG_PlayInEditor);
+    TestTrue(TEXT("PIE package even in Inactive world"),ErrorIs(Read(Fixture.World.Get(),Fixture.PackageName,{C}),TEXT("exact_loaded_non_PIE_Editor_or_Inactive_expected_world_required")));
+    Package->ClearPackageFlags(PKG_PlayInEditor);
+    UPackage* External=CreatePackage(*(Fixture.PackageName+TEXT("_External")));
+    C->SetExternalPackage(External);
+    TestTrue(TEXT("external component package"),ErrorIs(Read(Fixture.World.Get(),Fixture.PackageName,{C}),TEXT("exact_expected_world_owner_and_same_non_external_package_required")));
+    C->SetExternalPackage(nullptr);Fixture.Actor->SetExternalPackage(External);
+    TestTrue(TEXT("external owner package"),ErrorIs(Read(Fixture.World.Get(),Fixture.PackageName,{C}),TEXT("exact_expected_world_owner_and_same_non_external_package_required")));
+    Fixture.Actor->SetExternalPackage(nullptr);
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FLivingTownOwnedWorldCollisionThread,
+    "LivingTown.OwnedWorldComponentCollisionResponses.NonGTRefusal",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FLivingTownOwnedWorldCollisionThread::RunTest(const FString&)
+{
+    using namespace LivingTownOwnedWorldCollisionResponsesTests;
+    const FString Text=Async(EAsyncExecution::Thread,[]()
+    {return ULivingTownStaticMeshCollisionInspection::ReadOwnedWorldComponentCollisionResponses(nullptr,TEXT("/Game/NoObjectAccess"),{});}).Get();
+    TestTrue(TEXT("nonGT refuses before UObject or Editor dereference"),ErrorIs(Text,TEXT("game_thread_required")));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FLivingTownProjectExtendedExposureDefaults,
+    "LivingTown.RendererConfiguration.ExtendedExposureDefaults",
+    EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FLivingTownProjectExtendedExposureDefaults::RunTest(const FString&)
+{
+    // Game008 proved this startup setting in a fresh private normal-Game run.
+    // These getters do not turn a running renderer's exposure on or off.
+    FConfigFile ProjectConfig;ProjectConfig.Read(FPaths::ProjectConfigDir()/TEXT("DefaultEngine.ini"));
+    bool Enabled=false;
+    TestTrue(TEXT("explicit project renderer setting exists"),ProjectConfig.GetBool(TEXT("/Script/Engine.RendererSettings"),TEXT("r.DefaultFeature.AutoExposure.ExtendDefaultLuminanceRange"),Enabled));
+    TestTrue(TEXT("project startup EV100 range enabled"),Enabled);
+    const IConsoleVariable* CVar=IConsoleManager::Get().FindConsoleVariable(TEXT("r.DefaultFeature.AutoExposure.ExtendDefaultLuminanceRange"));
+    if (!TestNotNull(TEXT("actual startup exposure CVar"),CVar)) return false;
+    TestEqual(TEXT("fresh process consumed project setting"),CVar->GetInt(),1);
+    const FPostProcessSettings Defaults;
+    TestEqual(TEXT("constructor minEV100"),Defaults.AutoExposureMinBrightness,-10.f);
+    TestEqual(TEXT("constructor maxEV100"),Defaults.AutoExposureMaxBrightness,20.f);
+    TestEqual(TEXT("constructor histogram minEV100"),Defaults.HistogramLogMin,-10.f);
+    TestEqual(TEXT("constructor histogram maxEV100"),Defaults.HistogramLogMax,20.f);
     return true;
 }
 #endif
