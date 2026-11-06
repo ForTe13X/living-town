@@ -10,6 +10,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/PrimitiveComponent.h"
+#include "Components/SceneComponent.h"
 #include "Engine/AssetManager.h"
 #include "Engine/Level.h"
 #include "Engine/StaticMesh.h"
@@ -25,6 +27,7 @@
 #include "Misc/FileHelper.h"
 #include "Misc/PackageName.h"
 #include "Serialization/JsonSerializer.h"
+#include "Policies/CondensedJsonPrintPolicy.h"
 #include "Dom/JsonObject.h"
 #include "CoreGlobals.h"
 #include "UObject/Package.h"
@@ -32,6 +35,23 @@
 namespace
 {
 bool Refuse(FString& Error,const FString& Why) { Error=Why; return false; }
+const TCHAR* const B749Profile=TEXT("B749_U0131_66_Ground156_ExternalCafe81_v001");
+const TCHAR* const B749RootPackage=TEXT("/Game/LivingTown_UEPilot/FullTownIntegrationB749_v001/L_B749_Subset_v001");
+const TCHAR* const B749Manifest=TEXT("/Game/LivingTown_UEPilot/FullTownIntegrationB749_v001/DA_B749_Subset_v001.DA_B749_Subset_v001");
+// Actual saved descriptor bytes and SHA, independently reopened without unit-world loads.
+// The serialized driver's claim alone is not a new-profile source admission.
+const int64 B749ManifestSourceBytes=1315578;
+const TCHAR* const B749ManifestSourceSha=TEXT("910a95cf5d083a30d0401ced33083c66ce1f7d1092c5b22ee47e4594cc598926");
+bool IsB749(const ULivingTownFullTownData* D) { return D && D->ProfileId==B749Profile; }
+bool StaticOverridesMatch(const UStaticMeshComponent* C,const FLivingTownFullTownRole& R,bool AllowB749)
+{
+    if (!C) return false;
+    const int32 Expected=AllowB749 && R.Slots.Num()==1 && !R.Slots[0].Override.IsNull()?1:0;
+    if (C->GetNumOverrideMaterials()!=Expected) return false;
+    // Compare the stored array, even when the pointer equals the mesh default.
+    // A padded null or extra slot is not the qualified empty-array shape.
+    return Expected==0 || (C->OverrideMaterials[0] && FSoftObjectPath(C->OverrideMaterials[0].Get())==R.Slots[0].Override);
+}
 // These small production selectors are also exercised by the Automation regression.
 enum class EFullTownDeadlineViolation : uint8 { None, Unit, Unload };
 EFullTownDeadlineViolation FullTownDeadlineViolation(const ULivingTownFullTownTicket& T,double Now,double Limit)
@@ -65,6 +85,115 @@ bool BaseActor(const AActor* A)
     return P==TEXT("/Script/Engine.WorldSettings") || P==TEXT("/Script/Engine.Brush") ||
         P==TEXT("/Script/Engine.LevelScriptActor") || P==TEXT("/Script/Engine.DefaultPhysicsVolume");
 }
+}
+
+namespace
+{
+
+// Hidden levels have not reached component registration. Under this exact saved
+// two-level identity hierarchy, serialized relative TRS is the declared world TRS.
+// No registration, update, physics creation or component setter is permitted here.
+bool B749HiddenSerializedTransform(const UStaticMeshComponent* C,const FTransform& LevelTransform,
+    bool Registered,const FTransform& Expected,FTransform& Actual,FString& Predicate)
+{
+    auto Reject=[&](const TCHAR* Why) { Predicate=Why; return false; };
+    if (Registered) return Reject(TEXT("hidden_helper_registered_phase"));
+    if (!C || C->GetClass()!=UStaticMeshComponent::StaticClass()) return Reject(TEXT("hidden_exact_static_component"));
+    Actual=C->GetRelativeTransform();
+    const AActor* Actor=C->GetOwner(); const USceneComponent* Root=Actor?Actor->GetRootComponent():nullptr;
+    if (!Actor || Actor->GetClass()!=AActor::StaticClass() || Actor->GetAttachParentActor())
+        return Reject(TEXT("hidden_plain_unattached_owner"));
+    if (!Root || Root==C || Root->GetClass()!=USceneComponent::StaticClass() || Root->GetOwner()!=Actor || Root->GetAttachParent())
+        return Reject(TEXT("hidden_plain_identity_root_hierarchy"));
+    if (C->GetAttachParent()!=Root || !Root->GetAttachSocketName().IsNone() || !C->GetAttachSocketName().IsNone())
+        return Reject(TEXT("hidden_direct_root_no_socket"));
+    if (Root->IsUsingAbsoluteLocation() || Root->IsUsingAbsoluteRotation() || Root->IsUsingAbsoluteScale() ||
+        C->IsUsingAbsoluteLocation() || C->IsUsingAbsoluteRotation() || C->IsUsingAbsoluteScale())
+        return Reject(TEXT("hidden_no_absolute_transform"));
+    if (!LivingTownFullTown::SameQualifiedTransform(Root->GetRelativeTransform(),FTransform::Identity) ||
+        !LivingTownFullTown::SameQualifiedTransform(LevelTransform,FTransform::Identity))
+        return Reject(TEXT("hidden_serialized_root_and_level_identity"));
+    if (!LivingTownFullTown::SameQualifiedTransform(Actual,Expected))
+        return Reject(TEXT("hidden_serialized_relative_transform"));
+    Predicate.Empty(); return true;
+}
+TSharedRef<FJsonObject> ComponentDiagnosticTransform(const FTransform& Transform)
+{
+    auto Object=MakeShared<FJsonObject>();
+    auto Values=[&](const TCHAR* Name,const TArray<double>& Numbers)
+    {
+        TArray<TSharedPtr<FJsonValue>> JsonValues,Bits;
+        for (double Number:Numbers)
+        {
+            uint64 Raw=0; FMemory::Memcpy(&Raw,&Number,sizeof(Raw));
+            Bits.Add(MakeShared<FJsonValueString>(FString::Printf(TEXT("%016llx"),static_cast<unsigned long long>(Raw))));
+            if (FMath::IsFinite(Number)) JsonValues.Add(MakeShared<FJsonValueNumber>(Number));
+            else JsonValues.Add(MakeShared<FJsonValueString>(FMath::IsNaN(Number)?TEXT("NaN"):(Number>0?TEXT("+Inf"):TEXT("-Inf"))));
+        }
+        Object->SetArrayField(Name,JsonValues); Object->SetArrayField(FString(Name)+TEXT("_IEEE754_F64_bits"),Bits);
+    };
+    const FVector P=Transform.GetTranslation(),S=Transform.GetScale3D(); const FQuat Q=Transform.GetRotation();
+    Values(TEXT("translation_cm"),{P.X,P.Y,P.Z}); Values(TEXT("rotation_xyzw"),{Q.X,Q.Y,Q.Z,Q.W}); Values(TEXT("scale"),{S.X,S.Y,S.Z});
+    return Object;
+}
+void LogFirstComponentRefusal(const ULivingTownFullTownTicket& Ticket,int32 ComponentIndex,
+    const FLivingTownFullTownUnit& Unit,const FLivingTownFullTownRole& Role,const UStaticMeshComponent* C,
+    const UStaticMesh* Mesh,bool Registered,const FString& Predicate,int32 SlotIndex=INDEX_NONE)
+{
+    auto D=MakeShared<FJsonObject>(); const AActor* Actor=C?C->GetOwner():nullptr;
+    const USceneComponent* Root=Actor?Actor->GetRootComponent():nullptr;
+    auto Path=[](const UObject* Object) { return Object?Object->GetPathName():FString(); };
+    D->SetStringField(TEXT("schema"),TEXT("LivingTown.FullTownFirstComponentRefusal.v1"));
+    D->SetStringField(TEXT("first_predicate"),Predicate); D->SetStringField(TEXT("unit_id"),Unit.UnitId);
+    D->SetNumberField(TEXT("dispatch_index"),Unit.DispatchIndex); D->SetNumberField(TEXT("unit_index"),Ticket.UnitIndex);
+    D->SetNumberField(TEXT("component_index"),ComponentIndex); D->SetStringField(TEXT("role_id"),Role.RoleId);
+    D->SetStringField(TEXT("component"),Path(C)); D->SetStringField(TEXT("component_class"),C?Path(C->GetClass()):FString());
+    D->SetStringField(TEXT("owner_attach_parent_actor"),Actor?Path(Actor->GetAttachParentActor()):FString());
+    D->SetStringField(TEXT("owner"),Path(Actor)); D->SetStringField(TEXT("owner_class"),Actor?Path(Actor->GetClass()):FString());
+    D->SetStringField(TEXT("world"),C?Path(C->GetWorld()):FString()); D->SetStringField(TEXT("root"),Path(Root));
+    D->SetBoolField(TEXT("registered_phase"),Registered); D->SetBoolField(TEXT("registered"),C && C->IsRegistered());
+    D->SetBoolField(TEXT("pre_registered"),C && C->IsPreRegistered()); D->SetStringField(TEXT("mesh_actual"),Path(Mesh));
+    D->SetStringField(TEXT("mesh_expected"),Role.Mesh.ToString()); D->SetObjectField(TEXT("expected_transform"),ComponentDiagnosticTransform(Role.WorldTransform));
+    if (Ticket.Streaming) D->SetObjectField(TEXT("level_transform"),ComponentDiagnosticTransform(Ticket.Streaming->LevelTransform));
+    if (C)
+    {
+        D->SetObjectField(TEXT("cached_world_transform"),ComponentDiagnosticTransform(C->GetComponentTransform()));
+        D->SetObjectField(TEXT("serialized_relative_transform"),ComponentDiagnosticTransform(C->GetRelativeTransform()));
+        D->SetStringField(TEXT("parent"),Path(C->GetAttachParent())); D->SetStringField(TEXT("socket"),C->GetAttachSocketName().ToString());
+        D->SetBoolField(TEXT("absolute_location"),C->IsUsingAbsoluteLocation()); D->SetBoolField(TEXT("absolute_rotation"),C->IsUsingAbsoluteRotation()); D->SetBoolField(TEXT("absolute_scale"),C->IsUsingAbsoluteScale());
+        D->SetStringField(TEXT("profile_actual"),C->GetCollisionProfileName().ToString()); D->SetNumberField(TEXT("enabled_actual"),int32(C->GetCollisionEnabled()));
+        D->SetBoolField(TEXT("tick_actual"),C->IsComponentTickEnabled()); D->SetNumberField(TEXT("materials_actual"),C->GetNumMaterials()); D->SetNumberField(TEXT("overrides_actual"),C->GetNumOverrideMaterials());
+    }
+    if (Root)
+    {
+        D->SetObjectField(TEXT("root_serialized_relative_transform"),ComponentDiagnosticTransform(Root->GetRelativeTransform()));
+        D->SetObjectField(TEXT("root_cached_world_transform"),ComponentDiagnosticTransform(Root->GetComponentTransform()));
+        D->SetStringField(TEXT("root_class"),Path(Root->GetClass())); D->SetStringField(TEXT("root_parent"),Path(Root->GetAttachParent())); D->SetStringField(TEXT("root_socket"),Root->GetAttachSocketName().ToString());
+        D->SetBoolField(TEXT("root_absolute_location"),Root->IsUsingAbsoluteLocation()); D->SetBoolField(TEXT("root_absolute_rotation"),Root->IsUsingAbsoluteRotation()); D->SetBoolField(TEXT("root_absolute_scale"),Root->IsUsingAbsoluteScale());
+    }
+    D->SetStringField(TEXT("profile_expected"),Role.CollisionProfile.ToString()); D->SetNumberField(TEXT("enabled_expected"),int32(Role.CollisionEnabled));
+    D->SetNumberField(TEXT("materials_expected"),Role.Slots.Num()); D->SetNumberField(TEXT("mesh_slots_actual"),Mesh?Mesh->GetStaticMaterials().Num():0);
+    D->SetNumberField(TEXT("slot_index"),SlotIndex); D->SetBoolField(TEXT("observation_only_no_component_mutation"),true);
+    if (C && Mesh && Role.Slots.IsValidIndex(SlotIndex) && Mesh->GetStaticMaterials().IsValidIndex(SlotIndex))
+    {
+        const auto& Expected=Role.Slots[SlotIndex]; const auto& Default=Mesh->GetStaticMaterials()[SlotIndex]; const auto* Effective=C->GetMaterial(SlotIndex);
+        D->SetStringField(TEXT("slot_name_actual"),Default.MaterialSlotName.ToString()); D->SetStringField(TEXT("slot_name_expected"),Expected.SlotName.ToString());
+        D->SetStringField(TEXT("default_actual"),Path(Default.MaterialInterface.Get())); D->SetStringField(TEXT("default_expected"),Expected.OriginalDefault.ToString());
+        D->SetStringField(TEXT("override_expected"),Expected.Override.ToString()); D->SetStringField(TEXT("effective_actual"),Path(Effective));
+        D->SetNumberField(TEXT("blend_expected"),Expected.BlendMode); D->SetNumberField(TEXT("blend_actual"),Effective?int32(Effective->GetBlendMode()):-1);
+    }
+    FString Json; auto Writer=TJsonWriterFactory<TCHAR,TCondensedJsonPrintPolicy<TCHAR>>::Create(&Json); FJsonSerializer::Serialize(D,Writer);
+    const FTCHARToUTF8 Encoded(*Json);
+    if (Encoded.Length()>32*1024)
+    {
+        // Never truncate JSON or claim that oversized field values were retained.
+        auto Overflow=MakeShared<FJsonObject>(); Overflow->SetStringField(TEXT("schema"),TEXT("LivingTown.FullTownFirstComponentRefusal.v1"));
+        Overflow->SetStringField(TEXT("first_predicate"),Predicate); Overflow->SetBoolField(TEXT("diagnostic_fields_overflow_32KiB"),true);
+        Overflow->SetNumberField(TEXT("unpublished_UTF8_bytes"),Encoded.Length()); Json.Empty(); auto Small=TJsonWriterFactory<TCHAR,TCondensedJsonPrintPolicy<TCHAR>>::Create(&Json); FJsonSerializer::Serialize(Overflow,Small);
+    }
+    UE_LOG(LogTemp,Warning,TEXT("LT_FULLTOWN_COMPONENT_REFUSAL %s"),*Json);
+}
+
 }
 
 bool ULivingTownFullTownTicket::Accepts(uint64 CurrentEpoch,uint64 CurrentToken) const
@@ -116,6 +245,17 @@ void ULivingTownFullTownStreamingSubsystem::OnWorldBeginPlay(UWorld& W)
     Driver=Enabled[0]; auto* D=Driver.Get();
     for (TActorIterator<ALivingTownTileDriver> It(&W); It; ++It) if (It->bEnableQualifiedPilot)
     { Fail(TEXT("fulltown_old_pilot_driver_would_duplicate_geometry")); return; }
+    const bool NamedBRoot=UWorld::RemovePIEPrefix(W.GetOutermost()->GetName())==B749RootPackage;
+    const bool NamedBManifest=D->Manifest.ToSoftObjectPath().ToString()==B749Manifest;
+    if (NamedBRoot || NamedBManifest)
+    {
+        if (!(NamedBRoot && NamedBManifest))
+        { Fail(TEXT("fulltown_b749_exact_root_and_descriptor_before_load")); return; }
+        if (B749ManifestSourceBytes<=0 || !LivingTownTiles::IsSha256(B749ManifestSourceSha))
+        { Fail(TEXT("fulltown_b749_DRAFT_REFUSE_pending_actual_descriptor_package_pin")); return; }
+        if (D->ManifestSourceBytes!=B749ManifestSourceBytes || D->ManifestSourceSha256!=B749ManifestSourceSha)
+        { Fail(TEXT("fulltown_b749_exact_descriptor_source_pin")); return; }
+    }
     if (D->Manifest.IsNull() || D->ManifestSourceBytes<=0 || D->ManifestSourceBytes>8*1024*1024 ||
         !LivingTownTiles::IsSha256(D->ManifestSourceSha256) || !FMath::IsFinite(D->LoadRadiusCm) || !FMath::IsFinite(D->UnloadRadiusCm) ||
         D->LoadRadiusCm<0 || D->UnloadRadiusCm<D->LoadRadiusCm || D->UnloadRadiusCm>20000 ||
@@ -198,6 +338,10 @@ bool ULivingTownFullTownStreamingSubsystem::AcceptManifest(FString& Error)
     if (!Data || !LivingTownFullTown::ValidateManifest(*Data,Error)) return false;
     const FString Package=UWorld::RemovePIEPrefix(GetWorld()->GetOutermost()->GetName());
     if (Package!=Data->RootWorld.GetLongPackageName()) return Refuse(Error,TEXT("fulltown_manifest_wrong_root_map"));
+    const bool NamedBRoot=Package==B749RootPackage;
+    const bool NamedBManifest=D && D->Manifest.ToSoftObjectPath().ToString()==B749Manifest;
+    if ((IsB749(Data) || NamedBRoot || NamedBManifest) && !(IsB749(Data) && NamedBRoot && NamedBManifest))
+        return Refuse(Error,TEXT("fulltown_b749_exact_root_descriptor_profile"));
     // Only the small descriptor is held here. Its map soft references were not bulk preloaded.
     return true;
 }
@@ -326,6 +470,8 @@ bool ULivingTownFullTownStreamingSubsystem::GatherHidden(ULivingTownFullTownTick
     if (!Level || Level->Actors.Num()>64)
         return Refuse(Error,TEXT("fulltown_loaded_hidden_level_shape"));
     const auto& U=Data->Units[T.UnitIndex]; TSet<int32> Seen; int32 Owners=0, Bases=0;
+    const bool BProfile=IsB749(Data), BUnit=BProfile && U.DispatchIndex==193;
+    TSet<int32> BPartitions;
     for (AActor* A:Level->Actors)
     {
         if (!A) continue;
@@ -336,6 +482,17 @@ bool ULivingTownFullTownStreamingSubsystem::GatherHidden(ULivingTownFullTownTick
             return Refuse(Error,TEXT("fulltown_owner_identity_or_behavior"));
         TArray<UStaticMeshComponent*> Components; A->GetComponents<UStaticMeshComponent>(Components);
         if (Components.Num()>256) return Refuse(Error,TEXT("fulltown_owner_component_bound"));
+        if (BProfile)
+        {
+            TArray<UPrimitiveComponent*> Primitives; A->GetComponents<UPrimitiveComponent>(Primitives);
+            if (Primitives.Num()!=Components.Num())
+                return Refuse(Error,TEXT("fulltown_b749_unbound_owner_primitive"));
+        }
+        if (BUnit && (A->Tags.Num()!=2 || !A->GetRootComponent() ||
+            A->GetRootComponent()->GetClass()!=USceneComponent::StaticClass() ||
+            !LivingTownFullTown::SameQualifiedTransform(A->GetRootComponent()->GetComponentTransform(),FTransform::Identity)))
+            return Refuse(Error,TEXT("fulltown_b749_identity_plain_scene_root"));
+        int32 BPartition=INDEX_NONE;
         for (auto* C:Components)
         {
             if (C->ComponentTags.Num()!=1) return Refuse(Error,TEXT("fulltown_role_tag_roster"));
@@ -344,9 +501,25 @@ bool ULivingTownFullTownStreamingSubsystem::GatherHidden(ULivingTownFullTownTick
             const FString Id=Tag.Mid(12);
             const int32 R=U.Roles.IndexOfByPredicate([&](const auto& Q){return Q.RoleId==Id;});
             if (R==INDEX_NONE || Seen.Contains(R)) return Refuse(Error,TEXT("fulltown_foreign_or_duplicate_role"));
+            if (BUnit)
+            {
+                const int32 Partition=R/256;
+                if (BPartition!=INDEX_NONE && BPartition!=Partition)
+                    return Refuse(Error,TEXT("fulltown_b749_owner_mixes_partitions"));
+                BPartition=Partition;
+            }
             Seen.Add(R); T.Components.Add(C); T.RoleIndices.Add(R);
         }
+        if (BUnit)
+        {
+            if (BPartition<0 || BPartition>2 || BPartitions.Contains(BPartition) ||
+                Components.Num()!=(BPartition==2?237:256))
+                return Refuse(Error,TEXT("fulltown_b749_exact_three_carrier_partitions"));
+            BPartitions.Add(BPartition);
+        }
     }
+    if (BUnit && (Owners!=3 || BPartitions.Num()!=3))
+        return Refuse(Error,TEXT("fulltown_b749_exact_three_carriers"));
     return (Owners>0 && Seen.Num()==U.Roles.Num()) || Refuse(Error,TEXT("fulltown_missing_saved_roles"));
 }
 
@@ -355,22 +528,49 @@ bool ULivingTownFullTownStreamingSubsystem::ValidateComponent(ULivingTownFullTow
     auto* C=T.Components[I].Get(); const auto& R=Data->Units[T.UnitIndex].Roles[T.RoleIndices[I]];
     UStaticMesh* Mesh=C?C->GetStaticMesh():nullptr;
     const bool HISM=R.Kind==ELivingTownFullTownComponentKind::HierarchicalInstances;
-    if (!C || C->GetClass()!=(HISM?UHierarchicalInstancedStaticMeshComponent::StaticClass():UStaticMeshComponent::StaticClass()) ||
-        !Mesh || FSoftObjectPath(Mesh)!=R.Mesh || !LivingTownFullTown::SameQualifiedTransform(C->GetComponentTransform(),R.WorldTransform) ||
-        C->GetCollisionProfileName()!=R.CollisionProfile || C->GetCollisionEnabled()!=R.CollisionEnabled || C->IsComponentTickEnabled() ||
-        (Registered && !C->IsRegistered()) || C->GetNumMaterials()!=R.Slots.Num() || Mesh->GetStaticMaterials().Num()!=R.Slots.Num() ||
-        C->GetNumOverrideMaterials()!=(HISM?R.Slots.Num():0))
+    const bool BOverrides=IsB749(Data) && Data->Units[T.UnitIndex].DispatchIndex==193;
+    FString Predicate;
+    FTransform HiddenActual=FTransform::Identity;
+    if (!C) Predicate=TEXT("component_missing");
+    else if (C->GetClass()!=(HISM?UHierarchicalInstancedStaticMeshComponent::StaticClass():UStaticMeshComponent::StaticClass())) Predicate=TEXT("component_class");
+    else if (!Mesh) Predicate=TEXT("mesh_missing");
+    else if (FSoftObjectPath(Mesh)!=R.Mesh) Predicate=TEXT("mesh_path");
+    else if (IsB749(Data) && !Registered)
+    {
+        if (!T.Streaming) Predicate=TEXT("streaming_object_missing");
+        else B749HiddenSerializedTransform(C,T.Streaming->LevelTransform,Registered,R.WorldTransform,HiddenActual,Predicate);
+    }
+    else if (!LivingTownFullTown::SameQualifiedTransform(C->GetComponentTransform(),R.WorldTransform)) Predicate=TEXT("registered_or_legacy_cached_world_transform");
+    if (Predicate.IsEmpty() && C->GetCollisionProfileName()!=R.CollisionProfile) Predicate=TEXT("collision_profile");
+    if (Predicate.IsEmpty() && C->GetCollisionEnabled()!=R.CollisionEnabled) Predicate=TEXT("collision_enabled");
+    if (Predicate.IsEmpty() && C->IsComponentTickEnabled()) Predicate=TEXT("component_tick_enabled");
+    if (Predicate.IsEmpty() && Registered && !C->IsRegistered()) Predicate=TEXT("registered_required");
+    if (Predicate.IsEmpty() && C->GetNumMaterials()!=R.Slots.Num()) Predicate=TEXT("component_material_count");
+    if (Predicate.IsEmpty() && Mesh->GetStaticMaterials().Num()!=R.Slots.Num()) Predicate=TEXT("mesh_material_slot_count");
+    if (Predicate.IsEmpty() && (HISM?C->GetNumOverrideMaterials()!=R.Slots.Num():!StaticOverridesMatch(C,R,BOverrides))) Predicate=TEXT("stored_override_array");
+    if (!Predicate.IsEmpty())
+    {
+        LogFirstComponentRefusal(T,I,Data->Units[T.UnitIndex],R,C,Mesh,Registered,Predicate);
         return Refuse(Error,TEXT("fulltown_component_mesh_transform_collision_or_material_roster"));
+    }
     for (int32 S=0; S<R.Slots.Num(); ++S)
     {
         const auto& Slot=R.Slots[S]; const auto& Default=Mesh->GetStaticMaterials()[S]; auto* Effective=C->GetMaterial(S);
         if (Slot.SlotIndex!=S || FSoftObjectPath(Default.MaterialInterface.Get())!=Slot.OriginalDefault || Default.MaterialSlotName!=Slot.SlotName ||
-            !Effective || FSoftObjectPath(Effective)!=(HISM?Slot.Override:Slot.OriginalDefault) || uint8(Effective->GetBlendMode())!=Slot.BlendMode)
+            !Effective || FSoftObjectPath(Effective)!=((HISM || (BOverrides && !Slot.Override.IsNull()))?Slot.Override:Slot.OriginalDefault) ||
+            uint8(Effective->GetBlendMode())!=Slot.BlendMode)
+        {
+            LogFirstComponentRefusal(T,I,Data->Units[T.UnitIndex],R,C,Mesh,Registered,TEXT("ordered_material_slot"),S);
             return Refuse(Error,TEXT("fulltown_exact_ordered_material_slot"));
-        if (HISM && (C->OverrideMaterials[S]!=Effective || !LivingTownMaterials::ValidateInstancedUsage(Effective,R.RoleId,R.Mesh.ToString(),S,Error))) return false;
+        }
+        if (HISM && (C->OverrideMaterials[S]!=Effective || !LivingTownMaterials::ValidateInstancedUsage(Effective,R.RoleId,R.Mesh.ToString(),S,Error)))
+        { LogFirstComponentRefusal(T,I,Data->Units[T.UnitIndex],R,C,Mesh,Registered,TEXT("hism_override_or_material_usage"),S); return false; }
     }
     if (HISM && CastChecked<UHierarchicalInstancedStaticMeshComponent>(C)->GetInstanceCount()!=R.Instances.Num())
+    {
+        LogFirstComponentRefusal(T,I,Data->Units[T.UnitIndex],R,C,Mesh,Registered,TEXT("hism_instance_count"));
         return Refuse(Error,TEXT("fulltown_saved_hism_instance_count"));
+    }
     return true;
 }
 
@@ -529,7 +729,22 @@ void ULivingTownFullTownStreamingSubsystem::Tick(float Delta)
 FString ULivingTownFullTownStreamingSubsystem::GetStatusJson() const
 {
     auto J=MakeShared<FJsonObject>();
-    J->SetStringField(TEXT("scope"),TEXT("IntegrationSubset_U0131_U0142_Ground151_ExternalCafe81"));
+    // Soft identity is observable during async boot; never dereference Data
+    // until it exists. A requested profile does not imply manifest acceptance.
+    const auto* StatusDriver=Driver.Get();
+    const bool NamedBWorld=GetWorld() && UWorld::RemovePIEPrefix(GetWorld()->GetOutermost()->GetName())==B749RootPackage;
+    const bool BRequested=IsB749(Data) || NamedBWorld || (StatusDriver &&
+        StatusDriver->Manifest.ToSoftObjectPath().ToString()==B749Manifest);
+    J->SetStringField(TEXT("scope"),BRequested?TEXT("IntegrationSubset_B749_U0131_66_Ground156_ExternalCafe81"):
+        TEXT("IntegrationSubset_U0131_U0142_Ground151_ExternalCafe81"));
+    if (BRequested)
+    {
+        J->SetStringField(TEXT("profile_id"),B749Profile);
+        J->SetBoolField(TEXT("manifest_loaded"),Data!=nullptr);
+        J->SetBoolField(TEXT("manifest_accepted"),Data!=nullptr && !bFailed && bManifestCompleted);
+        J->SetNumberField(TEXT("declared_streamed_role_count"),971);
+        J->SetNumberField(TEXT("external_cafe_part_count"),262);
+    }
     J->SetStringField(TEXT("status"),bFailed?TEXT("FAILED_SUPPORT_RETAINED"):bStopping?TEXT("STOPPED_SUPPORT_RETAINED"):bReady?TEXT("SUBSET_CONTROLLABLE_NOT_FULL_TOWN"):bArmed?TEXT("BOOT_MOVEMENT_LOCKED"):TEXT("INACTIVE"));
     J->SetStringField(TEXT("error"),LastError); J->SetNumberField(TEXT("epoch"),double(Epoch));
     J->SetNumberField(TEXT("owned_tick_frames"),double(Frames)); J->SetNumberField(TEXT("armed_frame"),double(ArmedFrame));
@@ -585,6 +800,57 @@ void ULivingTownFullTownStreamingSubsystem::Deinitialize()
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Misc/AutomationTest.h"
+#include "Materials/Material.h"
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FLivingTownB749HiddenSerializedTransformTest,"LivingTown.FullTown.B749HiddenSerializedTransform",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FLivingTownB749HiddenSerializedTransformTest::RunTest(const FString&)
+{
+    auto* Actor=NewObject<AActor>(GetTransientPackage());
+    auto* Root=NewObject<USceneComponent>(Actor); Actor->SetRootComponent(Root);
+    auto* Child=NewObject<UStaticMeshComponent>(Actor); Child->SetupAttachment(Root);
+    Root->SetRelativeLocation_Direct(FVector::ZeroVector); Root->SetRelativeRotation_Direct(FRotator::ZeroRotator); Root->SetRelativeScale3D_Direct(FVector::OneVector);
+    const FTransform Expected(FQuat::Identity,FVector(-4606.303115624708,-2905.3108644939884,336.09147160231004),FVector::OneVector);
+    Child->SetRelativeLocation_Direct(Expected.GetTranslation()); Child->SetRelativeRotation_Direct(FRotator::ZeroRotator); Child->SetRelativeScale3D_Direct(FVector::OneVector);
+    TestFalse(TEXT("fixture is unregistered"),Child->IsRegistered());
+    TestFalse(TEXT("serialized nonidentity child does not initialize cached world"),LivingTownFullTown::SameQualifiedTransform(Child->GetComponentTransform(),Expected));
+    FTransform Actual; FString Predicate;
+    auto Check=[&](const FTransform& Want,bool Registered=false) { return B749HiddenSerializedTransform(Child,FTransform::Identity,Registered,Want,Actual,Predicate); };
+    TestTrue(TEXT("hidden exact serialized G1 translation accepted"),Check(Expected));
+    TestTrue(TEXT("readback retains exact declared transform"),LivingTownFullTown::SameQualifiedTransform(Actual,Expected));
+    FTransform Wrong=Expected; Wrong.AddToTranslation(FVector(1,0,0)); TestFalse(TEXT("wrong expected translation refuses"),Check(Wrong));
+    TestFalse(TEXT("registered phase cannot use hidden helper"),Check(Expected,true));
+    Root->SetRelativeLocation_Direct(FVector(1,0,0)); TestFalse(TEXT("nonidentity serialized root refuses"),Check(Expected)); Root->SetRelativeLocation_Direct(FVector::ZeroVector);
+    auto* Nested=NewObject<USceneComponent>(Actor); Nested->SetupAttachment(Root); Child->SetupAttachment(Nested); TestFalse(TEXT("nested parent refuses"),Check(Expected));
+    Child->SetupAttachment(Root,TEXT("UnqualifiedSocket")); TestFalse(TEXT("socket attachment refuses"),Check(Expected)); Child->SetupAttachment(Root);
+    Child->SetUsingAbsoluteLocation(true); TestFalse(TEXT("absolute child refuses"),Check(Expected)); Child->SetUsingAbsoluteLocation(false);
+    TestFalse(TEXT("nonidentity streaming transform refuses"),B749HiddenSerializedTransform(Child,Wrong,false,Expected,Actual,Predicate));
+    TestTrue(TEXT("restored exact hierarchy accepted"),Check(Expected));
+    TestFalse(TEXT("helper did not register component"),Child->IsRegistered());
+    TestFalse(TEXT("helper did not repair cached world"),LivingTownFullTown::SameQualifiedTransform(Child->GetComponentTransform(),Expected));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FLivingTownB749OverrideArrayTest,"LivingTown.FullTown.B749ExactStoredOverrideArrays",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FLivingTownB749OverrideArrayTest::RunTest(const FString&)
+{
+    auto* C=NewObject<UStaticMeshComponent>(); auto* M=NewObject<UMaterial>();
+    FLivingTownFullTownRole Role; auto& Slot=Role.Slots.AddDefaulted_GetRef(); Slot.SlotIndex=0;
+    TestTrue(TEXT("B empty stored array accepted"),StaticOverridesMatch(C,Role,true));
+    TestTrue(TEXT("legacy empty array retained"),StaticOverridesMatch(C,Role,false));
+    Slot.OriginalDefault=FSoftObjectPath(M); Slot.Override=FSoftObjectPath(M);
+    TestFalse(TEXT("descriptor override cannot be silently absent"),StaticOverridesMatch(C,Role,true));
+    C->OverrideMaterials.Add(M);
+    TestTrue(TEXT("exact stored pointer accepted even equal to original default"),StaticOverridesMatch(C,Role,true));
+    TestFalse(TEXT("legacy profile never admits stored override"),StaticOverridesMatch(C,Role,false));
+    C->OverrideMaterials.Add(nullptr);
+    TestFalse(TEXT("padded null slot refuses"),StaticOverridesMatch(C,Role,true));
+    C->OverrideMaterials.SetNum(1); C->OverrideMaterials[0]=nullptr;
+    TestFalse(TEXT("length1 null refuses"),StaticOverridesMatch(C,Role,true));
+    Slot.Override.Reset(); C->OverrideMaterials.Empty();
+    C->OverrideMaterials.Add(nullptr);
+    TestFalse(TEXT("explicit null array differs from qualified empty array"),StaticOverridesMatch(C,Role,true));
+    return true;
+}
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FLivingTownFullTownTicketTest,"LivingTown.FullTown.CancelledLoadRetainsReservation",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
 bool FLivingTownFullTownTicketTest::RunTest(const FString&)
 {
