@@ -13,6 +13,9 @@ public class LivingTownNative : ModuleRules
         CppStandard = CppStandardVersion.Cpp20;
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
         PrivateDependencyModuleNames.Add("Json");
+        PrivateDependencyModuleNames.Add("PakFile");
+        PrivateDefinitions.Add("LIVINGTOWN_COOKED_STARTUP_DIAGNOSTIC=" +
+            ((Target.Type == TargetType.Game && Target.Configuration == UnrealTargetConfiguration.Development) ? "1" : "0"));
         PrivateDependencyModuleNames.Add("RHI");
         PrivateDependencyModuleNames.AddRange(new string[] { "ChaosClothAssetEngine", "PhysicsCore" });
         AddEngineThirdPartyPrivateStaticDependencies(Target, "OpenSSL");
