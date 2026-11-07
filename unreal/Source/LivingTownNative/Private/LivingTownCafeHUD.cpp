@@ -42,24 +42,30 @@ void ALivingTownCafeHUD::DrawHUD()
     DrawText(View.Offer,Ink,Margin+18.f*Scale,Margin+99.f*Scale,Font,.91f*TextScale);
 
     const bool ShowPrompt=IsCounterContextVisible();
-    TArray<FString> Feedback;
+    const auto RawFeedback=GetFeedbackRows();
     // Operation failures may be longer than the cached live-status rows.
-    // Wrap the composed rows at the actual draw width without hiding either.
+    // Measure only when content or actual draw metrics change, never each frame.
     const float FeedbackWidth=FMath::Min(670.f*Scale,Width-2.f*Margin)-34.f*Scale;
-    for(const FString& Row:GetFeedbackRows()){
-        TArray<FString> Words;Row.ParseIntoArrayWS(Words);FString Line;
-        for(const FString& Word:Words){
-            const FString Joined=Line.IsEmpty()?Word:Line+TEXT(" ")+Word;float W=0.f,H=0.f;GetTextSize(Joined,W,H,Font,.91f*TextScale);
-            if(W<=FeedbackWidth){Line=Joined;continue;}
-            if(!Line.IsEmpty()){Feedback.Add(Line);Line.Reset();}
-            for(TCHAR C:Word){
-                const FString Next=Line+FString::Chr(C);GetTextSize(Next,W,H,Font,.91f*TextScale);
-                if(!Line.IsEmpty()&&W>FeedbackWidth){Feedback.Add(Line);Line.Reset();}
-                Line+=FString::Chr(C);
+    const float FeedbackTextScale=.91f*TextScale;
+    if(!bFeedbackLayoutCached||CachedFeedbackRows!=RawFeedback||CachedFeedbackWidth!=FeedbackWidth||CachedFeedbackTextScale!=FeedbackTextScale||CachedFeedbackFont.Get()!=Font){
+        CachedFeedbackRows=RawFeedback;CachedFeedbackWidth=FeedbackWidth;CachedFeedbackTextScale=FeedbackTextScale;CachedFeedbackFont=Font;CachedWrappedFeedback.Reset();
+        for(const FString& Row:RawFeedback){
+            TArray<FString> Words;Row.ParseIntoArrayWS(Words);FString Line;
+            for(const FString& Word:Words){
+                const FString Joined=Line.IsEmpty()?Word:Line+TEXT(" ")+Word;float W=0.f,H=0.f;GetTextSize(Joined,W,H,Font,FeedbackTextScale);
+                if(W<=FeedbackWidth){Line=Joined;continue;}
+                if(!Line.IsEmpty()){CachedWrappedFeedback.Add(Line);Line.Reset();}
+                for(TCHAR C:Word){
+                    const FString Next=Line+FString::Chr(C);GetTextSize(Next,W,H,Font,FeedbackTextScale);
+                    if(!Line.IsEmpty()&&W>FeedbackWidth){CachedWrappedFeedback.Add(Line);Line.Reset();}
+                    Line+=FString::Chr(C);
+                }
             }
+            if(!Line.IsEmpty())CachedWrappedFeedback.Add(Line);
         }
-        if(!Line.IsEmpty())Feedback.Add(Line);
+        bFeedbackLayoutCached=true;
     }
+    const auto& Feedback=CachedWrappedFeedback;
     const float LineHeight=22.f*Scale;
     const float PromptHeight=((ShowPrompt?52.f:26.f)+22.f*Feedback.Num())*Scale;
     const float PromptWidth=FMath::Min(670.f*Scale,Width-2.f*Margin);
@@ -70,7 +76,7 @@ void ALivingTownCafeHUD::DrawHUD()
         DrawRect(View.bReachable?Accent:Muted,PromptX,PromptY,PromptWidth,2.f*Scale);
         if(ShowPrompt)DrawText(View.Prompt,View.bReachable?Accent:Ink,PromptX+17.f*Scale,PromptY+13.f*Scale,Font,1.02f*TextScale);
         float FeedbackY=PromptY+(ShowPrompt?43.f:13.f)*Scale;
-        for(const FString& Line:Feedback){DrawText(Line,Muted,PromptX+17.f*Scale,FeedbackY,Font,.91f*TextScale);FeedbackY+=LineHeight;}
+        for(const FString& Line:Feedback){DrawText(Line,Muted,PromptX+17.f*Scale,FeedbackY,Font,FeedbackTextScale);FeedbackY+=LineHeight;}
     }
     DrawText(Controls,Muted,PromptX+8.f*Scale,Height-Margin-12.f*Scale,Font,.85f*TextScale);
     // The HUD composes cached presentation/history only. No collision queries,
