@@ -30,10 +30,15 @@ FLivingTownMetaHumanVisualBinding SyntaxOnlyMetaHuman(TCHAR Identity)
     D.HandBone=FName(TEXT("hand_r"));D.ActorRelative=FTransform(FRotator(0,-90,0),FVector(0,0,-90),FVector::OneVector);
     D.CapsuleRadiusCm=20;D.CapsuleHalfHeightCm=90;D.WalkSpeedCmPerSecond=110;D.CameraArmCm=300;D.PreloadDeadlineSeconds=120;return D;
 }
-FString SyntaxOnlyMetaHumanJson()
+FString SyntaxOnlyMetaHumanJson(int32 Version=1)
 {
     const auto D=SyntaxOnlyMetaHuman('a');auto O=MakeShared<FJsonObject>();
-    O->SetStringField(TEXT("format"),TEXT("LivingTown.MetaHumanBenActorPrepared"));O->SetNumberField(TEXT("version"),1);
+    O->SetStringField(TEXT("format"),TEXT("LivingTown.MetaHumanBenActorPrepared"));O->SetNumberField(TEXT("version"),Version);
+    if(Version==2)
+    {
+        O->SetStringField(TEXT("outfit_mesh"),LivingTownMetaHumanVisual::WorkwearMesh);
+        O->SetStringField(TEXT("outfit_manifest_sha256"),LivingTownMetaHumanVisual::WorkwearManifestSha256);
+    }
     O->SetStringField(TEXT("status"),TEXT("CONTROLLED_GAME_TRIAL_PREPARED"));O->SetStringField(TEXT("source_closure_sha256"),D.SourceClosureSha256);
     O->SetStringField(TEXT("core_manifest_sha256"),D.CoreManifestSha256);O->SetStringField(TEXT("actor_class"),D.ActorClassPath);
     O->SetStringField(TEXT("idle_animation"),D.IdleAnimationPath);O->SetStringField(TEXT("walk_animation"),D.WalkAnimationPath);
@@ -67,6 +72,9 @@ bool FLivingTownMetaHumanDescriptorTest::RunTest(const FString&)
     };
     Refuses(TEXT("Duplicate keys refused before map overwrite"),TEXT("{\"version\":1,")+Json.Mid(1));
     Refuses(TEXT("Unknown root fields refused"),TEXT("{\"unexpected\":true,")+Json.Mid(1));
+    Refuses(TEXT("Fractional descriptor versions refused"),Json.Replace(TEXT("\"version\":1"),TEXT("\"version\":1.5")));
+    Refuses(TEXT("Unknown descriptor versions refused"),Json.Replace(TEXT("\"version\":1"),TEXT("\"version\":3")));
+    Refuses(TEXT("Version2 requires its two outfit fields"),Json.Replace(TEXT("\"version\":1"),TEXT("\"version\":2")));
     Refuses(TEXT("Arbitrary classes and native Pawn/Controller paths cannot opt in"),Json.Replace(LivingTownMetaHumanVisual::ActorClass,TEXT("/Script/Engine.Pawn")));
     Refuses(TEXT("Alternate locomotion asset cannot smuggle a new clip"),Json.Replace(LivingTownMetaHumanVisual::Walk,LivingTownMetaHumanVisual::Idle));
     Refuses(TEXT("Unqualified source core refused"),Json.Replace(LivingTownMetaHumanVisual::CoreManifestSha256,*FString::ChrN(64,TCHAR('d'))));
@@ -74,6 +82,13 @@ bool FLivingTownMetaHumanDescriptorTest::RunTest(const FString&)
     Refuses(TEXT("Unbounded preload cannot hang startup"),Json.Replace(TEXT("\"preload_deadline_seconds\":120"),TEXT("\"preload_deadline_seconds\":121")));
     Refuses(TEXT("Transform nested unknown fields refused"),Json.Replace(TEXT("\"relative_transform\":{"),TEXT("\"relative_transform\":{\"unexpected\":0,")));
     Refuses(TEXT("Oversize descriptor refused"),Json+FString::ChrN(16*1024,TCHAR(' ')));
+    const FString WorkwearJson=SyntaxOnlyMetaHumanJson(2);
+    if(!TestTrue(TEXT("Write qualified workwear syntax fixture"),FFileHelper::SaveStringToFile(WorkwearJson,*Path,FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM)))return false;
+    if(!TestTrue(TEXT("Version2 parses the admitted outfit and manifest"),FLivingTownMetaHumanVisualBinding::Read(Path,Out,Error)))return false;
+    TestTrue(TEXT("Version2 selects the outfit without replacing the original actor"),Out.UsesWorkwear()&&Out.ActorClassPath==Sentinel.ActorClassPath&&FString(Out.ExpectedOutfitMesh())==LivingTownMetaHumanVisual::WorkwearMesh&&Out.DescriptorSha256!=Sentinel.DescriptorSha256);
+    Refuses(TEXT("Workwear cannot select an arbitrary outfit"),WorkwearJson.Replace(LivingTownMetaHumanVisual::WorkwearMesh,LivingTownMetaHumanVisual::OutfitMesh));
+    Refuses(TEXT("Wrong workwear manifest refused"),WorkwearJson.Replace(LivingTownMetaHumanVisual::WorkwearManifestSha256,*FString::ChrN(64,TCHAR('e'))));
+    Refuses(TEXT("Version1 cannot contain version2 outfit fields"),WorkwearJson.Replace(TEXT("\"version\":2"),TEXT("\"version\":1")));
     auto D=SyntaxOnlyMetaHuman('a');D.ActorRelative.SetScale3D(FVector(2));TestFalse(TEXT("Unit scale is mandatory"),D.IsValidated());
     D=SyntaxOnlyMetaHuman('a');D.ActorRelative.SetRotation(FRotator(10,0,0).Quaternion());TestFalse(TEXT("Capsule orientation cannot be tilted"),D.IsValidated());
     D=SyntaxOnlyMetaHuman('a');D.HandBone=FName(TEXT("pelvis"));TestFalse(TEXT("Hand role cannot be reassigned"),D.IsValidated());

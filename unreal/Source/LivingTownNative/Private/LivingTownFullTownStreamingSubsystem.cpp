@@ -1,6 +1,7 @@
 #include "LivingTownFullTownStreamingSubsystem.h"
 #include "LivingTownCookedStartup.h"
 #include "LivingTownFullTownDriver.h"
+#include "LivingTownCafeGeometryLibrary.h"
 #include "LivingTownTileDriver.h"
 #include "LivingTownTileData.h"
 #include "LivingTownMaterialUsage.h"
@@ -44,6 +45,43 @@ const TCHAR* const B749Manifest=TEXT("/Game/LivingTown_UEPilot/FullTownIntegrati
 const int64 B749ManifestSourceBytes=1315578;
 const TCHAR* const B749ManifestSourceSha=TEXT("910a95cf5d083a30d0401ced33083c66ce1f7d1092c5b22ee47e4594cc598926");
 bool IsB749(const ULivingTownFullTownData* D) { return D && D->ProfileId==B749Profile; }
+
+// New roof profile is an uncooked integration trial. No legacy cooked fixture is reused.
+const TCHAR* const B749RoofProfile=TEXT("B749_ContinuousRoofRuntime_v001");
+const TCHAR* const B749RoofRootPackage=TEXT("/Game/LivingTown_UEPilot/FullTownIntegrationB749_ContinuousRoofRuntime_v001/L_B749_ContinuousRoofRuntime_v001");
+const TCHAR* const B749RoofManifest=TEXT("/Game/LivingTown_UEPilot/FullTownIntegrationB749_ContinuousRoofRuntime_v001/DA_B749_ContinuousRoofRuntime_v001.DA_B749_ContinuousRoofRuntime_v001");
+const int64 B749RoofManifestSourceBytes=1315931;
+const TCHAR* const B749RoofManifestSourceSha=TEXT("80a800bd4583156eddbebf06072a165f266a73c20a24a00fccb90ea1eb9f928d");
+const int64 B749RoofRootSourceBytes=17747;
+const TCHAR* const B749RoofRootSourceSha=TEXT("80785169981299c509b5d4c229d638a09c0605166271f9232f4e3d6b6f24f551");
+bool IsB749Roof(const ULivingTownFullTownData* D) { return D && D->ProfileId==B749RoofProfile; }
+bool IsB749Family(const ULivingTownFullTownData* D) { return IsB749(D) || IsB749Roof(D); }
+struct FB749RoofMeshPin { const TCHAR* Role; const TCHAR* Asset; int64 Bytes; const TCHAR* SourceSha; const TCHAR* NativeSha; const TCHAR* Collision; };
+const FB749RoofMeshPin B749RoofMeshes[]={
+    {TEXT("MCB::Building::M0447"),TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_ContinuousRoof_v003/StaticMeshes/MillCourt_B_ContinuousRoof_Geometry_v001/StaticMeshes/MCB_Continu_47_v001_001.MCB_Continu_47_v001_001"),82578,TEXT("eabbde9932b7036bf0d125cb59f9a41d32e9607091594b2ca1a6f206db9070cd"),TEXT("2a51377e46658de706438dc118632fcf8810abc7f70fa5cfe9b1df51e23cab29"),TEXT("14e4b314434508555dbfc6a5ae1cde5e")},
+    {TEXT("MCB::Building::M0448"),TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_ContinuousRoof_v003/StaticMeshes/MillCourt_B_ContinuousRoof_Geometry_v001/StaticMeshes/MCB_Continu_48_v001_001.MCB_Continu_48_v001_001"),82157,TEXT("233a354bdaa646eb397c74401e24fc0df54fd709302baf405c1ba95e818e5472"),TEXT("4983cfbbbeb83e066d76a3765eb8c3aa860356ef88ca440fa3e152beb8d644cd"),TEXT("ba470c454e26f017289388a077a47597")}
+};
+bool RoofSourceFile(const FString& Package,const FString& Extension,int64 ExpectedBytes,const FString& ExpectedSha)
+{
+    const FString File=FPackageName::LongPackageNameToFilename(Package,Extension); TArray<uint8> Bytes; FString Sha;
+    return ExpectedBytes>0 && ExpectedBytes<=8*1024*1024 && LivingTownTiles::IsSha256(ExpectedSha) &&
+        IFileManager::Get().FileSize(*File)==ExpectedBytes && FFileHelper::LoadFileToArray(Bytes,*File) &&
+        Bytes.Num()==ExpectedBytes && LivingTownTiles::HashBytes(Bytes,Sha) && Sha==ExpectedSha;
+}
+bool RoofGeometry(UStaticMesh* Mesh,const FLivingTownFullTownRole& Role,FString& Error)
+{
+    for (const auto& Pin:B749RoofMeshes) if (Role.RoleId==Pin.Role)
+    {
+        FString Native,Collision,Why;
+        const bool Observed=ULivingTownCafeGeometryLibrary::InspectCafeMesh(Mesh,Native,Collision,Why);
+        if (Role.Mesh.ToString()!=Pin.Asset || !Observed || Native!=Pin.NativeSha || Collision!=Pin.Collision)
+        {
+            UE_LOG(LogTemp,Warning,TEXT("LT_ROOF_GEOMETRY_REFUSAL role=%s native=%s collision=%s why=%s"),*Role.RoleId,*Native,*Collision,*Why);
+            return Refuse(Error,TEXT("fulltown_roof_exact_native_geometry_or_collision_guid"));
+        }
+    }
+    return true;
+}
 bool StaticOverridesMatch(const UStaticMeshComponent* C,const FLivingTownFullTownRole& R,bool AllowB749)
 {
     if (!C) return false;
@@ -261,6 +299,21 @@ void ULivingTownFullTownStreamingSubsystem::OnWorldBeginPlay(UWorld& W)
         if (D->ManifestSourceBytes!=B749ManifestSourceBytes || D->ManifestSourceSha256!=B749ManifestSourceSha)
         { Fail(TEXT("fulltown_b749_exact_descriptor_source_pin")); return; }
     }
+    const bool NamedRoofRoot=UWorld::RemovePIEPrefix(W.GetOutermost()->GetName())==B749RoofRootPackage;
+    const bool NamedRoofManifest=D->Manifest.ToSoftObjectPath().ToString()==B749RoofManifest;
+    if (NamedRoofRoot || NamedRoofManifest)
+    {
+        if (FPlatformProperties::RequiresCookedData()) { Fail(TEXT("fulltown_roof_uncooked_trial_requires_new_cook_admission")); return; }
+        if (!(NamedRoofRoot && NamedRoofManifest)) { Fail(TEXT("fulltown_roof_exact_root_descriptor_before_load")); return; }
+        if (B749RoofManifestSourceBytes<=0 || B749RoofRootSourceBytes<=0 || !LivingTownTiles::IsSha256(B749RoofManifestSourceSha) || !LivingTownTiles::IsSha256(B749RoofRootSourceSha))
+        { Fail(TEXT("fulltown_roof_DRAFT_REFUSE_pending_actual_saved_packages")); return; }
+        if (D->ManifestSourceBytes!=B749RoofManifestSourceBytes || D->ManifestSourceSha256!=B749RoofManifestSourceSha ||
+            !RoofSourceFile(B749RoofRootPackage,FPackageName::GetMapPackageExtension(),B749RoofRootSourceBytes,B749RoofRootSourceSha))
+        { Fail(TEXT("fulltown_roof_exact_root_and_descriptor_source_pins")); return; }
+        for (const auto& Pin:B749RoofMeshes)
+            if (!RoofSourceFile(FSoftObjectPath(Pin.Asset).GetLongPackageName(),FPackageName::GetAssetPackageExtension(),Pin.Bytes,Pin.SourceSha))
+            { Fail(TEXT("fulltown_roof_exact_two_source_mesh_packages")); return; }
+    }
     if (D->Manifest.IsNull() || D->ManifestSourceBytes<=0 || D->ManifestSourceBytes>8*1024*1024 ||
         !LivingTownTiles::IsSha256(D->ManifestSourceSha256) || !FMath::IsFinite(D->LoadRadiusCm) || !FMath::IsFinite(D->UnloadRadiusCm) ||
         D->LoadRadiusCm<0 || D->UnloadRadiusCm<D->LoadRadiusCm || D->UnloadRadiusCm>20000 ||
@@ -351,6 +404,12 @@ bool ULivingTownFullTownStreamingSubsystem::AcceptManifest(FString& Error)
     const bool NamedBManifest=D && D->Manifest.ToSoftObjectPath().ToString()==B749Manifest;
     if ((IsB749(Data) || NamedBRoot || NamedBManifest) && !(IsB749(Data) && NamedBRoot && NamedBManifest))
         return Refuse(Error,TEXT("fulltown_b749_exact_root_descriptor_profile"));
+    const bool NamedRoofRoot=Package==B749RoofRootPackage;
+    const bool NamedRoofManifest=D && D->Manifest.ToSoftObjectPath().ToString()==B749RoofManifest;
+    if ((IsB749Roof(Data) || NamedRoofRoot || NamedRoofManifest) && !(IsB749Roof(Data) && NamedRoofRoot && NamedRoofManifest))
+        return Refuse(Error,TEXT("fulltown_roof_exact_root_descriptor_profile"));
+    if (IsB749Roof(Data) && FPlatformProperties::RequiresCookedData())
+        return Refuse(Error,TEXT("fulltown_roof_uncooked_trial_only"));
     // Only the small descriptor is held here. Its map soft references were not bulk preloaded.
     return true;
 }
@@ -481,7 +540,7 @@ bool ULivingTownFullTownStreamingSubsystem::GatherHidden(ULivingTownFullTownTick
     if (!Level || Level->Actors.Num()>64)
         return Refuse(Error,TEXT("fulltown_loaded_hidden_level_shape"));
     const auto& U=Data->Units[T.UnitIndex]; TSet<int32> Seen; int32 Owners=0, Bases=0;
-    const bool BProfile=IsB749(Data), BUnit=BProfile && U.DispatchIndex==193;
+    const bool BProfile=IsB749Family(Data), BUnit=BProfile && U.DispatchIndex==193;
     TSet<int32> BPartitions;
     for (AActor* A:Level->Actors)
     {
@@ -539,14 +598,14 @@ bool ULivingTownFullTownStreamingSubsystem::ValidateComponent(ULivingTownFullTow
     auto* C=T.Components[I].Get(); const auto& R=Data->Units[T.UnitIndex].Roles[T.RoleIndices[I]];
     UStaticMesh* Mesh=C?C->GetStaticMesh():nullptr;
     const bool HISM=R.Kind==ELivingTownFullTownComponentKind::HierarchicalInstances;
-    const bool BOverrides=IsB749(Data) && Data->Units[T.UnitIndex].DispatchIndex==193;
+    const bool BOverrides=IsB749Family(Data) && Data->Units[T.UnitIndex].DispatchIndex==193;
     FString Predicate;
     FTransform HiddenActual=FTransform::Identity;
     if (!C) Predicate=TEXT("component_missing");
     else if (C->GetClass()!=(HISM?UHierarchicalInstancedStaticMeshComponent::StaticClass():UStaticMeshComponent::StaticClass())) Predicate=TEXT("component_class");
     else if (!Mesh) Predicate=TEXT("mesh_missing");
     else if (FSoftObjectPath(Mesh)!=R.Mesh) Predicate=TEXT("mesh_path");
-    else if (IsB749(Data) && !Registered)
+    else if (IsB749Family(Data) && !Registered)
     {
         if (!T.Streaming) Predicate=TEXT("streaming_object_missing");
         else B749HiddenSerializedTransform(C,T.Streaming->LevelTransform,Registered,R.WorldTransform,HiddenActual,Predicate);
@@ -563,6 +622,10 @@ bool ULivingTownFullTownStreamingSubsystem::ValidateComponent(ULivingTownFullTow
     {
         LogFirstComponentRefusal(T,I,Data->Units[T.UnitIndex],R,C,Mesh,Registered,Predicate);
         return Refuse(Error,TEXT("fulltown_component_mesh_transform_collision_or_material_roster"));
+    }
+    if (IsB749Roof(Data) && Data->Units[T.UnitIndex].DispatchIndex==193 && !RoofGeometry(Mesh,R,Error))
+    {
+        LogFirstComponentRefusal(T,I,Data->Units[T.UnitIndex],R,C,Mesh,Registered,TEXT("roof_native_geometry_or_collision")); return false;
     }
     for (int32 S=0; S<R.Slots.Num(); ++S)
     {
@@ -751,13 +814,15 @@ FString ULivingTownFullTownStreamingSubsystem::GetStatusJson() const
     // until it exists. A requested profile does not imply manifest acceptance.
     const auto* StatusDriver=Driver.Get();
     const bool NamedBWorld=GetWorld() && UWorld::RemovePIEPrefix(GetWorld()->GetOutermost()->GetName())==B749RootPackage;
+    const bool NamedRoofWorld=GetWorld() && UWorld::RemovePIEPrefix(GetWorld()->GetOutermost()->GetName())==B749RoofRootPackage;
+    const bool RoofRequested=IsB749Roof(Data) || NamedRoofWorld || (StatusDriver && StatusDriver->Manifest.ToSoftObjectPath().ToString()==B749RoofManifest);
     const bool BRequested=IsB749(Data) || NamedBWorld || (StatusDriver &&
-        StatusDriver->Manifest.ToSoftObjectPath().ToString()==B749Manifest);
+        StatusDriver->Manifest.ToSoftObjectPath().ToString()==B749Manifest) || RoofRequested;
     J->SetStringField(TEXT("scope"),BRequested?TEXT("IntegrationSubset_B749_U0131_66_Ground156_ExternalCafe81"):
         TEXT("IntegrationSubset_U0131_U0142_Ground151_ExternalCafe81"));
     if (BRequested)
     {
-        J->SetStringField(TEXT("profile_id"),B749Profile);
+        J->SetStringField(TEXT("profile_id"),RoofRequested?B749RoofProfile:B749Profile);
         J->SetBoolField(TEXT("manifest_loaded"),Data!=nullptr);
         J->SetBoolField(TEXT("manifest_accepted"),Data!=nullptr && !bFailed && bManifestCompleted);
         J->SetNumberField(TEXT("declared_streamed_role_count"),971);

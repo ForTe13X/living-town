@@ -28,9 +28,13 @@ descriptor supplies an internal `MetaHumanWholeActor` strategy after that parser
 finishes. Its exact file SHA-256 becomes `VisualSha256`, so paired saves retain
 physical scene identity while rejecting a different prepared visual descriptor.
 
-The UTF-8 JSON must contain exactly these 15 fields; duplicate and unknown keys
+The version 1 UTF-8 JSON must contain exactly these 15 fields; duplicate and unknown keys
 refuse. The maximum file size is 16 KiB. This table describes the schema; it is
 not a measured descriptor or a calibration result.
+
+The separate [fitted workwear candidate](metahuman_cc0_workwear_trial.md) adds a
+version 2 descriptor with two qualified outfit fields. Its native admission and
+runtime verification remain pending.
 
 | Field | Required value or measured bound |
 | --- | --- |

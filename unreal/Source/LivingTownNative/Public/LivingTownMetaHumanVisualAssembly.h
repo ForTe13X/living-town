@@ -4,6 +4,8 @@
 #include "LivingTownMetaHumanVisualAssembly.generated.h"
 
 class UAnimSequence;
+class USkeletalMesh;
+class UMaterialInterface;
 class UChildActorComponent;
 class USkeletalMeshComponent;
 class USkinnedMeshComponent;
@@ -20,6 +22,9 @@ namespace LivingTownMetaHumanVisual
     inline constexpr TCHAR Idle[] = TEXT("/MetaHumanCharacter/Optional/Animation/UEFNAnimPreset/Locomotion/AS_MH_Neutral_Stand_Idle_Loop.AS_MH_Neutral_Stand_Idle_Loop");
     inline constexpr TCHAR Walk[] = TEXT("/MetaHumanCharacter/Optional/Animation/UEFNAnimPreset/Locomotion/AS_MH_Neutral_Walk_Loop_F.AS_MH_Neutral_Walk_Loop_F");
     inline constexpr TCHAR CoreManifestSha256[] = TEXT("2b60d109df4f6a99e0a746b8907fe89f16f5c3aa46aeb1db59f543c23f5b3c5c");
+    inline constexpr TCHAR WorkwearMesh[] = TEXT("/Game/LivingTown_UEPilot/MetaHumanCasualWorkwear_v002/SK_CasualWorkwear.SK_CasualWorkwear");
+    // Native intake001 plus four reviewed stills admit this opt-in runtime trial.
+    inline constexpr TCHAR WorkwearManifestSha256[] = TEXT("171d59c1e5aba3146f1f73f3e706b25c842414e89369f8d1522cb40b095f286c");
     LIVINGTOWNNATIVE_API bool ApplyCommandLineOptIn(FLivingTownCafeBinding& Binding,FString& Error);
 }
 
@@ -28,12 +33,16 @@ struct LIVINGTOWNNATIVE_API FLivingTownMetaHumanVisualBinding
 {
     FString DescriptorSha256, SourceClosureSha256, CoreManifestSha256;
     FString ActorClassPath, IdleAnimationPath, WalkAnimationPath;
+    FString OutfitMeshPath, OutfitManifestSha256;
+    int32 DescriptorVersion=1;
     FTransform ActorRelative = FTransform::Identity;
     FName HandBone = NAME_None;
     double CapsuleRadiusCm=0, CapsuleHalfHeightCm=0, WalkSpeedCmPerSecond=0, CameraArmCm=0;
     double PreloadDeadlineSeconds=0;
     bool bReadPreparedDescriptor=false;
     bool IsValidated() const;
+    bool UsesWorkwear() const { return DescriptorVersion==2; }
+    const TCHAR* ExpectedOutfitMesh() const { return UsesWorkwear()?*OutfitMeshPath:LivingTownMetaHumanVisual::OutfitMesh; }
     static bool Read(const FString& Path,FLivingTownMetaHumanVisualBinding& Out,FString& Error);
 };
 
@@ -56,6 +65,7 @@ public:
     UClass* GetPreparedActorClass() const { return PreparedActorClass; }
     UAnimSequence* GetIdle() const { return Idle; }
     UAnimSequence* GetWalk() const { return Walk; }
+    USkeletalMesh* GetWorkwear() const { return Workwear; }
     void Reset();
     virtual void TickComponent(float Delta,ELevelTick TickType,FActorComponentTickFunction* TickFunction) override;
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
@@ -63,6 +73,7 @@ private:
     UPROPERTY() TObjectPtr<UClass> PreparedActorClass;
     UPROPERTY() TObjectPtr<UAnimSequence> Idle;
     UPROPERTY() TObjectPtr<UAnimSequence> Walk;
+    UPROPERTY() TObjectPtr<USkeletalMesh> Workwear;
     TSharedPtr<FStreamableHandle> Handle;
     FSimpleDelegate OnCompletion;
     FLivingTownMetaHumanVisualBinding Requested;
@@ -98,6 +109,8 @@ private:
     UPROPERTY() TObjectPtr<USkeletalMeshComponent> Outfit;
     UPROPERTY() TObjectPtr<UAnimSequence> Idle;
     UPROPERTY() TObjectPtr<UAnimSequence> Walk;
+    UPROPERTY() TObjectPtr<USkeletalMesh> ExpectedWorkwear;
+    UPROPERTY() TArray<TObjectPtr<UMaterialInterface>> ExpectedWorkwearMaterials;
     FLivingTownMetaHumanVisualBinding Prepared;
     struct FTickPolicy { TWeakObjectPtr<USkeletalMeshComponent> Component; uint8 Visibility=0; bool bURO=false; };
     TArray<FTickPolicy> SavedPolicies;
@@ -112,4 +125,5 @@ private:
     bool bConfigured=false, bWalking=false;
     void RestoreTickPolicies();
     bool HasPreservedPoseOwnership() const;
+    bool HasExpectedOutfit() const;
 };
