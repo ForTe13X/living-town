@@ -20,6 +20,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Parse.h"
+#include "Materials/MaterialInterface.h"
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -80,12 +81,26 @@ bool BodyPostProcess(const USkeletalMeshComponent* Body)
     const auto* Post=Body?Body->GetPostProcessInstance():nullptr;
     return IsValid(Post)&&Post->GetClass()->GetPathName()==LivingTownMetaHumanVisual::BodyPostProcessClass&&!Body->GetDisablePostProcessBlueprint();
 }
+bool WorkwearAsset(const USkeletalMesh* M,const UAnimSequence* Idle)
+{
+    if(!M||M->GetPathName()!=LivingTownMetaHumanVisual::WorkwearMesh||!Idle||M->GetSkeleton()!=Idle->GetSkeleton()||M->GetMaterials().Num()!=3) return false;
+    static const TCHAR* Materials[]={
+        TEXT("/Game/LivingTown_UEPilot/MetaHumanCasualWorkwear_v002/Materials/M_CottonTee.M_CottonTee"),
+        TEXT("/Game/LivingTown_UEPilot/MetaHumanCasualWorkwear_v002/Materials/M_Jeans_Belt.M_Jeans_Belt"),
+        TEXT("/Game/LivingTown_UEPilot/MetaHumanCasualWorkwear_v002/Materials/M_Shoes.M_Shoes")};
+    for(int32 I=0;I<UE_ARRAY_COUNT(Materials);++I)
+        if(!IsValid(M->GetMaterials()[I].MaterialInterface)||M->GetMaterials()[I].MaterialInterface->GetPathName()!=Materials[I]) return false;
+    return true;
+}
 }
 
 bool FLivingTownMetaHumanVisualBinding::IsValidated() const
 {
     const FRotator R=ActorRelative.Rotator();const FVector T=ActorRelative.GetTranslation();
-    return bReadPreparedDescriptor&&Hash(DescriptorSha256)&&Hash(SourceClosureSha256)&&
+    const bool Outfit=(DescriptorVersion==1&&OutfitMeshPath.IsEmpty()&&OutfitManifestSha256.IsEmpty())||
+        (DescriptorVersion==2&&OutfitMeshPath==LivingTownMetaHumanVisual::WorkwearMesh&&Hash(LivingTownMetaHumanVisual::WorkwearManifestSha256)&&
+         OutfitManifestSha256==LivingTownMetaHumanVisual::WorkwearManifestSha256);
+    return Outfit&&bReadPreparedDescriptor&&Hash(DescriptorSha256)&&Hash(SourceClosureSha256)&&
         CoreManifestSha256==LivingTownMetaHumanVisual::CoreManifestSha256&&
         ActorClassPath==LivingTownMetaHumanVisual::ActorClass&&IdleAnimationPath==LivingTownMetaHumanVisual::Idle&&
         WalkAnimationPath==LivingTownMetaHumanVisual::Walk&&HandBone==FName(TEXT("hand_r"))&&
@@ -103,11 +118,16 @@ bool FLivingTownMetaHumanVisualBinding::Read(const FString& Path,FLivingTownMeta
     const int64 Size=IFileManager::Get().FileSize(*Path);TArray<uint8> Bytes;
     if(Size<=0||Size>16*1024||!FFileHelper::LoadFileToArray(Bytes,*Path)) return Fail(TEXT("metahuman_prepared_descriptor_missing_or_oversize"));
     FString Text;FFileHelper::BufferToString(Text,Bytes.GetData(),Bytes.Num());TSharedPtr<FJsonObject> O;
-    if(!LivingTownCafeJournal::HasUniqueObjectKeys(Text)||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),O)||!O||O->Values.Num()!=15)
+    if(!LivingTownCafeJournal::HasUniqueObjectKeys(Text)||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),O)||!O)
         return Fail(TEXT("metahuman_prepared_descriptor_schema_required"));
     FLivingTownMetaHumanVisualBinding B;FString Format,Status,Hand;double Version=0;
+    if(!Number(*O,TEXT("version"),Version,1,2)||(Version!=1&&Version!=2)||O->Values.Num()!=(Version==1?15:17))
+        return Fail(TEXT("metahuman_prepared_descriptor_schema_required"));
+    B.DescriptorVersion=int32(Version);
+    if(B.UsesWorkwear()&&(!O->TryGetStringField(TEXT("outfit_mesh"),B.OutfitMeshPath)||!O->TryGetStringField(TEXT("outfit_manifest_sha256"),B.OutfitManifestSha256)))
+        return Fail(TEXT("metahuman_prepared_workwear_descriptor_required"));
     if(!O->TryGetStringField(TEXT("format"),Format)||Format!=TEXT("LivingTown.MetaHumanBenActorPrepared")||
-       !Number(*O,TEXT("version"),Version,1,1)||!O->TryGetStringField(TEXT("status"),Status)||Status!=TEXT("CONTROLLED_GAME_TRIAL_PREPARED")||
+       !O->TryGetStringField(TEXT("status"),Status)||Status!=TEXT("CONTROLLED_GAME_TRIAL_PREPARED")||
        !O->TryGetStringField(TEXT("source_closure_sha256"),B.SourceClosureSha256)||!O->TryGetStringField(TEXT("core_manifest_sha256"),B.CoreManifestSha256)||
        !O->TryGetStringField(TEXT("actor_class"),B.ActorClassPath)||!O->TryGetStringField(TEXT("idle_animation"),B.IdleAnimationPath)||
        !O->TryGetStringField(TEXT("walk_animation"),B.WalkAnimationPath)||!O->TryGetStringField(TEXT("hand_bone"),Hand)||Hand.Len()>64||
@@ -163,6 +183,7 @@ ELivingTownMetaHumanPreloadState ULivingTownMetaHumanVisualPreload::Request(cons
     Requested=B;OnCompletion=MoveTemp(Completion);RequestedAt=FPlatformTime::Seconds();State=ELivingTownMetaHumanPreloadState::Pending;
     SetComponentTickEnabled(true);const uint64 E=++Epoch;TWeakObjectPtr<ULivingTownMetaHumanVisualPreload> Weak(this);
     TArray<FSoftObjectPath> Paths{FSoftObjectPath(B.ActorClassPath),FSoftObjectPath(B.IdleAnimationPath),FSoftObjectPath(B.WalkAnimationPath)};
+    if(B.UsesWorkwear()) Paths.Add(FSoftObjectPath(B.OutfitMeshPath));
     auto NewHandle=UAssetManager::GetStreamableManager().RequestAsyncLoad(Paths,FStreamableDelegate::CreateLambda([Weak,E]()
     {if(auto* Self=Weak.Get();Self&&Self->Epoch==E&&Self->State==ELivingTownMetaHumanPreloadState::Pending) Self->Complete(E);}));
     if(Epoch==E&&(State==ELivingTownMetaHumanPreloadState::Pending||State==ELivingTownMetaHumanPreloadState::Ready))
@@ -178,21 +199,25 @@ void ULivingTownMetaHumanVisualPreload::Complete(uint64 E)
     if(!IsInGameThread()||E!=Epoch||State!=ELivingTownMetaHumanPreloadState::Pending||!GetWorld()||GetWorld()->bIsTearingDown||!IsValid(GetOwner())) return;
     PreparedActorClass=Cast<UClass>(FSoftObjectPath(Requested.ActorClassPath).ResolveObject());
     Idle=Cast<UAnimSequence>(FSoftObjectPath(Requested.IdleAnimationPath).ResolveObject());Walk=Cast<UAnimSequence>(FSoftObjectPath(Requested.WalkAnimationPath).ResolveObject());
+    Workwear=Requested.UsesWorkwear()?Cast<USkeletalMesh>(FSoftObjectPath(Requested.OutfitMeshPath).ResolveObject()):nullptr;
     if(!PreparedClass(PreparedActorClass)||!Clip(Idle,LivingTownMetaHumanVisual::Idle)||!Clip(Walk,LivingTownMetaHumanVisual::Walk)||Idle->GetSkeleton()!=Walk->GetSkeleton())
     {Fail(TEXT("metahuman_preloaded_exact_actor_and_compatible_clips_required"));return;}
+    if(Requested.UsesWorkwear()&&!WorkwearAsset(Workwear,Idle))
+    {Fail(TEXT("metahuman_preloaded_workwear_and_shared_skeleton_required"));return;}
     State=ELivingTownMetaHumanPreloadState::Ready;SetComponentTickEnabled(false);
     FSimpleDelegate CompleteCallback=MoveTemp(OnCompletion);CompleteCallback.ExecuteIfBound();
 }
 bool ULivingTownMetaHumanVisualPreload::IsReadyFor(const FLivingTownMetaHumanVisualBinding& B) const
 {
     return IsInGameThread()&&IsValid(GetOwner())&&GetWorld()&&!GetWorld()->bIsTearingDown&&State==ELivingTownMetaHumanPreloadState::Ready&&B.IsValidated()&&Requested.DescriptorSha256==B.DescriptorSha256&&
-        PreparedClass(PreparedActorClass)&&Clip(Idle,LivingTownMetaHumanVisual::Idle)&&Clip(Walk,LivingTownMetaHumanVisual::Walk)&&Idle->GetSkeleton()==Walk->GetSkeleton();
+        PreparedClass(PreparedActorClass)&&Clip(Idle,LivingTownMetaHumanVisual::Idle)&&Clip(Walk,LivingTownMetaHumanVisual::Walk)&&Idle->GetSkeleton()==Walk->GetSkeleton()&&
+        (!B.UsesWorkwear()||WorkwearAsset(Workwear,Idle));
 }
 void ULivingTownMetaHumanVisualPreload::Fail(const TCHAR* Reason)
 {
     ++Epoch;Failure=Reason;State=ELivingTownMetaHumanPreloadState::Failed;SetComponentTickEnabled(false);
     if(Handle) {Handle->CancelHandle();Handle.Reset();}
-    PreparedActorClass=nullptr;Idle=nullptr;Walk=nullptr;
+    PreparedActorClass=nullptr;Idle=nullptr;Walk=nullptr;Workwear=nullptr;
     FSimpleDelegate CompleteCallback=MoveTemp(OnCompletion);CompleteCallback.ExecuteIfBound();
 }
 void ULivingTownMetaHumanVisualPreload::TickComponent(float Delta,ELevelTick Type,FActorComponentTickFunction* Tick)
@@ -205,7 +230,7 @@ void ULivingTownMetaHumanVisualPreload::Reset()
     if(!IsInGameThread()) return;
     ++Epoch;OnCompletion.Unbind();SetComponentTickEnabled(false);
     if(Handle) {Handle->CancelHandle();Handle.Reset();}
-    PreparedActorClass=nullptr;Idle=nullptr;Walk=nullptr;Requested={};State=ELivingTownMetaHumanPreloadState::Empty;Failure.Empty();
+    PreparedActorClass=nullptr;Idle=nullptr;Walk=nullptr;Workwear=nullptr;Requested={};State=ELivingTownMetaHumanPreloadState::Empty;Failure.Empty();
 }
 void ULivingTownMetaHumanVisualPreload::EndPlay(const EEndPlayReason::Type Reason)
 {Reset();Super::EndPlay(Reason);}
@@ -252,6 +277,16 @@ bool ULivingTownMetaHumanVisualAssembly::Configure(const FLivingTownMetaHumanVis
         P.MainClass=C->GetAnimInstance()?C->GetAnimInstance()->GetClass():nullptr;
         P.PostClass=C->GetPostProcessInstance()?C->GetPostProcessInstance()->GetClass():nullptr;PoseOwnership.Add(P);
     }
+    if(B.UsesWorkwear())
+    {
+        ExpectedWorkwear=Preload->GetWorkwear();
+        if(!WorkwearAsset(ExpectedWorkwear,Idle)) return Rollback(TEXT("metahuman_workwear_not_preloaded"));
+        for(const auto& Material:ExpectedWorkwear->GetMaterials()) ExpectedWorkwearMaterials.Add(Material.MaterialInterface);
+        Outfit->SetSkeletalMesh(ExpectedWorkwear,false);
+        Outfit->EmptyOverrideMaterials();
+        Outfit->SetOverlayMaterial(nullptr);
+        if(!HasPreservedPoseOwnership()||!HasExpectedOutfit()) return Rollback(TEXT("metahuman_workwear_swap_changed_pose_or_material_ownership"));
+    }
     Body->PlayAnimation(Idle,true);Body->SetPlayRate(1.f);bWalking=false;bConfigured=true;
     if(!IsConfigured()) return Rollback(TEXT("metahuman_owned_native_idle_player_required"));
     return true;
@@ -262,11 +297,20 @@ bool ULivingTownMetaHumanVisualAssembly::IsConfigured() const
     const AActor* A=GetVisualActor();auto* Player=Body?Body->GetSingleNodeInstance():nullptr;
     return bConfigured&&Prepared.IsValidated()&&IsValid(GetOwner())&&IsValid(VisualChild)&&IsValid(A)&&A->HasActorBegunPlay()&&A->GetParentActor()==GetOwner()&&A->GetOwner()==GetOwner()&&A->GetWorld()==GetWorld()&&PreparedClass(A->GetClass())&&
         VisualChild->GetAttachParent()==GetOwner()->GetRootComponent()&&VisualChild->GetRelativeTransform().Equals(Prepared.ActorRelative,1.e-6)&&
-        Mesh(Body,A,LivingTownMetaHumanVisual::BodyMesh)&&Mesh(Face,A,LivingTownMetaHumanVisual::FaceMesh)&&Mesh(Outfit,A,LivingTownMetaHumanVisual::OutfitMesh)&&
+        Mesh(Body,A,LivingTownMetaHumanVisual::BodyMesh)&&Mesh(Face,A,LivingTownMetaHumanVisual::FaceMesh)&&HasExpectedOutfit()&&
         Face->GetAttachParent()==Body&&Outfit->GetAttachParent()==Body&&!Body->LeaderPoseComponent.IsValid()&&Body->GetAnimationMode()==EAnimationMode::AnimationSingleNode&&
         Player&&Player->GetClass()==UAnimSingleNodeInstance::StaticClass()&&Player->GetCurrentAsset()==(bWalking?Walk.Get():Idle.Get())&&
         Body->DoesSocketExist(Prepared.HandBone)&&Body->bEnableAnimation&&!Body->bPauseAnims&&Body->GlobalAnimRateScale==1.f&&BodyPostProcess(Body)&&
         Player->IsPlaying()&&Player->IsLooping()&&Player->GetPlayRate()==1.f&&HasPreservedPoseOwnership()&&!A->GetActorEnableCollision()&&!A->IsHidden();
+}
+bool ULivingTownMetaHumanVisualAssembly::HasExpectedOutfit() const
+{
+    if(!Mesh(Outfit,GetVisualActor(),Prepared.ExpectedOutfitMesh())) return false;
+    if(!Prepared.UsesWorkwear()) return true;
+    if(!ExpectedWorkwear||Outfit->GetSkeletalMeshAsset()!=ExpectedWorkwear||ExpectedWorkwearMaterials.Num()!=3||Outfit->GetNumMaterials()!=3||Outfit->GetOverlayMaterial()) return false;
+    for(int32 I=0;I<ExpectedWorkwearMaterials.Num();++I)
+        if(Outfit->GetMaterial(I)!=ExpectedWorkwearMaterials[I]||Outfit->GetOverlayMaterial(true,I)) return false;
+    return true;
 }
 bool ULivingTownMetaHumanVisualAssembly::HasPreservedPoseOwnership() const
 {
@@ -316,7 +360,7 @@ void ULivingTownMetaHumanVisualAssembly::Reset()
     if(!IsInGameThread()) return;
     RestoreTickPolicies();bConfigured=false;
     if(VisualChild) {VisualChild->DestroyComponent();VisualChild=nullptr;}
-    Body=nullptr;Face=nullptr;Outfit=nullptr;Idle=nullptr;Walk=nullptr;Prepared={};PoseOwnership.Empty();bWalking=false;
+    Body=nullptr;Face=nullptr;Outfit=nullptr;Idle=nullptr;Walk=nullptr;ExpectedWorkwear=nullptr;ExpectedWorkwearMaterials.Empty();Prepared={};PoseOwnership.Empty();bWalking=false;
 }
 void ULivingTownMetaHumanVisualAssembly::EndPlay(const EEndPlayReason::Type Reason)
 {Reset();Super::EndPlay(Reason);}

@@ -64,6 +64,21 @@ const FB749UnitPin B749Pins[]={
     {194,TEXT("PERSISTENT_GROUND"),TEXT("/Game/LivingTown_UEPilot/FullTownIntegrationB749_v001/Units/L_Ground156_v001.L_Ground156_v001"),156,
         145199,TEXT("28301d6a504dfb4edbad6c0bac98b231d5f05a5bf88d52c7e14a29bdd5af6662"),TEXT("63991dce5deec1d4e30b864f9b19fcf3ac7317c86b3a334b204a83b4239b165e"),TEXT("62c991b61f02a54f110e5d159f8aa1e56dd53bb8f01609fefb390f25d6ef3c39")}
 };
+// Separate uncooked continuous-roof trial; original B749/cooked pins remain unchanged.
+const TCHAR* const B749RoofProfile=TEXT("B749_ContinuousRoofRuntime_v001");
+const TCHAR* const B749RoofRoot=TEXT("/Game/LivingTown_UEPilot/FullTownIntegrationB749_ContinuousRoofRuntime_v001/L_B749_ContinuousRoofRuntime_v001.L_B749_ContinuousRoofRuntime_v001");
+const TCHAR* const B749RoofDispatchSha=TEXT("14c9b4107280b0040e5c815a1a23cf3eba365a9b79851a879dd46763d0320d6c");
+const TCHAR* const B749RoofLedgerSha=TEXT("5ef41f374840deb7cc63eb4cd4dfb9f71e309c0d697577fc0e119df011fa6c39");
+const TCHAR* const B749RoofManifestAdmissionSha=TEXT("0d21f61d3f92b26b4b4350dd7112791974d72ff051a7022affefd1f03b8e5e4b");
+const FB749UnitPin B749RoofUnitPin={193,TEXT("MILL_COURT_B749"),TEXT("/Game/LivingTown_UEPilot/FullTownIntegrationB749_ContinuousRoof_v001/Units/L_B749_ContinuousRoof_v001.L_B749_ContinuousRoof_v001"),749,
+    701814,TEXT("1a6c9f9d2bdb3ffa95c41f09118bdbc8afad6189c6bd331c96e21dabe9865049"),TEXT("f7c212dfd290f8e3e15cd72cf65ddfe69d967aec254cc24b40a38ed8910a22a4"),TEXT("953f3ba42f1bcabf47dcc9857b5c59ea41e8951a904007d19a8c834202fd82ee")};
+const FB749UnitPin& B749Pin(const ULivingTownFullTownData& D,int32 Index)
+{ return D.ProfileId==B749RoofProfile && Index==1 ? B749RoofUnitPin : B749Pins[Index]; }
+const TCHAR* B749RoofMesh(int32 Index)
+{ return Index==447 ? TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_ContinuousRoof_v003/StaticMeshes/MillCourt_B_ContinuousRoof_Geometry_v001/StaticMeshes/MCB_Continu_47_v001_001.MCB_Continu_47_v001_001") : TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_ContinuousRoof_v003/StaticMeshes/MillCourt_B_ContinuousRoof_Geometry_v001/StaticMeshes/MCB_Continu_48_v001_001.MCB_Continu_48_v001_001"); }
+const TCHAR* B749RoofSlot(int32 Index)
+{ return Index==447 ? TEXT("-1") : TEXT("-1"); }
+const TCHAR* const B749RoofMaterial=TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_ContinuousRoof_v003/Materials/M_MC_ContinuousSlate_v003.M_MC_ContinuousSlate_v003");
 struct FB749Finish { const TCHAR* Path; int32 Count; };
 const FB749Finish B749Finishes[]={
     {TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_Material176_v001/Materials/M_CutGranite.M_CutGranite"),141},
@@ -79,8 +94,9 @@ const FB749Finish B749Finishes[]={
 // additionally requires every actual pin below; no asset operation occurs here.
 bool B749Shape(const ULivingTownFullTownData& D,FString& Error)
 {
-    if (D.SchemaVersion!=1 || D.Scope!=TEXT("IntegrationSubset") || D.ProfileId!=B749Profile ||
-        D.RootWorld.ToString()!=B749Root || !Asset(D.RootWorld) ||
+    const bool Roof=D.ProfileId==B749RoofProfile;
+    if (D.SchemaVersion!=1 || D.Scope!=TEXT("IntegrationSubset") || (!Roof && D.ProfileId!=B749Profile) ||
+        D.RootWorld.ToString()!=(Roof?B749RoofRoot:B749Root) || !Asset(D.RootWorld) ||
         !LivingTownTiles::IsSha256(D.SourceDispatchSha256) || !LivingTownTiles::IsSha256(D.SourceWorldLedgerSha256) ||
         !LivingTownTiles::IsSha256(D.ManifestAdmissionSha256) || !LivingTownTiles::IsSha256(D.ExternalCafeBindingSha256) ||
         !Unique(D.ExternalCafePartIds,262) || !Unique(D.ExternalCafeRoleIds,262) || D.Units.Num()!=3)
@@ -93,7 +109,7 @@ bool B749Shape(const ULivingTownFullTownData& D,FString& Error)
     }
     for (int32 I=0; I<3; ++I)
     {
-        const auto& U=D.Units[I]; const auto& Pin=B749Pins[I];
+        const auto& U=D.Units[I]; const auto& Pin=B749Pin(D,I);
         if (U.DispatchIndex!=Pin.Index || U.UnitId!=Pin.Id || U.Map.ToSoftObjectPath().ToString()!=Pin.Map ||
             !Asset(U.Map.ToSoftObjectPath()) || U.Roles.Num()!=Pin.Roles || U.SourceMapBytes<=0 ||
             U.SourceMapBytes>8*1024*1024 || !LivingTownTiles::IsSha256(U.SourceMapSha256) ||
@@ -122,10 +138,14 @@ bool B749Shape(const ULivingTownFullTownData& D,FString& Error)
                 const bool Bedding=J==748;
                 const FString Alias=FString::Printf(TEXT("M%04d"),J);
                 const FString ExpectedRole=Bedding?TEXT("MCB::Bedding::Accepted_Bedding_ThreeAuthoredLODs"):TEXT("MCB::Building::")+Alias;
-                const FString ExpectedMesh=Bedding?TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_Bedding_v001/SM_Bedding.SM_Bedding"):
+                const FString ExpectedMesh=Roof && (J==447 || J==448) ? FString(B749RoofMesh(J)) : Bedding?TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_Bedding_v001/SM_Bedding.SM_Bedding"):
                     TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtBAssets_v001/Building/Building_NamesOnly/StaticMeshes/")+Alias+TEXT(".")+Alias;
                 if (R.RoleId!=ExpectedRole || R.Mesh.ToString()!=ExpectedMesh || R.Slots.Num()!=(Bedding?3:1))
                     return Refuse(Error,TEXT("fulltown_b749_exact_mesh_role_and_slot_shape"));
+                if (Roof && (J==447 || J==448) && (R.Slots[0].SlotName!=FName(B749RoofSlot(J)) ||
+                    R.Slots[0].OriginalDefault.ToString()!=B749RoofMaterial || !R.Slots[0].Override.IsNull() ||
+                    !R.Slots[0].OverrideColdAdmissionSha256.IsEmpty() || R.Slots[0].BlendMode!=0))
+                    return Refuse(Error,TEXT("fulltown_roof_exact_default_slate_slot"));
                 if (R.Slots[0].Override.IsNull()) ++EmptyB;
             }
             for (int32 S=0; S<R.Slots.Num(); ++S)
@@ -158,6 +178,12 @@ bool B749Shape(const ULivingTownFullTownData& D,FString& Error)
 bool ValidateB749(const ULivingTownFullTownData& D,FString& Error)
 {
     if (!B749Shape(D,Error)) return false;
+    const bool Roof=D.ProfileId==B749RoofProfile;
+    const TCHAR* Dispatch=Roof?B749RoofDispatchSha:B749DispatchSha;
+    const TCHAR* Ledger=Roof?B749RoofLedgerSha:B749LedgerSha;
+    const TCHAR* Admission=Roof?B749RoofManifestAdmissionSha:B749ManifestAdmissionSha;
+    if (Roof && (!LivingTownTiles::IsSha256(Dispatch) || !LivingTownTiles::IsSha256(Ledger) || !LivingTownTiles::IsSha256(Admission)))
+        return Refuse(Error,TEXT("fulltown_roof_DRAFT_REFUSE_pending_actual_author_pins"));
     if (!LivingTownTiles::IsSha256(B749DispatchSha) || !LivingTownTiles::IsSha256(B749LedgerSha) ||
         !LivingTownTiles::IsSha256(B749ManifestAdmissionSha) || !LivingTownTiles::IsSha256(B749CafeBindingSha))
         return Refuse(Error,TEXT("fulltown_b749_DRAFT_REFUSE_pending_actual_composite_pins"));
@@ -165,12 +191,12 @@ bool ValidateB749(const ULivingTownFullTownData& D,FString& Error)
         if (Pin.Bytes<=0 || !LivingTownTiles::IsSha256(Pin.SourceSha) ||
             !LivingTownTiles::IsSha256(Pin.RootColdSha) || !LivingTownTiles::IsSha256(Pin.ObservationSha))
             return Refuse(Error,TEXT("fulltown_b749_DRAFT_REFUSE_pending_actual_unit_pins"));
-    if (D.SourceDispatchSha256!=B749DispatchSha || D.SourceWorldLedgerSha256!=B749LedgerSha ||
-        D.ManifestAdmissionSha256!=B749ManifestAdmissionSha || D.ExternalCafeBindingSha256!=B749CafeBindingSha)
+    if (D.SourceDispatchSha256!=Dispatch || D.SourceWorldLedgerSha256!=Ledger ||
+        D.ManifestAdmissionSha256!=Admission || D.ExternalCafeBindingSha256!=B749CafeBindingSha)
         return Refuse(Error,TEXT("fulltown_b749_exact_composite_pins"));
     for (int32 I=0; I<3; ++I)
     {
-        const auto& U=D.Units[I]; const auto& Pin=B749Pins[I];
+        const auto& U=D.Units[I]; const auto& Pin=B749Pin(D,I);
         if (U.SourceMapBytes!=Pin.Bytes || U.SourceMapSha256!=Pin.SourceSha ||
             U.RootColdAdmissionSha256!=Pin.RootColdSha || U.ColdObservationSha256!=Pin.ObservationSha)
             return Refuse(Error,TEXT("fulltown_b749_exact_cold_map_pins"));
@@ -196,7 +222,7 @@ double LivingTownFullTown::DistanceToBoundsXY(const FVector& P, const FBox& B)
 
 bool LivingTownFullTown::ValidateManifest(const ULivingTownFullTownData& D, FString& Error)
 {
-    if (D.ProfileId==B749Profile) return ValidateB749(D,Error);
+    if (D.ProfileId==B749Profile || D.ProfileId==B749RoofProfile) return ValidateB749(D,Error);
     if (D.SchemaVersion != 1 || D.Scope != TEXT("IntegrationSubset") ||
         D.ProfileId != TEXT("U0131_U0142_Ground151_ExternalCafe81_v001") || !Asset(D.RootWorld) ||
         D.SourceDispatchSha256 != TEXT("63a0f2acb3899f0eecab2542a38b6f87e6a74f2266ca035ee97a6e12573f5b1a") ||
@@ -384,6 +410,48 @@ bool FLivingTownB749DraftSchemaTest::RunTest(const FString&)
     D->SourceDispatchSha256=B749DispatchSha;
     Error.Empty();
     TestTrue(TEXT("restored installed pins admit again"),LivingTownFullTown::ValidateManifest(*D,Error));
+    // Same metadata validator: old profile stays valid and only two roof roles differ.
+    auto* RoofD=DuplicateObject<ULivingTownFullTownData>(D,GetTransientPackage());
+    RoofD->ProfileId=B749RoofProfile; RoofD->RootWorld=FSoftObjectPath(B749RoofRoot);
+    auto& RoofUnit=RoofD->Units[1]; RoofUnit.Map=FSoftObjectPath(B749RoofUnitPin.Map);
+    RoofUnit.SourceMapBytes=B749RoofUnitPin.Bytes; RoofUnit.SourceMapSha256=B749RoofUnitPin.SourceSha;
+    RoofUnit.RootColdAdmissionSha256=B749RoofUnitPin.RootColdSha; RoofUnit.ColdObservationSha256=B749RoofUnitPin.ObservationSha;
+    for (int32 Index:{447,448})
+    { auto& R=RoofUnit.Roles[Index]; R.Mesh=FSoftObjectPath(B749RoofMesh(Index)); R.Slots[0].SlotName=FName(B749RoofSlot(Index)); R.Slots[0].OriginalDefault=FSoftObjectPath(B749RoofMaterial); R.Slots[0].Override.Reset(); R.Slots[0].OverrideColdAdmissionSha256.Empty(); R.Slots[0].BlendMode=0; }
+    TestTrue(TEXT("roof shape retains original381 finishes and368 empty arrays"),B749Shape(*RoofD,Error));
+    TestFalse(TEXT("old global pins cannot admit new roof profile"),LivingTownFullTown::ValidateManifest(*RoofD,Error));
+    RoofD->SourceDispatchSha256=B749RoofDispatchSha; RoofD->SourceWorldLedgerSha256=B749RoofLedgerSha;
+    RoofD->ManifestAdmissionSha256=B749RoofManifestAdmissionSha;
+    const bool RoofPinsReady=LivingTownTiles::IsSha256(B749RoofLedgerSha);
+    TestEqual(TEXT("roof metadata admits only after actual producer ledger pin"),LivingTownFullTown::ValidateManifest(*RoofD,Error),RoofPinsReady);
+    const FSoftObjectPath Roof447=RoofUnit.Roles[447].Mesh;
+    RoofUnit.Roles[447].Mesh=RoofUnit.Roles[448].Mesh;
+    TestFalse(TEXT("roof447 cannot use roof448"),B749Shape(*RoofD,Error)); RoofUnit.Roles[447].Mesh=Roof447;
+    auto& RoofSlot=RoofUnit.Roles[447].Slots[0];
+    const auto AdmittedRoofSlot=RoofSlot;
+    auto RefusesRoofSlot=[&](const TCHAR* Label)
+    {
+        TestFalse(Label,B749Shape(*RoofD,Error));
+        TestEqual(TEXT("roof slot refusal identifies the changed slate binding"),Error,FString(TEXT("fulltown_roof_exact_default_slate_slot")));
+        RoofSlot=AdmittedRoofSlot;
+        TestTrue(TEXT("restored roof slot admits again"),B749Shape(*RoofD,Error));
+    };
+    RoofSlot.SlotName=FName(TEXT("ForeignRoofSlot"));
+    RefusesRoofSlot(TEXT("roof slot name cannot change"));
+    RoofSlot.OriginalDefault=FSoftObjectPath(TEXT("/Game/LivingTown_UEPilot/Tests/ForeignFinish.ForeignFinish"));
+    RefusesRoofSlot(TEXT("roof default slate material cannot change"));
+    RoofSlot.Override=AdmittedRoofSlot.OriginalDefault;
+    RefusesRoofSlot(TEXT("roof cannot gain an override even equal to its default"));
+    RoofSlot.OverrideColdAdmissionSha256=SyntheticSha;
+    RefusesRoofSlot(TEXT("roof cannot gain an unrelated finish admission"));
+    RoofSlot.BlendMode=1;
+    RefusesRoofSlot(TEXT("roof cannot change its opaque blend mode"));
+    RoofUnit.Map=FSoftObjectPath(B749Pins[1].Map);
+    TestFalse(TEXT("roof profile cannot reuse old unit map"),B749Shape(*RoofD,Error)); RoofUnit.Map=FSoftObjectPath(B749RoofUnitPin.Map);
+    RoofD->ProfileId=B749Profile;
+    TestFalse(TEXT("roof assets cannot masquerade as original B749"),B749Shape(*RoofD,Error));
+    TestTrue(TEXT("original B749 remains valid after roof probes"),LivingTownFullTown::ValidateManifest(*D,Error));
+
     auto& Role=D->Units[1].Roles[0]; auto& Slot=Role.Slots[0];
     const FSoftObjectPath Finish=Slot.Override, Original=Slot.OriginalDefault;
     Slot.OriginalDefault=Finish;

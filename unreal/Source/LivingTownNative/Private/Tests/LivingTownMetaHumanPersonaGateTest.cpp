@@ -16,6 +16,7 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "UObject/Package.h"
+#include "UObject/SoftObjectPath.h"
 #include "UObject/StrongObjectPtrTemplates.h"
 
 namespace
@@ -178,7 +179,7 @@ public:
             {
                 if(C==Body)continue;
                 const FString Path=C->GetSkeletalMeshAsset()?C->GetSkeletalMeshAsset()->GetPathName():FString();
-                bFace|=Path==LivingTownMetaHumanVisual::FaceMesh;bOutfit|=Path==LivingTownMetaHumanVisual::OutfitMesh;
+                bFace|=Path==LivingTownMetaHumanVisual::FaceMesh;bOutfit|=Path==Authority->GetBinding().MetaHumanActor.GetValue().ExpectedOutfitMesh();
                 if(!Need(C->GetOwner()==Visual&&C->GetAttachParent()==Body&&C->IsRegistered()&&C->GetCollisionEnabled()==ECollisionEnabled::NoCollision&&
                     (C->LeaderPoseComponent.Get()==Body||C->GetAnimInstance()||C->GetPostProcessInstance()),
                     TEXT("Actual face/outfit use the SDK's owned body attachment and live pose sources")))return true;
@@ -239,6 +240,34 @@ public:
             auto* ResetAssembly=ResetProbe->FindComponentByClass<ULivingTownMetaHumanVisualAssembly>();
             TWeakObjectPtr<AActor> ResetChild=ResetAssembly?ResetAssembly->GetVisualActor():nullptr;
             if(!Need(ResetAssembly&&ResetChild.IsValid(),TEXT("Actual child exists before explicit reset")))return true;
+            if(B.MetaHumanActor.GetValue().UsesWorkwear())
+            {
+                TArray<USkeletalMeshComponent*> Parts;ResetChild->GetComponents(Parts);USkeletalMeshComponent* Wardrobe=nullptr;
+                for(auto* Part:Parts)
+                    if(Part->GetSkeletalMeshAsset()&&Part->GetSkeletalMeshAsset()->GetPathName()==B.MetaHumanActor.GetValue().ExpectedOutfitMesh()) Wardrobe=Part;
+                auto* ForeignMaterial=ResetAssembly->GetBody()->GetMaterial(0);
+                if(!Need(Wardrobe&&ForeignMaterial&&ForeignMaterial!=Wardrobe->GetMaterial(0),TEXT("Independent probe has distinct body and wardrobe materials")))return true;
+                Wardrobe->SetMaterial(0,ForeignMaterial);
+                if(!Need(!ResetAssembly->IsConfigured()&&!ResetAssembly->UpdateMotion(0)&&!ResetProbe->HasQualifiedVisual()&&Ben->HasQualifiedVisual(),
+                    TEXT("Late outfit material overwrite refuses the independent probe without affecting the possessed actor")))return true;
+                Wardrobe->EmptyOverrideMaterials();
+                if(!Need(ResetAssembly->IsConfigured(),TEXT("Probe mesh defaults restore the admitted three materials")))return true;
+                Wardrobe->SetOverlayMaterial(ForeignMaterial);
+                if(!Need(!ResetAssembly->IsConfigured()&&!ResetAssembly->UpdateMotion(0)&&!ResetProbe->HasQualifiedVisual()&&Ben->HasQualifiedVisual(),
+                    TEXT("Late global outfit overlay refuses the independent probe without affecting the possessed actor")))return true;
+                Wardrobe->SetOverlayMaterial(nullptr);
+                if(!Need(ResetAssembly->IsConfigured(),TEXT("Clearing the global overlay restores the admitted wardrobe")))return true;
+                Wardrobe->SetOverlayMaterial(ForeignMaterial,true,0);
+                if(!Need(!ResetAssembly->IsConfigured()&&!ResetAssembly->UpdateMotion(0)&&!ResetProbe->HasQualifiedVisual()&&Ben->HasQualifiedVisual(),
+                    TEXT("Late outfit slot overlay refuses the independent probe without affecting the possessed actor")))return true;
+                Wardrobe->EmptyOverrideMaterials();
+                if(!Need(ResetAssembly->IsConfigured(),TEXT("Clearing the slot overlay restores the admitted wardrobe")))return true;
+                auto* OriginalOutfit=Cast<USkeletalMesh>(FSoftObjectPath(LivingTownMetaHumanVisual::OutfitMesh).ResolveObject());
+                if(!Need(OriginalOutfit!=nullptr,TEXT("Original SDK outfit remains loaded independently of the derivative")))return true;
+                Wardrobe->SetSkeletalMesh(OriginalOutfit,false);
+                if(!Need(!ResetAssembly->IsConfigured()&&!ResetProbe->HasQualifiedVisual()&&Ben->HasQualifiedVisual(),
+                    TEXT("Late SDK outfit replacement refuses the independent probe while retaining the actual player")))return true;
+            }
             ResetAssembly->Reset();ResetAssembly->Reset();
             if(!Need(!ResetChild.IsValid()&&!ResetAssembly->IsConfigured()&&!ResetAssembly->GetVisualActor()&&!ResetAssembly->GetBody()&&!ResetProbe->HasQualifiedVisual(),
                 TEXT("Repeated holder reset removes owned child and clears actual qualification idempotently")))return true;
