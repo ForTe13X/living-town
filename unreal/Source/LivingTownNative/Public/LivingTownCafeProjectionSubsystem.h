@@ -18,6 +18,7 @@ struct FLivingTownCafePresentation
     TArray<FString> Feedback;
     bool bReady=false;
     bool bReachable=false;
+    bool bCounterNearby=false;
 };
 
 UCLASS()

@@ -199,7 +199,9 @@ void ALivingTownCafeWorldV3Controller::SetupInputComponent(){
     InputComponent->BindKey(EKeys::N,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::OfferRecurringLease);
     InputComponent->BindKey(EKeys::F5,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::Save);InputComponent->BindKey(EKeys::F9,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::Load);
     InputComponent->BindKey(EKeys::I,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::ImportOlderSave);
+    InputComponent->BindKey(EKeys::H,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::ToggleControls);
 }
+void ALivingTownCafeWorldV3Controller::ToggleControls(){SetControlsVisible(!AreControlsVisible());}
 void ALivingTownCafeWorldV3Controller::SelectAria(){FString Error;auto* G=GetWorld()?GetWorld()->GetAuthGameMode<ALivingTownCafeWorldV3GameMode>():nullptr;const auto R=G?G->RequestPersona(this,ELivingTownCafeWorldPersona::Aria,Error):ELivingTownCafePersonaRequestResult::Refused;OperationNotice=R==ELivingTownCafePersonaRequestResult::Selected?TEXT("Playing Aria."):R==ELivingTownCafePersonaRequestResult::Pending?TEXT("Loading Aria. Your current resident remains active."):TEXT("Unable to select Aria.");}
 void ALivingTownCafeWorldV3Controller::SelectBen(){FString Error;auto* G=GetWorld()?GetWorld()->GetAuthGameMode<ALivingTownCafeWorldV3GameMode>():nullptr;const auto R=G?G->RequestPersona(this,ELivingTownCafeWorldPersona::Ben,Error):ELivingTownCafePersonaRequestResult::Refused;OperationNotice=R==ELivingTownCafePersonaRequestResult::Selected?TEXT("Playing Ben."):R==ELivingTownCafePersonaRequestResult::Pending?TEXT("Loading Ben's complete character. Your current resident remains active."):TEXT("Unable to select Ben.");}
 FLivingTownCafeWorldReceipt ALivingTownCafeWorldV3Controller::RequestMeal(const FLivingTownCafeMealCommand& C){
@@ -230,10 +232,29 @@ void ALivingTownCafeWorldV3Controller::Lease(){auto* P=GetWorld()?GetWorld()->Ge
 void ALivingTownCafeWorldV3Controller::EndLease(){SendProperty(ELivingTownCafePropertyAction::EndLease);}
 TArray<FString> ALivingTownCafeWorldV3HUD::GetFeedbackRows()const{
     TArray<FString> Rows;const auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;
-    if(!P||!P->IsPrepared())return Rows;
+    if(!P)return Rows;
     const FString& AuthorityNotice=P->GetPresentation().Notice;Rows.Add(AuthorityNotice);
     const auto* PC=Cast<ALivingTownCafeWorldV3Controller>(PlayerOwner);
     if(PC&&!PC->GetOperationNotice().IsEmpty()&&PC->GetOperationNotice()!=AuthorityNotice)Rows.Add(TEXT("Last action: ")+PC->GetOperationNotice());
+    return Rows;
+}
+bool ALivingTownCafeWorldV3HUD::IsCounterContextVisible()const{
+    const auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;
+    if(!P||!P->IsPrepared())return false;
+    const auto& V=P->GetPresentation();
+    return !V.bSessionReady||V.bMealActive||V.bReachable||V.Diagnostic==TEXT("face_the_counter")||V.Diagnostic==TEXT("counter_line_of_sight_blocked");
+}
+TArray<FString> ALivingTownCafeWorldV3HUD::GetControlRows()const{
+    const auto* PC=Cast<ALivingTownCafeWorldV3Controller>(PlayerOwner);
+    const bool Expanded=PC&&PC->AreControlsVisible();
+    TArray<FString> Rows={Expanded?TEXT("H Hide controls"):TEXT("H Controls")};
+    if(!Expanded)return Rows;
+    Rows.Append({TEXT("CONTROLS"),TEXT("WASD Move"),TEXT("Mouse Look"),TEXT("F1 Aria  |  F2 Ben")});
+    const auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;
+    if(P&&P->IsPrepared()&&P->GetPresentation().bMealActive)Rows.Add(TEXT("X Cancel meal"));
+    else if(P&&P->IsPrepared()&&P->GetPresentation().bMealAvailable)Rows.Add(TEXT("E Eat a meal"));
+    else Rows.Add(TEXT("Meals unavailable"));
+    Rows.Append({TEXT("PROPERTY"),TEXT("O Offer sale"),TEXT("L Fixed | N Recurring lease"),TEXT("B Buy  |  K Lease"),TEXT("R End lease"),TEXT("SAVE"),TEXT("F5 Save  |  F9 Load"),TEXT("I Import older save")});
     return Rows;
 }
 void ALivingTownCafeWorldV3HUD::DrawHUD(){
@@ -283,29 +304,32 @@ void ALivingTownCafeWorldV3HUD::DrawHUD(){
         return Y+H;
     };
     const float Left=Margin,Right=Width-Margin-Rail,Bottom=Height-Margin;
-    TArray<FHudLine> Controls={
-        {TEXT("CONTROLS"),Gold},{TEXT("WASD Move"),Ink},{TEXT("Mouse Look"),Ink},
-        {TEXT("F1 Aria  |  F2 Ben"),Ink},{TEXT("E Eat  |  X Cancel"),Ink},
-        {TEXT("PROPERTY"),Gold},{TEXT("O Offer sale"),Ink},{TEXT("L Fixed | N Recurring lease"),Ink},
-        {TEXT("B Buy  |  K Lease"),Ink},{TEXT("R End lease"),Ink},
-        {TEXT("SAVE"),Gold},{TEXT("F5 Save  |  F9 Load"),Ink},{TEXT("I Import older save"),Ink}};
+    TArray<FHudLine> Controls;
+    for(const FString& Line:GetControlRows())Controls.Add({Line,Line==TEXT("CONTROLS")||Line==TEXT("PROPERTY")||Line==TEXT("SAVE")||Line.StartsWith(TEXT("H "))?Gold:Ink});
     const float ControlsBottom=Card(Right,Margin,Controls,Bottom-Margin);
     TArray<FHudLine> Status={{TEXT("LIVING TOWN / CAFE"),Gold}};
     if(!P||!P->IsPrepared()){
-        Status.Add({TEXT("Cafe interaction is unavailable."),Ink});Card(Left,Margin,Status,Bottom-Margin);return;
+        Status.Add({TEXT("Cafe interaction is unavailable."),Ink});
+        for(const FString& Line:GetFeedbackRows())if(!Line.IsEmpty())Status.Add({Line,Ink});
+        Card(Left,Margin,Status,Bottom-Margin);return;
     }
     const auto& V=P->GetPresentation();
-    Status.Add({V.ResidentLabel,Ink});Status.Add({V.PropertyLabel,Muted});
-    Status.Add({V.ListingLabel,Gold});Status.Add({V.MealLabel,Ink});
+    const auto* PC=Cast<ALivingTownCafeWorldV3Controller>(PlayerOwner);
+    const bool Nearby=IsCounterContextVisible();
+    Status.Add({V.ResidentLabel,Ink});
+    if(Nearby||(PC&&PC->AreControlsVisible())){
+        Status.Add({V.PropertyLabel,Muted});Status.Add({V.ListingLabel,Gold});Status.Add({V.MealLabel,Ink});
+    }
     const float StatusBottom=Card(Left,Margin,Status,Bottom-Margin);
     // Keep the live prompt and authority notice together, independently from
     // the controller's historical last-action result on the opposite rail.
     const auto Feedback=GetFeedbackRows();
-    TArray<FHudLine> Interaction={{TEXT("NEARBY"),Gold},{V.Prompt,Ink}};
+    TArray<FHudLine> Interaction;
+    if(Nearby){Interaction.Add({TEXT("NEARBY"),Gold});Interaction.Add({V.Prompt,Ink});}
     if(Feedback.Num()>0&&!Feedback[0].IsEmpty()){
         Interaction.Add({TEXT("CURRENT"),Gold});Interaction.Add({Feedback[0],Ink});
     }
-    Card(Left,StatusBottom+Gap,Interaction,Bottom-StatusBottom-Gap);
+    if(!Interaction.IsEmpty())Card(Left,StatusBottom+Gap,Interaction,Bottom-StatusBottom-Gap);
     if(Feedback.Num()>1){
         TArray<FHudLine> LastAction={{TEXT("LAST ACTION"),Gold},{Feedback[1],Ink}};
         Card(Right,ControlsBottom+Gap,LastAction,Bottom-ControlsBottom-Gap);

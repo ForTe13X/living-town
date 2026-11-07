@@ -18,6 +18,12 @@ public:
     bool HasNativePersona()const{return bAuthorized;}
     ELivingTownCafeWorldPersona GetNativePersona()const{return Persona;}
     const FString& GetOperationNotice()const{return OperationNotice;}
+    UFUNCTION(BlueprintPure, Category="LivingTown|Presentation")
+    bool AreControlsVisible()const{return bControlsVisible;}
+    UFUNCTION(BlueprintCallable, Category="LivingTown|Presentation")
+    void SetControlsVisible(bool bVisible){bControlsVisible=bVisible;}
+    UFUNCTION(BlueprintPure, Category="LivingTown|Presentation")
+    FString GetPresentedOperationNotice()const{return OperationNotice;}
     FLivingTownCafeWorldReceipt RequestMeal(const FLivingTownCafeMealCommand& Command);
     FLivingTownCafeWorldReceipt RequestCancelMeal();
     FLivingTownCafeWorldReceipt RequestRecurringLeaseOffer(const FString& RequestId);
@@ -27,6 +33,8 @@ private:
     bool bAuthorized=false;
     ELivingTownCafeWorldPersona Persona=ELivingTownCafeWorldPersona::Ben;
     FString OperationNotice;
+    UPROPERTY(Transient) bool bControlsVisible=false;
+    void ToggleControls();
     void SelectAria();void SelectBen();void Eat();void Cancel();void Save();void Load();void ImportOlderSave();
     void OfferSale();void OfferLease();void OfferRecurringLease();void Buy();void Lease();void EndLease();
     void SendProperty(ELivingTownCafePropertyAction Action);
@@ -63,6 +71,8 @@ class LIVINGTOWNNATIVE_API ALivingTownCafeWorldV3HUD final : public AHUD {
     GENERATED_BODY()
 public:
     virtual void DrawHUD()override;
+    bool IsCounterContextVisible()const;
+    TArray<FString> GetControlRows()const;
     // These are the exact text rows drawn below the live interaction prompt.
     // Authority outcomes and the last controller result have distinct rows.
     TArray<FString> GetFeedbackRows()const;
