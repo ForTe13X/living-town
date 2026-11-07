@@ -1,4 +1,5 @@
 #include "LivingTownViewportCsvSubsystem.h"
+#include "LivingTownCookedStartup.h"
 
 #include "CoreGlobals.h"
 #include "Camera/PlayerCameraManager.h"
@@ -58,7 +59,7 @@ void ULivingTownViewportCsvSubsystem::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 #if CSV_PROFILER && !CSV_PROFILER_MINIMAL
-    if (!bOwnedScope || !MatchesOwnedViewportCsvScope(GetWorld()) || !FCsvProfiler::IsCapturing())
+    if (!bOwnedScope || !MatchesOwnedViewportCsvScope(GetWorld()) || (!FCsvProfiler::IsCapturing() && !LivingTownCookedStartup::IsRequested()))
     {
         return;
     }
@@ -129,6 +130,10 @@ void ULivingTownViewportCsvSubsystem::Tick(float DeltaTime)
             *Pawn->GetPathName(), *Pawn->GetClass()->GetPathName(), *ViewTarget->GetPathName(), AutoManage,
             Location.X, Location.Y, Location.Z, Rotation.Pitch, Rotation.Yaw, Rotation.Roll, double(FOV));
     }
+
+    if(Frame>=0 && bPawnValid && bTargetIsPawn && bManagerTargetIsPawn && bFiniteView && AutoManage==0 &&
+       !PC->IsMoveInputIgnored() && FMath::IsFinite(Size.X) && FMath::IsFinite(Size.Y) && Size.X>0 && Size.Y>0)
+        LivingTownCookedStartup::ObserveReadyPlayerView(GetWorld());
 
 #endif
 }

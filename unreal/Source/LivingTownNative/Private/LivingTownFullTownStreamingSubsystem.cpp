@@ -1,4 +1,5 @@
 #include "LivingTownFullTownStreamingSubsystem.h"
+#include "LivingTownCookedStartup.h"
 #include "LivingTownFullTownDriver.h"
 #include "LivingTownTileDriver.h"
 #include "LivingTownTileData.h"
@@ -235,13 +236,17 @@ void ULivingTownFullTownStreamingSubsystem::OnWorldBeginPlay(UWorld& W)
     for (TActorIterator<ALivingTownFullTownDriver> It(&W); It; ++It) if (It->bEnableIntegrationSubset) Enabled.Add(*It);
     if (Enabled.IsEmpty()) return; // Original pilot/maps remain completely inactive here.
     bArmed=true; ArmedSeconds=FPlatformTime::Seconds(); ArmedFrame=GFrameCounter;
+    LivingTownCookedStartup::ArmWorld(&W);
+    LivingTownCookedStartup::Mark(TEXT("RootBeginPlayArmed"),&W);
     FString Error;
     // UWorld::BeginPlay invokes this before GameMode::StartPlay or actor BeginPlay.
     if (!LockMovementBeforeGameMode(W,Error)) { Fail(Error); return; }
     if (Enabled.Num()!=1 || !Enabled[0]->IsIdentityPlacement() ||
         !W.GetAuthGameMode() || W.GetAuthGameMode()->GetClass()!=ALivingTownCafeGameMode::StaticClass() ||
-        !W.GetStreamingLevels().IsEmpty() || W.GetNetMode()!=NM_Standalone || FPlatformProperties::RequiresCookedData())
+        !W.GetStreamingLevels().IsEmpty() || W.GetNetMode()!=NM_Standalone || (FPlatformProperties::RequiresCookedData() && !LivingTownCookedStartup::IsRequested()))
     { Fail(TEXT("fulltown_requires_one_identity_driver_empty_uncooked_standalone_root_and_existing_cafe_gamemode")); return; }
+    if(LivingTownCookedStartup::IsRequested() && W.GetOutermost()->GetName()!=B749RootPackage)
+    { Fail(TEXT("cook_smoke_exact_B749_root_only")); return; }
     Driver=Enabled[0]; auto* D=Driver.Get();
     for (TActorIterator<ALivingTownTileDriver> It(&W); It; ++It) if (It->bEnableQualifiedPilot)
     { Fail(TEXT("fulltown_old_pilot_driver_would_duplicate_geometry")); return; }
@@ -270,11 +275,14 @@ void ULivingTownFullTownStreamingSubsystem::OnWorldBeginPlay(UWorld& W)
     const FString ManifestFile=FPackageName::LongPackageNameToFilename(D->Manifest.GetLongPackageName(),FPackageName::GetAssetPackageExtension());
     TArray<uint8> ManifestBytes; FString ManifestHash;
     const double HashStart=FPlatformTime::Seconds();
-    const bool ManifestBound=IFileManager::Get().FileSize(*ManifestFile)==D->ManifestSourceBytes && FFileHelper::LoadFileToArray(ManifestBytes,*ManifestFile) &&
-        ManifestBytes.Num()==D->ManifestSourceBytes && LivingTownTiles::HashBytes(ManifestBytes,ManifestHash) && ManifestHash==D->ManifestSourceSha256;
+    const bool ManifestBound=LivingTownCookedStartup::IsRequested()
+        ? LivingTownCookedStartup::VerifyPackage(D->Manifest.GetLongPackageName(),D->ManifestSourceBytes,D->ManifestSourceSha256,Error)
+        : IFileManager::Get().FileSize(*ManifestFile)==D->ManifestSourceBytes && FFileHelper::LoadFileToArray(ManifestBytes,*ManifestFile) &&
+          ManifestBytes.Num()==D->ManifestSourceBytes && LivingTownTiles::HashBytes(ManifestBytes,ManifestHash) && ManifestHash==D->ManifestSourceSha256;
     ManifestSourceHashSeconds=FPlatformTime::Seconds()-HashStart;
     if (!ManifestBound)
-    { Fail(TEXT("fulltown_exact_uncooked_manifest_package_binding")); return; }
+    { Fail(LivingTownCookedStartup::IsRequested()?FString(TEXT("cook_smoke_identity: "))+Error:FString(TEXT("fulltown_exact_uncooked_manifest_package_binding"))); return; }
+    LivingTownCookedStartup::Mark(TEXT("CriticalCookedIdentityVerified"),&W);
     const uint64 E=Epoch; TWeakObjectPtr<ULivingTownFullTownStreamingSubsystem> Weak(this);
     ManifestHandle=UAssetManager::GetStreamableManager().RequestAsyncLoad(D->Manifest.ToSoftObjectPath(),FStreamableDelegate::CreateLambda([Weak,E]()
     { if (auto* S=Weak.Get(); S && S->Epoch==E && !S->bFailed && !S->bWorldEnding) S->bManifestCompleted=true; }));
@@ -310,6 +318,7 @@ void ULivingTownFullTownStreamingSubsystem::NotifyDriverEnding(const ALivingTown
 void ULivingTownFullTownStreamingSubsystem::RequestSafeStop()
 {
     if (!bArmed || bWorldEnding) return;
+    LivingTownCookedStartup::InvalidateWorld(GetWorld());
     bStopping=true; ++Epoch;
     // The synchronous post-Possess hook owns re-locking if a stop occurs inside
     // that stack; do not add a second contribution before ClientRestart resets it.
@@ -399,6 +408,8 @@ bool ULivingTownFullTownStreamingSubsystem::CheckSourceMap(const FLivingTownFull
     const auto Record=[&](bool Result)
     { const double Elapsed=FPlatformTime::Seconds()-Start; ++MapSourceHashCalls; MapSourceHashSecondsTotal+=Elapsed;
       MapSourceHashSecondsMax=FMath::Max(MapSourceHashSecondsMax,Elapsed); return Result; };
+    if(LivingTownCookedStartup::IsRequested())
+        return Record(LivingTownCookedStartup::VerifyPackage(U.Map.GetLongPackageName(),U.SourceMapBytes,U.SourceMapSha256,Error));
     const FString Filename=FPackageName::LongPackageNameToFilename(U.Map.GetLongPackageName(),FPackageName::GetMapPackageExtension());
     TArray<uint8> Bytes;
     if (IFileManager::Get().FileSize(*Filename)!=U.SourceMapBytes || !FFileHelper::LoadFileToArray(Bytes,*Filename))
@@ -721,6 +732,7 @@ void ULivingTownFullTownStreamingSubsystem::Tick(float Delta)
         if (!bReady && PossessionRelocks==1 && bMovementLockOwned && LockedController->IsMoveInputIgnored() && AllWantedResident() && ObserveFooting())
         {
             bReady=true; ReadySeconds=FPlatformTime::Seconds(); ReadyFrame=GFrameCounter; ReleaseOwnedMovementLock();
+            LivingTownCookedStartup::Mark(TEXT("Controllable"),GetWorld());
             UE_LOG(LogTemp,Display,TEXT("FullTown integration subset controllable seconds=%.6f frame=%llu units=%d; not full193/cooked/art/FPS qualification"),ReadySeconds-ArmedSeconds,ReadyFrame,Wanted.Num());
         }
     }
@@ -729,6 +741,12 @@ void ULivingTownFullTownStreamingSubsystem::Tick(float Delta)
 FString ULivingTownFullTownStreamingSubsystem::GetStatusJson() const
 {
     auto J=MakeShared<FJsonObject>();
+    if(LivingTownCookedStartup::IsRequested())
+    {
+        J->SetStringField(TEXT("admission_scope"),TEXT("DevelopmentCookedB749StartupOnly"));
+        J->SetStringField(TEXT("file_hash_domain"),TEXT("root_frozen_fixture_cooked_members_plus_original_source_provenance"));
+        J->SetBoolField(TEXT("production_cooked_admitted"),false);
+    }
     // Soft identity is observable during async boot; never dereference Data
     // until it exists. A requested profile does not imply manifest acceptance.
     const auto* StatusDriver=Driver.Get();
@@ -783,6 +801,7 @@ FString ULivingTownFullTownStreamingSubsystem::GetStatusJson() const
 
 void ULivingTownFullTownStreamingSubsystem::TearDownOwnedReferences()
 {
+    LivingTownCookedStartup::InvalidateWorld(GetWorld());
     bWorldEnding=true; ++Epoch;
     if (ManifestHandle) { ManifestHandle->CancelHandle(); ManifestHandle.Reset(); }
     for (ULivingTownFullTownTicket* T:Tickets) if (T && T->Streaming)
