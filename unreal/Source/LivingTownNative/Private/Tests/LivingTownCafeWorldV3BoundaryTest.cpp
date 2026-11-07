@@ -2,6 +2,7 @@
 #include "LivingTownCafeWorldV3Scenario.h"
 #include "LivingTownCafePropertyV2Subsystem.h"
 #include "LivingTownCafeProjectionSubsystem.h"
+#include "LivingTownCafeCharacter.h"
 #include "LivingTownLeaseSubsystem.h"
 #include "../../ThirdParty/CafeWorldV3Envelope.hpp"
 #if WITH_DEV_AUTOMATION_TESTS
@@ -179,7 +180,7 @@ namespace {
 class FOffCounterSaveInput final:public IAutomationLatentCommand {
     FAutomationTestBase* Test;double Deadline=FPlatformTime::Seconds()+60;
     TWeakObjectPtr<ALivingTownCafeWorldV3Controller> InputController;
-    FTransform SpawnTransform;FString AuthorityBefore;int64 AriaBefore=0,BenBefore=0,StockBefore=0,RevisionBefore=0;bool bPressed=false;
+    FTransform SpawnTransform;FString AuthorityBefore,InitialOperationNotice;int64 AriaBefore=0,BenBefore=0,StockBefore=0,RevisionBefore=0;uint64 PressedFrame=0;bool bPressed=false,bInitialMetaHumanNotice=false;
     bool Need(bool Ok,const TCHAR* Why){if(!Ok)Test->AddError(Why);return Ok;}
     void Release(){if(bPressed)if(auto* PC=InputController.Get())PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::F5,IE_Released,0.f));bPressed=false;}
 public:
@@ -196,18 +197,21 @@ public:
         if(!Need(!World->IsPaused()&&PC->GetNativePersona()==ELivingTownCafeWorldPersona::Ben&&PC->GetViewTarget()==Pawn&&Pawn->GetController()==PC&&V.bSessionReady&&!V.bReachable&&!V.bMealActive&&Feet.Equals(A->GetBinding().SpawnFeetCm,2.f),TEXT("Real grounded Ben at the actual source spawn, outside counter reach; no pose/position/balance substitution")))return true;
         const FString Slot=FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldRentCareV5.slot.json");
         if(!bPressed){
-            if(!Need(!IFileManager::Get().FileExists(*Slot)&&PC->GetOperationNotice().IsEmpty(),TEXT("Fresh native slot and controller input history required")))return true;
+            const FString Initial=PC->GetOperationNotice();const auto* Character=Cast<ALivingTownCafeCharacter>(Pawn);
+            const bool QualifiedMetaHumanBen=A->GetBinding().MetaHumanActor.IsSet()&&Character&&Character->HasQualifiedVisual()&&Character->HasMetaHumanVisual()&&PC->GetNativePersona()==ELivingTownCafeWorldPersona::Ben;
+            if(!Need(!IFileManager::Get().FileExists(*Slot)&&(Initial.IsEmpty()||(Initial==TEXT("Playing Ben.")&&QualifiedMetaHumanBen)),TEXT("Fresh native slot and only the exact qualified MetaHuman selection notice or empty initial history required")))return true;
+            InitialOperationNotice=Initial;bInitialMetaHumanNotice=!Initial.IsEmpty();
             InputController=PC;SpawnTransform=Pawn->GetActorTransform();AuthorityBefore=V.Notice;AriaBefore=V.AriaCoins;BenBefore=V.BenCoins;StockBefore=V.Stock;RevisionBefore=V.Revision;
-            PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::F5,IE_Pressed,1.f));bPressed=true;return false;
+            PressedFrame=GFrameCounter;PC->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::F5,IE_Pressed,1.f));bPressed=true;return false;
         }
         // InputKey enters the real controller/PlayerInput stack; natural world
         // frames process the bound F5 callback. Never call Save/SaveSlot directly.
-        if(PC->GetOperationNotice().IsEmpty())return false;
+        if(GFrameCounter<PressedFrame+2||PC->GetOperationNotice()==InitialOperationNotice)return false;
         Release();const auto Rows=HUD->GetFeedbackRows();
         if(!Need(PC->GetOperationNotice()==TEXT("Cafe saved.")&&Rows.Num()==2&&Rows[0]==AuthorityBefore&&Rows[0]==V.Notice&&Rows[1]==TEXT("Last action: Cafe saved."),TEXT("Actual off-counter F5 result and live authority notice must occupy distinct displayed text rows")))return true;
         if(!Need(Pawn->GetActorTransform().Equals(SpawnTransform,.1f)&&V.AriaCoins==AriaBefore&&V.BenCoins==BenBefore&&V.Stock==StockBefore&&V.Revision==RevisionBefore,TEXT("Saving through input cannot move the pawn, pay, consume stock or add authority events")))return true;
         FString Json;W3::CareEnvelope Envelope;if(!Need(FFileHelper::LoadFileToString(Json,*Slot)&&Payload(Json,Envelope),TEXT("F5 callback must create the real paired V5 slot")))return true;
-        auto Evidence=MakeShared<FJsonObject>();Evidence->SetStringField(TEXT("status"),TEXT("PASS_ACTUAL_CONTROLLER_F5_OFFCOUNTER_TEXT_COMPOSITION_ONLY"));Evidence->SetStringField(TEXT("input_route"),TEXT("FInputKeyEventArgs simulated F5 pressed/released through actual controller and natural PlayerInput frames"));Evidence->SetStringField(TEXT("authority_row"),Rows[0]);Evidence->SetStringField(TEXT("last_action_row"),Rows[1]);Evidence->SetBoolField(TEXT("actual_counter_reachable"),V.bReachable);Evidence->SetBoolField(TEXT("pixels_or_hardware_keypress_claimed"),false);FString SlotHash;HashFile(Slot,SlotHash);Evidence->SetStringField(TEXT("slot_sha256"),SlotHash);
+        auto Evidence=MakeShared<FJsonObject>();Evidence->SetStringField(TEXT("status"),TEXT("PASS_ACTUAL_CONTROLLER_F5_OFFCOUNTER_TEXT_COMPOSITION_ONLY"));Evidence->SetStringField(TEXT("input_route"),TEXT("FInputKeyEventArgs simulated F5 pressed/released through actual controller and natural PlayerInput frames"));Evidence->SetStringField(TEXT("initial_operation_notice"),InitialOperationNotice);Evidence->SetBoolField(TEXT("initial_notice_is_qualified_metahuman_selection"),bInitialMetaHumanNotice);Evidence->SetStringField(TEXT("natural_frames_after_F5_press"),LexToString(GFrameCounter-PressedFrame));Evidence->SetStringField(TEXT("authority_row"),Rows[0]);Evidence->SetStringField(TEXT("last_action_row"),Rows[1]);Evidence->SetBoolField(TEXT("actual_counter_reachable"),V.bReachable);Evidence->SetBoolField(TEXT("pixels_or_hardware_keypress_claimed"),false);FString SlotHash;HashFile(Slot,SlotHash);Evidence->SetStringField(TEXT("slot_sha256"),SlotHash);
         FString Text;FJsonSerializer::Serialize(Evidence,TJsonWriterFactory<>::Create(&Text));const FString Path=FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/OffCounterSaveFeedback.json");Need(!IFileManager::Get().FileExists(*Path)&&FFileHelper::SaveStringToFile(Text,*Path,FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM),TEXT("Fresh off-counter input evidence must be retained"));return true;
     }
 };

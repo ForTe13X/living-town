@@ -24,6 +24,7 @@
 #include "UnrealClient.h"
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonReader.h"
 
 namespace {
 UWorld* GameWorld(FAutomationTestBase* Test,bool& Invalid)
@@ -48,7 +49,7 @@ class FCafeHudSaveLoadInput final:public IAutomationLatentCommand {
     FAutomationTestBase* Test;double Deadline=FPlatformTime::Seconds()+60,PressedAt=0;uint64 PressedFrame=0;
     TWeakObjectPtr<ALivingTownCafePlayerController> Controller;TWeakObjectPtr<ACharacter> OriginalPawn;
     FTransform OriginalTransform;FLivingTownLeaseView Before;TArray<FString> OtherBefore;FString SavedHash,ScreenshotFilename;
-    FDelegateHandle ScreenshotHandle;int32 ScreenshotsProcessed=0,ViewMode=0,Stage=0;FKey PressedKey;bool bPressed=false;
+    FDelegateHandle ScreenshotHandle;int32 ScreenshotsProcessed=0,ViewMode=0,Stage=0;int64 RefusalEventCount=0;FKey PressedKey;bool bPressed=false;
     bool Need(bool Ok,const TCHAR* Why){if(!Ok)Test->AddError(Why);return Ok;}
     void Press(ALivingTownCafePlayerController* PC,FKey Key){Controller=PC;PressedKey=Key;bPressed=true;PressedAt=FPlatformTime::Seconds();PressedFrame=GFrameCounter;PC->InputKey(FInputKeyEventArgs::CreateSimulated(Key,IE_Pressed,1.f));}
     void Release(){if(bPressed)if(auto* PC=Controller.Get())PC->InputKey(FInputKeyEventArgs::CreateSimulated(PressedKey,IE_Released,0.f));bPressed=false;}
@@ -79,18 +80,27 @@ public:
         }
         if(!Need(OriginalPawn.Get()==Pawn&&Pawn->GetActorTransform().Equals(OriginalTransform,.1f)&&PC->GetViewTarget()==Pawn&&Pawn->GetController()==PC,TEXT("HUD/save/load input must retain the same possessed pawn, camera target and transform")))return true;
         const auto Now=P->GetLeaseView();
-        if(!Need(Now.BenCoins==Before.BenCoins&&Now.AriaCoins==Before.AriaCoins&&Now.OperatorId.Value==Before.OperatorId.Value&&Now.OwnerId.Value==Before.OwnerId.Value&&Now.EventCount==Before.EventCount,TEXT("Off-counter refusal and save/load cannot pay, transfer property or append authority events")))return true;
+        if(!Need(Now.BenCoins==Before.BenCoins&&Now.AriaCoins==Before.AriaCoins&&Now.OperatorId.Value==Before.OperatorId.Value&&Now.OwnerId.Value==Before.OwnerId.Value,TEXT("Off-counter refusal and save/load cannot pay or transfer property or operator authority")))return true;
         if(!Need(Viewport->ViewModeIndex==ViewMode&&ScreenshotsProcessed==0&&!FScreenshotRequest::IsScreenshotRequested()&&FScreenshotRequest::GetFilename()==ScreenshotFilename&&OtherBindings(PC->PlayerInput)==OtherBefore,TEXT("F5/F9 must not change debug view, request a screenshot or mutate unrelated debug bindings")))return true;
+        if(Stage>=2&&!Need(Now.EventCount==RefusalEventCount,TEXT("F5/F9 must retain exactly the one recorded refusal event without appending events")))return true;
         if(Stage==1){
-            if(!P->GetStatus().StartsWith(TEXT("Action refused: "))||!LaterFrame())return false;
-            Release();Press(PC,EKeys::F5);Stage=2;return false;
+            if(!Need(Now.EventCount>=Before.EventCount&&Now.EventCount<=Before.EventCount+1,TEXT("One E press may append exactly one refusal event")))return true;
+            if(P->GetStatus()!=TEXT("Action refused: not_at_commercial_counter")||!LaterFrame())return false;
+            if(!Need(Now.EventCount==Before.EventCount+1,TEXT("Actual off-counter E refusal appends one authoritative property_refused event")))return true;
+            RefusalEventCount=Now.EventCount;Release();Press(PC,EKeys::F5);Stage=2;return false;
         }
         if(Stage==2){
             if(PC->GetOperationNotice()!=TEXT("Café ledger saved.")||!LaterFrame())return false;
             Release();TArray<uint8> Bytes;FString Saved,Inner,Error;
             if(!Need(FFileHelper::LoadFileToArray(Bytes,*Slot)&&LivingTownCafeJournal::Sha256(Bytes,SavedHash)&&FFileHelper::LoadFileToString(Saved,*Slot)&&LivingTownCafeJournal::Decode(Saved,P->GetBinding(),Inner,Error),TEXT("Actual F5 callback must write the real valid source-bound slot")))return true;
+            // Inspect the real F5-written, source-bound envelope through the
+            // existing Decode API. No new public accessor or direct Save call.
+            TSharedPtr<FJsonObject> JournalObject;const TArray<TSharedPtr<FJsonValue>>* Events=nullptr;
+            if(!Need(FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Inner),JournalObject)&&JournalObject.IsValid()&&JournalObject->TryGetArrayField(TEXT("journal"),Events)&&Events&&Events->Num()==RefusalEventCount&&!Events->IsEmpty()&&Events->Last().IsValid()&&Events->Last()->Type==EJson::Object,TEXT("Actual saved inner journal contains exactly the recorded native event count")))return true;
+            const auto Refusal=Events->Last()->AsObject();FString Type,Note;bool Accepted=true;
+            if(!Need(Refusal.IsValid()&&Refusal->TryGetStringField(TEXT("type"),Type)&&Type==TEXT("property_refused")&&Refusal->TryGetStringField(TEXT("note"),Note)&&Note==TEXT("not_at_commercial_counter")&&Refusal->TryGetBoolField(TEXT("accepted"),Accepted)&&!Accepted&&Refusal->HasTypedField<EJson::Null>(TEXT("amt"))&&Refusal->HasTypedField<EJson::Null>(TEXT("amount"))&&Refusal->HasTypedField<EJson::Null>(TEXT("pay_event_id")),TEXT("F5 preserves the exact uncharged property_refused event and reason")))return true;
             const auto Rows=HUD->GetFeedbackRows();const auto& Live=P->GetPresentation().Feedback;
-            if(!Need(!Live.IsEmpty()&&Rows.Num()==Live.Num()+1,TEXT("Live refused-action feedback and saved operation result remain separate")))return true;
+            if(!Need(P->GetStatus()==TEXT("Action refused: not_at_commercial_counter")&&!Live.IsEmpty()&&Rows.Num()==Live.Num()+1,TEXT("The exact live off-counter failure and saved operation result remain separate")))return true;
             for(int32 I=0;I<Live.Num();++I)if(!Need(Rows[I]==Live[I],TEXT("Saving cannot mask any live authority feedback row")))return true;
             if(!Need(Rows.Last()==TEXT("Last action: Café ledger saved."),TEXT("Actual saved feedback remains observable outside counter context")))return true;
             Press(PC,EKeys::F9);Stage=3;return false;
@@ -98,7 +108,7 @@ public:
         if(PC->GetOperationNotice()!=TEXT("Matching café ledger loaded; position unchanged.")||!LaterFrame())return false;
         Release();TArray<uint8> Bytes;FString AfterHash;
         if(!Need(FFileHelper::LoadFileToArray(Bytes,*Slot)&&LivingTownCafeJournal::Sha256(Bytes,AfterHash)&&AfterHash==SavedHash,TEXT("Actual F9 loads the saved slot without rewriting or replacing it")))return true;
-        auto Evidence=MakeShared<FJsonObject>();Evidence->SetStringField(TEXT("status"),TEXT("PASS_ACTUAL_CAFE_OFFCOUNTER_E_F5_F9_INPUT_SLOT_AND_HUD"));Evidence->SetStringField(TEXT("slot_sha256"),SavedHash);Evidence->SetBoolField(TEXT("same_pawn_transform_possession_and_authority"),true);Evidence->SetBoolField(TEXT("no_debug_view_or_screenshot"),true);Evidence->SetBoolField(TEXT("live_feedback_independent_from_history"),true);Evidence->SetBoolField(TEXT("pixels_or_hardware_keypress_claimed"),false);FString Json;FJsonSerializer::Serialize(Evidence,TJsonWriterFactory<>::Create(&Json));const FString Out=FPaths::ProjectSavedDir()/TEXT("CafePilot/HudSaveLoadInput.json");
+        auto Evidence=MakeShared<FJsonObject>();Evidence->SetStringField(TEXT("status"),TEXT("PASS_ACTUAL_CAFE_OFFCOUNTER_E_F5_F9_INPUT_SLOT_AND_HUD"));Evidence->SetStringField(TEXT("slot_sha256"),SavedHash);Evidence->SetStringField(TEXT("refusal_reason"),TEXT("not_at_commercial_counter"));Evidence->SetStringField(TEXT("event_count_before_E"),LexToString(Before.EventCount));Evidence->SetStringField(TEXT("event_count_after_E"),LexToString(RefusalEventCount));Evidence->SetBoolField(TEXT("one_refusal_event_persisted"),true);Evidence->SetBoolField(TEXT("save_load_appended_no_events"),true);Evidence->SetBoolField(TEXT("same_pawn_transform_possession_and_authority"),true);Evidence->SetBoolField(TEXT("no_debug_view_or_screenshot"),true);Evidence->SetBoolField(TEXT("live_feedback_independent_from_history"),true);Evidence->SetBoolField(TEXT("pixels_or_hardware_keypress_claimed"),false);FString Json;FJsonSerializer::Serialize(Evidence,TJsonWriterFactory<>::Create(&Json));const FString Out=FPaths::ProjectSavedDir()/TEXT("CafePilot/HudSaveLoadInput.json");
         Need(!IFileManager::Get().FileExists(*Out)&&FFileHelper::SaveStringToFile(Json,*Out,FFileHelper::EEncodingOptions::ForceUTF8WithoutBOM),TEXT("Fresh native input evidence retained"));return true;
     }
 };
