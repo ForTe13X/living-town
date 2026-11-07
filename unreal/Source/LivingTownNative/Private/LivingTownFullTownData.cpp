@@ -2,6 +2,7 @@
 #include "LivingTownTileData.h"
 #include "Engine/World.h"
 #include "Misc/PackageName.h"
+#include "UObject/Package.h"
 #include <limits>
 
 namespace
