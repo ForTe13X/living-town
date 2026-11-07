@@ -1,0 +1,218 @@
+{
+  "schema": "LivingTown.CookedStartupEvidence.v1",
+  "status": "ROOT_ACCEPT_PACKAGED_STARTUP_AND_PLAYER_VIEWPORT_SAMPLE_ONLY",
+  "date_UTC": "2026-11-07",
+  "engine": "Unreal 5.8.4",
+  "source_family": "3ed1fd9bc0c8a2db6c997cdc9cdb79bdea67def7158ba92b8b0b5a155cacfcdd",
+  "source_code_commit": "2a2fa11d2713e2549a6495c652656ebe215e75bf",
+  "root_admission": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\root_character_pipeline_macro_review_v1_001\\B749_PACKAGED_STARTUP004_ROOT_ADMISSION.json",
+    "bytes": 2251,
+    "sha256": "34d22b302f1f7e772c54ef460aa09c9c1ff7ab3cf8d44e8ce7251c0d3104907d"
+  },
+  "independent_review": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\root_b749_packaged_startup004_consumer_review_v1_001\\CLOSED_CONSUMER_REVIEW.json",
+    "bytes": 10570,
+    "sha256": "b0995580238b6c40caa1d64450ac90496a7154169ea844ba9aeb985ff20623db"
+  },
+  "builds_and_native12": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\root_character_pipeline_macro_review_v1_001\\B749_CURRENT_STARTUP_BUILDS_AND_TESTS_ROOT_ADMISSION.json",
+    "bytes": 2645,
+    "sha256": "71415351fda7f0d603d67221009713f141dae93539e89b6f852b6d6565829a13"
+  },
+  "cook_admission": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\root_character_pipeline_macro_review_v1_001\\B749_COOK005_ROOT_ADMISSION.json",
+    "bytes": 3161,
+    "sha256": "696f424cbd2702bd73efc6891f380f58926f2f8ac2b47baebdccd5ecbc263e16"
+  },
+  "Pak_extraction": {
+    "path": "F:\\Living Town\\2026-10-20_Refined_Town\\root_character_pipeline_macro_review_v1_001\\B749_PAK_STAGE002_EXTRACTION_ROOT_ADMISSION.json",
+    "bytes": 9149,
+    "sha256": "565538d4d8e8ce3d277a40af023667625603b9ad0d20cbd30e93b111cde39c37"
+  },
+  "host": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\B749PackagedStartup_v004\\STARTUP_RECEIPT.json",
+    "bytes": 1486,
+    "sha256": "367015f9fa9b908982e34cbdf9385d1224365b0ecddef3f044c52564b9df6547"
+  },
+  "observation": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\B749PackagedStartup_v004\\STARTUP_OBSERVATION.json",
+    "bytes": 5682,
+    "sha256": "99e1095db645b18ea7a80aca20ea1ecf4cc5d921ed0a698a0fabfac68a11c0aa"
+  },
+  "Game_process": {
+    "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\B749PackagedStartup_v004\\GAME.PROCESS.json",
+    "bytes": 131013,
+    "sha256": "504f2440c5ce054f4eaf1c9a2a03ede2cd1fd991dc9cb7b3be497806f5e132f0"
+  },
+  "startup": {
+    "milestones": {
+      "ModuleStartup": {
+        "qpc": 3654166393974,
+        "seconds_per_cycle": 1e-07,
+        "frame": 0,
+        "critical_identity_verified": false,
+        "seconds_after_host_launch_request": 1.436949,
+        "seconds_after_creation_bracket_lower_bound": 1.2858303,
+        "seconds_after_creation_bracket_upper_bound": 1.436949
+      },
+      "RootBeginPlayArmed": {
+        "qpc": 3654167955865,
+        "seconds_per_cycle": 1e-07,
+        "frame": 0,
+        "critical_identity_verified": false,
+        "seconds_after_host_launch_request": 1.5931381,
+        "seconds_after_creation_bracket_lower_bound": 1.4420194,
+        "seconds_after_creation_bracket_upper_bound": 1.5931381
+      },
+      "CriticalCookedIdentityVerified": {
+        "qpc": 3654167991066,
+        "seconds_per_cycle": 1e-07,
+        "frame": 0,
+        "critical_identity_verified": true,
+        "seconds_after_host_launch_request": 1.5966582,
+        "seconds_after_creation_bracket_lower_bound": 1.4455395,
+        "seconds_after_creation_bracket_upper_bound": 1.5966582
+      },
+      "RootMapLoaded": {
+        "qpc": 3654169487686,
+        "seconds_per_cycle": 1e-07,
+        "frame": 0,
+        "critical_identity_verified": true,
+        "seconds_after_host_launch_request": 1.7463202,
+        "seconds_after_creation_bracket_lower_bound": 1.5952015,
+        "seconds_after_creation_bracket_upper_bound": 1.7463202
+      },
+      "EngineInitComplete": {
+        "qpc": 3654169629885,
+        "seconds_per_cycle": 1e-07,
+        "frame": 0,
+        "critical_identity_verified": true,
+        "seconds_after_host_launch_request": 1.7605401,
+        "seconds_after_creation_bracket_lower_bound": 1.6094214,
+        "seconds_after_creation_bracket_upper_bound": 1.7605401
+      },
+      "Controllable": {
+        "qpc": 3654208417409,
+        "seconds_per_cycle": 1e-07,
+        "frame": 423,
+        "critical_identity_verified": true,
+        "seconds_after_host_launch_request": 5.6392925,
+        "seconds_after_creation_bracket_lower_bound": 5.4881738,
+        "seconds_after_creation_bracket_upper_bound": 5.6392925
+      },
+      "FirstReadyPlayerViewSample": {
+        "qpc": 3654208480287,
+        "seconds_per_cycle": 1e-07,
+        "frame": 424,
+        "critical_identity_verified": true,
+        "seconds_after_host_launch_request": 5.6455803,
+        "seconds_after_creation_bracket_lower_bound": 5.4944616,
+        "seconds_after_creation_bracket_upper_bound": 5.6455803
+      }
+    },
+    "EngineInitComplete_and_RootMapLoaded_order": "Actual log/QPC retained; PostLoadMapWithWorld can follow BeginPlay, so no fabricated relative order to arm/identity",
+    "clock": "Windows QueryPerformanceCounter, SDK FWindowsPlatformTime::Cycles64",
+    "creation_start_precision": "Host bracket around suspended creation/assignment/resume, not exact process-creation QPC",
+    "FirstReadyPlayerViewSample_is_GPU_presented_frame": false
+  },
+  "viewport": {
+    "CSV": {
+      "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\B749PackagedStartup_v004\\User\\Saved\\Profiling\\CSV\\Profile(20261106_194648).csv",
+      "bytes": 1262886,
+      "sha256": "31fad90e2152733306727cbd7ce2ec8a6c74579da6a4b81d2602fd78975eb3cf"
+    },
+    "RHI": {
+      "verbatimrhiname": "D3D12",
+      "rhifeaturelevel": "SM6",
+      "shaderplatform": "PCD3D_SM6",
+      "gpu": "AMD Radeon(TM) 8060S Graphics",
+      "gpudriver": "AMD Software: Adrenalin Edition 26.10.1",
+      "deviceprofile": "Windows",
+      "vsyncenabled": "0",
+      "starttimestamp": "1794023208",
+      "endtimestamp": "1794023214",
+      "captureduration": "5.468259"
+    },
+    "screenshot_event_raw_row0": 549,
+    "screenshot_surrounding_GT_frames": [
+      549,
+      550,
+      551,
+      552
+    ],
+    "frame_timing_or_display_FPS_qualified": false
+  },
+  "PNG": {
+    "binding": {
+      "path": "D:\\Dev\\LivingTownNativeRuns\\2026-11-04\\B749PackagedStartup_v004\\User\\Saved\\Screenshots\\Windows\\ScreenShot00000.png",
+      "bytes": 2637211,
+      "sha256": "a17e4b686e4dffef89352f38c1cffe20a5ef7acc63c1eb6b9e94856ee3c24e5a"
+    },
+    "extent": [
+      1920,
+      1080
+    ],
+    "channels": 4,
+    "decoded_all_pixels_and_PNG_CRC": true,
+    "RGB_min": [
+      2,
+      1,
+      1
+    ],
+    "RGB_max": [
+      249,
+      248,
+      241
+    ],
+    "visual_quality_or_contact_accepted": false
+  },
+  "repo_image": "docs/media/b749-packaged-startup-20261107.png",
+  "natural_exit_before_cleanup": {
+    "phase": "IMMEDIATELY_BEFORE_INHERITED_STOP_AND_REAP",
+    "root_pid": 21816,
+    "root_process_handle_open": true,
+    "before_monotonic_ns": 365424610129800,
+    "after_monotonic_ns": 365424610160200,
+    "UTC_ns": 1794023216193168400,
+    "WaitForSingleObject": {
+      "timeout_ms": 0,
+      "value": 0,
+      "last_error_before_call": 0,
+      "last_error_after_call": 0,
+      "last_error_defined_on_failure_only": true,
+      "root_signaled": true,
+      "root_running": false,
+      "call_failed": false
+    },
+    "GetExitCodeProcess": {
+      "succeeded": true,
+      "exit_code": 0,
+      "last_error_before_call": 0,
+      "last_error_after_call": 0,
+      "last_error_defined_on_failure_only": true,
+      "STILL_ACTIVE": 259
+    },
+    "job_accounting_query": {
+      "succeeded": true,
+      "last_error_before_call": 0,
+      "last_error_after_call": 0,
+      "values": {
+        "total_processes": 1,
+        "active_processes": 0,
+        "terminated_processes": 0
+      }
+    },
+    "actual_owned_PIDs": [],
+    "cleanup_has_not_been_called": true,
+    "atomic_snapshot_or_exit_request_equals_process_exit": false
+  },
+  "loading_definition": "Fresh owned process/UserDir/settings/filesystem DDC. Source hashing/copy warms OS file cache; GPU driver cache is not cleared. Timings are this single trial only.",
+  "native_production_cooked_admitted": false,
+  "legacy_Ben": true,
+  "MetaHuman_adoption": false,
+  "movement_tested": false,
+  "GPU_present_latency_measured": false,
+  "frame_timing_or_display_FPS_qualified": false,
+  "whole_town_playability_or_visual_acceptance": false
+}
