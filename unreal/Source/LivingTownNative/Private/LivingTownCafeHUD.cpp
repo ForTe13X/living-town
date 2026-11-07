@@ -6,6 +6,19 @@
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 
+bool ALivingTownCafeHUD::IsCounterContextVisible()const
+{
+    const auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeProjectionSubsystem>():nullptr;
+    return P&&(!P->GetPresentation().bReady||P->GetPresentation().bCounterNearby);
+}
+TArray<FString> ALivingTownCafeHUD::GetFeedbackRows()const
+{
+    const auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeProjectionSubsystem>():nullptr;
+    TArray<FString> Rows=P?P->GetPresentation().Feedback:TArray<FString>();
+    const auto* Controller=Cast<ALivingTownCafePlayerController>(PlayerOwner);
+    if(Controller&&!Controller->GetOperationNotice().IsEmpty())Rows.Add(TEXT("Last action: ")+Controller->GetOperationNotice());
+    return Rows;
+}
 void ALivingTownCafeHUD::DrawHUD()
 {
     Super::DrawHUD();
@@ -28,20 +41,38 @@ void ALivingTownCafeHUD::DrawHUD()
     DrawText(View.Stewardship,Muted,Margin+18.f*Scale,Margin+77.f*Scale,Font,.91f*TextScale);
     DrawText(View.Offer,Ink,Margin+18.f*Scale,Margin+99.f*Scale,Font,.91f*TextScale);
 
-    const auto* Controller=Cast<ALivingTownCafePlayerController>(PlayerOwner);
-    const bool HasNotice=Controller&&!Controller->GetOperationNotice().IsEmpty();
+    const bool ShowPrompt=IsCounterContextVisible();
+    TArray<FString> Feedback;
+    // Operation failures may be longer than the cached live-status rows.
+    // Wrap the composed rows at the actual draw width without hiding either.
+    const float FeedbackWidth=FMath::Min(670.f*Scale,Width-2.f*Margin)-34.f*Scale;
+    for(const FString& Row:GetFeedbackRows()){
+        TArray<FString> Words;Row.ParseIntoArrayWS(Words);FString Line;
+        for(const FString& Word:Words){
+            const FString Joined=Line.IsEmpty()?Word:Line+TEXT(" ")+Word;float W=0.f,H=0.f;GetTextSize(Joined,W,H,Font,.91f*TextScale);
+            if(W<=FeedbackWidth){Line=Joined;continue;}
+            if(!Line.IsEmpty()){Feedback.Add(Line);Line.Reset();}
+            for(TCHAR C:Word){
+                const FString Next=Line+FString::Chr(C);GetTextSize(Next,W,H,Font,.91f*TextScale);
+                if(!Line.IsEmpty()&&W>FeedbackWidth){Feedback.Add(Line);Line.Reset();}
+                Line+=FString::Chr(C);
+            }
+        }
+        if(!Line.IsEmpty())Feedback.Add(Line);
+    }
     const float LineHeight=22.f*Scale;
-    const float FeedbackRows=HasNotice?1.f:float(View.Feedback.Num());
-    const float PromptHeight=(52.f+22.f*FeedbackRows)*Scale;
+    const float PromptHeight=((ShowPrompt?52.f:26.f)+22.f*Feedback.Num())*Scale;
     const float PromptWidth=FMath::Min(670.f*Scale,Width-2.f*Margin);
     const float PromptX=(Width-PromptWidth)*.5f,PromptY=Height-Margin-27.f*Scale-PromptHeight;
-    DrawRect(Panel,PromptX,PromptY,PromptWidth,PromptHeight);
-    DrawRect(View.bReachable?Accent:Muted,PromptX,PromptY,PromptWidth,2.f*Scale);
-    DrawText(View.Prompt,View.bReachable?Accent:Ink,PromptX+17.f*Scale,PromptY+13.f*Scale,Font,1.02f*TextScale);
-    float FeedbackY=PromptY+43.f*Scale;
-    if(HasNotice)DrawText(Controller->GetOperationNotice(),Ink,PromptX+17.f*Scale,FeedbackY,Font,.91f*TextScale);
-    else for(const FString& Line:View.Feedback){DrawText(Line,Muted,PromptX+17.f*Scale,FeedbackY,Font,.91f*TextScale);FeedbackY+=LineHeight;}
+    if(ShowPrompt||!Feedback.IsEmpty())
+    {
+        DrawRect(Panel,PromptX,PromptY,PromptWidth,PromptHeight);
+        DrawRect(View.bReachable?Accent:Muted,PromptX,PromptY,PromptWidth,2.f*Scale);
+        if(ShowPrompt)DrawText(View.Prompt,View.bReachable?Accent:Ink,PromptX+17.f*Scale,PromptY+13.f*Scale,Font,1.02f*TextScale);
+        float FeedbackY=PromptY+(ShowPrompt?43.f:13.f)*Scale;
+        for(const FString& Line:Feedback){DrawText(Line,Muted,PromptX+17.f*Scale,FeedbackY,Font,.91f*TextScale);FeedbackY+=LineHeight;}
+    }
     DrawText(Controls,Muted,PromptX+8.f*Scale,Height-Margin-12.f*Scale,Font,.85f*TextScale);
-    // Canvas receives only cached strings. No collision, authority reads,
-    // JSON, file IO, wrapping or display-string construction occurs here.
+    // The HUD composes cached presentation/history only. No collision queries,
+    // authority mutations, JSON or file IO occur here.
 }

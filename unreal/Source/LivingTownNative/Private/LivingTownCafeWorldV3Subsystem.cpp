@@ -265,6 +265,11 @@ void ULivingTownCafeWorldV3Subsystem::Tick(float Delta){
 }
 void ULivingTownCafeWorldV3Subsystem::RefreshPresentation(){
     Presentation={};auto& V=Presentation;V.bPrepared=bPrepared;V.Notice=Notice;V.Prompt=TEXT("Cafe interaction is unavailable.");if(!bPrepared||!State)return;
+    // Location-neutral onboarding is display-only. Authority and operation
+    // outcomes retain their exact notices and separate observable rows.
+    if(Notice==TEXT("Playing Ben. Walk to the cafe counter."))V.Notice=TEXT("Playing Ben.");
+    else if(Notice==TEXT("Playing Aria. Walk to the cafe counter."))V.Notice=TEXT("Playing Aria.");
+    else if(Notice==TEXT("Choose Ben or Aria, then walk to the cafe counter."))V.Notice=TEXT("Choose Ben or Aria.");
     V.bSessionReady=SessionController.IsValid()&&SessionController->HasNativePersona()&&SessionPawn.IsValid();V.Persona=V.bSessionReady?PersonaId(SessionController->GetNativePersona()):TEXT("choose resident");
     V.Owner=Text(State->Kernel.title().owner);V.Operator=Text(State->Kernel.operator_at(State->Clock));V.AriaCoins=State->Kernel.coin("aria");V.BenCoins=State->Kernel.coin("ben");V.Clock=State->Clock;V.Revision=State->Kernel.revision();V.Stock=State->Kernel.rations();V.Hunger=State->Use.needs().hunger;V.Fun=State->Use.needs().fun;
     V.bMealActive=bool(State->Use.active());if(V.bMealActive)V.ProgressTicks=State->Use.active()->elapsed;
@@ -282,8 +287,8 @@ void ULivingTownCafeWorldV3Subsystem::RefreshPresentation(){
     if(V.bRecurringLease){const int64 Left=FMath::Max<int64>(0,V.RentDueTick-State->Clock);V.ListingLabel=FString::Printf(TEXT("Rent: 4 coins / 12 min | Next in %lld:%02lld"),(long long)(Left/60),(long long)(Left%60));}
     else V.ListingLabel=State->Kernel.lease().active?TEXT("Fixed lease active"):!Offer.present?TEXT("No property listing"):Offer.kind=="sale"?FString::Printf(TEXT("For sale: %lld coins"),(long long)Terms.sale_price):V.bRecurringOffer?TEXT("Recurring lease: 4 coins / 12 min | K Agree"):FString::Printf(TEXT("Fixed lease: %lld coins / 12 min"),(long long)Terms.lease_fee);
     const FString Price=V.Persona==V.Operator?TEXT("Own meal stock"):TEXT("Meal: 2 coins");
-    V.MealLabel=Price+FString::Printf(TEXT("  |  %lld left  |  Ben hunger %.2f  fun %.2f"),(long long)V.Stock,V.Hunger/100.f,V.Fun/100.f);
-    V.Prompt=V.bMealActive?FString::Printf(TEXT("Eating %d / 18  |  X Cancel"),V.ProgressTicks):!V.bSessionReady?TEXT("Choose Ben or Aria."):!V.bReachable?TEXT("Walk closer and face the cafe counter."):V.Persona==TEXT("aria")?TEXT("O Sale | L Fixed lease | N Recurring lease | R End lease"):!V.bMealAvailable?TEXT("Eating is not available yet. E checks availability."):TEXT("E Eat a meal  |  B Buy property  |  K Lease  |  R End lease");
+    V.MealLabel=Price+FString::Printf(TEXT("  |  %lld left\nBen hunger %.1f\nBen fun %.1f"),(long long)V.Stock,V.Hunger/100.f,V.Fun/100.f);
+    V.Prompt=V.bMealActive?FString::Printf(TEXT("Eating %d / 18  |  X Cancel"),V.ProgressTicks):!V.bSessionReady?TEXT("Choose Ben or Aria."):!V.bReachable?TEXT("Walk closer and face the cafe counter."):V.Persona==TEXT("aria")?TEXT("O Sale | L Fixed lease | N Recurring lease | R End lease"):!V.bMealAvailable?TEXT("Eating is not available yet."):TEXT("E Eat a meal  |  B Buy property  |  K Lease  |  R End lease");
 }
 namespace {
 // Native outer envelope adds SHA256 and atomic disk custody to the portable V4

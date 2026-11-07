@@ -90,9 +90,12 @@ void ULivingTownCafeProjectionSubsystem::Tick(float Delta)
 void ULivingTownCafeProjectionSubsystem::RefreshPresentation(bool Force)
 {
     FLivingTownTrustedInteraction At;FString Why;const bool Reach=bReady&&ObserveCounter(At,Why)&&At.bWithinReach;const auto V=bReady?GetLeaseView():FLivingTownLeaseView();
-    const bool Changed=Force||bCachedReady!=bReady||bCachedReach!=Reach||CachedStatus!=Status||CachedLease.Clock!=V.Clock||CachedLease.EventCount!=V.EventCount||CachedLease.BenCoins!=V.BenCoins||CachedLease.AriaCoins!=V.AriaCoins||CachedLease.OperatorId.Value!=V.OperatorId.Value;
+    // These observations already passed the actual cafe floor and hand-range
+    // checks. Display context never grants interaction authority.
+    const bool Nearby=Reach||Why==TEXT("face_the_counter")||Why==TEXT("counter_line_of_sight_blocked");
+    const bool Changed=Force||bCachedReady!=bReady||bCachedReach!=Reach||Presentation.bCounterNearby!=Nearby||CachedStatus!=Status||CachedLease.Clock!=V.Clock||CachedLease.EventCount!=V.EventCount||CachedLease.BenCoins!=V.BenCoins||CachedLease.AriaCoins!=V.AriaCoins||CachedLease.OperatorId.Value!=V.OperatorId.Value;
     if(!Changed)return;bCachedReady=bReady;bCachedReach=Reach;CachedStatus=Status;CachedLease=V;PresentationLines.Reset();
-    Presentation={};Presentation.bReady=bReady;Presentation.bReachable=Reach;
+    Presentation={};Presentation.bReady=bReady;Presentation.bReachable=Reach;Presentation.bCounterNearby=Nearby;
     if(bReady)
     {
         const FString Owner=V.OwnerId.Value==TEXT("aria")?TEXT("Aria"):V.OwnerId.Value;
