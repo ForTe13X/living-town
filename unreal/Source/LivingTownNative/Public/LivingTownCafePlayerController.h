@@ -11,6 +11,8 @@ public:
     virtual void SetupInputComponent()override;
     virtual void BeginPlay()override;
     const FString& GetOperationNotice()const{return OperationNotice;}
+    UFUNCTION(BlueprintPure, Category="LivingTown|Presentation")
+    FString GetPresentedOperationNotice()const{return OperationNotice;}
 private:
     FString OperationNotice;
     void LeaseCafe();

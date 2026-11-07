@@ -78,7 +78,8 @@ void ALivingTownCafeHUD::DrawHUD()
         float FeedbackY=PromptY+(ShowPrompt?43.f:13.f)*Scale;
         for(const FString& Line:Feedback){DrawText(Line,Muted,PromptX+17.f*Scale,FeedbackY,Font,FeedbackTextScale);FeedbackY+=LineHeight;}
     }
-    DrawText(Controls,Muted,PromptX+8.f*Scale,Height-Margin-12.f*Scale,Font,.85f*TextScale);
+    DrawRect(Panel,PromptX,Height-Margin-22.f*Scale,PromptWidth,32.f*Scale);
+    DrawText(Controls,Muted,PromptX+8.f*Scale,Height-Margin-12.f*Scale,Font,TextScale);
     // The HUD composes cached presentation/history only. No collision queries,
     // authority mutations, JSON or file IO occur here.
 }

@@ -201,7 +201,7 @@ void ALivingTownCafeWorldV3Controller::SetupInputComponent(){
     InputComponent->BindKey(EKeys::I,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::ImportOlderSave);
     InputComponent->BindKey(EKeys::H,IE_Pressed,this,&ALivingTownCafeWorldV3Controller::ToggleControls);
 }
-void ALivingTownCafeWorldV3Controller::ToggleControls(){bControlsVisible=!bControlsVisible;}
+void ALivingTownCafeWorldV3Controller::ToggleControls(){SetControlsVisible(!AreControlsVisible());}
 void ALivingTownCafeWorldV3Controller::SelectAria(){FString Error;auto* G=GetWorld()?GetWorld()->GetAuthGameMode<ALivingTownCafeWorldV3GameMode>():nullptr;const auto R=G?G->RequestPersona(this,ELivingTownCafeWorldPersona::Aria,Error):ELivingTownCafePersonaRequestResult::Refused;OperationNotice=R==ELivingTownCafePersonaRequestResult::Selected?TEXT("Playing Aria."):R==ELivingTownCafePersonaRequestResult::Pending?TEXT("Loading Aria. Your current resident remains active."):TEXT("Unable to select Aria.");}
 void ALivingTownCafeWorldV3Controller::SelectBen(){FString Error;auto* G=GetWorld()?GetWorld()->GetAuthGameMode<ALivingTownCafeWorldV3GameMode>():nullptr;const auto R=G?G->RequestPersona(this,ELivingTownCafeWorldPersona::Ben,Error):ELivingTownCafePersonaRequestResult::Refused;OperationNotice=R==ELivingTownCafePersonaRequestResult::Selected?TEXT("Playing Ben."):R==ELivingTownCafePersonaRequestResult::Pending?TEXT("Loading Ben's complete character. Your current resident remains active."):TEXT("Unable to select Ben.");}
 FLivingTownCafeWorldReceipt ALivingTownCafeWorldV3Controller::RequestMeal(const FLivingTownCafeMealCommand& C){

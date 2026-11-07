@@ -18,7 +18,12 @@ public:
     bool HasNativePersona()const{return bAuthorized;}
     ELivingTownCafeWorldPersona GetNativePersona()const{return Persona;}
     const FString& GetOperationNotice()const{return OperationNotice;}
+    UFUNCTION(BlueprintPure, Category="LivingTown|Presentation")
     bool AreControlsVisible()const{return bControlsVisible;}
+    UFUNCTION(BlueprintCallable, Category="LivingTown|Presentation")
+    void SetControlsVisible(bool bVisible){bControlsVisible=bVisible;}
+    UFUNCTION(BlueprintPure, Category="LivingTown|Presentation")
+    FString GetPresentedOperationNotice()const{return OperationNotice;}
     FLivingTownCafeWorldReceipt RequestMeal(const FLivingTownCafeMealCommand& Command);
     FLivingTownCafeWorldReceipt RequestCancelMeal();
     FLivingTownCafeWorldReceipt RequestRecurringLeaseOffer(const FString& RequestId);
