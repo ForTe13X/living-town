@@ -4,6 +4,8 @@
 #include "LivingTownMetaHumanVisualAssembly.generated.h"
 
 class UAnimSequence;
+class UAnimationAsset;
+class UAnimSingleNodeInstance;
 class USkeletalMesh;
 class UMaterialInterface;
 class UChildActorComponent;
@@ -95,10 +97,15 @@ public:
     bool Configure(const FLivingTownMetaHumanVisualBinding& Binding,const ULivingTownMetaHumanVisualPreload* Preload,FString& Error);
     bool IsConfigured() const;
     bool UpdateMotion(float ActualSpeedCmPerSecond);
+    // Technical playback ownership only. Reviewed contact and use grants remain upstream.
+    bool BeginActionClip(UAnimSequence* Clip,bool bLooping,FString& Error);
+    bool EndActionClip();
+    bool IsActionClipActive() const { return ActionClip!=nullptr; }
     void SetPossessedPlayer(bool bPossessed);
     void ResetAfterTeleport();
     void Reset();
     USkeletalMeshComponent* GetBody() const { return Body; }
+    USkeletalMeshComponent* GetFace() const { return Face; }
     AActor* GetVisualActor() const;
     FVector InteractionHand() const;
     virtual void EndPlay(const EEndPlayReason::Type Reason) override;
@@ -109,6 +116,11 @@ private:
     UPROPERTY() TObjectPtr<USkeletalMeshComponent> Outfit;
     UPROPERTY() TObjectPtr<UAnimSequence> Idle;
     UPROPERTY() TObjectPtr<UAnimSequence> Walk;
+    UPROPERTY(Transient) TObjectPtr<UAnimSequence> ActionClip;
+    UPROPERTY(Transient) TObjectPtr<UAnimationAsset> PreviousAnimation;
+    TWeakObjectPtr<UAnimSingleNodeInstance> ConfiguredPlayer,ActionPlayer;
+    float PreviousAnimationTime=0.f,PreviousAnimationPlayRate=1.f;
+    bool bActionLooping=false,bPreviousLooping=false,bPreviousPlaying=false,bPreviousWalking=false;
     UPROPERTY() TObjectPtr<USkeletalMesh> ExpectedWorkwear;
     UPROPERTY() TArray<TObjectPtr<UMaterialInterface>> ExpectedWorkwearMaterials;
     FLivingTownMetaHumanVisualBinding Prepared;
@@ -126,4 +138,5 @@ private:
     void RestoreTickPolicies();
     bool HasPreservedPoseOwnership() const;
     bool HasExpectedOutfit() const;
+    void ClearActionState();
 };
