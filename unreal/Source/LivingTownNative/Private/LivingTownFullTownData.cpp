@@ -78,9 +78,9 @@ const TCHAR* const WorldV3Root=TEXT("/Game/LivingTown_UEPilot/FullTownWorldV3_28
 const TCHAR* const WorldV3CafeBindingSha=TEXT("38171606986ba5086102aeba31927fac698558eebed861dd0f4d8eaf713fad6e");
 // Root authors/reopens the NEW descriptor/root before pinning these values.
 // Empty values are an explicit refusal, never a temporary admission waiver.
-const TCHAR* const WorldV3DispatchSha=TEXT("");
-const TCHAR* const WorldV3LedgerSha=TEXT("");
-const TCHAR* const WorldV3ManifestAdmissionSha=TEXT("");
+const TCHAR* const WorldV3DispatchSha=TEXT("87f9efbe93a1d99ee68c14773604eeade34cd3b22ce025198e6fd93b9127cffc");
+const TCHAR* const WorldV3LedgerSha=TEXT("e325baae123e7f53faffcd21dc0572d0654938e074c13003a0a5abca37e10d1e");
+const TCHAR* const WorldV3ManifestAdmissionSha=TEXT("ef95dcaf7106e5c32121dd804fc26b94535be11229237284a9b795cea265e77d");
 const FB749UnitPin& B749Pin(const ULivingTownFullTownData& D,int32 Index)
 { return (D.ProfileId==B749RoofProfile || D.ProfileId==WorldV3Profile) && Index==1 ? B749RoofUnitPin : B749Pins[Index]; }
 const TCHAR* B749RoofMesh(int32 Index)

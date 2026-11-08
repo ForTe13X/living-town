@@ -60,10 +60,10 @@ const TCHAR* const B749RoofRootSourceSha=TEXT("80785169981299c509b5d4c229d638a09
 bool IsB749Roof(const ULivingTownFullTownData* D) { return D && D->ProfileId==B749RoofProfile; }
 const TCHAR* const WorldV3RootPackage=TEXT("/Game/LivingTown_UEPilot/FullTownWorldV3_289_v001/L_FullTownWorldV3_289_v001");
 const TCHAR* const WorldV3Manifest=TEXT("/Game/LivingTown_UEPilot/FullTownWorldV3_289_v001/DA_FullTownWorldV3_289_v001.DA_FullTownWorldV3_289_v001");
-const int64 WorldV3ManifestSourceBytes=0;
-const TCHAR* const WorldV3ManifestSourceSha=TEXT("");
-const int64 WorldV3RootSourceBytes=0;
-const TCHAR* const WorldV3RootSourceSha=TEXT("");
+const int64 WorldV3ManifestSourceBytes=1317667;
+const TCHAR* const WorldV3ManifestSourceSha=TEXT("e40f537ed0b323a10fe2c862c61efe13e59314dbe843c7b2897dab7adaaf43bf");
+const int64 WorldV3RootSourceBytes=17434;
+const TCHAR* const WorldV3RootSourceSha=TEXT("45483b08d8ec67b6273b16ce9bb09c9686ea58712937d44813d12b0656b66a55");
 bool IsWorldV3(const ULivingTownFullTownData* D) { return D && LivingTownFullTown::IsWorldV3CafeProfile(*D); }
 bool UsesB749Roof(const ULivingTownFullTownData* D) { return IsB749Roof(D) || IsWorldV3(D); }
 bool IsB749Family(const ULivingTownFullTownData* D) { return IsB749(D) || UsesB749Roof(D); }

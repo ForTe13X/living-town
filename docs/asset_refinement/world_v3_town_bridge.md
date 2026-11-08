@@ -1,6 +1,9 @@
 # WorldV3 café 289 and the B749 town
 
-This is a source candidate. It has not been compiled or run. It adds the explicit
+The authoring Editor build, saved assets and fresh-process editor reopen have
+passed. The seven source pins now name those actual saved bytes. The final
+Game/Editor builds and current-character gameplay checks remain pending. This
+change adds the explicit
 `B749_CafeWorldV3_289_v001` profile, with typed `WorldV3Qualified289` backend,
 971 streamed roles and the original 289-part café. Existing profiles retain the
 zero/default `LegacyProjection262` backend, their saved package pins and their
@@ -21,10 +24,12 @@ Ben. No second projection, legacy book, café venue or action owner is introduce
 
 First combine this source with the independently reviewed v6 native adapter. The
 portable v6 headers alone do not qualify its parser/fingerprint/save adapter.
-Compile an **authoring Editor** with the reflected backend field. All new
-admission strings are empty and root/descriptor byte counts are zero. The new
-profile deliberately returns `DRAFT_REFUSE`; authoring a DataAsset in the editor
-does not require or waive runtime admission. Do not run the native journey yet.
+The **authoring Editor** stage used the reflected backend field with empty new
+admission strings and zero root/descriptor byte counts. It deliberately returned
+`DRAFT_REFUSE`; authoring a DataAsset did not require or waive runtime admission.
+The current source binds the independently reopened assets listed below. Empty
+or mismatched inputs still refuse. Do not run the native journey before the final
+coherent build pair.
 
 Create new packages only:
 
@@ -47,8 +52,26 @@ Save the new descriptor, then the identity root with exactly one enabled driver
 referencing its actual bytes/hash. Retain the original supported lighting and
 driver budgets, and set the new root's exact WorldV3 GameMode override. The café
 is spawned once by the native WorldV3 owner; never bake another venue into the
-root or copy the old 262-part instance graph. Reopen independently and record
-actual descriptor/root hashes, identity, declared fields and unit references.
+root or copy the old 262-part instance graph. Close the authoring process, then
+reopen independently and record actual descriptor/root hashes, identity,
+declared fields and unit references. A duplicated noncurrent World retains stock
+standalone lifetime flags, so this workflow uses a fresh process to reopen it.
+
+Actual `TownWorldV3_289Author_v003` saved exactly two packages in 77.343 seconds;
+`TownWorldV3_289Cold_v001` reopened them in a separate process in 75.328 seconds.
+Both preserved the original source and staged packages and closed with an empty
+owned process tree. These are editor metadata checks, not game loading timings.
+
+| Saved package | Bytes | SHA256 |
+| --- | ---: | --- |
+| `DA_FullTownWorldV3_289_v001.uasset` | 1317667 | `e40f537ed0b323a10fe2c862c61efe13e59314dbe843c7b2897dab7adaaf43bf` |
+| `L_FullTownWorldV3_289_v001.umap` | 17434 | `45483b08d8ec67b6273b16ce9bb09c9686ea58712937d44813d12b0656b66a55` |
+
+The cold observer checked the saved typed backend, all 971+289 declarations,
+three serialized town unit records, all eleven root actors, cameras and full
+post-process settings, lights, budgets and exact WorldV3 mode. It saved nothing
+and started no Game or PIE world. Host receipt SHA256 is
+`dd0fa7943c34bb1c732b03b2c0edc0e527ab8e9825e1167ffe8f1bceaff303de`.
 
 Root then reviews and binds **actual** values in these source constants:
 
