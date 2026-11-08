@@ -37,10 +37,10 @@ inline bool valid_clock_for(const Kernel& k,const ClockMetadata& clock) {
     const auto pending=static_cast<std::size_t>(std::count_if(k.care_grants().begin(),k.care_grants().end(),[](const CareGrant& g){return g.active;}));
     return clock.tick>=k.minimum_authority_tick()&&clock.tick<=max_tick&&detail::valid_fraction(clock.fraction_bits)&&
         !(k.lease().active&&clock.tick>=k.lease().end)&&
-        k.events().size()+pending+(k.lease().active?1U:0U)<=max_events;
+        k.events().size()+pending+(k.lease().active?1U:0U)+(k.residential_right().active?1U:0U)<=max_events;
 }
 struct Envelope {
-    std::string format="LivingTown.CafeWorldMeal.PortableEnvelope", version="5";
+    std::string format="LivingTown.CafeWorldMeal.PortableEnvelope", version="6";
     std::string integrity="fnv64_canonical_not_authentication";
     SourceBindings bindings;
     ClockMetadata clock;
@@ -80,7 +80,7 @@ inline std::optional<std::string> save_envelope(const Kernel& k,const SourceBind
 }
 inline bool load_envelope(Kernel& live,const std::string& bytes,const SourceBindings& expected,ClockMetadata& live_clock) {
     const auto e=decode_envelope_document(bytes);if(!e||!valid_bindings(expected)||!valid_bindings(e->bindings)||
-        !same_bindings(e->bindings,expected)||e->format!="LivingTown.CafeWorldMeal.PortableEnvelope"||e->version!="5"||
+        !same_bindings(e->bindings,expected)||e->format!="LivingTown.CafeWorldMeal.PortableEnvelope"||e->version!="6"||
         e->integrity!="fnv64_canonical_not_authentication"||e->session_policy!="live_native_identity_position_unchanged"||
         (e->saved_persona!="aria"&&e->saved_persona!="ben")||
         detail::hash_bytes(14695981039346656037ULL,e->payload)!=e->payload_digest)return false;
@@ -122,6 +122,8 @@ inline care::WaitingObservation waiting(detail::Reader& r) {
     care::WaitingObservation o;o.resident_id=r.s(128);o.site_id=r.s(128);o.grant_id=r.s(128);
     o.freshly_observed=r.b();o.grounded=r.b();o.station_valid=r.b();o.holding=r.b();o.permission_valid=r.b();o.reservation_valid=r.b();return o;
 }
+inline void sleep_entry(detail::Writer& w,const care::SleepEntryObservation& o){w.s(o.resident_id);w.s(o.site_id);w.s(o.grant_id);w.b(o.freshly_observed);w.b(o.floor_supported);w.b(o.station_valid);w.b(o.entry_advancing);w.b(o.permission_valid);w.b(o.reservation_valid);}
+inline care::SleepEntryObservation sleep_entry(detail::Reader& r){care::SleepEntryObservation o;o.resident_id=r.s(128);o.site_id=r.s(128);o.grant_id=r.s(128);o.freshly_observed=r.b();o.floor_supported=r.b();o.station_valid=r.b();o.entry_advancing=r.b();o.permission_valid=r.b();o.reservation_valid=r.b();return o;}
 inline int small(detail::Reader& r,Int low,Int high) {
     const Int n=r.n();if(n<low||n>high)throw std::invalid_argument("care integer range");return static_cast<int>(n);
 }
@@ -133,21 +135,22 @@ inline std::string encode_care_document(const care::Journal& j) {
     w.n(static_cast<Int>(j.requests.size()));
     for(const auto& x:j.requests){care_detail::grant(w,x.grant);w.b(x.receipt.accepted);w.b(x.receipt.already_applied);w.s(x.receipt.reason);w.n(x.progressed_ticks);w.n(static_cast<Int>(x.end));w.n(x.end_tick);}
     w.n(static_cast<Int>(j.history.size()));
-    for(const auto& x:j.history){w.n(static_cast<Int>(x.op));w.n(x.tick);w.b(bool(x.grant));if(x.grant)care_detail::grant(w,*x.grant);w.b(bool(x.contact));if(x.contact)care_detail::contact(w,*x.contact);w.b(bool(x.waiting));if(x.waiting)care_detail::waiting(w,*x.waiting);}
+    for(const auto& x:j.history){w.n(static_cast<Int>(x.op));w.n(x.tick);w.b(bool(x.grant));if(x.grant)care_detail::grant(w,*x.grant);w.b(bool(x.contact));if(x.contact)care_detail::contact(w,*x.contact);w.b(bool(x.waiting));if(x.waiting)care_detail::waiting(w,*x.waiting);if(x.op==care::Op::SleepEntry||x.sleep_entry){w.b(bool(x.sleep_entry));if(x.sleep_entry)care_detail::sleep_entry(w,*x.sleep_entry);}}
     return w.bytes;
 }
-inline std::optional<care::Journal> decode_care_document(const std::string& bytes) {
+inline std::optional<care::Journal> decode_care_document(const std::string& bytes,bool explicit_legacy_v3=false) {
     if(bytes.size()>max_care_bytes)return {};
     try {
         detail::Reader r{bytes};care::Journal j;j.schema=r.s(128);j.version=r.s(16);j.resident=r.s(128);j.tick=r.n();
-        if(j.schema!=care::journal_schema||j.version!=care::journal_version)return {};
+        if(j.schema!=care::journal_schema||j.version!=(explicit_legacy_v3?"3":care::journal_version))return {};
         j.needs.hunger=care_detail::small(r,0,care::full);j.needs.energy=care_detail::small(r,0,care::full);j.needs.hygiene=care_detail::small(r,0,care::full);j.needs.fun=care_detail::small(r,0,care::full);
         if(r.b()){care::ActiveUse a;a.grant=care_detail::grant(r);a.elapsed=care_detail::small(r,0,40);j.active=std::move(a);}
         const auto requests=r.count(care::max_requests);j.requests.reserve(requests);
         for(std::size_t i=0;i<requests;++i){care::RequestRecord x;x.grant=care_detail::grant(r);x.receipt.accepted=r.b();x.receipt.already_applied=r.b();x.receipt.reason=r.s(128);x.progressed_ticks=care_detail::small(r,0,40);x.end=static_cast<care::End>(care_detail::small(r,0,4));x.end_tick=r.n();j.requests.push_back(std::move(x));}
         const auto history=r.count(care::max_history);j.history.reserve(history);
-        for(std::size_t i=0;i<history;++i){care::Transition x;x.op=static_cast<care::Op>(care_detail::small(r,0,6));x.tick=r.n();if(r.b())x.grant=care_detail::grant(r);if(r.b())x.contact=care_detail::contact(r);if(r.b())x.waiting=care_detail::waiting(r);j.history.push_back(std::move(x));}
+        for(std::size_t i=0;i<history;++i){care::Transition x;x.op=static_cast<care::Op>(care_detail::small(r,0,explicit_legacy_v3?6:7));x.tick=r.n();if(r.b())x.grant=care_detail::grant(r);if(r.b())x.contact=care_detail::contact(r);if(r.b())x.waiting=care_detail::waiting(r);if(x.op==care::Op::SleepEntry&&r.b())x.sleep_entry=care_detail::sleep_entry(r);j.history.push_back(std::move(x));}
         if(r.at!=bytes.size()||encode_care_document(j)!=bytes)return {};
+        if(explicit_legacy_v3)j.version=care::journal_version;
         care::ResidentUse checked(j.resident);if(!checked.restore_state(j))return {};
         return j;
     }catch(const std::exception&){return {};}
@@ -156,19 +159,23 @@ inline std::string meal_use_id(Int event_id){return "world-meal/"+std::to_string
 inline care::ApprovedUse approved_meal(const CareGrant& g) {
     return {g.request_id,g.resident,g.site_id,meal_use_id(g.event_id),care::Kind::Eat,g.tick,g.event_id};
 }
+inline care::ApprovedUse approved_sleep(const CareGrant& g){return {g.request_id,g.resident,g.site_id,"world-sleep/"+std::to_string(g.event_id),care::Kind::Sleep,g.tick,g.event_id};}
+inline care::ApprovedUse approved_care(const CareGrant& g){return g.kind==CareKind::Meal?approved_meal(g):approved_sleep(g);}
 inline bool care_matches_world(const Kernel& world,const care::ResidentUse& use) {
     if(!world.verify_ledger()||!world.verify_care()||use.requests().size()!=world.care_grants().size())return false;
     for(const auto& g:world.care_grants()) {
         const auto it=std::find_if(use.requests().begin(),use.requests().end(),[&](const care::RequestRecord& x){return x.grant.grant_event_id==g.event_id;});
-        if(it==use.requests().end()||g.resident!=use.resident()||!care::same_request(it->grant,approved_meal(g))||
-           g.duration_ticks!=18||g.hunger_gain!=50||g.fun_gain!=3)return false;
+        if(it==use.requests().end()||g.resident!=use.resident()||!care::same_request(it->grant,approved_care(g)))return false;
+        if(g.kind==CareKind::Meal){if(g.duration_ticks!=18||g.hunger_gain!=50||g.fun_gain!=3||g.energy_gain!=0)return false;}
+        else if(g.kind==CareKind::Sleep){if(g.duration_ticks!=40||g.hunger_gain!=0||g.fun_gain!=0||g.energy_gain!=62)return false;}
+        else return false;
         if(g.active) {
             if(it->end!=care::End::Active||!use.active()||!care::same_request(use.active()->grant,it->grant))return false;
         }else {
             if(it->end==care::End::Active||g.release_event_id<1||static_cast<std::uint64_t>(g.release_event_id)>world.events().size())return false;
             const auto& e=world.events()[static_cast<std::size_t>(g.release_event_id-1)];
             const char* reason=it->end==care::End::Completed?"completed":it->end==care::End::Cancelled?"cancelled":it->end==care::End::Interrupted?"interrupted":"after_load";
-            if(e.note!=reason||e.tick!=it->end_tick||e.amount!=(it->end==care::End::Completed?std::optional<Int>(18):std::nullopt))return false;
+            if(e.note!=reason||e.tick!=it->end_tick||e.amount!=(it->end==care::End::Completed?std::optional<Int>(g.duration_ticks):std::nullopt))return false;
         }
     }
     return true;
@@ -194,7 +201,7 @@ inline Receipt begin_meal_use(Kernel& live,care::ResidentUse& use,const MealComm
 }
 struct CareTickReceipt {bool ok=false;care::Outcome outcome=care::Outcome::RejectedTick;std::string reason;};
 inline CareTickReceipt wait_before_first_meal_progress(Kernel& live,care::ResidentUse& use,Int next,const care::WaitingObservation& observed,CareCommitFault fault=CareCommitFault::None) {
-    if(!care_matches_world(live,use)||!use.active()||live.loaded_grants_require_interruption()||
+    if(!care_matches_world(live,use)||!use.active()||use.active()->grant.kind!=care::Kind::Eat||live.loaded_grants_require_interruption()||
        next<live.minimum_authority_tick()||!valid_clock_for(live,{next,0}))return {false,care::Outcome::RejectedTick,"care_world_not_live"};
     try {
         Kernel candidate=live;care::ResidentUse care_candidate=use;const auto& active=care_candidate.active()->grant;
@@ -210,7 +217,7 @@ inline CareTickReceipt wait_before_first_meal_progress(Kernel& live,care::Reside
     }catch(const std::exception&){return {false,care::Outcome::RejectedTick,"care_wait_exception"};}
 }
 inline CareTickReceipt advance_meal_use(Kernel& live,care::ResidentUse& use,Int next,const care::Contact& observation,CareCommitFault fault=CareCommitFault::None) {
-    if(!care_matches_world(live,use)||live.loaded_grants_require_interruption()||next<live.minimum_authority_tick())return {false,care::Outcome::RejectedTick,"care_world_not_live"};
+    if(!care_matches_world(live,use)||(use.active()&&use.active()->grant.kind!=care::Kind::Eat)||live.loaded_grants_require_interruption()||next<live.minimum_authority_tick())return {false,care::Outcome::RejectedTick,"care_world_not_live"};
     try {
         Kernel candidate=live;care::ResidentUse care_candidate=use;const auto active=care_candidate.active();
         const auto outcome=care_candidate.advance_one(next,observation);
@@ -236,10 +243,54 @@ inline Receipt cancel_meal_use(Kernel& live,care::ResidentUse& use,ReleaseReason
         live=std::move(candidate);use=std::move(care_candidate);return receipt;
     }catch(const std::exception&){return {false,false,"care_cancel_exception",-1};}
 }
-struct CareBindings {SourceBindings world;std::string care_core_sha256;};
-inline bool valid_care_bindings(const CareBindings& b){return valid_bindings(b.world)&&sha_token(b.care_core_sha256);}
+inline Receipt begin_sleep_use(Kernel& live,care::ResidentUse& use,const SleepCommand& command,const SleepContext& at,CareCommitFault fault=CareCommitFault::None){
+    if(!care_matches_world(live,use)||at.actor!=use.resident()||at.tick!=use.tick())return {false,false,"care_world_or_clock_mismatch",-1};
+    try{
+        Kernel candidate=live;care::ResidentUse next=use;const auto receipt=candidate.execute_sleep(command,at);
+        if(receipt.ok&&!receipt.already_applied){const auto begun=next.begin(approved_sleep(candidate.care_grants().back()));if(!begun.accepted||begun.already_applied)return {false,false,"care_begin_refused_rollback",-1};if(fault==CareCommitFault::AfterCareBegin)throw std::runtime_error("injected_sleep_begin");}
+        if(!care_matches_world(candidate,next))return {false,false,"care_reconciliation_rollback",-1};
+        live=std::move(candidate);use=std::move(next);return receipt;
+    }catch(const std::exception&){return {false,false,"sleep_transaction_exception",-1};}
+}
+inline CareTickReceipt wait_for_sleep_entry(Kernel& live,care::ResidentUse& use,Int tick,const care::SleepEntryObservation& observation,CareCommitFault fault=CareCommitFault::None){
+    if(!care_matches_world(live,use)||!use.active()||use.active()->grant.kind!=care::Kind::Sleep||live.loaded_grants_require_interruption()||!valid_clock_for(live,{tick,0})||!live.has_residential_right(use.resident(),use.active()->grant.site_id,tick))return {false,care::Outcome::RejectedTick,"sleep_world_not_live"};
+    try{
+        Kernel candidate=live;care::ResidentUse next=use;const auto outcome=next.wait_for_sleep_entry(tick,observation);if(outcome!=care::Outcome::WaitingBeforeFirstProgress)return {false,outcome,"sleep_entry_wait_refused"};
+        if(fault==CareCommitFault::AfterCareWait)throw std::runtime_error("injected_sleep_wait");
+        if(!care_matches_world(candidate,next))return {false,care::Outcome::RejectedTick,"care_reconciliation_rollback"};
+        live=std::move(candidate);use=std::move(next);return {true,outcome,"sleep_entry_wait_committed"};
+    }catch(const std::exception&){return {false,care::Outcome::RejectedTick,"sleep_wait_exception"};}
+}
+inline CareTickReceipt advance_sleep_use(Kernel& live,care::ResidentUse& use,Int tick,const care::Contact& observation,CareCommitFault fault=CareCommitFault::None){
+    if(!care_matches_world(live,use)||!use.active()||use.active()->grant.kind!=care::Kind::Sleep||live.loaded_grants_require_interruption()||!valid_clock_for(live,{tick,0}))return {false,care::Outcome::RejectedTick,"sleep_world_not_live"};
+    try{
+        Kernel candidate=live;care::ResidentUse next=use;const auto active=*next.active();auto contact=observation;
+        // Caller booleans cannot waive an authority-side entitlement loss.
+        contact.permission_valid=contact.permission_valid&&candidate.has_residential_right(use.resident(),active.grant.site_id,tick);
+        const auto outcome=next.advance_one(tick,contact);if(outcome==care::Outcome::RejectedTick)return {false,outcome,"nonconsecutive_care_tick"};
+        if(fault==CareCommitFault::AfterCareAdvance)throw std::runtime_error("injected_sleep_advance");
+        if(outcome==care::Outcome::Completed||outcome==care::Outcome::Interrupted){const auto released=candidate.release_grant({use.resident(),active.grant.grant_event_id,tick,outcome==care::Outcome::Completed?ReleaseReason::Completed:ReleaseReason::Interrupted,outcome==care::Outcome::Completed?40:0});if(!released.ok)return {false,care::Outcome::RejectedTick,"care_release_refused_rollback"};}
+        if(!care_matches_world(candidate,next))return {false,care::Outcome::RejectedTick,"care_reconciliation_rollback"};
+        live=std::move(candidate);use=std::move(next);return {true,outcome,"sleep_tick_committed"};
+    }catch(const std::exception&){return {false,care::Outcome::RejectedTick,"sleep_tick_exception"};}
+}
+inline Receipt cancel_care_use(Kernel& live,care::ResidentUse& use,ReleaseReason reason=ReleaseReason::Cancelled){return cancel_meal_use(live,use,reason);}
+inline Receipt revoke_residential_use(Kernel& live,care::ResidentUse& use,const TrustedResidentialChange& at){
+    if(!care_matches_world(live,use)||at.tick!=use.tick())return {false,false,"care_world_or_clock_mismatch",-1};
+    try{
+        Kernel candidate=live;care::ResidentUse next=use;const bool sleeping=next.active()&&next.active()->grant.kind==care::Kind::Sleep;
+        const auto receipt=candidate.revoke_residential(at);
+        if(!receipt.ok)return receipt;
+        if(sleeping&&!next.interrupt())return {false,false,"sleep_interruption_failed",-1};
+        if(!care_matches_world(candidate,next))return {false,false,"care_reconciliation_rollback",-1};
+        live=std::move(candidate);use=std::move(next);return receipt;
+    }catch(const std::exception&){return {false,false,"residential_transaction_exception",-1};}
+}
+struct CareBindings {SourceBindings world;std::string care_core_sha256;std::string residential_sha256=residential_registry_sha256,sleep_recipe_sha256={};};
+inline bool valid_care_bindings(const CareBindings& b){return valid_bindings(b.world)&&sha_token(b.care_core_sha256)&&b.residential_sha256==residential_registry_sha256&&(b.sleep_recipe_sha256.empty()||sha_token(b.sleep_recipe_sha256));}
+inline bool has_sleep_history(const Kernel& k){for(const auto& g:k.care_grants())if(g.kind==CareKind::Sleep)return true;return false;}
 struct CareEnvelope {
-    std::string format="LivingTown.CafeWorldMealCare.PortableEnvelope",version="5",integrity="fnv64_canonical_not_authentication";
+    std::string format="LivingTown.CafeWorldMealCare.PortableEnvelope",version="6",integrity="fnv64_canonical_not_authentication";
     CareBindings bindings;ClockMetadata clock;
     std::string saved_persona="ben",session_policy="live_native_identity_position_unchanged";
     std::string world_payload,care_payload;
@@ -247,6 +298,7 @@ struct CareEnvelope {
 };
 inline std::string encode_care_envelope_document(const CareEnvelope& e) {
     detail::Writer body;body.s(e.format);body.s(e.version);body.s(e.integrity);write_bindings(body,e.bindings.world);body.s(e.bindings.care_core_sha256);
+    if(e.version=="6"){body.s(e.bindings.residential_sha256);body.s(e.bindings.sleep_recipe_sha256);}
     body.n(e.clock.tick);body.u(e.clock.fraction_bits);body.s(e.saved_persona);body.s(e.session_policy);
     body.s(e.world_payload);body.u(e.world_digest);body.s(e.care_payload);body.u(e.care_digest);
     detail::Writer out;out.s(body.bytes);out.u(detail::hash_bytes(14695981039346656037ULL,body.bytes));return out.bytes;
@@ -257,6 +309,7 @@ inline std::optional<CareEnvelope> decode_care_envelope_document(const std::stri
         detail::Reader outer{bytes};const auto body=outer.s(max_paired_bytes);const auto hash=outer.u();
         if(outer.at!=bytes.size()||detail::hash_bytes(14695981039346656037ULL,body)!=hash)return {};
         detail::Reader r{body};CareEnvelope e;e.format=r.s(128);e.version=r.s(16);e.integrity=r.s(128);e.bindings.world=read_bindings(r);e.bindings.care_core_sha256=r.s(64);
+        if(e.version=="6"){e.bindings.residential_sha256=r.s(64);e.bindings.sleep_recipe_sha256=r.s(64);}
         e.clock.tick=r.n();e.clock.fraction_bits=r.u();e.saved_persona=r.s(128);e.session_policy=r.s(128);
         e.world_payload=r.s(max_journal_bytes);e.world_digest=r.u();e.care_payload=r.s(max_care_bytes);e.care_digest=r.u();
         if(r.at!=body.size()||encode_care_envelope_document(e)!=bytes)return {};
@@ -265,7 +318,7 @@ inline std::optional<CareEnvelope> decode_care_envelope_document(const std::stri
 }
 inline std::optional<std::string> save_care_envelope(const Kernel& world,const care::ResidentUse& use,const CareBindings& bindings,const ClockMetadata& clock,const std::string& persona="ben") {
     if(!valid_care_bindings(bindings)||!valid_clock_for(world,clock)||clock.tick!=use.tick()||
-       !care_matches_world(world,use)||(persona!="aria"&&persona!="ben"))return {};
+       !care_matches_world(world,use)||(has_sleep_history(world)&&bindings.sleep_recipe_sha256.empty())||(persona!="aria"&&persona!="ben"))return {};
     care::ResidentUse checked(use.resident());if(!checked.restore_state(use.export_state()))return {};
     CareEnvelope e;e.bindings=bindings;e.clock=clock;e.saved_persona=persona;e.world_payload=world.save_bytes();e.care_payload=encode_care_document(use.export_state());
     if(e.world_payload.size()>max_journal_bytes||e.care_payload.size()>max_care_bytes)return {};
@@ -275,13 +328,14 @@ inline bool load_care_envelope(Kernel& live,care::ResidentUse& use,const std::st
     const auto e=decode_care_envelope_document(bytes);
     if(!e||!valid_care_bindings(expected)||!valid_care_bindings(e->bindings)||
        !same_bindings(expected.world,e->bindings.world)||expected.care_core_sha256!=e->bindings.care_core_sha256||
-        e->format!="LivingTown.CafeWorldMealCare.PortableEnvelope"||e->version!="5"||e->integrity!="fnv64_canonical_not_authentication"||
+        expected.residential_sha256!=e->bindings.residential_sha256||expected.sleep_recipe_sha256!=e->bindings.sleep_recipe_sha256||
+        e->format!="LivingTown.CafeWorldMealCare.PortableEnvelope"||e->version!="6"||e->integrity!="fnv64_canonical_not_authentication"||
        e->session_policy!="live_native_identity_position_unchanged"||(e->saved_persona!="aria"&&e->saved_persona!="ben")||
        detail::hash_bytes(14695981039346656037ULL,e->world_payload)!=e->world_digest||detail::hash_bytes(14695981039346656037ULL,e->care_payload)!=e->care_digest)return false;
     const auto journal=decode_care_document(e->care_payload);if(!journal)return false;
     Kernel candidate=live;care::ResidentUse care_candidate=use;
     if(!candidate.restore_bytes(e->world_payload)||!care_candidate.restore_state(*journal)||
-       !valid_clock_for(candidate,e->clock)||e->clock.tick!=care_candidate.tick()||!care_matches_world(candidate,care_candidate))return false;
+       !valid_clock_for(candidate,e->clock)||e->clock.tick!=care_candidate.tick()||!care_matches_world(candidate,care_candidate)||(has_sleep_history(candidate)&&expected.sleep_recipe_sha256.empty()))return false;
     // Saved observations are historical. Release actual recorded reservations
     // and invalidate use together before publication; keep earned needs/fun.
     if(!candidate.interrupt_loaded_grants(e->clock.tick))return false;
@@ -290,7 +344,22 @@ inline bool load_care_envelope(Kernel& live,care::ResidentUse& use,const std::st
     live=std::move(candidate);use=std::move(care_candidate);clock=e->clock;return true;
 }
 // The native caller separately verifies the OLD SHA256 envelope/source/scene.
-// This explicit API never makes ordinary V5 loading fall back to V4.
+// These explicit APIs never make ordinary V6 loading fall back to V5/V4.
+inline bool import_v5_care_envelope(Kernel& live,care::ResidentUse& use,const std::string& bytes,const CareBindings& expected_legacy,ClockMetadata& clock){
+    const auto e=decode_care_envelope_document(bytes);
+    if(!e||!valid_care_bindings(expected_legacy)||!valid_bindings(e->bindings.world)||!sha_token(e->bindings.care_core_sha256)||
+       !same_bindings(expected_legacy.world,e->bindings.world)||expected_legacy.care_core_sha256!=e->bindings.care_core_sha256||
+       e->format!="LivingTown.CafeWorldMealCare.PortableEnvelope"||e->version!="5"||e->integrity!="fnv64_canonical_not_authentication"||
+       e->session_policy!="live_native_identity_position_unchanged"||(e->saved_persona!="aria"&&e->saved_persona!="ben")||
+       detail::hash_bytes(14695981039346656037ULL,e->world_payload)!=e->world_digest||detail::hash_bytes(14695981039346656037ULL,e->care_payload)!=e->care_digest)return false;
+    const auto journal=decode_care_document(e->care_payload,true);if(!journal)return false;
+    Kernel candidate=live;care::ResidentUse next=use;
+    if(!candidate.import_legacy_v5_bytes(e->world_payload)||!next.restore_state(*journal)||!valid_clock_for(candidate,e->clock)||e->clock.tick!=next.tick()||!care_matches_world(candidate,next)||candidate.residential_right().activation_event_id!=-1)return false;
+    if(!candidate.interrupt_loaded_grants(e->clock.tick))return false;
+    next.invalidate_use_after_load();
+    if(!care_matches_world(candidate,next))return false;
+    live=std::move(candidate);use=std::move(next);clock=e->clock;return true;
+}
 inline bool import_legacy_care_envelope(Kernel& live,care::ResidentUse& use,const std::string& bytes,const CareBindings& expected_legacy,ClockMetadata& clock) {
     const auto e=decode_care_envelope_document(bytes);
     if(!e||!valid_care_bindings(expected_legacy)||!valid_care_bindings(e->bindings)||
@@ -298,7 +367,7 @@ inline bool import_legacy_care_envelope(Kernel& live,care::ResidentUse& use,cons
         e->format!="LivingTown.CafeWorldMealCare.PortableEnvelope"||e->version!="4"||e->integrity!="fnv64_canonical_not_authentication"||
         e->session_policy!="live_native_identity_position_unchanged"||(e->saved_persona!="aria"&&e->saved_persona!="ben")||
         detail::hash_bytes(14695981039346656037ULL,e->world_payload)!=e->world_digest||detail::hash_bytes(14695981039346656037ULL,e->care_payload)!=e->care_digest)return false;
-    const auto journal=decode_care_document(e->care_payload);if(!journal)return false;
+    const auto journal=decode_care_document(e->care_payload,true);if(!journal)return false;
     Kernel candidate=live;care::ResidentUse care_candidate=use;
     if(!candidate.import_legacy_v3_bytes(e->world_payload)||!care_candidate.restore_state(*journal)||
         !valid_clock_for(candidate,e->clock)||e->clock.tick!=care_candidate.tick()||!care_matches_world(candidate,care_candidate))return false;

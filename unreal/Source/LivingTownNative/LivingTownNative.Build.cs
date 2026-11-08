@@ -30,11 +30,11 @@ public class LivingTownNative : ModuleRules
             throw new BuildException("Frozen property v2 core byte binding changed: " + PropertyActual);
         ExternalDependencies.Add(PropertyCoreFile);
         // Portable meal/care inputs are versioned separately from the current
-        // native V2 adapter. Byte binding does not qualify a native meal journey.
+        // native V6 adapter. Byte binding does not qualify a native meal journey.
         string[,] MealCareSources = {
-            { "DailyLifeUseV1.hpp", "57726bcfe8a45cd9db099ad85c8affe325c6538404e0ae2c09acf35bd45da527" },
-            { "CafeWorldV3.hpp", "9c31b82a263b389457a8d3ea00344f90e24b81f646f66a6b8377ccb4b85be46d" },
-            { "CafeWorldV3Envelope.hpp", "ba807df992a9163dbb26df6fc4b7d582443b74c53403fc7298279ac51b93d63b" },
+            { "DailyLifeUseV1.hpp", "4125cb255d220dfb41c7a72953c2a90623c7f5f7b3fbc2418d633955b8cb23e6" },
+            { "CafeWorldV3.hpp", "93dc3e8ec181ce3de1071d36335257ee8d6a2c57fce61f56c2282dffb05f9724" },
+            { "CafeWorldV3Envelope.hpp", "562b39067b5b78ec24456dc56ac83dab772adf6c476a7a56074041ca1d6640ce" },
             { "CafeBackendV3.hpp", "f311599b6bb10f4ac60281c9bb2bbaf904b62bf8fec68b1ac46d7ae7e932994d" }
         };
         for (int Index = 0; Index < MealCareSources.GetLength(0); ++Index)

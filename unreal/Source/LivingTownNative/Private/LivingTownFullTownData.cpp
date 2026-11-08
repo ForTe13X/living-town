@@ -73,8 +73,16 @@ const TCHAR* const B749RoofLedgerSha=TEXT("5ef41f374840deb7cc63eb4cd4dfb9f71e309
 const TCHAR* const B749RoofManifestAdmissionSha=TEXT("0d21f61d3f92b26b4b4350dd7112791974d72ff051a7022affefd1f03b8e5e4b");
 const FB749UnitPin B749RoofUnitPin={193,TEXT("MILL_COURT_B749"),TEXT("/Game/LivingTown_UEPilot/FullTownIntegrationB749_ContinuousRoof_v001/Units/L_B749_ContinuousRoof_v001.L_B749_ContinuousRoof_v001"),749,
     701814,TEXT("1a6c9f9d2bdb3ffa95c41f09118bdbc8afad6189c6bd331c96e21dabe9865049"),TEXT("f7c212dfd290f8e3e15cd72cf65ddfe69d967aec254cc24b40a38ed8910a22a4"),TEXT("953f3ba42f1bcabf47dcc9857b5c59ea41e8951a904007d19a8c834202fd82ee")};
+const TCHAR* const WorldV3Profile=TEXT("B749_CafeWorldV3_289_v001");
+const TCHAR* const WorldV3Root=TEXT("/Game/LivingTown_UEPilot/FullTownWorldV3_289_v001/L_FullTownWorldV3_289_v001.L_FullTownWorldV3_289_v001");
+const TCHAR* const WorldV3CafeBindingSha=TEXT("38171606986ba5086102aeba31927fac698558eebed861dd0f4d8eaf713fad6e");
+// Root authors/reopens the NEW descriptor/root before pinning these values.
+// Empty values are an explicit refusal, never a temporary admission waiver.
+const TCHAR* const WorldV3DispatchSha=TEXT("87f9efbe93a1d99ee68c14773604eeade34cd3b22ce025198e6fd93b9127cffc");
+const TCHAR* const WorldV3LedgerSha=TEXT("e325baae123e7f53faffcd21dc0572d0654938e074c13003a0a5abca37e10d1e");
+const TCHAR* const WorldV3ManifestAdmissionSha=TEXT("ef95dcaf7106e5c32121dd804fc26b94535be11229237284a9b795cea265e77d");
 const FB749UnitPin& B749Pin(const ULivingTownFullTownData& D,int32 Index)
-{ return D.ProfileId==B749RoofProfile && Index==1 ? B749RoofUnitPin : B749Pins[Index]; }
+{ return (D.ProfileId==B749RoofProfile || D.ProfileId==WorldV3Profile) && Index==1 ? B749RoofUnitPin : B749Pins[Index]; }
 const TCHAR* B749RoofMesh(int32 Index)
 { return Index==447 ? TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_ContinuousRoof_v003/StaticMeshes/MillCourt_B_ContinuousRoof_Geometry_v001/StaticMeshes/MCB_Continu_47_v001_001.MCB_Continu_47_v001_001") : TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_ContinuousRoof_v003/StaticMeshes/MillCourt_B_ContinuousRoof_Geometry_v001/StaticMeshes/MCB_Continu_48_v001_001.MCB_Continu_48_v001_001"); }
 const TCHAR* B749RoofSlot(int32 Index)
@@ -95,13 +103,21 @@ const FB749Finish B749Finishes[]={
 // additionally requires every actual pin below; no asset operation occurs here.
 bool B749Shape(const ULivingTownFullTownData& D,FString& Error)
 {
-    const bool Roof=D.ProfileId==B749RoofProfile;
+    const bool WorldV3=D.ProfileId==WorldV3Profile;
+    const bool Roof=D.ProfileId==B749RoofProfile || WorldV3;
     if (D.SchemaVersion!=1 || D.Scope!=TEXT("IntegrationSubset") || (!Roof && D.ProfileId!=B749Profile) ||
-        D.RootWorld.ToString()!=(Roof?B749RoofRoot:B749Root) || !Asset(D.RootWorld) ||
+        D.CafeBackend!=(WorldV3?ELivingTownFullTownCafeBackend::WorldV3Qualified289:ELivingTownFullTownCafeBackend::LegacyProjection262) ||
+        D.RootWorld.ToString()!=(WorldV3?WorldV3Root:Roof?B749RoofRoot:B749Root) || !Asset(D.RootWorld) ||
         !LivingTownTiles::IsSha256(D.SourceDispatchSha256) || !LivingTownTiles::IsSha256(D.SourceWorldLedgerSha256) ||
         !LivingTownTiles::IsSha256(D.ManifestAdmissionSha256) || !LivingTownTiles::IsSha256(D.ExternalCafeBindingSha256) ||
-        !Unique(D.ExternalCafePartIds,262) || !Unique(D.ExternalCafeRoleIds,262) || D.Units.Num()!=3)
+        !Unique(D.ExternalCafePartIds,WorldV3?289:262) || !Unique(D.ExternalCafeRoleIds,WorldV3?289:262) || D.Units.Num()!=3)
         return Refuse(Error,TEXT("fulltown_b749_manifest_shape"));
+    if (WorldV3) for (int32 Node=8534; Node<=8822; ++Node)
+    {
+        const FString Part=FString::Printf(TEXT("town_10_urban_core:node:%d"),Node);
+        if (!D.ExternalCafePartIds.Contains(Part) || !D.ExternalCafeRoleIds.Contains(TEXT("CAFE::")+Part))
+            return Refuse(Error,TEXT("fulltown_world_v3_exact_original_289_roles"));
+    }
     TSet<FString> Roles; int32 FinishCounts[7]={}; int32 EmptyB=0;
     for (const FString& RoleId:D.ExternalCafeRoleIds)
     {
@@ -170,7 +186,7 @@ bool B749Shape(const ULivingTownFullTownData& D,FString& Error)
             for (const FString& SourceId:R.SourceIds) if (!Id(SourceId)) return Refuse(Error,TEXT("fulltown_b749_source_id"));
         }
     }
-    if (Roles.Num()!=1233 || EmptyB!=368) return Refuse(Error,TEXT("fulltown_b749_union_or_empty_override_count"));
+    if (Roles.Num()!=(WorldV3?1260:1233) || EmptyB!=368) return Refuse(Error,TEXT("fulltown_b749_union_or_empty_override_count"));
     for (int32 F=0; F<7; ++F) if (FinishCounts[F]!=B749Finishes[F].Count)
         return Refuse(Error,TEXT("fulltown_b749_exact_seven_finish_counts"));
     return true;
@@ -179,6 +195,21 @@ bool B749Shape(const ULivingTownFullTownData& D,FString& Error)
 bool ValidateB749(const ULivingTownFullTownData& D,FString& Error)
 {
     if (!B749Shape(D,Error)) return false;
+    if (D.ProfileId==WorldV3Profile)
+    {
+        if (!LivingTownTiles::IsSha256(WorldV3DispatchSha) || !LivingTownTiles::IsSha256(WorldV3LedgerSha) || !LivingTownTiles::IsSha256(WorldV3ManifestAdmissionSha))
+            return Refuse(Error,TEXT("fulltown_world_v3_289_DRAFT_REFUSE_pending_actual_author_pins"));
+        if (D.SourceDispatchSha256!=WorldV3DispatchSha || D.SourceWorldLedgerSha256!=WorldV3LedgerSha ||
+            D.ManifestAdmissionSha256!=WorldV3ManifestAdmissionSha || D.ExternalCafeBindingSha256!=WorldV3CafeBindingSha)
+            return Refuse(Error,TEXT("fulltown_world_v3_289_exact_composite_pins"));
+        for (int32 I=0; I<3; ++I)
+        {
+            const auto& U=D.Units[I]; const auto& Pin=B749Pin(D,I);
+            if (U.SourceMapBytes!=Pin.Bytes || U.SourceMapSha256!=Pin.SourceSha || U.RootColdAdmissionSha256!=Pin.RootColdSha || U.ColdObservationSha256!=Pin.ObservationSha)
+                return Refuse(Error,TEXT("fulltown_world_v3_289_exact_reused_unit_pins"));
+        }
+        return true;
+    }
     const bool Roof=D.ProfileId==B749RoofProfile;
     const TCHAR* Dispatch=Roof?B749RoofDispatchSha:B749DispatchSha;
     const TCHAR* Ledger=Roof?B749RoofLedgerSha:B749LedgerSha;
@@ -223,6 +254,11 @@ double LivingTownFullTown::DistanceToBoundsXY(const FVector& P, const FBox& B)
 
 bool LivingTownFullTown::ValidateManifest(const ULivingTownFullTownData& D, FString& Error)
 {
+    if (D.CafeBackend!=ELivingTownFullTownCafeBackend::LegacyProjection262 && D.CafeBackend!=ELivingTownFullTownCafeBackend::WorldV3Qualified289)
+        return Refuse(Error,TEXT("fulltown_unknown_cafe_backend"));
+    if ((D.ProfileId==WorldV3Profile)!=(D.CafeBackend==ELivingTownFullTownCafeBackend::WorldV3Qualified289))
+        return Refuse(Error,TEXT("fulltown_cafe_backend_profile_mismatch"));
+    if (D.ProfileId==WorldV3Profile) return ValidateB749(D,Error);
     if (D.ProfileId==B749Profile || D.ProfileId==B749RoofProfile) return ValidateB749(D,Error);
     if (D.SchemaVersion != 1 || D.Scope != TEXT("IntegrationSubset") ||
         D.ProfileId != TEXT("U0131_U0142_Ground151_ExternalCafe81_v001") || !Asset(D.RootWorld) ||
@@ -282,6 +318,9 @@ bool LivingTownFullTown::ValidateManifest(const ULivingTownFullTownData& D, FStr
     }
     return true;
 }
+
+bool LivingTownFullTown::IsWorldV3CafeProfile(const ULivingTownFullTownData& D)
+{ return D.ProfileId==WorldV3Profile && D.CafeBackend==ELivingTownFullTownCafeBackend::WorldV3Qualified289; }
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Misc/AutomationTest.h"

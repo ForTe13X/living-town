@@ -5,6 +5,7 @@
 #include "GameFramework/HUD.h"
 #include "LivingTownCafeWorldV3Types.h"
 #include "LivingTownCafePropertyV2Types.h"
+#include "TimerManager.h"
 #include "LivingTownCafeWorldV3Scenario.generated.h"
 class ULivingTownMetaHumanVisualPreload;
 enum class ELivingTownCafePersonaRequestResult : uint8 { Selected, Pending, Refused };
@@ -50,13 +51,16 @@ public:
     virtual APawn* SpawnDefaultPawnAtTransform_Implementation(AController*,const FTransform&)override;
     // Pending retains the currently authorized pawn and paired native session.
     ELivingTownCafePersonaRequestResult RequestPersona(ALivingTownCafeWorldV3Controller* Controller,ELivingTownCafeWorldPersona Persona,FString& Error);
-    ELivingTownCafePersonaRequestResult GetPersonaRequestResult()const{return PersonaRequestResult;}
+    ELivingTownCafePersonaRequestResult GetPersonaRequestResult()const{return bDeferredTownPersona?ELivingTownCafePersonaRequestResult::Pending:PersonaRequestResult;}
     // Immediate API for existing synchronous consumers. Never starts an asset load.
     bool SelectPersona(ALivingTownCafeWorldV3Controller* Controller,ELivingTownCafeWorldPersona Persona,FString& Error);
 private:
     void StartScenarioPlayer(APlayerController* Controller);
     bool ValidatePersonaSelection(ALivingTownCafeWorldV3Controller* Controller,ELivingTownCafeWorldPersona Persona,FString& Error)const;
     bool SelectPersonaImmediate(ALivingTownCafeWorldV3Controller* Controller,ELivingTownCafeWorldPersona Persona,FString& Error);
+    ELivingTownCafePersonaRequestResult RequestPersonaNow(ALivingTownCafeWorldV3Controller* Controller,ELivingTownCafeWorldPersona Persona,FString& Error);
+    void ClearDeferredTownPersona();
+    void AdvanceDeferredTownPersona();
     void CancelPendingPersonaRequest(bool bReleaseReadyPreload=false);
     void CompletePersonaRequest(uint64 ExpectedEpoch);
     UPROPERTY(Transient) TObjectPtr<ULivingTownMetaHumanVisualPreload> MetaHumanPreload;
@@ -64,6 +68,10 @@ private:
     FString PendingDescriptorSha256;
     uint64 PersonaSelectionEpoch=0;
     ELivingTownCafePersonaRequestResult PersonaRequestResult=ELivingTownCafePersonaRequestResult::Refused;
+    TWeakObjectPtr<ALivingTownCafeWorldV3Controller> DeferredTownController;
+    ELivingTownCafeWorldPersona DeferredTownPersona=ELivingTownCafeWorldPersona::Ben;
+    FTimerHandle DeferredTownTimer;
+    bool bDeferredTownPersona=false;
     bool bEndingPlay=false;
 };
 UCLASS(NotBlueprintable)

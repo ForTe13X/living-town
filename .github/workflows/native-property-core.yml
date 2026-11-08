@@ -53,10 +53,12 @@ jobs:
       - name: Compile and verify the engine-independent V3 cases
         run: |
           cases_dir="$(mktemp -d "$RUNNER_TEMP/cafe-world-v3.XXXXXX")"
-          mkdir "$cases_dir/property" "$cases_dir/meal" "$cases_dir/rent"
+          mkdir "$cases_dir/property" "$cases_dir/meal" "$cases_dir/rent" "$cases_dir/sleep"
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -UNDEBUG tools/tests/cafe_world_v3/CafeWorldV3PropertyCases.cpp -o "$cases_dir/property/cases"
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -UNDEBUG tools/tests/cafe_world_v3/CafeWorldV3MealCases.cpp -o "$cases_dir/meal/cases"
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -UNDEBUG tools/tests/cafe_world_v3/CafeWorldV3RentCases.cpp -o "$cases_dir/rent/cases"
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -UNDEBUG tools/tests/cafe_world_v3/CafeWorldV3SleepCases.cpp -o "$cases_dir/sleep/cases"
           "$cases_dir/property/cases" "$cases_dir/property"
           "$cases_dir/meal/cases"
           "$cases_dir/rent/cases" tools/tests/cafe_world_v3/fixtures/active_fixed_v4.paired
+          "$cases_dir/sleep/cases" tools/tests/cafe_world_v3/fixtures/active_meal_v5.paired

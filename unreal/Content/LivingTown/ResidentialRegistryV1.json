@@ -1,0 +1,15 @@
+{
+  "schema": "LivingTown.ResidentialRegistry.v1",
+  "status": "NEW_AUTHORED_SCENARIO_ASSIGNMENT_NATIVE_ADOPTION_PENDING",
+  "assignment_id": "mcb_b_ben_initial_owner_occupancy_v1",
+  "resident_id": "ben",
+  "right": "initial_owner_occupancy",
+  "model_owner_id": "PROPOSED_Core_MillCourt_B",
+  "plan_id": "B_Upper",
+  "bed_id": "single_bed",
+  "site_id": "mcb_b_upper_single_bed_v1",
+  "exclusive_bed": true,
+  "payment": "none_initial_authored_assignment",
+  "activation": "explicit_source_bound_authority_event_only",
+  "provenance": "New scenario assignment for the current authenticated cafe-worker persona ben. It is not inferred from the old home/2f grid address or the cafe commercial title, and grants no paid lease or residential transfer capability."
+}

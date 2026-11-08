@@ -6,6 +6,9 @@
 #include "LivingTownTileData.h"
 #include "LivingTownMaterialUsage.h"
 #include "LivingTownCafeGameMode.h"
+#include "LivingTownCafeWorldV3Scenario.h"
+#include "LivingTownCafeWorldV3Subsystem.h"
+#include "LivingTownCafePropertyV2Scenario.h"
 #include "LivingTownCafeProjectionSubsystem.h"
 #include "LivingTownCafeVenue.h"
 #include "LivingTownCafeCharacter.h"
@@ -55,7 +58,15 @@ const TCHAR* const B749RoofManifestSourceSha=TEXT("80a800bd4583156eddbebf06072a1
 const int64 B749RoofRootSourceBytes=17747;
 const TCHAR* const B749RoofRootSourceSha=TEXT("80785169981299c509b5d4c229d638a09c0605166271f9232f4e3d6b6f24f551");
 bool IsB749Roof(const ULivingTownFullTownData* D) { return D && D->ProfileId==B749RoofProfile; }
-bool IsB749Family(const ULivingTownFullTownData* D) { return IsB749(D) || IsB749Roof(D); }
+const TCHAR* const WorldV3RootPackage=TEXT("/Game/LivingTown_UEPilot/FullTownWorldV3_289_v001/L_FullTownWorldV3_289_v001");
+const TCHAR* const WorldV3Manifest=TEXT("/Game/LivingTown_UEPilot/FullTownWorldV3_289_v001/DA_FullTownWorldV3_289_v001.DA_FullTownWorldV3_289_v001");
+const int64 WorldV3ManifestSourceBytes=1317667;
+const TCHAR* const WorldV3ManifestSourceSha=TEXT("e40f537ed0b323a10fe2c862c61efe13e59314dbe843c7b2897dab7adaaf43bf");
+const int64 WorldV3RootSourceBytes=17434;
+const TCHAR* const WorldV3RootSourceSha=TEXT("45483b08d8ec67b6273b16ce9bb09c9686ea58712937d44813d12b0656b66a55");
+bool IsWorldV3(const ULivingTownFullTownData* D) { return D && LivingTownFullTown::IsWorldV3CafeProfile(*D); }
+bool UsesB749Roof(const ULivingTownFullTownData* D) { return IsB749Roof(D) || IsWorldV3(D); }
+bool IsB749Family(const ULivingTownFullTownData* D) { return IsB749(D) || UsesB749Roof(D); }
 struct FB749RoofMeshPin { const TCHAR* Role; const TCHAR* Asset; int64 Bytes; const TCHAR* SourceSha; const TCHAR* NativeSha; const TCHAR* Collision; };
 const FB749RoofMeshPin B749RoofMeshes[]={
     {TEXT("MCB::Building::M0447"),TEXT("/Game/LivingTown_UEPilot/TownSlice_v003/MillCourtB_ContinuousRoof_v003/StaticMeshes/MillCourt_B_ContinuousRoof_Geometry_v001/StaticMeshes/MCB_Continu_47_v001_001.MCB_Continu_47_v001_001"),82578,TEXT("eabbde9932b7036bf0d125cb59f9a41d32e9607091594b2ca1a6f206db9070cd"),TEXT("2a51377e46658de706438dc118632fcf8810abc7f70fa5cfe9b1df51e23cab29"),TEXT("14e4b314434508555dbfc6a5ae1cde5e")},
@@ -277,15 +288,31 @@ void ULivingTownFullTownStreamingSubsystem::OnWorldBeginPlay(UWorld& W)
     LivingTownCookedStartup::ArmWorld(&W);
     LivingTownCookedStartup::Mark(TEXT("RootBeginPlayArmed"),&W);
     FString Error;
+    const bool NamedWorldV3Root=UWorld::RemovePIEPrefix(W.GetOutermost()->GetName())==WorldV3RootPackage;
+    const bool NamedWorldV3Manifest=Enabled.Num()==1 && Enabled[0]->Manifest.ToSoftObjectPath().ToString()==WorldV3Manifest;
+    bWorldV3Root=NamedWorldV3Root && NamedWorldV3Manifest;
     // UWorld::BeginPlay invokes this before GameMode::StartPlay or actor BeginPlay.
     if (!LockMovementBeforeGameMode(W,Error)) { Fail(Error); return; }
     if (Enabled.Num()!=1 || !Enabled[0]->IsIdentityPlacement() ||
-        !W.GetAuthGameMode() || W.GetAuthGameMode()->GetClass()!=ALivingTownCafeGameMode::StaticClass() ||
+        !W.GetAuthGameMode() || W.GetAuthGameMode()->GetClass()!=(bWorldV3Root?ALivingTownCafeWorldV3GameMode::StaticClass():ALivingTownCafeGameMode::StaticClass()) ||
         !W.GetStreamingLevels().IsEmpty() || W.GetNetMode()!=NM_Standalone || (FPlatformProperties::RequiresCookedData() && !LivingTownCookedStartup::IsRequested()))
     { Fail(TEXT("fulltown_requires_one_identity_driver_empty_uncooked_standalone_root_and_existing_cafe_gamemode")); return; }
     if(LivingTownCookedStartup::IsRequested() && W.GetOutermost()->GetName()!=B749RootPackage)
     { Fail(TEXT("cook_smoke_exact_B749_root_only")); return; }
     Driver=Enabled[0]; auto* D=Driver.Get();
+    if (NamedWorldV3Root || NamedWorldV3Manifest)
+    {
+        if (!bWorldV3Root || FPlatformProperties::RequiresCookedData() || LivingTownCookedStartup::IsRequested())
+        { Fail(TEXT("fulltown_world_v3_289_exact_uncooked_root_descriptor_mode")); return; }
+        if (WorldV3ManifestSourceBytes<=0 || WorldV3RootSourceBytes<=0 || !LivingTownTiles::IsSha256(WorldV3ManifestSourceSha) || !LivingTownTiles::IsSha256(WorldV3RootSourceSha))
+        { Fail(TEXT("fulltown_world_v3_289_DRAFT_REFUSE_pending_actual_saved_packages")); return; }
+        if (D->ManifestSourceBytes!=WorldV3ManifestSourceBytes || D->ManifestSourceSha256!=WorldV3ManifestSourceSha ||
+            !RoofSourceFile(WorldV3RootPackage,FPackageName::GetMapPackageExtension(),WorldV3RootSourceBytes,WorldV3RootSourceSha))
+        { Fail(TEXT("fulltown_world_v3_289_exact_root_descriptor_source_pins")); return; }
+        for (const auto& Pin:B749RoofMeshes)
+            if (!RoofSourceFile(FSoftObjectPath(Pin.Asset).GetLongPackageName(),FPackageName::GetAssetPackageExtension(),Pin.Bytes,Pin.SourceSha))
+            { Fail(TEXT("fulltown_world_v3_289_exact_reused_roof_mesh_source_pin")); return; }
+    }
     for (TActorIterator<ALivingTownTileDriver> It(&W); It; ++It) if (It->bEnableQualifiedPilot)
     { Fail(TEXT("fulltown_old_pilot_driver_would_duplicate_geometry")); return; }
     const bool NamedBRoot=UWorld::RemovePIEPrefix(W.GetOutermost()->GetName())==B749RootPackage;
@@ -348,6 +375,9 @@ bool ULivingTownFullTownStreamingSubsystem::WasArmedBeforeGameMode(const ALiving
 bool ULivingTownFullTownStreamingSubsystem::BeforeQualifiedPossess(APlayerController* PC,FString& Error)
 {
     if (!bArmed) return true;
+    // After initial boot, WorldV3 retains its ordinary transactional persona
+    // changes; there is no streaming boot lock contribution to balance then.
+    if (bWorldV3Root && bReady && !bFailed && !bStopping && !bWorldEnding && PC && PC==LockedController.Get() && PC->GetWorld()==GetWorld()) return true;
     if (bFailed || bStopping || bWorldEnding || bPossessionWindow || !PC || PC!=LockedController.Get() ||
         PC->GetPawn() || !bMovementLockOwned || !PC->IsMoveInputIgnored())
     { Error=TEXT("fulltown_before_possess_boot_ownership"); Fail(Error); return false; }
@@ -358,6 +388,7 @@ bool ULivingTownFullTownStreamingSubsystem::BeforeQualifiedPossess(APlayerContro
 bool ULivingTownFullTownStreamingSubsystem::AfterQualifiedPossess(APlayerController* PC,APawn* Pawn,FString& Error)
 {
     if (!bArmed) return true;
+    if (bWorldV3Root && bReady && !bFailed && !bStopping && !bWorldEnding && PC && PC==LockedController.Get() && PC->GetWorld()==GetWorld()) return true;
     const bool Expected=bPossessionWindow && PC && PC==LockedController.Get() && !bWorldEnding;
     bPossessionWindow=false;
     if (Expected) { PC->SetIgnoreMoveInput(true); bMovementLockOwned=true; ++PossessionRelocks; }
@@ -400,6 +431,11 @@ bool ULivingTownFullTownStreamingSubsystem::AcceptManifest(FString& Error)
     if (!Data || !LivingTownFullTown::ValidateManifest(*Data,Error)) return false;
     const FString Package=UWorld::RemovePIEPrefix(GetWorld()->GetOutermost()->GetName());
     if (Package!=Data->RootWorld.GetLongPackageName()) return Refuse(Error,TEXT("fulltown_manifest_wrong_root_map"));
+    const bool NamedWorldV3Root=Package==WorldV3RootPackage;
+    const bool NamedWorldV3Manifest=D && D->Manifest.ToSoftObjectPath().ToString()==WorldV3Manifest;
+    if ((IsWorldV3(Data) || NamedWorldV3Root || NamedWorldV3Manifest || bWorldV3Root) &&
+        !(IsWorldV3(Data) && NamedWorldV3Root && NamedWorldV3Manifest && bWorldV3Root && !FPlatformProperties::RequiresCookedData()))
+        return Refuse(Error,TEXT("fulltown_world_v3_289_exact_root_descriptor_backend"));
     const bool NamedBRoot=Package==B749RootPackage;
     const bool NamedBManifest=D && D->Manifest.ToSoftObjectPath().ToString()==B749Manifest;
     if ((IsB749(Data) || NamedBRoot || NamedBManifest) && !(IsB749(Data) && NamedBRoot && NamedBManifest))
@@ -417,11 +453,44 @@ bool ULivingTownFullTownStreamingSubsystem::AcceptManifest(FString& Error)
 bool ULivingTownFullTownStreamingSubsystem::CafeStillQualified(bool& Waiting,FString& Error) const
 {
     Waiting=false;
-    auto* P=GetWorld()->GetSubsystem<ULivingTownCafeProjectionSubsystem>();
-    if (!P || !P->IsScenePrepared() || !P->IsReady()) { Waiting=true; return true; }
-    const auto& B=P->GetBinding();
+    const FLivingTownCafeBinding* Binding=nullptr;
+    if (IsWorldV3(Data))
+    {
+        const auto* Old=GetWorld()->GetSubsystem<ULivingTownCafeProjectionSubsystem>();
+        if (Old && (Old->IsScenePrepared() || Old->IsReady())) return Refuse(Error,TEXT("fulltown_world_v3_legacy_projection_prepared"));
+        const auto* P=GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();
+        if (!P || !P->IsPrepared() || !P->GetPresentation().bSessionReady)
+        {
+            if (bReady) return Refuse(Error,TEXT("fulltown_world_v3_prepared_session_lost"));
+            Waiting=true; return true;
+        }
+        const auto* PC=Cast<ALivingTownCafeWorldV3Controller>(LockedController.Get());
+        const auto* Pawn=PC?Cast<ACharacter>(PC->GetPawn()):nullptr;
+        const auto* Ben=Cast<ALivingTownCafeCharacter>(Pawn);
+        const auto* Owner=Cast<ALivingTownCafePropertyOwnerProxy>(Pawn);
+        if (!PC || PC->GetClass()!=ALivingTownCafeWorldV3Controller::StaticClass() || PC!=GetWorld()->GetFirstPlayerController() ||
+            PC->GetWorld()!=GetWorld() || !PC->HasNativePersona() || !Pawn || Pawn->GetWorld()!=GetWorld() || Pawn->GetController()!=PC || PC->GetViewTarget()!=Pawn ||
+            (PC->GetNativePersona()!=ELivingTownCafeWorldPersona::Ben && PC->GetNativePersona()!=ELivingTownCafeWorldPersona::Aria) ||
+            (PC->GetNativePersona()==ELivingTownCafeWorldPersona::Ben ?
+                (!Ben || !Ben->HasQualifiedVisual() || !Ben->HasMetaHumanVisual() || P->GetPresentation().Persona!=TEXT("ben")) :
+                (!Owner || !Owner->IsFunctionalOwnerConfigured() || P->GetPresentation().Persona!=TEXT("aria"))))
+            return Refuse(Error,TEXT("fulltown_world_v3_owned_native_session_lost"));
+        Binding=&P->GetBinding();
+        if (!Binding->MetaHumanActor.IsSet() || Binding->MotionStrategy!=ELivingTownCafeMotionStrategy::MetaHumanWholeActor)
+            return Refuse(Error,TEXT("fulltown_world_v3_current_actor_required"));
+        if (!Pawn->GetCapsuleComponent() || !FMath::IsNearlyEqual(Pawn->GetCapsuleComponent()->GetUnscaledCapsuleRadius(),Binding->CapsuleRadiusCm,.01f) ||
+            !FMath::IsNearlyEqual(Pawn->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight(),Binding->CapsuleHalfHeightCm,.01f))
+            return Refuse(Error,TEXT("fulltown_world_v3_qualified_capsule_lost"));
+    }
+    else
+    {
+        auto* P=GetWorld()->GetSubsystem<ULivingTownCafeProjectionSubsystem>();
+        if (!P || !P->IsScenePrepared() || !P->IsReady()) { Waiting=true; return true; }
+        Binding=&P->GetBinding();
+    }
+    const auto& B=*Binding; const int32 Count=IsWorldV3(Data)?289:262;
     if (!B.HasValidatedPartRoster() || B.BindingFileSha256!=Data->ExternalCafeBindingSha256 ||
-        B.DeclaredPartCount!=262 || B.Parts.Num()!=262 || B.DeclaredPartIds.Num()!=Data->ExternalCafePartIds.Num())
+        B.DeclaredPartCount!=Count || B.Parts.Num()!=Count || B.DeclaredPartIds.Num()!=Data->ExternalCafePartIds.Num())
         return Refuse(Error,TEXT("fulltown_external_cafe_binding_identity"));
     for (const FString& Id:Data->ExternalCafePartIds) if (!B.DeclaredPartIds.Contains(Id))
         return Refuse(Error,TEXT("fulltown_external_cafe_part_set"));
@@ -429,7 +498,7 @@ bool ULivingTownFullTownStreamingSubsystem::CafeStillQualified(bool& Waiting,FSt
     for (TActorIterator<ALivingTownCafeVenue> It(GetWorld()); It; ++It)
     {
         ++Venues; TArray<UStaticMeshComponent*> Parts; It->GetComponents<UStaticMeshComponent>(Parts);
-        if (!It->IsQualified() || Parts.Num()!=262) return Refuse(Error,TEXT("fulltown_natural_cafe_actual_components"));
+        if (!It->IsQualified() || Parts.Num()!=Count) return Refuse(Error,TEXT("fulltown_natural_cafe_actual_components"));
     }
     return Venues==1 || Refuse(Error,TEXT("fulltown_natural_cafe_duplicate_or_missing"));
 }
@@ -623,7 +692,7 @@ bool ULivingTownFullTownStreamingSubsystem::ValidateComponent(ULivingTownFullTow
         LogFirstComponentRefusal(T,I,Data->Units[T.UnitIndex],R,C,Mesh,Registered,Predicate);
         return Refuse(Error,TEXT("fulltown_component_mesh_transform_collision_or_material_roster"));
     }
-    if (IsB749Roof(Data) && Data->Units[T.UnitIndex].DispatchIndex==193 && !RoofGeometry(Mesh,R,Error))
+    if (UsesB749Roof(Data) && Data->Units[T.UnitIndex].DispatchIndex==193 && !RoofGeometry(Mesh,R,Error))
     {
         LogFirstComponentRefusal(T,I,Data->Units[T.UnitIndex],R,C,Mesh,Registered,TEXT("roof_native_geometry_or_collision")); return false;
     }
@@ -674,7 +743,7 @@ bool ULivingTownFullTownStreamingSubsystem::AdvanceValidation(ULivingTownFullTow
 
 bool ULivingTownFullTownStreamingSubsystem::ObserveFooting(int32* SimpleUnit,int32* ComplexUnit) const
 {
-    const auto* PC=LockedController.Get(); const auto* Pawn=PC?Cast<ALivingTownCafeCharacter>(PC->GetPawn()):nullptr;
+    const auto* PC=LockedController.Get(); const auto* Pawn=PC?(IsWorldV3(Data)?Cast<ACharacter>(PC->GetPawn()):Cast<ALivingTownCafeCharacter>(PC->GetPawn())):nullptr;
     if (!Pawn || !Pawn->GetCapsuleComponent() || !Pawn->GetCharacterMovement() || !Pawn->GetCharacterMovement()->IsMovingOnGround()) return false;
     const FVector Feet=Pawn->GetActorLocation()-FVector(0,0,Pawn->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
     for (int32 Mode=0; Mode<2; ++Mode)
@@ -816,17 +885,22 @@ FString ULivingTownFullTownStreamingSubsystem::GetStatusJson() const
     const bool NamedBWorld=GetWorld() && UWorld::RemovePIEPrefix(GetWorld()->GetOutermost()->GetName())==B749RootPackage;
     const bool NamedRoofWorld=GetWorld() && UWorld::RemovePIEPrefix(GetWorld()->GetOutermost()->GetName())==B749RoofRootPackage;
     const bool RoofRequested=IsB749Roof(Data) || NamedRoofWorld || (StatusDriver && StatusDriver->Manifest.ToSoftObjectPath().ToString()==B749RoofManifest);
-    const bool BRequested=IsB749(Data) || NamedBWorld || (StatusDriver &&
+    const bool WorldV3Requested=bWorldV3Root || IsWorldV3(Data) ||
+        (GetWorld() && UWorld::RemovePIEPrefix(GetWorld()->GetOutermost()->GetName())==WorldV3RootPackage) ||
+        (StatusDriver && StatusDriver->Manifest.ToSoftObjectPath().ToString()==WorldV3Manifest);
+    const bool BRequested=IsB749(Data) || NamedBWorld || WorldV3Requested || (StatusDriver &&
         StatusDriver->Manifest.ToSoftObjectPath().ToString()==B749Manifest) || RoofRequested;
-    J->SetStringField(TEXT("scope"),BRequested?TEXT("IntegrationSubset_B749_U0131_66_Ground156_ExternalCafe81"):
+    J->SetStringField(TEXT("scope"),WorldV3Requested?TEXT("IntegrationSubset_B749_WorldV3_Cafe289"):BRequested?TEXT("IntegrationSubset_B749_U0131_66_Ground156_ExternalCafe81"):
         TEXT("IntegrationSubset_U0131_U0142_Ground151_ExternalCafe81"));
     if (BRequested)
     {
-        J->SetStringField(TEXT("profile_id"),RoofRequested?B749RoofProfile:B749Profile);
+        J->SetStringField(TEXT("profile_id"),WorldV3Requested?TEXT("B749_CafeWorldV3_289_v001"):RoofRequested?B749RoofProfile:B749Profile);
         J->SetBoolField(TEXT("manifest_loaded"),Data!=nullptr);
         J->SetBoolField(TEXT("manifest_accepted"),Data!=nullptr && !bFailed && bManifestCompleted);
         J->SetNumberField(TEXT("declared_streamed_role_count"),971);
-        J->SetNumberField(TEXT("external_cafe_part_count"),262);
+        J->SetNumberField(TEXT("external_cafe_part_count"),WorldV3Requested?289:262);
+        J->SetNumberField(TEXT("declared_total_role_count"),WorldV3Requested?1260:1233);
+        J->SetStringField(TEXT("cafe_backend"),WorldV3Requested?TEXT("WorldV3Qualified289"):TEXT("LegacyProjection262"));
     }
     J->SetStringField(TEXT("status"),bFailed?TEXT("FAILED_SUPPORT_RETAINED"):bStopping?TEXT("STOPPED_SUPPORT_RETAINED"):bReady?TEXT("SUBSET_CONTROLLABLE_NOT_FULL_TOWN"):bArmed?TEXT("BOOT_MOVEMENT_LOCKED"):TEXT("INACTIVE"));
     J->SetStringField(TEXT("error"),LastError); J->SetNumberField(TEXT("epoch"),double(Epoch));

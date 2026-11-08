@@ -34,12 +34,16 @@ namespace {
 namespace P=living_town::cafe_world_v3;
 namespace Care=living_town::daily_life_use_v1;
 namespace Backend=living_town::cafe_backend_v3;
-constexpr const TCHAR* CoreHash=TEXT("9c31b82a263b389457a8d3ea00344f90e24b81f646f66a6b8377ccb4b85be46d");
+constexpr const TCHAR* CoreHash=TEXT("93dc3e8ec181ce3de1071d36335257ee8d6a2c57fce61f56c2282dffb05f9724");
 constexpr const TCHAR* RosterHash=TEXT("fda4596387cffd0eec0cab7fb021e7950afc4c6e878467712949924a630f0d8b");
 constexpr const TCHAR* ConfigHash=TEXT("d45f1b001e0177088757be4e45ee3a4910c5cd6b09b18128693058886f40637f");
 constexpr int64 MaxEnvelopeBytes=64*1024*1024;
-constexpr const TCHAR* CareHash=TEXT("57726bcfe8a45cd9db099ad85c8affe325c6538404e0ae2c09acf35bd45da527");
-constexpr const TCHAR* EnvelopeHashSource=TEXT("ba807df992a9163dbb26df6fc4b7d582443b74c53403fc7298279ac51b93d63b");
+constexpr const TCHAR* CareHash=TEXT("4125cb255d220dfb41c7a72953c2a90623c7f5f7b3fbc2418d633955b8cb23e6");
+constexpr const TCHAR* EnvelopeHashSource=TEXT("562b39067b5b78ec24456dc56ac83dab772adf6c476a7a56074041ca1d6640ce");
+constexpr const TCHAR* LegacyV5CoreHash=TEXT("9c31b82a263b389457a8d3ea00344f90e24b81f646f66a6b8377ccb4b85be46d");
+constexpr const TCHAR* LegacyCareHash=TEXT("57726bcfe8a45cd9db099ad85c8affe325c6538404e0ae2c09acf35bd45da527");
+constexpr const TCHAR* LegacyV5EnvelopeHash=TEXT("ba807df992a9163dbb26df6fc4b7d582443b74c53403fc7298279ac51b93d63b");
+constexpr const TCHAR* CurrentSlot=TEXT("CafeWorldV3/CafeWorldResidentialCareV6.slot.json");
 
 FString Text(const std::string& S){return FString(UTF8_TO_TCHAR(S.c_str()));}
 std::string Utf8(const FString& S){return std::string(TCHAR_TO_UTF8(*S));}
@@ -51,9 +55,13 @@ bool ValidPersona(ELivingTownCafeWorldPersona Pn){return Pn==ELivingTownCafeWorl
 bool Keys(const FJsonObject& O,std::initializer_list<const TCHAR*> K){if(O.Values.Num()!=static_cast<int32>(K.size()))return false;for(const auto* S:K)if(!O.HasField(FStringView(S)))return false;return true;}
 bool String(const FJsonObject& O,const TCHAR* Key,FString& Value){return O.HasTypedField<EJson::String>(Key)&&O.TryGetStringField(Key,Value);}
 TArray<uint8> Bytes(const std::string& S){TArray<uint8> Out;Out.Append(reinterpret_cast<const uint8*>(S.data()),static_cast<int32>(S.size()));return Out;}
-bool SourceFile(const FString& Path,const TCHAR* Expected,TArray<uint8>& Data){FString H;const int64 Size=IFileManager::Get().FileSize(*Path);return Size>0&&Size<=2*1024*1024&&FFileHelper::LoadFileToArray(Data,*Path)&&LivingTownCafeJournal::Sha256(Data,H)&&H==Expected;}
-bool AuthoredSources(FString& Error){
+bool SourceFile(const FString& Path,const TCHAR* Expected,TArray<uint8>& Data,FString* VerifiedSha=nullptr){FString H;const int64 Size=IFileManager::Get().FileSize(*Path);const bool Valid=Size>0&&Size<=2*1024*1024&&FFileHelper::LoadFileToArray(Data,*Path)&&LivingTownCafeJournal::Sha256(Data,H)&&H==Expected;if(Valid&&VerifiedSha)*VerifiedSha=H;return Valid;}
+bool AuthoredSources(FString& Error,FString& ResidentialSha){
     const FString Folder=FPaths::ProjectContentDir()/TEXT("LivingTown");TArray<uint8> Data;
+    ResidentialSha.Reset();
+    if(!SourceFile(Folder/TEXT("ResidentialRegistryV1.json"),UTF8_TO_TCHAR(P::residential_registry_sha256),Data,&ResidentialSha)){Error=TEXT("exact_authored_residential_registry_source_required");return false;}
+    // Exact reviewed bytes are verified once before the sole authority exists.
+    // Registry presence never calls activate_residential or qualifies a bed.
     if(!SourceFile(Folder/TEXT("PropertyV2PropertyRegistry.json"),ConfigHash,Data)){Error=TEXT("property_v2_exact_authored_property_source_required");return false;}
     if(!SourceFile(Folder/TEXT("PropertyV2AuthoredAgents.json"),RosterHash,Data)){Error=TEXT("property_v2_exact_authored_roster_source_required");return false;}
     FString Json;FFileHelper::BufferToString(Json,Data.GetData(),Data.Num());TSharedPtr<FJsonObject> O;const TArray<TSharedPtr<FJsonValue>>* Agents=nullptr;
@@ -89,13 +97,13 @@ bool ULivingTownCafeWorldV3Subsystem::PrepareScenario(FString& Error){
     if(W->GetSubsystem<ULivingTownCafePropertyV2Subsystem>())return Fail(TEXT("property_v2_authority_must_not_exist_in_world_v3"));
     if(!W->GetGameInstance()||W->GetGameInstance()->GetSubsystem<ULivingTownLeaseSubsystem>())return Fail(TEXT("legacy_v1_authority_must_not_exist_in_world_v3"));
     if(const auto* Old=W->GetSubsystem<ULivingTownCafeProjectionSubsystem>())if(Old->IsReady()||Old->IsScenePrepared())return Fail(TEXT("legacy_v1_projection_must_remain_unprepared"));
-    if(!AuthoredSources(Error)){Notice=Error;RefreshPresentation();return false;}
+    FString ResidentialSha;if(!AuthoredSources(Error,ResidentialSha)){Notice=Error;RefreshPresentation();return false;}
     FLivingTownCafeBinding B;if(!FLivingTownCafeBinding::ReadQualifiedFile(FPaths::ProjectContentDir()/TEXT("LivingTown/CafeProjectionBinding.json"),B,Error)){Notice=Error;RefreshPresentation();return false;}
     auto* V=W->SpawnActor<ALivingTownCafeVenue>();if(!V||!V->BuildQualified(B,Error)){if(V)V->Destroy();Notice=Error;RefreshPresentation();return false;}
     FHitResult Floor;FCollisionQueryParams Q(SCENE_QUERY_STAT(WorldV3ScenarioSpawn),true);const FVector Center=B.SpawnFeetCm+FVector(0,0,B.CapsuleHalfHeightCm);
     if(!B.FloorBoundsCm.IsInsideXY(B.SpawnFeetCm)||!V->FloorAt(B.SpawnFeetCm,Floor)||W->OverlapBlockingTestByChannel(Center,FQuat::Identity,ECC_Pawn,FCollisionShape::MakeCapsule(B.CapsuleRadiusCm,B.CapsuleHalfHeightCm),Q)){V->Destroy();return Fail(TEXT("qualified_property_scenario_spawn_refused"));}
     // Construct the sole book only after source, scenario, geometry and v1 absence checks.
-    State.Reset(new FState());if(!ReadMealSource(B,State->Sources,State->bMetaRecipe,State->MetaRecipe,Error)){State.Reset();V->Destroy();return false;}if(!State->Kernel.activate_care({0,true}).ok){State.Reset();V->Destroy();return Fail(TEXT("world_care_activation_failed"));}Binding=MoveTemp(B);Venue=V;bPrepared=true;ClockRemainder=0;
+    State.Reset(new FState());if(!ReadMealSource(B,State->Sources,State->bMetaRecipe,State->MetaRecipe,Error)){State.Reset();V->Destroy();return false;}State->Sources.residential_sha256=Utf8(ResidentialSha);if(!State->Kernel.activate_care({0,true}).ok){State.Reset();V->Destroy();return Fail(TEXT("world_care_activation_failed"));}Binding=MoveTemp(B);Venue=V;bPrepared=true;ClockRemainder=0;
     if(Binding.MetaHumanActor.IsSet())PostActorTickHandle=FWorldDelegates::OnWorldPostActorTick.AddUObject(this,&ULivingTownCafeWorldV3Subsystem::AfterActorTick);
     Notice=TEXT("Choose Ben or Aria, then walk to the cafe counter.");RefreshPresentation();if(State->bMetaRecipe)BeginMealPreload();return true;
 }
@@ -403,12 +411,12 @@ void ULivingTownCafeWorldV3Subsystem::RefreshPresentation(){
     V.Prompt=V.bMealActive?FString::Printf(TEXT("Eating %d / 18  |  X Cancel"),V.ProgressTicks):!V.bSessionReady?TEXT("Choose Ben or Aria."):!V.bReachable?TEXT("Walk closer and face the cafe counter."):V.Persona==TEXT("aria")?TEXT("O Sale | L Fixed lease | N Recurring lease | R End lease"):!V.bMealAvailable?TEXT("Eating is not available yet."):TEXT("E Eat a meal  |  B Buy property  |  K Lease  |  R End lease");
 }
 namespace {
-// Native outer envelope adds SHA256 and atomic disk custody to the portable V4
-// replay. Every binding includes the exact source-bound native appearance/scene.
+// Native V6 adds SHA256 and atomic disk custody to portable V6/care-V4 replay.
+// Historical V5/V4 outer envelopes have separate, explicit source families.
 FString Fingerprint(std::initializer_list<FString> Fields){P::detail::Writer W;for(const auto& F:Fields)W.s(Utf8(F));FString H;LivingTownCafeJournal::Sha256(Bytes(W.bytes),H);return H;}
 P::CareBindings CareSources(const FLivingTownCafeBinding& B){
     P::CareBindings Out;Out.world.core_sha256=Utf8(CoreHash);Out.care_core_sha256=Utf8(CareHash);
-    Out.world.fixture_sha256=Utf8(Fingerprint({RosterHash,ConfigHash,EnvelopeHashSource,TEXT("native_cafe_world_rent_v5_adapter_v1")}));
+    Out.world.fixture_sha256=Utf8(Fingerprint({RosterHash,ConfigHash,EnvelopeHashSource,TEXT("native_cafe_world_residential_v6_adapter_v1")}));
     Out.world.physical_sha256=Utf8(Fingerprint({B.BindingFileSha256,B.PhysicalSceneSha256,B.PhysicalQualificationSha256,B.VisualSha256}));
     // This is the fingerprint of an UNAVAILABLE provider policy, not an eat
     // certificate. It never authorizes a clip. An eventual reviewed producer
@@ -444,52 +452,79 @@ bool NativeEnvelopeHash(const FJsonObject& O,FString& Out){
         FString V;if(!String(O,K,V))return false;W.s(Utf8(FString(K)));W.s(Utf8(V));
     }return LivingTownCafeJournal::Sha256(Bytes(W.bytes),Out);
 }
-FString NativeSourceHash(const P::CareBindings& Sources){P::detail::Writer W;P::write_bindings(W,Sources.world);W.s(Sources.care_core_sha256);FString H;LivingTownCafeJournal::Sha256(Bytes(W.bytes),H);return H;}
+FString LegacyNativeSourceHash(const P::CareBindings& Sources){P::detail::Writer W;P::write_bindings(W,Sources.world);W.s(Sources.care_core_sha256);FString H;LivingTownCafeJournal::Sha256(Bytes(W.bytes),H);return H;}
+FString NativeSourceHash(const P::CareBindings& Sources){P::detail::Writer W;P::write_bindings(W,Sources.world);W.s(Sources.care_core_sha256);W.s(Sources.residential_sha256);W.s(Sources.sleep_recipe_sha256);FString H;LivingTownCafeJournal::Sha256(Bytes(W.bytes),H);return H;}
+P::CareBindings LegacyV5Sources(const P::CareBindings& Current){
+    auto Legacy=Current;Legacy.world.core_sha256=Utf8(LegacyV5CoreHash);Legacy.care_core_sha256=Utf8(LegacyCareHash);
+    Legacy.world.fixture_sha256=Utf8(Fingerprint({RosterHash,ConfigHash,LegacyV5EnvelopeHash,TEXT("native_cafe_world_rent_v5_adapter_v1")}));
+    Legacy.sleep_recipe_sha256.clear();return Legacy;
+}
 P::CareBindings LegacyV4Sources(const P::CareBindings& Current){
     auto Legacy=Current;
     Legacy.world.core_sha256="4856df21feca1d51d357454cee2047e4de19e4ffa7c16aa57d459f6f0793e903";
+    Legacy.care_core_sha256=Utf8(LegacyCareHash);Legacy.sleep_recipe_sha256.clear();
     Legacy.world.fixture_sha256=Utf8(Fingerprint({RosterHash,ConfigHash,TEXT("0cf5fca9a0f91fbaedfa83ab8e786f5022733aa33a56ea8f954d244bb9bd2690"),TEXT("native_cafe_world_v3_adapter_v1")}));
     // Exact current physical/visual/roster/recipe bindings remain required.
     return Legacy;
 }
+const TCHAR* JournalCapability(uint8 Version){return Version==6?TEXT("cafe.world_residential_care.v6"):Version==5?TEXT("cafe.world_rent_care.v5"):Version==4?TEXT("cafe.world_meal_care.v4"):nullptr;}
+bool NativePayloadDocument(const std::string& Raw,const P::CareBindings& Sources,uint8 Version,FString& Json,FString& Error){
+    Json.Reset();Error.Reset();const auto* Capability=JournalCapability(Version);if(!Capability){Error=TEXT("unsupported_native_journal_version");return false;}
+    const auto Payload=Bytes(Raw);FString Hash;if(Payload.IsEmpty()||Payload.Num()>int32(P::max_paired_bytes)||!LivingTownCafeJournal::Sha256(Payload,Hash)){Error=TEXT("world_payload_hash_failed");return false;}
+    auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("format"),TEXT("LivingTown.CafeWorldMealCare.NativeJournal"));O->SetStringField(TEXT("version"),LexToString(int32(Version)));O->SetStringField(TEXT("capability"),Capability);O->SetStringField(TEXT("source_sha256"),Version==6?NativeSourceHash(Sources):LegacyNativeSourceHash(Sources));O->SetStringField(TEXT("payload_sha256"),Hash);O->SetStringField(TEXT("payload_base64"),FBase64::Encode(Payload));
+    FString EnvelopeHash;if(!NativeEnvelopeHash(*O,EnvelopeHash)){Error=TEXT("world_envelope_hash_failed");return false;}O->SetStringField(TEXT("envelope_sha256"),EnvelopeHash);
+    if(!FJsonSerializer::Serialize(O,TJsonWriterFactory<TCHAR,TCondensedJsonPrintPolicy<TCHAR>>::Create(&Json))||Json.Len()>MaxEnvelopeBytes){Error=TEXT("world_envelope_encoding_failed");return false;}return true;
 }
-FString ULivingTownCafeWorldV3Subsystem::SlotPath()const{return FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldRentCareV5.slot.json");}
+// The caller selects an exact version through a separate explicit API. This
+// helper is also exercised by the focused native JSON test; it never tries a
+// second version after a failure, and never publishes partial portable state.
+bool ReadNativeJournal(const FString& Json,uint8 Version,const P::CareBindings& Current,P::Kernel& Live,Care::ResidentUse& LiveUse,P::ClockMetadata& LiveClock,FString& Error){
+    auto Fail=[&](const TCHAR* Why){Error=Why;return false;};Error.Reset();const auto* Capability=JournalCapability(Version);
+    if(!Capability||!P::valid_care_bindings(Current))return Fail(TEXT("native_journal_source_or_version_required"));
+    if(Json.Len()>MaxEnvelopeBytes||!LivingTownCafeJournal::HasUniqueObjectKeys(Json))return Fail(TEXT("world_envelope_size_or_duplicate_fields"));
+    TSharedPtr<FJsonObject> O;if(!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json),O)||!O||!Keys(*O,{TEXT("format"),TEXT("version"),TEXT("capability"),TEXT("source_sha256"),TEXT("payload_sha256"),TEXT("payload_base64"),TEXT("envelope_sha256")}))return Fail(TEXT("world_envelope_schema_required"));
+    const auto Equal=[&](const TCHAR* K,const FString& Expected){FString V;return String(*O,K,V)&&V==Expected;};
+    const auto Expected=Version==6?Current:Version==5?LegacyV5Sources(Current):LegacyV4Sources(Current);
+    FString H;if(!Equal(TEXT("format"),TEXT("LivingTown.CafeWorldMealCare.NativeJournal"))||!Equal(TEXT("version"),LexToString(int32(Version)))||!Equal(TEXT("capability"),Capability)||!Equal(TEXT("source_sha256"),Version==6?NativeSourceHash(Expected):LegacyNativeSourceHash(Expected))||!NativeEnvelopeHash(*O,H)||!Equal(TEXT("envelope_sha256"),H))return Fail(TEXT("world_envelope_sha_version_or_source_mismatch"));
+    FString Encoded,PayloadHash;TArray<uint8> Payload;
+    if(!String(*O,TEXT("payload_base64"),Encoded)||!String(*O,TEXT("payload_sha256"),PayloadHash)||!FBase64::Decode(Encoded,Payload)||Payload.IsEmpty()||Payload.Num()>int32(P::max_paired_bytes)||FBase64::Encode(Payload)!=Encoded||!LivingTownCafeJournal::Sha256(Payload,H)||PayloadHash!=H)return Fail(TEXT("world_payload_bytes_or_sha_mismatch"));
+    auto Candidate=Live;auto Use=LiveUse;P::ClockMetadata Clock;
+    const std::string Raw(reinterpret_cast<const char*>(Payload.GetData()),size_t(Payload.Num()));
+    const bool Loaded=Version==6?P::load_care_envelope(Candidate,Use,Raw,Expected,Clock):Version==5?P::import_v5_care_envelope(Candidate,Use,Raw,Expected,Clock):P::import_legacy_care_envelope(Candidate,Use,Raw,Expected,Clock);
+    if(!Loaded)return Fail(TEXT("paired_strict_replay_or_binding_mismatch"));
+    // This adapter intentionally exposes only meals. No qualified sleep owner,
+    // source recipe or native activation exists yet, so persistence cannot
+    // introduce residential/sleep history through this incomplete consumer.
+    if(Candidate.residential_right().activation_event_id!=-1||P::has_sleep_history(Candidate))return Fail(TEXT("native_sleep_authority_not_implemented"));
+    Live=std::move(Candidate);LiveUse=std::move(Use);LiveClock=Clock;return true;
+}
+}
+FString ULivingTownCafeWorldV3Subsystem::SlotPath()const{return FPaths::ProjectSavedDir()/CurrentSlot;}
 bool ULivingTownCafeWorldV3Subsystem::EncodeJournal(FString& Json,FString& Error)const{
     Json.Reset();Error.Reset();bool Reach=false;FString Why;
     if(!IsInGameThread()||!bPrepared||!State||!ObserveCounter(Reach,Why)){Error=Why.IsEmpty()?TEXT("source_bound_native_world_session_required"):Why;return false;}
     uint64 Bits=0;FMemory::Memcpy(&Bits,&ClockRemainder,sizeof(Bits));
     const auto Encoded=P::save_care_envelope(State->Kernel,State->Use,State->Sources,{State->Clock,Bits},Utf8(PersonaId(SessionController->GetNativePersona())));
-    if(!Encoded){Error=TEXT("paired_v5_source_or_replay_refused_save");return false;}
-    const auto Payload=Bytes(*Encoded);FString Hash;if(!LivingTownCafeJournal::Sha256(Payload,Hash)){Error=TEXT("world_payload_hash_failed");return false;}
-    auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("format"),TEXT("LivingTown.CafeWorldMealCare.NativeJournal"));O->SetStringField(TEXT("version"),TEXT("5"));O->SetStringField(TEXT("capability"),TEXT("cafe.world_rent_care.v5"));O->SetStringField(TEXT("source_sha256"),NativeSourceHash(State->Sources));O->SetStringField(TEXT("payload_sha256"),Hash);O->SetStringField(TEXT("payload_base64"),FBase64::Encode(Payload));
-    FString EnvelopeHash;if(!NativeEnvelopeHash(*O,EnvelopeHash)){Error=TEXT("world_envelope_hash_failed");return false;}O->SetStringField(TEXT("envelope_sha256"),EnvelopeHash);
-    if(!FJsonSerializer::Serialize(O,TJsonWriterFactory<TCHAR,TCondensedJsonPrintPolicy<TCHAR>>::Create(&Json))||Json.Len()>MaxEnvelopeBytes){Error=TEXT("world_envelope_encoding_failed");return false;}return true;
+    if(!Encoded||State->Kernel.residential_right().activation_event_id!=-1||P::has_sleep_history(State->Kernel)){Error=TEXT("paired_v6_meal_only_source_or_replay_refused_save");return false;}
+    return NativePayloadDocument(*Encoded,State->Sources,6,Json,Error);
 }
 bool ULivingTownCafeWorldV3Subsystem::LoadJournal(const FString& Json,FString& Error){
-    return DecodeJournal(Json,false,Error);
+    return DecodeJournal(Json,6,Error);
 }
+bool ULivingTownCafeWorldV3Subsystem::ImportLegacyV5Journal(const FString& Json,FString& Error){return DecodeJournal(Json,5,Error);}
 bool ULivingTownCafeWorldV3Subsystem::ImportLegacyV4Journal(const FString& Json,FString& Error){
-    return DecodeJournal(Json,true,Error);
+    return DecodeJournal(Json,4,Error);
 }
-bool ULivingTownCafeWorldV3Subsystem::DecodeJournal(const FString& Json,bool bLegacyImport,FString& Error){
+bool ULivingTownCafeWorldV3Subsystem::DecodeJournal(const FString& Json,uint8 Version,FString& Error){
     Error.Reset();auto Fail=[&](const TCHAR* Why){Error=Why;return false;};bool Reach=false;FString Why;
     if(!IsInGameThread()||!bPrepared||!State||!ObserveCounter(Reach,Why))return Fail(TEXT("source_bound_native_world_session_required"));
-    if(Json.Len()>MaxEnvelopeBytes||!LivingTownCafeJournal::HasUniqueObjectKeys(Json))return Fail(TEXT("world_envelope_size_or_duplicate_fields"));
-    TSharedPtr<FJsonObject> O;if(!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json),O)||!O||!Keys(*O,{TEXT("format"),TEXT("version"),TEXT("capability"),TEXT("source_sha256"),TEXT("payload_sha256"),TEXT("payload_base64"),TEXT("envelope_sha256")}))return Fail(TEXT("world_envelope_schema_required"));
-    const auto Equal=[&](const TCHAR* K,const FString& Expected){FString V;return String(*O,K,V)&&V==Expected;};
-    const auto Expected=bLegacyImport?LegacyV4Sources(State->Sources):State->Sources;
-    FString H;if(!NativeEnvelopeHash(*O,H)||!Equal(TEXT("envelope_sha256"),H)||!Equal(TEXT("format"),TEXT("LivingTown.CafeWorldMealCare.NativeJournal"))||!Equal(TEXT("version"),bLegacyImport?TEXT("4"):TEXT("5"))||!Equal(TEXT("capability"),bLegacyImport?TEXT("cafe.world_meal_care.v4"):TEXT("cafe.world_rent_care.v5"))||!Equal(TEXT("source_sha256"),NativeSourceHash(Expected)))return Fail(TEXT("world_envelope_sha_version_or_source_mismatch"));
-    FString Encoded,PayloadHash;TArray<uint8> Payload;
-    if(!String(*O,TEXT("payload_base64"),Encoded)||!String(*O,TEXT("payload_sha256"),PayloadHash)||!FBase64::Decode(Encoded,Payload)||Payload.IsEmpty()||Payload.Num()>int32(P::max_paired_bytes)||FBase64::Encode(Payload)!=Encoded||!LivingTownCafeJournal::Sha256(Payload,H)||PayloadHash!=H)return Fail(TEXT("world_payload_bytes_or_sha_mismatch"));
     auto Candidate=State->Kernel;auto Use=State->Use;P::ClockMetadata Clock;
-    const std::string Raw(reinterpret_cast<const char*>(Payload.GetData()),size_t(Payload.Num()));
-    const bool Loaded=bLegacyImport?P::import_legacy_care_envelope(Candidate,Use,Raw,Expected,Clock):P::load_care_envelope(Candidate,Use,Raw,Expected,Clock);
-    if(!Loaded)return Fail(TEXT("paired_strict_replay_or_binding_mismatch"));
+    if(!ReadNativeJournal(Json,Version,State->Sources,Candidate,Use,Clock,Error))return false;
     double Fraction=0;FMemory::Memcpy(&Fraction,&Clock.fraction_bits,sizeof(Fraction));
     // Publication occurs only after both independent replays, source/clock and
     // reservations reconcile; saved persona/position/observations grant nothing.
     StopPhysicalMeal();State->Kernel=std::move(Candidate);State->Use=std::move(Use);State->Clock=Clock.tick;ClockRemainder=Fraction;
-    Notice=bLegacyImport?TEXT("Older cafe save imported. Fixed leases stay fixed. Previous meals stay stopped; earned progress is kept."):TEXT("Cafe restored. Previous meals stay stopped; earned progress is kept. Your resident and position are unchanged.");RefreshPresentation();return true;
+    Notice=Version!=6?TEXT("Older cafe save imported. Agreements and earned needs are kept; previous meals stay stopped. No residential right was activated."):TEXT("Cafe restored. Previous meals stay stopped; earned progress is kept. Your resident and position are unchanged.");RefreshPresentation();return true;
 }
 bool ULivingTownCafeWorldV3Subsystem::SaveSlot(FString& Error,FString* SavedSha)const{
     FString Json;if(!EncodeJournal(Json,Error)||!LivingTownCafeSlot::WriteAtomic(SlotPath(),Json,Error))return false;
@@ -506,3 +541,13 @@ bool ULivingTownCafeWorldV3Subsystem::ImportLegacyV4Slot(FString& Error){
     FString Json;if(!FFileHelper::LoadFileToString(Json,*Path)){Error=TEXT("older_world_slot_read_failed");return false;}
     return ImportLegacyV4Journal(Json,Error);
 }
+bool ULivingTownCafeWorldV3Subsystem::ImportLegacyV5Slot(FString& Error){
+    if(!IsInGameThread()){Error=TEXT("wrong_thread");return false;}
+    const FString Path=FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldRentCareV5.slot.json");const int64 Size=IFileManager::Get().FileSize(*Path);
+    if(Size<=0||Size>MaxEnvelopeBytes){Error=TEXT("v5_world_slot_missing_or_oversize");return false;}
+    FString Json;if(!FFileHelper::LoadFileToString(Json,*Path)){Error=TEXT("v5_world_slot_read_failed");return false;}
+    return ImportLegacyV5Journal(Json,Error);
+}
+#if WITH_DEV_AUTOMATION_TESTS
+#include "Tests/LivingTownCafeWorldV6PersistenceTest.inl"
+#endif

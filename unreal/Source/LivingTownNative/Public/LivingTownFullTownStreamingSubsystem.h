@@ -23,6 +23,10 @@ public:
 enum class ELivingTownFullTownPhase : uint8
 { LoadingHidden, ValidatingHidden, MakingVisible, Resident, MakingInvisible, Unloading, Removed };
 
+// Persona intent may wait for the qualified initial Ben boot, but may neither
+// replace it with Aria nor mistake a stopped/failed town for a ready session.
+enum class ELivingTownWorldV3PersonaBootState : uint8 { Inactive, Waiting, Ready, Refused };
+
 // Delegates only record observations. All engine actions happen in the owned Tick.
 UCLASS()
 class LIVINGTOWNNATIVE_API ULivingTownFullTownTicket final : public UObject
@@ -59,11 +63,18 @@ public:
     virtual TStatId GetStatId() const override;
     virtual void Deinitialize() override;
     bool WasArmedBeforeGameMode(const ALivingTownFullTownDriver* Candidate) const;
-    // Synchronous opt-in pair around existing CafeGameMode::PC->Possess. The
+    // Synchronous opt-in pair around native Cafe/WorldV3 PC->Possess. The
     // engine ClientRestart resets input flags, so the old lock is balanced before
     // possession and a new owned contribution is acquired before input can tick.
     bool BeforeQualifiedPossess(APlayerController* Controller,FString& Error);
     bool AfterQualifiedPossess(APlayerController* Controller,APawn* Pawn,FString& Error);
+    bool IsBootPossessionPending() const { return bArmed && !bReady; }
+    ELivingTownWorldV3PersonaBootState GetWorldV3PersonaBootState() const
+    {
+        if (!bWorldV3Root) return ELivingTownWorldV3PersonaBootState::Inactive;
+        if (bFailed || bStopping || bWorldEnding) return ELivingTownWorldV3PersonaBootState::Refused;
+        return bReady ? ELivingTownWorldV3PersonaBootState::Ready : ELivingTownWorldV3PersonaBootState::Waiting;
+    }
     void NotifyDriverEnding(const ALivingTownFullTownDriver* Candidate);
     // Live stop retains supporting resident levels and movement lock. World
     // teardown owns final level destruction; this is not a synchronous drain API.
@@ -87,6 +98,7 @@ private:
     bool bArmed=false, bMovementLockOwned=false, bManifestCompleted=false;
     bool bFailed=false, bStopping=false, bReady=false, bWorldEnding=false, bInTick=false;
     bool bPossessionWindow=false;
+    bool bWorldV3Root=false;
     FString LastError;
     double StartupDeadline=360, UnitDeadline=180, LoadRadius=8000, UnloadRadius=10000, ValidationTargetMs=1;
     int32 ComponentBudget=8, InstanceBudget=256;
