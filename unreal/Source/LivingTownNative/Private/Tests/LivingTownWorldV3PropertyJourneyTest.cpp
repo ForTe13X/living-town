@@ -118,7 +118,7 @@ class FCurrentTownPropertyJourney final:public IAutomationLatentCommand {
         FKey Key;FString Label,ReadError,Notice;bool Active=false,Observed=false,ReadOK=false,PressReturn=false,ReleaseReturn=false,Physical=false;
         uint64 SentFrame=0,ObservedFrame=0;double SentWorld=-1,ObservedWorld=-1,SentWall=0;
         TWeakObjectPtr<APawn> PawnBefore,PawnAfter;FTransform BeforeTransform,AfterTransform;FRotator BeforeControl,AfterControl;
-        FLivingTownCafeWorldView View;W3::Kernel Kernel;W3::CareEnvelope Envelope;int64 BeforeEvents=0;
+        FLivingTownCafeWorldView View;W3::Kernel Kernel{};W3::CareEnvelope Envelope;int64 BeforeEvents=0;
     } Queued;
     TArray<TSharedPtr<FJsonValue>> InputObservations;
     FString SlotPath()const{return FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldResidentialCareV6.slot.json");}
