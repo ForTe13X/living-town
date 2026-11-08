@@ -8,6 +8,7 @@
 #include "LivingTownCafeGameMode.h"
 #include "LivingTownCafeWorldV3Scenario.h"
 #include "LivingTownCafeWorldV3Subsystem.h"
+#include "LivingTownCafePropertyV2Scenario.h"
 #include "LivingTownCafeProjectionSubsystem.h"
 #include "LivingTownCafeVenue.h"
 #include "LivingTownCafeCharacter.h"
