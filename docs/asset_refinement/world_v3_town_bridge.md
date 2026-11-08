@@ -131,3 +131,68 @@ physical clearance. Restoring original shell/entrance assets and36 counter/
 fixture parts can change obstruction. Existing034 meal success and B749 route
 success do not certify this new combination. No art, long-route, cooked, FPS or
 capture claim is made here.
+
+## Initial persona intent waits for the required Ben boot
+
+The full-town profile requires qualified Ben for its initial possession and
+movement-lock handoff. `-CafeWorldPersona=aria` and F1 during that asynchronous
+boot now queue Aria instead of cancelling Ben or attempting an unsupported
+initial Aria possession. Only the latest valid request is retained; an early
+F2 replaces queued Aria with Ben. The existing Ben preload keeps its identity
+and finishes normally. The public request result stays `Pending` until the
+town is ready and the requested persona has been selected. The ordinary
+standalone WorldV3 map, without the full-town driver, retains its existing
+startup, cancellation and transactional selection behavior.
+
+A world-owned timer checks the queue every 0.05 world seconds. It does not tick
+or qualify streaming itself. The native finite startup/load deadlines still
+apply; load failure, failed/stopped town, invalid owner or world teardown clears
+the deferred intent without granting Aria. The immediate `SelectPersona` API
+refuses while this boot is waiting or unavailable and never starts async work.
+After readiness, normal F1/F2 selection and rollback remain unchanged.
+
+This follow-up is **source-only pending a new coherent build and actual native
+runs**. Earlier compiled bridge, meal and entrance evidence does not cover it.
+Run `LivingTown.FullTown.WorldV3PersonaBoot` in a fresh normal Editor automation
+process for each row below, using the exact saved new root, staged original
+packages and current v2 workwear descriptor. All runs share:
+
+```text
+-LivingTownCafeWorldV3 -LivingTownWorldV3TownJourney
+-LivingTownMetaHumanBen=<exact staged efc227 descriptor file>
+-ExecCmds="Automation RunTests LivingTown.FullTown.WorldV3PersonaBoot"
+-TestExit="Automation Test Queue Empty"
+```
+
+| Additional command arguments | Required outcome |
+| --- | --- |
+| `-LivingTownWorldV3PersonaBootCase=cli_aria -CafeWorldPersona=aria` | Initial qualified Ben boot, then stable functional Aria. |
+| `-LivingTownWorldV3PersonaBootCase=early_f1 -CafeWorldPersona=ben` | Native F1 while Ben is actually pending, then stable Aria. |
+| `-LivingTownWorldV3PersonaBootCase=latest_ben -CafeWorldPersona=aria` | Initially queued Aria, native F1 then F2 during pending Ben; final Ben. |
+| `-LivingTownWorldV3PersonaBootCase=default_ben` | Omit `CafeWorldPersona` entirely; default qualified Ben remains stable. |
+| `-LivingTownWorldV3PersonaBootCase=after_ready -CafeWorldPersona=ben` | Stable ready Ben, native F1 to Aria and F2 back to qualified Ben. |
+| `-LivingTownWorldV3PersonaBootCase=failed_load -CafeWorldPersona=aria` | Missing required workwear fails the actual preload; no pawn/session/control grant or Aria fallback. |
+
+The early-input variants require observing a real pending Ben preload before
+dispatching keys; an unobserved window fails rather than claiming coverage.
+Positive cases require one initial possession relock, a released owned lock only
+after town readiness, the actual requested pawn/session and 0.5 seconds of stable
+ordinary ticks. CLI/default variants record boot-locked Ben samples if observable;
+zero samples do not claim a measured pre-ready pawn interval. Every variant has a
+finite 420s wall-clock deadline and writes
+`Saved/WorldV3PersonaBoot/<case>/NATIVE_PERSONA_BOOT_PROOF.json`.
+
+For `failed_load`, prepare a separate disposable project fixture that omits only
+`/Game/LivingTown_UEPilot/MetaHumanCasualWorkwear_v002/SK_CasualWorkwear.uasset`
+from its otherwise original staged content. Do not remove it from a source,
+canonical, positive-test or shared Engine/plugin tree. The test requires the
+exact v2 descriptor unchanged, the package absent and no already-loaded workwear
+object. Only native loader diagnostics naming this exact deliberately absent
+package are expected. Actual refusal/no-authority assertions must pass; a log
+match is not a success. The test then requests a support-retaining stop and
+verifies that subsequent Aria requests are refused without retrying a load.
+
+Also run the existing `LivingTown.MetaHuman.WorldV3PersonaGate` in its original
+Entry-map fixture with `-LivingTownCafeWorldV3 -CafeWorldPersona=aria`, the same
+descriptor and `-LivingTownMetaHumanPersonaGateTest`, without the full-town root.
+This checks the unchanged legacy standalone startup and cancellation semantics.

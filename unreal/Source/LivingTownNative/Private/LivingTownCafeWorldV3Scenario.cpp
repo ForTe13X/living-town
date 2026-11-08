@@ -22,7 +22,7 @@ void ALivingTownCafeWorldV3GameMode::StartPlay(){Super::StartPlay();FString Erro
 void ALivingTownCafeWorldV3GameMode::HandleStartingNewPlayer_Implementation(APlayerController* PC){Super::HandleStartingNewPlayer_Implementation(PC);StartScenarioPlayer(PC);}
 void ALivingTownCafeWorldV3GameMode::EndPlay(const EEndPlayReason::Type Reason)
 {
-    bEndingPlay=true;CancelPendingPersonaRequest(true);Super::EndPlay(Reason);
+    bEndingPlay=true;ClearDeferredTownPersona();CancelPendingPersonaRequest(true);Super::EndPlay(Reason);
 }
 void ALivingTownCafeWorldV3GameMode::StartScenarioPlayer(APlayerController* PC)
 {
@@ -49,9 +49,61 @@ void ALivingTownCafeWorldV3GameMode::CancelPendingPersonaRequest(bool bReleaseRe
 }
 ELivingTownCafePersonaRequestResult ALivingTownCafeWorldV3GameMode::RequestPersona(ALivingTownCafeWorldV3Controller* PC,ELivingTownCafeWorldPersona Persona,FString& Error)
 {
-    // Invalidate an earlier completion even when selecting the already-current Aria.
+    // Validate before changing either a pending preload or a queued town intent.
     if(!IsInGameThread()){Error=TEXT("owned_standalone_authored_persona_selection_required");return ELivingTownCafePersonaRequestResult::Refused;}
     if(!ValidatePersonaSelection(PC,Persona,Error))return ELivingTownCafePersonaRequestResult::Refused;
+    const auto* Town=GetWorld()->GetSubsystem<ULivingTownFullTownStreamingSubsystem>();
+    const auto Boot=Town?Town->GetWorldV3PersonaBootState():ELivingTownWorldV3PersonaBootState::Inactive;
+    if(Boot==ELivingTownWorldV3PersonaBootState::Refused)
+    {
+        ClearDeferredTownPersona();CancelPendingPersonaRequest(true);
+        Error=TEXT("town_persona_boot_unavailable");return ELivingTownCafePersonaRequestResult::Refused;
+    }
+    if(Boot==ELivingTownWorldV3PersonaBootState::Waiting)
+    {
+        // Latest valid user intent wins; neither F1 nor the CLI's initial Aria
+        // choice cancels the Ben preload required to qualify this town's boot.
+        DeferredTownController=PC;DeferredTownPersona=Persona;bDeferredTownPersona=true;
+        if(!GetWorldTimerManager().IsTimerActive(DeferredTownTimer))
+            GetWorldTimerManager().SetTimer(DeferredTownTimer,this,&ALivingTownCafeWorldV3GameMode::AdvanceDeferredTownPersona,.05f,true);
+        if((PC->HasNativePersona()&&PC->GetNativePersona()==ELivingTownCafeWorldPersona::Ben&&IsValid(PC->GetPawn()))||
+            (PersonaRequestResult==ELivingTownCafePersonaRequestResult::Pending&&PendingController.Get()==PC))
+            return ELivingTownCafePersonaRequestResult::Pending;
+        if(RequestPersonaNow(PC,ELivingTownCafeWorldPersona::Ben,Error)==ELivingTownCafePersonaRequestResult::Refused)
+        {ClearDeferredTownPersona();return ELivingTownCafePersonaRequestResult::Refused;}
+        return ELivingTownCafePersonaRequestResult::Pending;
+    }
+    ClearDeferredTownPersona();return RequestPersonaNow(PC,Persona,Error);
+}
+void ALivingTownCafeWorldV3GameMode::ClearDeferredTownPersona()
+{
+    bDeferredTownPersona=false;DeferredTownController.Reset();
+    if(GetWorld())GetWorldTimerManager().ClearTimer(DeferredTownTimer);
+}
+void ALivingTownCafeWorldV3GameMode::AdvanceDeferredTownPersona()
+{
+    if(!bDeferredTownPersona)return;
+    auto* PC=DeferredTownController.Get();FString Error;
+    auto* Town=GetWorld()?GetWorld()->GetSubsystem<ULivingTownFullTownStreamingSubsystem>():nullptr;
+    const auto Boot=Town?Town->GetWorldV3PersonaBootState():ELivingTownWorldV3PersonaBootState::Inactive;
+    if(!ValidatePersonaSelection(PC,DeferredTownPersona,Error)||Boot==ELivingTownWorldV3PersonaBootState::Refused||
+        Boot==ELivingTownWorldV3PersonaBootState::Inactive||PersonaRequestResult==ELivingTownCafePersonaRequestResult::Refused)
+    {
+        ClearDeferredTownPersona();CancelPendingPersonaRequest(true);
+        if(PC)PC->OperationNotice=TEXT("Unable to finish the town's character setup. Your current resident remains active.");
+        return;
+    }
+    if(Boot==ELivingTownWorldV3PersonaBootState::Waiting)return;
+    const auto Requested=DeferredTownPersona;ClearDeferredTownPersona();
+    const auto Result=RequestPersonaNow(PC,Requested,Error);
+    PC->OperationNotice=Result==ELivingTownCafePersonaRequestResult::Selected?
+        (Requested==ELivingTownCafeWorldPersona::Aria?TEXT("Playing Aria."):TEXT("Playing Ben.")):
+        Result==ELivingTownCafePersonaRequestResult::Pending?TEXT("Loading Ben's complete character. Your current resident remains active."):TEXT("Unable to select the requested resident.");
+}
+ELivingTownCafePersonaRequestResult ALivingTownCafeWorldV3GameMode::RequestPersonaNow(ALivingTownCafeWorldV3Controller* PC,ELivingTownCafeWorldPersona Persona,FString& Error)
+{
+    // Outside the initial town gate, selecting the already-current Aria still
+    // invalidates an earlier Ben completion exactly as in the standalone map.
     CancelPendingPersonaRequest(Persona!=ELivingTownCafeWorldPersona::Ben);
     const auto& B=GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>()->GetBinding();
     if((PC->bAuthorized&&PC->Persona==Persona&&IsValid(PC->GetPawn()))||Persona!=ELivingTownCafeWorldPersona::Ben||!B.MetaHumanActor.IsSet())
@@ -105,6 +157,11 @@ bool ALivingTownCafeWorldV3GameMode::SelectPersona(ALivingTownCafeWorldV3Control
 {
     if(!IsInGameThread()){Error=TEXT("owned_standalone_authored_persona_selection_required");return false;}
     if(!ValidatePersonaSelection(PC,Persona,Error))return false;
+    const auto* Town=GetWorld()->GetSubsystem<ULivingTownFullTownStreamingSubsystem>();
+    const auto Boot=Town?Town->GetWorldV3PersonaBootState():ELivingTownWorldV3PersonaBootState::Inactive;
+    if(Boot==ELivingTownWorldV3PersonaBootState::Waiting||Boot==ELivingTownWorldV3PersonaBootState::Refused)
+    {Error=TEXT("town_boot_immediate_persona_selection_unavailable");return false;}
+    ClearDeferredTownPersona();
     CancelPendingPersonaRequest(Persona!=ELivingTownCafeWorldPersona::Ben);
     const bool bSelected=SelectPersonaImmediate(PC,Persona,Error);
     PersonaRequestResult=bSelected?ELivingTownCafePersonaRequestResult::Selected:ELivingTownCafePersonaRequestResult::Refused;return bSelected;

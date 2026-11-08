@@ -23,6 +23,10 @@ public:
 enum class ELivingTownFullTownPhase : uint8
 { LoadingHidden, ValidatingHidden, MakingVisible, Resident, MakingInvisible, Unloading, Removed };
 
+// Persona intent may wait for the qualified initial Ben boot, but may neither
+// replace it with Aria nor mistake a stopped/failed town for a ready session.
+enum class ELivingTownWorldV3PersonaBootState : uint8 { Inactive, Waiting, Ready, Refused };
+
 // Delegates only record observations. All engine actions happen in the owned Tick.
 UCLASS()
 class LIVINGTOWNNATIVE_API ULivingTownFullTownTicket final : public UObject
@@ -65,6 +69,12 @@ public:
     bool BeforeQualifiedPossess(APlayerController* Controller,FString& Error);
     bool AfterQualifiedPossess(APlayerController* Controller,APawn* Pawn,FString& Error);
     bool IsBootPossessionPending() const { return bArmed && !bReady; }
+    ELivingTownWorldV3PersonaBootState GetWorldV3PersonaBootState() const
+    {
+        if (!bWorldV3Root) return ELivingTownWorldV3PersonaBootState::Inactive;
+        if (bFailed || bStopping || bWorldEnding) return ELivingTownWorldV3PersonaBootState::Refused;
+        return bReady ? ELivingTownWorldV3PersonaBootState::Ready : ELivingTownWorldV3PersonaBootState::Waiting;
+    }
     void NotifyDriverEnding(const ALivingTownFullTownDriver* Candidate);
     // Live stop retains supporting resident levels and movement lock. World
     // teardown owns final level destruction; this is not a synchronous drain API.
