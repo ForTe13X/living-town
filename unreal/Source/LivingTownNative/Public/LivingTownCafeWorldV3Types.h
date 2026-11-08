@@ -6,6 +6,7 @@
 class ACharacter;
 class UAnimSequence;
 class USkeletalMesh;
+class UObject;
 
 // One shared command-line selection for every native cafe authority.
 namespace LivingTownCafeNativeBackend {
@@ -57,4 +58,36 @@ public:
     // provider cannot grant money/stock/needs or submit a qualified boolean.
     bool ValidateRecipe(const ACharacter* Pawn,const FString& BindingSha,FString& Error)const;
     bool ObserveContact(const ACharacter* Pawn,const FString& BindingSha,FString& Error)const;
+};
+
+// V2 is a separate, explicit source contract. Legacy V1 and its default refusal
+// are unchanged. No instance of this struct is a gameplay grant or UI command.
+struct FLivingTownMealAssetRoleV2 {
+    FString Role,Asset,Sha256;int64 Bytes=0;
+};
+struct FLivingTownMealProofV2 {
+    FString Kind,RelativeFile,Sha256;int64 Bytes=0;
+};
+struct FLivingTownMealGripProbeV2 {
+    FName BodyBone=NAME_None;FVector FoodPointCm=FVector::ZeroVector;double MaxDistanceCm=0;
+};
+struct LIVINGTOWNNATIVE_API FLivingTownMetaHumanMealRecipeV2 {
+    FString BindingSha256,VisualDescriptorSha256,SourceClosureSha256;
+    FString CertificateFile,CertificateSha256,RecipeSha256;int64 CertificateBytes=0;
+    TArray<FLivingTownMealAssetRoleV2> Assets;TArray<FLivingTownMealProofV2> Proofs;
+    TArray<FString> BreadMaterials,BreadTextures;
+    FName HandBone=NAME_None,MouthBone=NAME_None,JawBone=NAME_None,JawParentBone=NAME_None,JawCurve=NAME_None;
+    FTransform GripRelative=FTransform::Identity;
+    FVector FoodBitePointCm=FVector::ZeroVector,MouthOffsetCm=FVector::ZeroVector,StationFeetCm=FVector::ZeroVector,CounterPointCm=FVector::ZeroVector;
+    TArray<FLivingTownMealGripProbeV2> GripProbes;
+    double StationRadiusCm=0,StationHeightToleranceCm=0,StationFacingDot=0,TransformTolerance=0,MaxBiteDistanceCm=0;
+    double Duration=0,BiteStart=0,BiteEnd=0,MinBiteSpan=0,ChewStart=0,ChewEnd=0,TailStart=0,FirstProgressDelay=0,MaxFrameGap=0,TimeError=0;
+    double MinBiteJawCurve=0,MinChewCurveDelta=0,MinChewJawDegrees=0,MaxChewStaticSpan=0,CurveTolerance=0;
+    int32 MinBiteSamples=0;
+    const FLivingTownMealAssetRoleV2* FindRole(const FString& Role)const;
+    // Parse functions prove syntax only. ReadQualified verifies actual certificate,
+    // proof and package bytes; the producer still verifies loaded/live identity.
+    static bool ParseRecipe(const FString& Json,FLivingTownMetaHumanMealRecipeV2& Out,FString& Error);
+    static bool ParseCertificate(const FString& Json,const FLivingTownMetaHumanMealRecipeV2& Recipe,FLivingTownMetaHumanMealRecipeV2& Out,FString& Error);
+    static bool ReadQualified(const FString& ContentRelativeRecipe,FLivingTownMetaHumanMealRecipeV2& Out,FString& Error);
 };
