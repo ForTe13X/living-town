@@ -114,6 +114,14 @@ inline care::Contact contact(detail::Reader& r) {
     care::Contact c;c.resident_id=r.s(128);c.site_id=r.s(128);c.grant_id=r.s(128);
     c.freshly_observed=r.b();c.grounded=r.b();c.reachable=r.b();c.permission_valid=r.b();c.reservation_valid=r.b();return c;
 }
+inline void waiting(detail::Writer& w,const care::WaitingObservation& o) {
+    w.s(o.resident_id);w.s(o.site_id);w.s(o.grant_id);w.b(o.freshly_observed);
+    w.b(o.grounded);w.b(o.station_valid);w.b(o.holding);w.b(o.permission_valid);w.b(o.reservation_valid);
+}
+inline care::WaitingObservation waiting(detail::Reader& r) {
+    care::WaitingObservation o;o.resident_id=r.s(128);o.site_id=r.s(128);o.grant_id=r.s(128);
+    o.freshly_observed=r.b();o.grounded=r.b();o.station_valid=r.b();o.holding=r.b();o.permission_valid=r.b();o.reservation_valid=r.b();return o;
+}
 inline int small(detail::Reader& r,Int low,Int high) {
     const Int n=r.n();if(n<low||n>high)throw std::invalid_argument("care integer range");return static_cast<int>(n);
 }
@@ -125,19 +133,20 @@ inline std::string encode_care_document(const care::Journal& j) {
     w.n(static_cast<Int>(j.requests.size()));
     for(const auto& x:j.requests){care_detail::grant(w,x.grant);w.b(x.receipt.accepted);w.b(x.receipt.already_applied);w.s(x.receipt.reason);w.n(x.progressed_ticks);w.n(static_cast<Int>(x.end));w.n(x.end_tick);}
     w.n(static_cast<Int>(j.history.size()));
-    for(const auto& x:j.history){w.n(static_cast<Int>(x.op));w.n(x.tick);w.b(bool(x.grant));if(x.grant)care_detail::grant(w,*x.grant);w.b(bool(x.contact));if(x.contact)care_detail::contact(w,*x.contact);}
+    for(const auto& x:j.history){w.n(static_cast<Int>(x.op));w.n(x.tick);w.b(bool(x.grant));if(x.grant)care_detail::grant(w,*x.grant);w.b(bool(x.contact));if(x.contact)care_detail::contact(w,*x.contact);w.b(bool(x.waiting));if(x.waiting)care_detail::waiting(w,*x.waiting);}
     return w.bytes;
 }
 inline std::optional<care::Journal> decode_care_document(const std::string& bytes) {
     if(bytes.size()>max_care_bytes)return {};
     try {
         detail::Reader r{bytes};care::Journal j;j.schema=r.s(128);j.version=r.s(16);j.resident=r.s(128);j.tick=r.n();
+        if(j.schema!=care::journal_schema||j.version!=care::journal_version)return {};
         j.needs.hunger=care_detail::small(r,0,care::full);j.needs.energy=care_detail::small(r,0,care::full);j.needs.hygiene=care_detail::small(r,0,care::full);j.needs.fun=care_detail::small(r,0,care::full);
         if(r.b()){care::ActiveUse a;a.grant=care_detail::grant(r);a.elapsed=care_detail::small(r,0,40);j.active=std::move(a);}
         const auto requests=r.count(care::max_requests);j.requests.reserve(requests);
         for(std::size_t i=0;i<requests;++i){care::RequestRecord x;x.grant=care_detail::grant(r);x.receipt.accepted=r.b();x.receipt.already_applied=r.b();x.receipt.reason=r.s(128);x.progressed_ticks=care_detail::small(r,0,40);x.end=static_cast<care::End>(care_detail::small(r,0,4));x.end_tick=r.n();j.requests.push_back(std::move(x));}
         const auto history=r.count(care::max_history);j.history.reserve(history);
-        for(std::size_t i=0;i<history;++i){care::Transition x;x.op=static_cast<care::Op>(care_detail::small(r,0,5));x.tick=r.n();if(r.b())x.grant=care_detail::grant(r);if(r.b())x.contact=care_detail::contact(r);j.history.push_back(std::move(x));}
+        for(std::size_t i=0;i<history;++i){care::Transition x;x.op=static_cast<care::Op>(care_detail::small(r,0,6));x.tick=r.n();if(r.b())x.grant=care_detail::grant(r);if(r.b())x.contact=care_detail::contact(r);if(r.b())x.waiting=care_detail::waiting(r);j.history.push_back(std::move(x));}
         if(r.at!=bytes.size()||encode_care_document(j)!=bytes)return {};
         care::ResidentUse checked(j.resident);if(!checked.restore_state(j))return {};
         return j;
@@ -168,7 +177,7 @@ inline bool care_matches_world(const Kernel& world,const care::ResidentUse& use)
 // sole-authority owner must still advance its clock/expiry and publish all state
 // together. No callback, widget, animation notify or caller-supplied needs setter.
 // Explicit CPU fixture hooks, never a persisted field or native/UI command.
-enum class CareCommitFault { None, AfterCareBegin, AfterCareAdvance };
+enum class CareCommitFault { None, AfterCareBegin, AfterCareAdvance, AfterCareWait };
 inline Receipt begin_meal_use(Kernel& live,care::ResidentUse& use,const MealCommand& command,const MealContext& at,MealFault fault=MealFault::None,CareCommitFault care_fault=CareCommitFault::None) {
     if(!care_matches_world(live,use)||at.actor!=use.resident()||at.tick!=use.tick())return {false,false,"care_world_or_clock_mismatch",-1};
     try {
@@ -184,6 +193,22 @@ inline Receipt begin_meal_use(Kernel& live,care::ResidentUse& use,const MealComm
     }catch(const std::exception&){return {false,false,"care_transaction_exception",-1};}
 }
 struct CareTickReceipt {bool ok=false;care::Outcome outcome=care::Outcome::RejectedTick;std::string reason;};
+inline CareTickReceipt wait_before_first_meal_progress(Kernel& live,care::ResidentUse& use,Int next,const care::WaitingObservation& observed,CareCommitFault fault=CareCommitFault::None) {
+    if(!care_matches_world(live,use)||!use.active()||live.loaded_grants_require_interruption()||
+       next<live.minimum_authority_tick()||!valid_clock_for(live,{next,0}))return {false,care::Outcome::RejectedTick,"care_world_not_live"};
+    try {
+        Kernel candidate=live;care::ResidentUse care_candidate=use;const auto& active=care_candidate.active()->grant;
+        const auto grant=std::find_if(candidate.care_grants().begin(),candidate.care_grants().end(),[&](const CareGrant& g){
+            return g.active&&g.event_id==active.grant_event_id&&g.resident==active.resident_id&&g.site_id==active.site_id;
+        });
+        if(grant==candidate.care_grants().end()||grant->provider!=candidate.operator_at(next))return {false,care::Outcome::RejectedTick,"meal_preparation_rights_lost"};
+        const auto outcome=care_candidate.wait_before_first_progress(next,observed);
+        if(outcome!=care::Outcome::WaitingBeforeFirstProgress)return {false,outcome,"meal_preparation_wait_refused"};
+        if(fault==CareCommitFault::AfterCareWait)throw std::runtime_error("injected_after_care_wait");
+        if(!care_matches_world(candidate,care_candidate))return {false,care::Outcome::RejectedTick,"care_reconciliation_rollback"};
+        live=std::move(candidate);use=std::move(care_candidate);return {true,outcome,"meal_preparation_wait_committed"};
+    }catch(const std::exception&){return {false,care::Outcome::RejectedTick,"care_wait_exception"};}
+}
 inline CareTickReceipt advance_meal_use(Kernel& live,care::ResidentUse& use,Int next,const care::Contact& observation,CareCommitFault fault=CareCommitFault::None) {
     if(!care_matches_world(live,use)||live.loaded_grants_require_interruption()||next<live.minimum_authority_tick())return {false,care::Outcome::RejectedTick,"care_world_not_live"};
     try {

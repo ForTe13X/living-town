@@ -12,6 +12,9 @@ static ApprovedUse grant(Kind kind,const char* request="use/1",const char* id="g
 static Contact contact() {
     return {"ben","site/qualified","grant/1",true,true,true,true,true};
 }
+static WaitingObservation holding() {
+    return {"ben","site/qualified","grant/1",true,true,true,true,true,true};
+}
 static bool same_needs(const Needs& a,const Needs& b) {
     return a.hunger==b.hunger && a.energy==b.energy && a.hygiene==b.hygiene && a.fun==b.fun;
 }
@@ -161,5 +164,44 @@ int main() {
         ResidentUse again("ben");assert(again.restore_state(stopped));
         assert(same_journal(stopped,again.export_state()));
     }
-    std::cout << "PASS 15 daily-life progress/persistence groups (portable CPU only).\n";
+    { // Preparation advances clock/decay only, then exactly the original18 increments.
+        ResidentUse s("ben");assert(s.advance_idle_to(100));auto g=grant(Kind::Eat);g.tick=100;
+        assert(s.begin(g).accepted);const auto opening=s.needs();
+        for(Tick i=1;i<=max_wait_before_first_progress_ticks;++i) {
+            assert(s.wait_before_first_progress(100+i,holding())==Outcome::WaitingBeforeFirstProgress);
+            assert(s.tick()==100+i&&s.active()->elapsed==0&&s.requests().back().progressed_ticks==0);
+            assert(s.needs().hunger==opening.hunger-i*28&&s.needs().energy==opening.energy-i*18&&
+                s.needs().hygiene==opening.hygiene-i*11&&s.needs().fun==opening.fun);
+        }
+        const auto waiting=s.export_state();ResidentUse replay("ben");assert(replay.restore_state(waiting)&&same_journal(waiting,replay.export_state()));
+        assert(s.begin(g).already_applied&&same_journal(waiting,s.export_state()));
+        assert(s.wait_before_first_progress(106,holding())==Outcome::RejectedTick&&same_journal(waiting,s.export_state()));
+        for(Tick i=1;i<=18;++i)assert(s.advance_one(105+i,contact())==(i==18?Outcome::Completed:Outcome::Progress));
+        assert(s.needs().hunger==opening.hunger-23*28+5000&&s.needs().fun==opening.fun+300&&!s.active());
+        assert(s.requests().back().progressed_ticks==18&&s.requests().back().end_tick==123);
+        assert(replay.restore_state(s.export_state())&&same_journal(s.export_state(),replay.export_state()));
+    }
+    { // No wait can create a grant, waive preparation evidence or follow progress.
+        ResidentUse empty("ben");const auto before=empty.export_state();
+        assert(empty.wait_before_first_progress(1,holding())==Outcome::RejectedTick&&same_journal(before,empty.export_state()));
+        auto bad_grant=grant(Kind::Eat);bad_grant.grant_event_id=0;assert(!empty.begin(bad_grant).accepted);
+        assert(empty.wait_before_first_progress(1,holding())==Outcome::RejectedTick&&same_journal(before,empty.export_state()));
+        for(auto kind:{Kind::Sleep,Kind::WashFace}){ResidentUse s("ben");assert(s.begin(grant(kind)).accepted);const auto b=s.export_state();assert(s.wait_before_first_progress(1,holding())==Outcome::RejectedTick&&same_journal(b,s.export_state()));}
+        ResidentUse s("ben");assert(s.begin(grant(Kind::Eat)).accepted);const auto start=s.export_state();
+        for(int i=0;i<9;++i){auto o=holding();switch(i){case 0:o.resident_id="aria";break;case 1:o.site_id="other";break;case 2:o.grant_id="other";break;case 3:o.freshly_observed=false;break;case 4:o.grounded=false;break;case 5:o.station_valid=false;break;case 6:o.holding=false;break;case 7:o.permission_valid=false;break;case 8:o.reservation_valid=false;break;}assert(s.wait_before_first_progress(1,o)==Outcome::RejectedTick&&same_journal(start,s.export_state()));}
+        assert(s.wait_before_first_progress(2,holding())==Outcome::RejectedTick&&same_journal(start,s.export_state()));
+        assert(s.wait_before_first_progress(1,holding())==Outcome::WaitingBeforeFirstProgress);const auto one=s.export_state();
+        assert(s.wait_before_first_progress(1,holding())==Outcome::RejectedTick&&same_journal(one,s.export_state()));
+        assert(s.advance_one(2,contact())==Outcome::Progress);const auto progressed=s.export_state();
+        assert(s.wait_before_first_progress(3,holding())==Outcome::RejectedTick&&same_journal(progressed,s.export_state()));
+    }
+    { // Waiting is replayed, not a cache adjustment or restored live permission.
+        ResidentUse s("ben");assert(s.begin(grant(Kind::Eat)).accepted);assert(s.wait_before_first_progress(1,holding())==Outcome::WaitingBeforeFirstProgress);
+        const auto good=s.export_state();ResidentUse guard("ben");const auto unchanged=guard.export_state();
+        for(int i=0;i<7;++i){auto bad=good;switch(i){case 0:bad.version="2";break;case 1:++bad.needs.fun;break;case 2:bad.history[1].waiting->holding=false;break;case 3:bad.history[1].contact=contact();break;case 4:bad.history[0].waiting=holding();break;case 5:bad.history[1].tick=2;break;case 6:bad.history[1].op=Op::Advance;break;}assert(!guard.restore_state(bad)&&same_journal(unchanged,guard.export_state()));}
+        assert(s.cancel()&&s.requests().back().progressed_ticks==0&&s.needs().fun==7200);
+        assert(guard.restore_state(s.export_state())&&!guard.active());
+        ResidentUse loaded("ben");assert(loaded.restore_state(good)&&loaded.invalidate_use_after_load()&&loaded.requests().back().end==End::AfterLoad&&loaded.needs().fun==7200);
+    }
+    std::cout << "PASS 18 daily-life progress/persistence groups (portable CPU only).\n";
 }

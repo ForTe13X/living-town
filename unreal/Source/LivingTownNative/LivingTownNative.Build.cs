@@ -32,9 +32,9 @@ public class LivingTownNative : ModuleRules
         // Portable meal/care inputs are versioned separately from the current
         // native V2 adapter. Byte binding does not qualify a native meal journey.
         string[,] MealCareSources = {
-            { "DailyLifeUseV1.hpp", "3968a82beab862fdd56054d1fe6cfe08aca3c7be41003a1fdc82abae56841d06" },
+            { "DailyLifeUseV1.hpp", "57726bcfe8a45cd9db099ad85c8affe325c6538404e0ae2c09acf35bd45da527" },
             { "CafeWorldV3.hpp", "9c31b82a263b389457a8d3ea00344f90e24b81f646f66a6b8377ccb4b85be46d" },
-            { "CafeWorldV3Envelope.hpp", "f003c16885a0fb8213f492114d1b9aa108791385f45a6c23f4e12e67d17b7616" },
+            { "CafeWorldV3Envelope.hpp", "ba807df992a9163dbb26df6fc4b7d582443b74c53403fc7298279ac51b93d63b" },
             { "CafeBackendV3.hpp", "f311599b6bb10f4ac60281c9bb2bbaf904b62bf8fec68b1ac46d7ae7e932994d" }
         };
         for (int Index = 0; Index < MealCareSources.GetLength(0); ++Index)

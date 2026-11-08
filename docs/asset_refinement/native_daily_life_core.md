@@ -1,5 +1,63 @@
 # Portable daily-life authority
 
+## 7 November 2026: bounded preparation wait, care journal3
+
+`ResidentUse::wait_before_first_progress` records `WaitBeforeFirstProgress`
+(appended opcode6) with separate `WaitingObservation` identity, fresh holding,
+grounding, station, permission and reservation evidence. It is not bite contact.
+Only an active Eat grant with0 progressed ticks may wait, one consecutive tick
+at a time, for at most5 ticks from the immutable grant tick. The source policy is
+`eat_before_first_progress_max5_v1`; its finite budget is not a caller parameter.
+Those ticks apply ordinary hunger/energy/hygiene decay, keep fun and progress
+unchanged, and preserve the original grant. Five waits plus18 Eat increments fit
+within the existing40-observed-tick history budget. Sleep/wash cannot use it.
+
+`wait_before_first_meal_progress` clones the paired WorldV3/care values, rejects
+loaded grants, derives the active reservation and current operator from the
+actual kernel, checks clock/expiry validity and publishes only after replay
+invariants reconcile. A successful wait creates no payment, stock, grant or
+release event. Refused evidence, time, phase, rights or budget leaves both values
+exact. The native caller still owns interruption/release and clock publication;
+after reconciling a due property event it must record an interruption at a valid
+consecutive authority tick, rather than release using an older care tick.
+
+The original18 incremental Eat benefits and completion/release contract remain
+unchanged. This primitive does not prove a bite or enforce its physical timing;
+the future reviewed adapter must withhold progress until an actual bite and its
+first full observed second, and must interrupt on lost physical/session evidence.
+This source slice does not attach a provider, change E availability/refusals, or
+modify the native character/animation owner.
+
+Care journal3 explicitly serializes waiting evidence and validates it during
+replay; old care journal2 is refused, including in the existing explicit paired
+V4 importer. The old `active_fixed_v4.paired` fixture is preserved and its new
+test requires no-partial-publication refusal. The standalone unchanged money
+kernel's explicit fixed-rights import still passes. No hash is silently waived
+and no old byte stream is relabelled. Paired outer version5 remains source-bound;
+the changed care/envelope hashes invalidate prior native source-bound saves.
+
+Actual bounded portable MSVC C++17 validation passes:18 care groups,16 WorldV3
+property cases/1316 checks,28 meal groups/3555 checks, and14 rent groups/4154
+checks. The single serial compiler pipeline uses `/W4 /WX /UNDEBUG /MP1`, a2GiB
+owned-job commit cap and numeric thread limits1, exits0 and reaps empty in12.485s,
+peaking at330715136 committed bytes. All observed source bytes/mtimes remain
+unchanged. The actual receipt is
+`D:/Dev/LivingTownNativeRuns/2026-11-04/CareWaitPortableCPU_v006/PORTABLE_CPU_REPORT.json`,
+SHA256 `80b1d97c9a4ce3b40cefd89ba20ae1aa44fb9ff72dd108284aa92d60e089ec60`.
+Earlier failed/partial CPU attempts remain retained; only006 qualifies the full
+four-suite run. No Unreal build, PIE, Blender, GPU or meal journey ran.
+
+Current core byte pins are care
+`57726bcfe8a45cd9db099ad85c8affe325c6538404e0ae2c09acf35bd45da527`
+and envelope
+`ba807df992a9163dbb26df6fc4b7d582443b74c53403fc7298279ac51b93d63b`.
+Build guards and exactly the two embedded native source-hash constants are
+updated together. `CafeWorldV3.hpp` stays byte-exact
+`9c31b82a263b389457a8d3ea00344f90e24b81f646f66a6b8377ccb4b85be46d`;
+the W31 Assembly pair and ActionClipOwnership test also remain unchanged.
+
+## Historical initial core and prior source revisions
+
 The portable C++17 components provide meal payment, stock, reservation and
 resident-progress seams for the next native care journey. This source revision
 adds completed-meal release, replay-validated durable care state and paired

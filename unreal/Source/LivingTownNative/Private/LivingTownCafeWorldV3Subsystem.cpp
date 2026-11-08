@@ -35,8 +35,8 @@ constexpr const TCHAR* CoreHash=TEXT("9c31b82a263b389457a8d3ea00344f90e24b81f646
 constexpr const TCHAR* RosterHash=TEXT("fda4596387cffd0eec0cab7fb021e7950afc4c6e878467712949924a630f0d8b");
 constexpr const TCHAR* ConfigHash=TEXT("d45f1b001e0177088757be4e45ee3a4910c5cd6b09b18128693058886f40637f");
 constexpr int64 MaxEnvelopeBytes=64*1024*1024;
-constexpr const TCHAR* CareHash=TEXT("3968a82beab862fdd56054d1fe6cfe08aca3c7be41003a1fdc82abae56841d06");
-constexpr const TCHAR* EnvelopeHashSource=TEXT("f003c16885a0fb8213f492114d1b9aa108791385f45a6c23f4e12e67d17b7616");
+constexpr const TCHAR* CareHash=TEXT("57726bcfe8a45cd9db099ad85c8affe325c6538404e0ae2c09acf35bd45da527");
+constexpr const TCHAR* EnvelopeHashSource=TEXT("ba807df992a9163dbb26df6fc4b7d582443b74c53403fc7298279ac51b93d63b");
 
 FString Text(const std::string& S){return FString(UTF8_TO_TCHAR(S.c_str()));}
 std::string Utf8(const FString& S){return std::string(TCHAR_TO_UTF8(*S));}
