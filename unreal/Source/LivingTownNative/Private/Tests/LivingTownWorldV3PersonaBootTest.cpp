@@ -22,6 +22,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "UObject/SoftObjectPath.h"
+#include "UObject/Package.h"
 
 namespace
 {
@@ -59,7 +60,7 @@ class FWorldV3PersonaBoot final:public IAutomationLatentCommand
     }
     bool PersonaIs(ALivingTownCafeWorldV3Controller* PC,ULivingTownCafeWorldV3Subsystem* Authority,ELivingTownCafeWorldPersona Persona)const
     {
-        auto* Pawn=PC->GetPawn();const auto* Ben=Cast<ALivingTownCafeCharacter>(Pawn);
+        auto* Pawn=PC->GetPawn().Get();const auto* Ben=Cast<ALivingTownCafeCharacter>(Pawn);
         const auto* Aria=Cast<ALivingTownCafePropertyOwnerProxy>(Pawn);
         return Pawn&&Pawn->GetController()==PC&&PC->GetViewTarget()==Pawn&&PC->HasNativePersona()&&PC->GetNativePersona()==Persona&&
             Authority->GetPresentation().bSessionReady&&(Persona==ELivingTownCafeWorldPersona::Ben?
@@ -144,7 +145,7 @@ public:
                 }
                 if(!CheckedImmediateRefusal)
                 {
-                    auto* PawnBefore=PC->GetPawn();
+                    auto* PawnBefore=PC->GetPawn().Get();
                     if(!Need(!G->SelectPersona(PC,ELivingTownCafeWorldPersona::Aria,Error)&&Error==TEXT("town_boot_immediate_persona_selection_unavailable")&&
                         G->RequestPersona(PC,static_cast<ELivingTownCafeWorldPersona>(255),Error)==ELivingTownCafePersonaRequestResult::Refused&&
                         PC->GetPawn()==PawnBefore&&G->GetPersonaRequestResult()==ELivingTownCafePersonaRequestResult::Pending,
