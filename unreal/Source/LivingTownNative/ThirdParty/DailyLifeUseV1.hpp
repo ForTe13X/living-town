@@ -18,11 +18,12 @@ constexpr Tick max_tick = 9007199254740991LL;
 constexpr std::size_t max_requests = 1024;
 // At most one Begin, forty observed ticks, one terminal cancellation and two
 // idle boundaries per accepted request. Adjacent inactive ticks coalesce.
-constexpr std::size_t max_history = max_requests*44+1;
+constexpr std::size_t max_history = max_requests*52+1;
 inline constexpr const char* journal_schema="LivingTown.DailyLifeUse";
-inline constexpr const char* journal_version="3"; // explicit zero-benefit meal preparation history
+inline constexpr const char* journal_version="4"; // distinct, zero-benefit sleep-entry observations
 inline constexpr const char* wait_policy="eat_before_first_progress_max5_v1";
 constexpr Tick max_wait_before_first_progress_ticks=5;
+constexpr Tick max_sleep_entry_ticks=6;
 constexpr int full = 10000; // hundredths of the authored 0..100 needs scale
 enum class Kind { Eat, Sleep, WashFace };
 struct Rule { int duration, gain; int fun_gain=0; };
@@ -61,6 +62,13 @@ struct WaitingObservation {
     bool freshly_observed=false, grounded=false, station_valid=false, holding=false;
     bool permission_valid=false, reservation_valid=false;
 };
+// Sleep entry evidence is not food holding or mattress contact. It permits only
+// bounded zero-benefit preparation; ordinary Contact qualifies actual rest.
+struct SleepEntryObservation {
+    std::string resident_id, site_id, grant_id;
+    bool freshly_observed=false, floor_supported=false, station_valid=false;
+    bool entry_advancing=false, permission_valid=false, reservation_valid=false;
+};
 struct ActiveUse { ApprovedUse grant; int elapsed=0; };
 enum class Outcome { TickOnly, Progress, Completed, Interrupted, RejectedTick, WaitingBeforeFirstProgress };
 struct BeginReceipt { bool accepted=false, already_applied=false; std::string reason; };
@@ -71,13 +79,14 @@ struct RequestRecord {
     End end=End::Active;
     Tick end_tick=-1;
 };
-enum class Op { Begin, Advance, IdleTo, Cancel, AfterLoad, Interrupt, WaitBeforeFirstProgress };
+enum class Op { Begin, Advance, IdleTo, Cancel, AfterLoad, Interrupt, WaitBeforeFirstProgress, SleepEntry };
 struct Transition {
     Op op=Op::IdleTo;
     Tick tick=0;
     std::optional<ApprovedUse> grant;
     std::optional<Contact> contact;
     std::optional<WaitingObservation> waiting={};
+    std::optional<SleepEntryObservation> sleep_entry={};
 };
 // A replayable logical history plus redundant caches. It records the trusted
 // observations supplied to this primitive, not proof of native contact/animation.
@@ -109,6 +118,12 @@ inline bool same_waiting(const WaitingObservation& a,const WaitingObservation& b
         a.freshly_observed==b.freshly_observed&&a.grounded==b.grounded&&a.station_valid==b.station_valid&&
         a.holding==b.holding&&a.permission_valid==b.permission_valid&&a.reservation_valid==b.reservation_valid;
 }
+inline bool same_sleep_entry(const SleepEntryObservation& a,const SleepEntryObservation& b) {
+    return a.resident_id==b.resident_id&&a.site_id==b.site_id&&a.grant_id==b.grant_id&&
+        a.freshly_observed==b.freshly_observed&&a.floor_supported==b.floor_supported&&
+        a.station_valid==b.station_valid&&a.entry_advancing==b.entry_advancing&&
+        a.permission_valid==b.permission_valid&&a.reservation_valid==b.reservation_valid;
+}
 inline bool same_journal(const Journal& a,const Journal& b) {
     if(a.schema!=b.schema||a.version!=b.version||a.resident!=b.resident||a.tick!=b.tick||
        !same_need_values(a.needs,b.needs)||bool(a.active)!=bool(b.active)||
@@ -122,10 +137,11 @@ inline bool same_journal(const Journal& a,const Journal& b) {
     }
     for(std::size_t i=0;i<a.history.size();++i) {
         const auto& x=a.history[i];const auto& y=b.history[i];
-        if(x.op!=y.op||x.tick!=y.tick||bool(x.grant)!=bool(y.grant)||bool(x.contact)!=bool(y.contact)||bool(x.waiting)!=bool(y.waiting))return false;
+        if(x.op!=y.op||x.tick!=y.tick||bool(x.grant)!=bool(y.grant)||bool(x.contact)!=bool(y.contact)||bool(x.waiting)!=bool(y.waiting)||bool(x.sleep_entry)!=bool(y.sleep_entry))return false;
         if(x.grant&&!same_request(*x.grant,*y.grant))return false;
         if(x.contact&&!same_contact(*x.contact,*y.contact))return false;
         if(x.waiting&&!same_waiting(*x.waiting,*y.waiting))return false;
+        if(x.sleep_entry&&!same_sleep_entry(*x.sleep_entry,*y.sleep_entry))return false;
     }
     return true;
 }
@@ -227,6 +243,18 @@ public:
     }
     // Clock catch-up is legal only while no action is active. Never synthesizes
     // contact samples or benefits for a long frame. Native code cancels first.
+    Outcome wait_for_sleep_entry(Tick next,const SleepEntryObservation& observed) {
+        if(tick_>=max_tick||next!=tick_+1||!active_||active_->grant.kind!=Kind::Sleep||active_->elapsed!=0||
+           next-active_->grant.tick>max_sleep_entry_ticks||requests_.empty()||
+           requests_.back().end!=End::Active||requests_.back().progressed_ticks!=0||
+           !same_request(requests_.back().grant,active_->grant)||
+           !token(observed.resident_id)||!token(observed.site_id)||!token(observed.grant_id)||
+           observed.resident_id!=resident_||observed.site_id!=active_->grant.site_id||observed.grant_id!=active_->grant.grant_id||
+           !observed.freshly_observed||!observed.floor_supported||!observed.station_valid||!observed.entry_advancing||
+           !observed.permission_valid||!observed.reservation_valid)return Outcome::RejectedTick;
+        history_.push_back({Op::SleepEntry,next,{},{},{},observed});
+        tick_=next;decay(1);return Outcome::WaitingBeforeFirstProgress;
+    }
     bool advance_idle_to(Tick next) {
         if(active_||next<=tick_||next>max_tick)return false;
         decay(next-tick_);tick_=next;
@@ -255,6 +283,7 @@ public:
             for(const auto& e:incoming.history) {
                 if(e.tick<0||e.tick>max_tick)return false;
                 if(e.op!=Op::WaitBeforeFirstProgress&&e.waiting)return false;
+                if(e.op!=Op::SleepEntry&&e.sleep_entry)return false;
                 switch(e.op) {
                 case Op::Begin:
                     if(!e.grant||e.contact||e.tick!=candidate.tick_)return false;
@@ -276,6 +305,9 @@ public:
                     break;
                 case Op::WaitBeforeFirstProgress:
                     if(e.grant||e.contact||!e.waiting||candidate.wait_before_first_progress(e.tick,*e.waiting)!=Outcome::WaitingBeforeFirstProgress)return false;
+                    break;
+                case Op::SleepEntry:
+                    if(e.grant||e.contact||e.waiting||!e.sleep_entry||candidate.wait_for_sleep_entry(e.tick,*e.sleep_entry)!=Outcome::WaitingBeforeFirstProgress)return false;
                     break;
                 default:return false;
                 }

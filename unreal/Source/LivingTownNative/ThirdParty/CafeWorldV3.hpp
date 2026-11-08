@@ -21,8 +21,10 @@ using Int = std::int64_t;
 constexpr Int max_tick = 9007199254740991LL;
 constexpr std::size_t max_events = 1024;
 constexpr std::size_t max_journal_bytes = 12*1024*1024; // new bounded V3, includes preserved V2 lineage
-inline constexpr const char* schema = "living_town.cafe_world_rent.v5";
-inline constexpr const char* capability = "cafe.world_rent.v5";
+inline constexpr const char* schema = "living_town.cafe_world_residential.v6";
+inline constexpr const char* capability = "cafe.world_residential.v6";
+inline constexpr const char* legacy_v5_schema = "living_town.cafe_world_rent.v5";
+inline constexpr const char* legacy_v5_capability = "cafe.world_rent.v5";
 inline constexpr const char* legacy_schema = "living_town.cafe_world_meal.v3";
 inline constexpr const char* legacy_capability = "cafe.world_meal.v3";
 inline constexpr const char* source_config_sha256 = "d45f1b001e0177088757be4e45ee3a4910c5cd6b09b18128693058886f40637f";
@@ -85,6 +87,20 @@ struct MealContext {
     bool fresh=false, correct_floor=false, reachable=false, permission=false;
     bool qualified_clip=false;
 };
+inline constexpr const char* residential_registry_sha256="cb9ac15a3ebdd7fb3e371583b49d510a954ef9eae546adead63ecf5af7223011";
+inline constexpr const char* residential_assignment="mcb_b_ben_initial_owner_occupancy_v1";
+inline constexpr const char* sleep_site="mcb_b_upper_single_bed_v1";
+inline constexpr const char* residential_resident="ben";
+enum class CareKind { Meal, Sleep };
+struct ResidentialRight { bool active=false;Int activation_event_id=-1,revocation_event_id=-1; };
+// Trusted source activation/revocation only. No UI field or loaded address can
+// issue this authoring event. Initial owner occupancy has no price or transfer.
+struct TrustedResidentialChange {Int tick=0;bool explicitly_authorized=false;std::string registry_sha256;};
+struct SleepCommand {std::string request_id,site_id;Int expected_revision=0;};
+struct SleepContext {
+    std::string actor,authenticated_actor;Int tick=0;
+    bool fresh=false,correct_floor=false,reachable=false,qualified_clip=false;
+};
 struct TrustedActivation { Int tick=0; bool explicitly_authorized=false; };
 enum class ReleaseReason { Cancelled, Interrupted, AfterLoad, Completed };
 inline std::string release_name(ReleaseReason r) {
@@ -105,6 +121,7 @@ struct CareGrant {
     bool active=true;
     // Authored effect description only: this transaction never applies needs.
     Int duration_ticks=18, hunger_gain=50, fun_gain=3;
+    CareKind kind=CareKind::Meal;Int energy_gain=0;
 };
 enum class MealFault { None, AfterPayment, AfterStock, AfterGrant };
 inline constexpr const char* meal_site = "cafe1f_dining_slot_pilot";
@@ -123,9 +140,12 @@ struct Event {
     std::optional<MealCommand> meal_command;
     std::optional<MealContext> meal_context;
     std::optional<Int> stock_event_id, grant_event_id;
+    std::optional<SleepCommand> sleep_command={};
+    std::optional<SleepContext> sleep_context={};
 };
 struct Receipt { bool ok=false, already_applied=false; std::string reason; Int event_id=-1; };
 struct MealRequest { MealCommand command; std::string actor; Receipt receipt; };
+struct SleepRequest { SleepCommand command; std::string actor; Receipt receipt; };
 struct Title { std::string owner; Int revision=0, event_id=-1; };
 struct Offer {
     bool present=true;
@@ -219,15 +239,25 @@ inline MealContext read_meal_context(Reader& r) {
     MealContext c;c.actor=r.s();c.authenticated_actor=r.s();c.tick=r.n();c.fresh=r.b();
     c.correct_floor=r.b();c.reachable=r.b();c.permission=r.b();c.qualified_clip=r.b();return c;
 }
+inline void write_sleep_command(Writer& w,const SleepCommand& c){w.s(c.request_id);w.s(c.site_id);w.n(c.expected_revision);}
+inline SleepCommand read_sleep_command(Reader& r){SleepCommand c;c.request_id=r.s();c.site_id=r.s();c.expected_revision=r.n();return c;}
+inline void write_sleep_context(Writer& w,const SleepContext& c){w.s(c.actor);w.s(c.authenticated_actor);w.n(c.tick);w.b(c.fresh);w.b(c.correct_floor);w.b(c.reachable);w.b(c.qualified_clip);}
+inline SleepContext read_sleep_context(Reader& r){SleepContext c;c.actor=r.s();c.authenticated_actor=r.s();c.tick=r.n();c.fresh=r.b();c.correct_floor=r.b();c.reachable=r.b();c.qualified_clip=r.b();return c;}
+inline bool same_sleep_command(const SleepCommand& a,const SleepCommand& b){Writer x,y;write_sleep_command(x,a);write_sleep_command(y,b);return x.bytes==y.bytes;}
+inline bool sleep_event(const Event& e){return e.type=="sleep_refused"||e.type=="care_sleep_granted";}
 inline void write_grant(Writer& w,const CareGrant& g) {
     w.n(g.event_id);w.n(g.tick);w.n(g.pay_event_id);w.n(g.stock_event_id);w.n(g.release_event_id);
     w.s(g.request_id);w.s(g.resident);w.s(g.site_id);w.s(g.provider);w.s(g.funding);w.b(g.active);
     w.n(g.duration_ticks);w.n(g.hunger_gain);w.n(g.fun_gain);
+    // Meal wire bytes stay unchanged. The new exact sleep site declares this
+    // typed extension; malformed kind/site combinations fail canonical replay.
+    if(g.site_id==sleep_site||g.kind!=CareKind::Meal||g.energy_gain!=0){w.n(static_cast<Int>(g.kind));w.n(g.energy_gain);}
 }
 inline CareGrant read_grant(Reader& r) {
     CareGrant g;g.event_id=r.n();g.tick=r.n();g.pay_event_id=r.n();g.stock_event_id=r.n();g.release_event_id=r.n();
     g.request_id=r.s();g.resident=r.s();g.site_id=r.s();g.provider=r.s();g.funding=r.s();g.active=r.b();
-    g.duration_ticks=r.n();g.hunger_gain=r.n();g.fun_gain=r.n();return g;
+    g.duration_ticks=r.n();g.hunger_gain=r.n();g.fun_gain=r.n();
+    if(g.site_id==sleep_site){const auto kind=r.n();if(kind!=static_cast<Int>(CareKind::Sleep))throw std::invalid_argument("sleep grant kind");g.kind=CareKind::Sleep;g.energy_gain=r.n();}return g;
 }
 inline bool same_meal_command(const MealCommand& a,const MealCommand& b) {
     Writer x,y;write_meal_command(x,a);write_meal_command(y,b);return x.bytes==y.bytes;
@@ -249,6 +279,7 @@ inline void write_event(Writer& w,const Event& e) {
     w.b(e.meal_command.has_value());if(e.meal_command)write_meal_command(w,*e.meal_command);
     w.b(e.meal_context.has_value());if(e.meal_context)write_meal_context(w,*e.meal_context);
     w.o(e.stock_event_id);w.o(e.grant_event_id);
+    if(sleep_event(e)||e.sleep_command||e.sleep_context){w.b(bool(e.sleep_command));if(e.sleep_command)write_sleep_command(w,*e.sleep_command);w.b(bool(e.sleep_context));if(e.sleep_context)write_sleep_context(w,*e.sleep_context);}
 }
 inline std::string property_event_bytes(const Event& e) {Writer w;write_property_event(w,e);return w.bytes;}
 inline Event read_event(Reader& r) {
@@ -257,7 +288,8 @@ inline Event read_event(Reader& r) {
     e.request_id=r.s();e.action=r.s();e.owner_before=r.s();e.owner_after=r.s();e.offer_kind=r.s();if(r.b())e.context=read_context(r);
     if(r.b())e.meal_command=read_meal_command(r);
     if(r.b())e.meal_context=read_meal_context(r);
-    e.stock_event_id=r.o();e.grant_event_id=r.o();return e;
+    e.stock_event_id=r.o();e.grant_event_id=r.o();
+    if(sleep_event(e)){if(r.b())e.sleep_command=read_sleep_command(r);if(r.b())e.sleep_context=read_sleep_context(r);}return e;
 }
 inline std::string event_bytes(const Event& e) { Writer w;write_event(w,e);return w.bytes; }
 inline bool same_event(const Event& a,const Event& b) { return event_bytes(a)==event_bytes(b); }
@@ -308,6 +340,7 @@ struct Journal {
     bool care_enabled=false;Int stock_opening=0, stock_current=0;
     std::vector<CareGrant> grants;
     std::string v2_origin;Int import_clock=0;std::uint64_t import_fraction_bits=0;
+    ResidentialRight residential;
 };
 inline std::string encode(const Journal& j) {
     detail::Writer w;w.s(j.document_schema);w.s(j.document_capability);detail::write_terms(w,j.terms);
@@ -316,7 +349,8 @@ inline std::string encode(const Journal& j) {
     detail::write_rights(w,j.title,j.offer,j.lease);w.n(j.last_tick);w.u(j.digest);
     w.b(j.care_enabled);w.n(j.stock_opening);w.n(j.stock_current);w.n(static_cast<Int>(j.grants.size()));
     for(const auto& g:j.grants)detail::write_grant(w,g);
-    w.s(j.v2_origin);w.n(j.import_clock);w.u(j.import_fraction_bits);return w.bytes;
+    w.s(j.v2_origin);w.n(j.import_clock);w.u(j.import_fraction_bits);
+    if(j.document_schema==schema){w.b(j.residential.active);w.n(j.residential.activation_event_id);w.n(j.residential.revocation_event_id);}return w.bytes;
 }
 inline std::optional<Journal> decode(const std::string& bytes) {
     if(bytes.size()>max_journal_bytes)return {};
@@ -328,6 +362,7 @@ inline std::optional<Journal> decode(const std::string& bytes) {
         j.care_enabled=r.b();j.stock_opening=r.n();j.stock_current=r.n();
         const auto grants=r.count(max_events);for(std::size_t i=0;i<grants;++i)j.grants.push_back(detail::read_grant(r));
         j.v2_origin=r.s(living_town::cafe_property_v2::max_journal_bytes);j.import_clock=r.n();j.import_fraction_bits=r.u();
+        if(j.document_schema==schema){j.residential.active=r.b();j.residential.activation_event_id=r.n();j.residential.revocation_event_id=r.n();}
         if(r.at!=bytes.size()||encode(j)!=bytes)return {};
         return j;
     } catch(const std::exception&) { return {}; }
@@ -346,6 +381,8 @@ class Kernel {
     Int stock_opening_=0, stock_current_=0;
     std::vector<CareGrant> grants_;
     std::vector<MealRequest> meal_requests_;
+    std::vector<SleepRequest> sleep_requests_;
+    ResidentialRight residential_;
     std::string v2_origin_;
     Int import_clock_=0;
     std::uint64_t import_fraction_bits_=0;
@@ -354,8 +391,8 @@ class Kernel {
     std::size_t active_grants()const {
         return static_cast<std::size_t>(std::count_if(grants_.begin(),grants_.end(),[](const CareGrant& g){return g.active;}));
     }
-    void reserve_events(std::size_t count,std::size_t release_reserve=0,bool reserve_existing_lease=true)const {
-        const std::size_t future=active_grants()+release_reserve+(reserve_existing_lease&&lease_.active?1U:0U);
+    void reserve_events(std::size_t count,std::size_t release_reserve=0,bool reserve_existing_lease=true,bool reserve_existing_residential=true)const {
+        const std::size_t future=active_grants()+release_reserve+(reserve_existing_lease&&lease_.active?1U:0U)+(reserve_existing_residential&&residential_.active?1U:0U);
         if(count>max_events||future>max_events-count||events_.size()>max_events-count-future)
             throw std::overflow_error("whole transaction/reservation capacity");
     }
@@ -379,6 +416,7 @@ class Kernel {
             auto r=old.receipt;r.already_applied=true;return r;
         }
         for(const auto& old:requests_)if(old.intent.request_id==input.request_id)return invalid("request_id_conflict");
+        for(const auto& old:sleep_requests_)if(old.command.request_id==input.request_id)return invalid("request_id_conflict");
         if(at.tick<minimum_authority_tick())return invalid("invalid_command_tick");
         if(loaded_grants_need_interruption_)return invalid("loaded_grants_require_interruption");
         if(lease_.active&&at.tick>=lease_.end)return invalid("property_expiry_required");
@@ -512,6 +550,7 @@ public:
         }
         if(c.tick<last_tick_||c.tick<import_clock_||c.tick>max_tick)return invalid("invalid_command_tick");
         for(const auto& old:meal_requests_)if(old.command.request_id==i.request_id)return invalid("request_id_conflict");
+        for(const auto& old:sleep_requests_)if(old.command.request_id==i.request_id)return invalid("request_id_conflict");
         for(const auto& old:requests_)if(old.intent.request_id==i.request_id) {
             if(old.actor!=c.actor||old.intent.property_id!=i.property_id||old.intent.action!=i.action||
                 old.intent.agreed_lease_kind!=i.agreed_lease_kind||old.intent.expected_offer_revision!=i.expected_offer_revision||
@@ -584,7 +623,7 @@ public:
     Receipt execute(const Intent& i,const Context& c,FaultPoint fault=FaultPoint::none) {
         Kernel candidate=*this;
         try {
-            if(candidate.care_enabled_||candidate.recurring_lease()||(i.action==Action::lease&&candidate.offer_.kind=="recurring_lease")) {
+            if(candidate.care_enabled_||candidate.residential_.active||candidate.recurring_lease()||(i.action==Action::lease&&candidate.offer_.kind=="recurring_lease")) {
                 const auto p=candidate.prepare(i,c);if(p.event){const bool ending=p.receipt.ok&&p.event->type=="property_lease_ended";candidate.reserve_events(p.payment?2U:1U,p.receipt.ok&&i.action==Action::lease?1U:0U,!ending);}
             }
             Receipt r=candidate.apply(i,c,fault);
@@ -657,7 +696,7 @@ public:
     Journal journal() const {
         Journal j;j.terms=terms_;j.opening=opening_;j.accounts=accounts_;j.events=events_;j.title=title_;j.offer=offer_;j.lease=lease_;j.last_tick=last_tick_;j.digest=digest_;
         j.care_enabled=care_enabled_;j.stock_opening=stock_opening_;j.stock_current=stock_current_;j.grants=grants_;
-        j.v2_origin=v2_origin_;j.import_clock=import_clock_;j.import_fraction_bits=import_fraction_bits_;return j;
+        j.v2_origin=v2_origin_;j.import_clock=import_clock_;j.import_fraction_bits=import_fraction_bits_;j.residential=residential_;return j;
     }
     std::string save_bytes()const{return encode(journal());}
 
@@ -680,6 +719,62 @@ public:
             if(!candidate.verify_care())throw std::logic_error("activation_reconciliation");
             const Int id=candidate.events_.back().id;*this=std::move(candidate);return {true,false,"care_enabled",id};
         }catch(const std::exception& e){return {false,false,std::string("technical_failure:")+e.what(),-1};}
+    }
+    const ResidentialRight& residential_right()const{return residential_;}
+    bool has_residential_right(const std::string& resident,const std::string& site,Int tick)const{
+        return residential_.active&&residential_.activation_event_id>0&&resident==residential_resident&&site==sleep_site&&tick>=minimum_authority_tick()&&tick<=max_tick;
+    }
+    Receipt activate_residential(const TrustedResidentialChange& at){
+        if(!at.explicitly_authorized||at.registry_sha256!=residential_registry_sha256)return {false,false,"explicit_residential_source_required",-1};
+        if(at.tick<minimum_authority_tick()||at.tick>max_tick)return {false,false,"invalid_residential_tick",-1};
+        if(residential_.activation_event_id>0)return residential_.active?Receipt{true,true,"residential_already_active",residential_.activation_event_id}:Receipt{false,false,"residential_assignment_revoked",-1};
+        if(loaded_grants_need_interruption_)return {false,false,"loaded_grants_require_interruption",-1};
+        try{
+            Kernel candidate=*this;candidate.reserve_events(1,1);Event e;e.type="residential_owner_occupancy_activated";e.tick=at.tick;e.actor=residential_resident;e.target=residential_assignment;e.subject=sleep_site;e.note=residential_registry_sha256;e.accepted=true;candidate.append(std::move(e));
+            candidate.residential_={true,candidate.events_.back().id,-1};if(!candidate.verify_care())return {false,false,"residential_reconciliation_failed",-1};
+            const auto id=candidate.residential_.activation_event_id;*this=std::move(candidate);return {true,false,"residential_activated",id};
+        }catch(const std::exception&){return {false,false,"residential_transaction_exception",-1};}
+    }
+    // Paired caller must interrupt matching ResidentUse in the same transaction.
+    Receipt revoke_residential(const TrustedResidentialChange& at){
+        if(!at.explicitly_authorized||at.registry_sha256!=residential_registry_sha256)return {false,false,"explicit_residential_source_required",-1};
+        if(at.tick<minimum_authority_tick()||at.tick>max_tick||loaded_grants_need_interruption_)return {false,false,"invalid_residential_tick",-1};
+        if(residential_.activation_event_id<1)return {false,false,"residential_assignment_not_active",-1};
+        if(!residential_.active)return {true,true,"residential_already_revoked",residential_.revocation_event_id};
+        try{
+            Kernel candidate=*this;candidate.reserve_events(1,0,true,false);
+            for(const auto& g:grants_)if(g.active&&g.kind==CareKind::Sleep){if(!candidate.release_grant({g.resident,g.event_id,at.tick,ReleaseReason::Interrupted}).ok)return {false,false,"residential_release_refused",-1};}
+            Event e;e.type="residential_owner_occupancy_revoked";e.tick=at.tick;e.actor=residential_resident;e.target=residential_assignment;e.subject=sleep_site;e.note=residential_registry_sha256;e.accepted=true;candidate.append(std::move(e));candidate.residential_.active=false;candidate.residential_.revocation_event_id=candidate.events_.back().id;
+            if(!candidate.verify_care())return {false,false,"residential_reconciliation_failed",-1};
+            const auto id=candidate.residential_.revocation_event_id;*this=std::move(candidate);return {true,false,"residential_revoked",id};
+        }catch(const std::exception&){return {false,false,"residential_transaction_exception",-1};}
+    }
+    Receipt execute_sleep(const SleepCommand& input,const SleepContext& at){
+        auto invalid=[](const std::string& why){return Receipt{false,false,why,-1};};
+        if(!token(input.request_id)||!token(input.site_id)||input.expected_revision<0||input.expected_revision>static_cast<Int>(max_events))return invalid("malformed_sleep_command");
+        if(at.actor!=at.authenticated_actor||!find(at.actor))return invalid("unauthenticated_actor");
+        if(at.tick<0||at.tick>max_tick)return invalid("invalid_command_tick");
+        for(const auto& old:sleep_requests_)if(old.command.request_id==input.request_id){if(old.actor!=at.actor||!detail::same_sleep_command(old.command,input))return invalid("request_id_conflict");auto receipt=old.receipt;receipt.already_applied=true;return receipt;}
+        for(const auto& old:meal_requests_)if(old.command.request_id==input.request_id)return invalid("request_id_conflict");
+        for(const auto& old:requests_)if(old.intent.request_id==input.request_id)return invalid("request_id_conflict");
+        if(at.tick<minimum_authority_tick())return invalid("invalid_command_tick");
+        if(loaded_grants_need_interruption_)return invalid("loaded_grants_require_interruption");
+        if(lease_.active&&at.tick>=lease_.end)return invalid("property_expiry_required");
+        try{
+            Kernel candidate=*this;Event e;e.tick=at.tick;e.actor=at.actor;e.target=input.site_id;e.subject=input.site_id;e.request_id=input.request_id;e.action="sleep";e.sleep_command=input;e.sleep_context=at;
+            std::string why;
+            if(input.expected_revision!=revision())why="stale_world_revision";
+            else if(input.site_id!=sleep_site)why="unknown_sleep_site";
+            else if(!has_residential_right(at.actor,input.site_id,at.tick))why="residential_entitlement_required";
+            else if(!at.fresh||!at.correct_floor||!at.reachable)why="fresh_sleep_entry_required";
+            else if(!at.qualified_clip)why="qualified_sleep_clip_required";
+            else for(const auto& g:grants_)if(g.active){if(g.resident==at.actor){why="resident_busy";break;}if(g.site_id==input.site_id){why="sleep_site_occupied";break;}}
+            candidate.reserve_events(1,why.empty()?1U:0U);e.type=why.empty()?"care_sleep_granted":"sleep_refused";e.accepted=why.empty();e.note=why.empty()?"OwnerOccupancy":why;candidate.append(std::move(e));const auto id=candidate.events_.back().id;
+            if(why.empty()){CareGrant g;g.event_id=id;g.tick=at.tick;g.request_id=input.request_id;g.resident=at.actor;g.site_id=input.site_id;g.provider=residential_resident;g.funding="OwnerOccupancy";g.kind=CareKind::Sleep;g.duration_ticks=40;g.hunger_gain=0;g.fun_gain=0;g.energy_gain=62;candidate.grants_.push_back(std::move(g));}
+            Receipt receipt{why.empty(),false,why.empty()?"OwnerOccupancy":why,id};candidate.sleep_requests_.push_back({input,at.actor,receipt});
+            if(!candidate.verify_ledger()||!candidate.verify_care())return invalid("sleep_reconciliation_failed");
+            *this=std::move(candidate);return receipt;
+        }catch(const std::exception&){return invalid("sleep_transaction_exception");}
     }
     Receipt execute_meal(const MealCommand& input,const MealContext& at,MealFault fault=MealFault::None) {
         Kernel candidate=*this;
@@ -727,7 +822,7 @@ public:
         candidate.loaded_grants_need_interruption_=false;*this=std::move(candidate);return true;
     }
     bool verify_care()const {
-        bool enabled=false;Int stock=0;
+        bool enabled=false;Int stock=0;ResidentialRight right;
         for(const auto& e:events_) {
             if(e.type=="care_enabled") {
                 if(enabled||!e.accepted||e.subject!=meal_policy||e.note!=meal_policy_sha256||e.amount!=authored_opening_rations)return false;
@@ -737,12 +832,22 @@ public:
                 --stock;
             }else if(e.type=="public_meal_shortage") {
                 if(!enabled||!e.accepted||e.amount!=0||stock!=0)return false;
+            }else if(e.type=="residential_owner_occupancy_activated"||e.type=="residential_owner_occupancy_revoked"){
+                if(!e.accepted||e.actor!=residential_resident||e.target!=residential_assignment||e.subject!=sleep_site||e.note!=residential_registry_sha256)return false;
+                if(e.type=="residential_owner_occupancy_activated"){if(right.activation_event_id>0)return false;right={true,e.id,-1};}
+                else {if(!right.active)return false;right.active=false;right.revocation_event_id=e.id;}
+            }else if(e.type=="care_sleep_granted"){
+                if(!right.active||!e.accepted||e.actor!=residential_resident||e.subject!=sleep_site)return false;
             }
         }
+        if(right.active!=residential_.active||right.activation_event_id!=residential_.activation_event_id||right.revocation_event_id!=residential_.revocation_event_id)return false;
         if(enabled!=care_enabled_||stock!=stock_current_||stock_opening_!=(enabled?authored_opening_rations:0))return false;
         for(std::size_t i=0;i<grants_.size();++i) {
             const auto& g=grants_[i];if(g.event_id<1||static_cast<std::uint64_t>(g.event_id)>events_.size())return false;
-            if(events_[static_cast<std::size_t>(g.event_id-1)].type!="care_meal_granted")return false;
+            const auto& event=events_[static_cast<std::size_t>(g.event_id-1)];
+            if(g.kind==CareKind::Meal){if(event.type!="care_meal_granted"||g.duration_ticks!=18||g.hunger_gain!=50||g.fun_gain!=3||g.energy_gain!=0)return false;}
+            else if(g.kind==CareKind::Sleep){if(event.type!="care_sleep_granted"||g.site_id!=sleep_site||g.resident!=residential_resident||g.provider!=residential_resident||g.funding!="OwnerOccupancy"||g.duration_ticks!=40||g.energy_gain!=62||g.hunger_gain!=0||g.fun_gain!=0||g.pay_event_id!=-1||g.stock_event_id!=-1||(g.active&&!residential_.active))return false;}
+            else return false;
             for(std::size_t j=i+1;j<grants_.size();++j)if(g.event_id==grants_[j].event_id||
                 (g.active&&grants_[j].active&&(g.resident==grants_[j].resident||g.site_id==grants_[j].site_id)))return false;
         }
@@ -788,6 +893,9 @@ public:
             while(at<incoming.events.size()) {
                 const auto& first=incoming.events[at];const std::size_t before=candidate.events_.size();
                 if(first.type=="care_enabled")candidate.activate_care({first.tick,true});
+                else if(first.type=="residential_owner_occupancy_activated")candidate.activate_residential({first.tick,true,first.note});
+                else if(first.type=="residential_owner_occupancy_revoked")candidate.revoke_residential({first.tick,true,first.note});
+                else if(detail::sleep_event(first)){if(!first.sleep_command||!first.sleep_context)return false;candidate.execute_sleep(*first.sleep_command,*first.sleep_context);}
                 else if(first.type=="care_grant_released") {
                     const auto reason=parse_release(first.note);if(!reason||!first.grant_event_id)return false;
                     candidate.release_grant({first.actor,*first.grant_event_id,first.tick,*reason,first.amount.value_or(0)});
@@ -825,12 +933,23 @@ public:
         }catch(const std::exception&){return false;}
     }
     bool restore_bytes(const std::string& bytes){const auto j=decode(bytes);return j&&restore(*j);}
+    bool import_legacy_v5_bytes(const std::string& bytes){
+        const auto old=decode(bytes);if(!old||old->document_schema!=legacy_v5_schema||old->document_capability!=legacy_v5_capability)return false;
+        for(const auto& e:old->events)if(detail::sleep_event(e)||e.sleep_command||e.sleep_context||e.type=="residential_owner_occupancy_activated"||e.type=="residential_owner_occupancy_revoked")return false;
+        for(const auto& g:old->grants)if(g.kind!=CareKind::Meal||g.energy_gain!=0||g.site_id==sleep_site)return false;
+        Journal converted=*old;converted.document_schema=schema;converted.document_capability=capability;
+        Kernel candidate=*this;if(!candidate.restore(converted))return false;
+        Journal roundtrip=candidate.journal();roundtrip.document_schema=legacy_v5_schema;roundtrip.document_capability=legacy_v5_capability;
+        if(encode(roundtrip)!=bytes)return false;
+        *this=std::move(candidate);return true;
+    }
     // Explicit migration only. The old wire shape is unchanged; new agreement
     // actions/kinds must never be accepted under the released legacy schema.
     bool import_legacy_v3_bytes(const std::string& bytes) {
         const auto old=decode(bytes);if(!old||old->document_schema!=legacy_schema||old->document_capability!=legacy_capability)return false;
         for(const auto& e:old->events) {
             if(e.action=="offer_recurring_lease"||e.action=="collect_rent"||e.type=="property_rent_paid"||
+                detail::sleep_event(e)||e.sleep_command||e.sleep_context||e.type=="residential_owner_occupancy_activated"||e.type=="residential_owner_occupancy_revoked"||
                 (!e.offer_kind.empty()&&e.offer_kind!="lease"&&e.offer_kind!="sale"))return false;
         }
         if(old->offer.kind!=""&&old->offer.kind!="lease"&&old->offer.kind!="sale")return false;
