@@ -75,7 +75,7 @@ struct LIVINGTOWNNATIVE_API FLivingTownMetaHumanMealRecipeV2 {
     FString BindingSha256,VisualDescriptorSha256,SourceClosureSha256;
     FString CertificateFile,CertificateSha256,RecipeSha256;int64 CertificateBytes=0;
     TArray<FLivingTownMealAssetRoleV2> Assets;TArray<FLivingTownMealProofV2> Proofs;
-    TArray<FString> BreadMaterials,BreadTextures;
+    TArray<FString> BreadMaterials,BreadBittenMaterials,BreadTextures;
     FName HandBone=NAME_None,MouthBone=NAME_None,JawBone=NAME_None,JawParentBone=NAME_None,JawCurve=NAME_None;
     FTransform GripRelative=FTransform::Identity;
     FVector FoodBitePointCm=FVector::ZeroVector,MouthOffsetCm=FVector::ZeroVector,StationFeetCm=FVector::ZeroVector,CounterPointCm=FVector::ZeroVector;

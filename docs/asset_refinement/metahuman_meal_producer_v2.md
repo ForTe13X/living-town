@@ -9,10 +9,11 @@ The legacy v1 provider and financial/care core bytes are unchanged.
 `ULivingTownMetaHumanMealProducer` observes one owned bread component and the
 original Assembly Body/Face/Outfit. It never creates a second animation player,
 sets a pose/curve/time, refreshes bones, calls a needs API or grants progress.
-The final clip, food grip, mouth offset, physical contact and natural timing
-remain pending independent native proof and root review. The planned 24.5 s
-clip is not an accepted calibration; duration and phases come from the verified
-certificate, so retiming does not require another hardcoded C++ duration.
+The prerequisite calibration supplies verified assets and native pose/spatial
+anchors. It never pre-certifies natural playback, lip collision or grants.
+Those claims still require the independent live runtime observations and root
+review. Duration and phases come from the verified calibration certificate, so
+retiming does not require another hardcoded C++ duration.
 
 ## Files and trust boundary
 
@@ -81,31 +82,38 @@ The recipe has exactly eight keys:
 | `source_closure_sha256` | Descriptor's admitted source closure hash |
 | `certificate_file`, `certificate_bytes`, `certificate_sha256` | Actual accepted certificate file |
 
-The certificate has exactly fourteen keys: `format`, `version`, `status`, the
-three binding hashes above, `assets`, `proofs`, `bread_materials`,
+The certificate has exactly fifteen keys: `format`, `version`, `status`, the
+three binding hashes above, `assets`, `proofs`, `bread_materials`, `bread_bitten_materials`,
 `bread_textures`, `anchors`, `station`, `timing`, `jaw`.
 Its format/version/status are `LivingTown.MetaHumanMeal.PhysicalCertificate`,
-`2`, `ROOT_ACCEPTED_NATIVE_PHYSICAL_EATING`.
+`2`, `ROOT_ACCEPTED_NATIVE_POSE_CALIBRATION`. Pending or generic acceptance
+statuses are refused; the calibration status does not bypass any live guard.
 
 `assets` rows contain exactly `role`, `asset`, `bytes`, `sha256`. Paths must be
 full top-level object paths under `/Game/` or `/MetaHumanCharacter/`. Required
 roles are `actor_class`, `clip`, `body`, `face`, `outfit`, `body_skeleton`,
 `face_skeleton`, `bread`, `bread_bitten`, `body_post`, `face_main`, `face_post`, plus exactly one
-`bread_material/N` per ordered material slot and `bread_texture/N` per unique
-texture. `bread_materials` has 1–8 paths and preserves repeated slots;
-`bread_textures` has 1–32 unique paths. No fixed third material slot is assumed.
+`bread_material/N` per Whole material slot, `bread_bitten_material/N` per Bitten
+material slot and `bread_texture/N` per unique texture. Each ordered material
+roster has 1–8 paths and preserves repeated slots independently. `bread_textures`
+is the exact unique union of both variants' used textures (1–32 paths). Required
+role count is twelve base roles plus both material counts plus the texture-union
+count. No fixed third material slot or shared material identity is assumed.
 Body/Outfit/clip share the declared Body skeleton. Face is checked against its
 own declared skeleton; the two skeleton paths may alias with identical bytes.
 Whole and bitten bread must be distinct actual meshes with the same explicit
-grip and ordered material/texture closure. Both packages are verified and loaded.
+grip. Each mesh is checked against its own ordered materials; live prop checks
+select that variant's exact slot count, role prefix and material identities.
+Both packages and every material/map in the union are verified and loaded.
 
 `proofs` has exactly the distinct `jaw`, `grip`, `bite` rows, each with `kind`,
 `file`, `bytes`, `sha256`. Each actual proof JSON has exactly `format`,
 `version`, `kind`, `status`, `binding_sha256`, `visual_descriptor_sha256`,
 `clip_sha256`, `bread_sha256`, `native_pose_samples`. Values must use format
 `LivingTown.MetaHumanMeal.PhysicalProof`, version `1`, status
-`ROOT_ACCEPTED_NATIVE`, matching roles/bindings and at least two actual native
-pose samples. The root must supply and review the underlying native evidence;
+`ROOT_ACCEPTED_NATIVE_POSE_CALIBRATION`, matching roles/bindings and at least
+two actual native pose samples. The root must supply and review that underlying
+calibration evidence;
 the producer independently observes the live action rather than replaying
 these proof summaries as contact.
 
