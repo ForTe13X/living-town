@@ -47,6 +47,9 @@ public:
     bool ImportLegacyV4Journal(const FString& Json,FString& Error);
     bool ImportLegacyV4Slot(FString& Error);
 private:
+#if WITH_DEV_AUTOMATION_TESTS
+    friend struct FWorldV3MealProviderLifecycleTestAccess; // Read-only native test snapshots.
+#endif
     struct FState;
     struct FStateDeleter{void operator()(FState* Pointer)const;};
     TUniquePtr<FState,FStateDeleter> State;
@@ -85,6 +88,7 @@ private:
     ULivingTownCafeMealContactComponent* MealProvider()const;
     bool StartPhysicalMeal(FString& Error);
     void StopPhysicalMeal();
+    void ReleaseMetaHumanMealProvider();
     bool ObservePhysicalMeal(FString& Error);
     bool AdvanceNaturalClock(int64 Whole,bool bContinuous,FString& Error);
     void RefreshPresentation();

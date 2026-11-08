@@ -107,15 +107,38 @@ bool ULivingTownCafeWorldV3Subsystem::PrepareScenario(FString& Error){
     if(Binding.MetaHumanActor.IsSet())PostActorTickHandle=FWorldDelegates::OnWorldPostActorTick.AddUObject(this,&ULivingTownCafeWorldV3Subsystem::AfterActorTick);
     Notice=TEXT("Choose Ben or Aria, then walk to the cafe counter.");RefreshPresentation();if(State->bMetaRecipe)BeginMealPreload();return true;
 }
-void ULivingTownCafeWorldV3Subsystem::DetachNativeSession(){if(SessionPawn.IsValid()||MetaHumanMeal)CancelMealPreload();if(State)P::cancel_meal_use(State->Kernel,State->Use,P::ReleaseReason::Interrupted);StopPhysicalMeal();if(MetaHumanMeal){if(auto* Owner=MetaHumanMeal->GetOwner())Owner->RemoveInstanceComponent(MetaHumanMeal);MetaHumanMeal->DestroyComponent();MetaHumanMeal=nullptr;}MetaHumanMealFailure.Reset();SessionController.Reset();SessionPawn.Reset();RefreshPresentation();}
+void ULivingTownCafeWorldV3Subsystem::ReleaseMetaHumanMealProvider(){
+    StopPhysicalMeal();auto* Previous=MetaHumanMeal.Get();MetaHumanMeal=nullptr;MetaHumanMealFailure.Reset();
+    if(IsValid(Previous)){if(auto* Owner=Previous->GetOwner())Owner->RemoveInstanceComponent(Previous);Previous->DestroyComponent();}
+}
+void ULivingTownCafeWorldV3Subsystem::DetachNativeSession(){
+    if(Binding.MetaHumanActor.IsSet()){
+        CancelMealPreload();if(State)P::cancel_meal_use(State->Kernel,State->Use,P::ReleaseReason::Interrupted);
+        ReleaseMetaHumanMealProvider();SessionController.Reset();SessionPawn.Reset();RefreshPresentation();return;
+    }
+    // Preserve the original non-MetaHuman detach/animation restoration path.
+    if(SessionPawn.IsValid()||MetaHumanMeal)CancelMealPreload();if(State)P::cancel_meal_use(State->Kernel,State->Use,P::ReleaseReason::Interrupted);StopPhysicalMeal();if(MetaHumanMeal){if(auto* Owner=MetaHumanMeal->GetOwner())Owner->RemoveInstanceComponent(MetaHumanMeal);MetaHumanMeal->DestroyComponent();MetaHumanMeal=nullptr;}MetaHumanMealFailure.Reset();SessionController.Reset();SessionPawn.Reset();RefreshPresentation();
+}
 bool ULivingTownCafeWorldV3Subsystem::BindNativeSession(ALivingTownCafeWorldV3Controller* PC,ACharacter* Pawn,FString& Error){
     Error.Reset();if(!IsInGameThread()||!bPrepared||!State||!PC||!Pawn||PC!=GetWorld()->GetFirstPlayerController()||PC->GetWorld()!=GetWorld()||Pawn->GetWorld()!=GetWorld()||PC->GetPawn()!=Pawn||Pawn->GetController()!=PC||!PC->HasNativePersona()||!ValidPersona(PC->GetNativePersona())){Error=TEXT("native_persona_possession_required");return false;}
     const auto* Ben=Cast<ALivingTownCafeCharacter>(Pawn);const auto* Owner=Cast<ALivingTownCafePropertyOwnerProxy>(Pawn);
     if((PC->GetNativePersona()==ELivingTownCafeWorldPersona::Ben&&(!Ben||!Ben->HasQualifiedVisual()))||(PC->GetNativePersona()==ELivingTownCafeWorldPersona::Aria&&(!Owner||!Owner->IsFunctionalOwnerConfigured()))){Error=TEXT("persona_and_native_pawn_class_must_match");return false;}
     if(!FMath::IsNearlyEqual(Pawn->GetCapsuleComponent()->GetScaledCapsuleRadius(),Binding.CapsuleRadiusCm,.01f)||!FMath::IsNearlyEqual(Pawn->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),Binding.CapsuleHalfHeightCm,.01f)){Error=TEXT("persona_capsule_binding_mismatch");return false;}
-    SessionController=PC;SessionPawn=Pawn;Notice=PC->GetNativePersona()==ELivingTownCafeWorldPersona::Aria?TEXT("Playing Aria. Walk to the cafe counter."):TEXT("Playing Ben. Walk to the cafe counter.");RefreshPresentation();
+    const bool bMetaHuman=Binding.MetaHumanActor.IsSet();
+    const bool bHadSession=!SessionPawn.IsExplicitlyNull(); // A stale weak pawn is still a previous session.
+    const bool bSameSession=bHadSession&&SessionPawn.Get()==Pawn;
+    const bool bStaleProvider=bMetaHuman&&MetaHumanMeal&&(!IsValid(MetaHumanMeal)||MetaHumanMeal->GetOwner()!=Pawn);
+    const bool bRetirePreviousMeta=bMetaHuman&&((bHadSession&&!bSameSession)||bStaleProvider);
+    if(bRetirePreviousMeta&&(State->Use.active()||State->bMetaTail))
+    {Error=TEXT("metahuman_persona_switch_requires_no_active_meal");return false;}
+    // All fallible checks precede publication. First Ben bind keeps PrepareScenario's
+    // handle/readiness/epoch; same-pawn binds keep them too. Only a committed old
+    // session or stale provider is retired. Rollback to the old pawn remains intact.
+    SessionController=PC;SessionPawn=Pawn;
+    if(bRetirePreviousMeta){CancelMealPreload();ReleaseMetaHumanMealProvider();}
+    Notice=PC->GetNativePersona()==ELivingTownCafeWorldPersona::Aria?TEXT("Playing Aria. Walk to the cafe counter."):TEXT("Playing Ben. Walk to the cafe counter.");RefreshPresentation();
     if(PC->GetNativePersona()==ELivingTownCafeWorldPersona::Ben&&Binding.MetaHumanActor.IsSet()){if(bMealRolesReady)ConfigureMetaHumanMeal();else BeginMealPreload();}
-    else CancelMealPreload();
+    else if(!bMetaHuman||(!bSameSession&&!bRetirePreviousMeta))CancelMealPreload();
     RefreshPresentation();return true;
 }
 void ULivingTownCafeWorldV3Subsystem::CancelMealPreload(){++MealPreloadEpoch;bMealRolesReady=false;if(MealPreload)MealPreload->CancelHandle();MealPreload.Reset();}
