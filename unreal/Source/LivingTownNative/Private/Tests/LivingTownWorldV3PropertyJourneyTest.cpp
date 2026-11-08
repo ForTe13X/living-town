@@ -114,6 +114,18 @@ class FCurrentTownPropertyJourney final:public IAutomationLatentCommand {
     TSharedPtr<FJsonObject> LatestTownStatus;
     FPropertyInputReadTick InputReadTick;FDelegateHandle WorldCleanup;
     TWeakObjectPtr<UWorld> ObservedWorld;
+    // Test observations only: no gameplay readiness or movement state is injected.
+    TWeakObjectPtr<ACharacter> GroundPawn;
+    TWeakObjectPtr<UCharacterMovementComponent> GroundMovement;
+    TSharedPtr<FJsonObject> GroundApproach;
+    TArray<TSharedPtr<FJsonValue>> GroundSamples,GroundApproaches;
+    uint64 GroundStartFrame=0,GroundObservedFrame=MAX_uint64;
+    double GroundStartWorld=-1,GroundStartWall=0,GroundObservedWorld=-1;
+    FVector GroundObservedFeet=FVector::ZeroVector;
+    double GroundObservedSpeedXY=0;
+    bool GroundAcquired=false,GroundObservedIdentity=false,GroundObservedSupport=false,GroundHistoryOverflow=false,GroundPrerequisiteBound=false,GroundObservedTickReady=false;
+    uint64 GroundPrerequisiteFrame=MAX_uint64;
+    static constexpr int32 MaxGroundSamples=1024;
     struct FQueuedTap {
         FKey Key;FString Label,ReadError,Notice;bool Active=false,Observed=false,ReadOK=false,PressReturn=false,ReleaseReturn=false,Physical=false;
         uint64 SentFrame=0,ObservedFrame=0;double SentWorld=-1,ObservedWorld=-1,SentWall=0;
@@ -132,7 +144,8 @@ class FCurrentTownPropertyJourney final:public IAutomationLatentCommand {
         return O;
     }
     FString FailureDiagnostic(const TCHAR* Why){
-        auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("status"),TEXT("FAIL_RETAINED_CURRENT_PROPERTY_ASSERTION"));O->SetNumberField(TEXT("stage"),Stage);O->SetStringField(TEXT("predicate"),Why);O->SetStringField(TEXT("current_frame"),LexToString(GFrameCounter));O->SetObjectField(TEXT("queued_input"),TapDiagnostic());O->SetArrayField(TEXT("completed_input_observations"),InputObservations);
+        ReadApproachGround(true);
+        auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("status"),TEXT("FAIL_RETAINED_CURRENT_PROPERTY_ASSERTION"));O->SetNumberField(TEXT("stage"),Stage);O->SetStringField(TEXT("predicate"),Why);O->SetStringField(TEXT("current_frame"),LexToString(GFrameCounter));O->SetObjectField(TEXT("queued_input"),TapDiagnostic());O->SetArrayField(TEXT("completed_input_observations"),InputObservations);O->SetArrayField(TEXT("ground_acquisition_observations"),GroundApproaches);
         if(LatestTownStatus)O->SetObjectField(TEXT("native_status"),LatestTownStatus);
         if(auto* W=ObservedWorld.Get()){
             O->SetNumberField(TEXT("current_world_seconds"),W->GetTimeSeconds());auto* A=W->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();W3::Kernel K;FString Error;
@@ -144,7 +157,7 @@ class FCurrentTownPropertyJourney final:public IAutomationLatentCommand {
         const FString Directory=FPaths::ProjectSavedDir()/TEXT("WorldV3PropertyJourney");IFileManager::Get().MakeDirectory(*Directory,true);FString Text;const FString Path=Directory/TEXT("NATIVE_PROPERTY_FAILURE.json");
         if(FJsonSerializer::Serialize(O,TJsonWriterFactory<>::Create(&Text)))FFileHelper::SaveStringToFile(Text,*Path);return Path;
     }
-    void RemoveReaders(){InputReadTick.ReadOnly=nullptr;if(InputReadTick.IsTickFunctionRegistered())InputReadTick.UnRegisterTickFunction();RemoveProviderObserver();if(WorldCleanup.IsValid())FWorldDelegates::OnWorldCleanup.Remove(WorldCleanup);WorldCleanup.Reset();}
+    void RemoveReaders(){RemoveGroundPrerequisite();InputReadTick.ReadOnly=nullptr;if(InputReadTick.IsTickFunctionRegistered())InputReadTick.UnRegisterTickFunction();RemoveProviderObserver();if(WorldCleanup.IsValid())FWorldDelegates::OnWorldCleanup.Remove(WorldCleanup);WorldCleanup.Reset();}
     void WorldEnding(UWorld* W,bool,bool){if(W&&W->GetUniqueID()==WorldId){Release();RemoveReaders();}}
     void ReadAfterInput(){
         auto* W=ObservedWorld.Get();auto* C=Controller.Get();if(!W||!C||!Queued.Active||Queued.Observed||GFrameCounter<=Queued.SentFrame||W->GetTimeSeconds()<=Queued.SentWorld||C->GetWorld()!=W)return;
@@ -157,7 +170,7 @@ class FCurrentTownPropertyJourney final:public IAutomationLatentCommand {
     bool InstallReader(UWorld* W,ALivingTownCafeWorldV3Controller* C){
         if(InputReadTick.IsTickFunctionRegistered())return true;
         if(!Need(W->PersistentLevel&&C->PrimaryActorTick.IsTickFunctionRegistered()&&C->PrimaryActorTick.TickGroup==TG_PrePhysics,TEXT("input_reader.requires_actual_controller_PrePhysics_tick")))return false;
-        InputReadTick.ReadOnly=[this](){ReadAfterInput();};InputReadTick.AddPrerequisite(C,C->PrimaryActorTick);InputReadTick.RegisterTickFunction(W->PersistentLevel);InputReadTick.SetTickFunctionEnable(true);
+        InputReadTick.ReadOnly=[this](){ReadAfterInput();ReadApproachGround();};InputReadTick.AddPrerequisite(C,C->PrimaryActorTick);InputReadTick.RegisterTickFunction(W->PersistentLevel);InputReadTick.SetTickFunctionEnable(true);
         WorldCleanup=FWorldDelegates::OnWorldCleanup.AddRaw(this,&FCurrentTownPropertyJourney::WorldEnding);return true;
     }
     bool QueueTap(UWorld* W,FKey Key,const TCHAR* Label){
@@ -266,9 +279,65 @@ class FCurrentTownPropertyJourney final:public IAutomationLatentCommand {
         }
         ++CensusSamples;return Need(Venues==1&&Drivers==1&&Roles.Num()==971,TEXT("Actual289 external plus971 streamed roles, no duplicated old cafe"));
     }
+    void RemoveGroundPrerequisite(){
+        if(auto* Move=GroundMovement.Get())InputReadTick.RemovePrerequisite(Move,Move->PrimaryComponentTick);
+        // Same stale-weak pruning as the engine scheduler; only this test reader owns this list.
+        InputReadTick.GetPrerequisites().RemoveAll([this](const FTickPrerequisite& Item){return Item.PrerequisiteObject.HasSameIndexAndSerialNumber(GroundMovement)||Item.Get()==nullptr;});
+        GroundPrerequisiteBound=false;GroundPrerequisiteFrame=MAX_uint64;GroundObservedTickReady=false;GroundMovement.Reset();GroundPawn.Reset();
+    }
+    static TSharedRef<FJsonObject> GroundVector(const FVector& V){
+        auto O=MakeShared<FJsonObject>();O->SetNumberField(TEXT("x"),V.X);O->SetNumberField(TEXT("y"),V.Y);O->SetNumberField(TEXT("z"),V.Z);return O;
+    }
+    void ReadApproachGround(bool FailureSnapshot=false){
+        if(!GroundApproach||(!FailureSnapshot&&(Done||GroundAcquired||GroundObservedFrame==GFrameCounter)))return;
+        auto* W=ObservedWorld.Get();auto* C=Controller.Get();auto* P=GroundPawn.Get();auto* Move=GroundMovement.Get();
+        if(!GroundMovement.IsValid()&&P)GroundMovement=P->GetCharacterMovement();Move=GroundMovement.Get();
+        const bool TickReady=Move&&Move->IsRegistered()&&Move->IsActive()&&Move->PrimaryComponentTick.IsTickFunctionRegistered()&&Move->IsComponentTickEnabled();
+        if(!FailureSnapshot){
+            if(!TickReady){if(GroundPrerequisiteBound&&Move)InputReadTick.RemovePrerequisite(Move,Move->PrimaryComponentTick);GroundPrerequisiteBound=false;GroundPrerequisiteFrame=MAX_uint64;}
+            else if(!GroundPrerequisiteBound){InputReadTick.AddPrerequisite(Move,Move->PrimaryComponentTick);GroundPrerequisiteBound=true;GroundPrerequisiteFrame=GFrameCounter;}
+        }
+        GroundObservedFrame=GFrameCounter;GroundObservedWorld=W?W->GetTimeSeconds():-1;GroundObservedTickReady=TickReady&&GroundPrerequisiteBound&&GroundObservedFrame>GroundPrerequisiteFrame;
+        GroundObservedIdentity=W&&C&&P&&Move&&P->GetWorld()==W&&C->GetWorld()==W&&C->GetPawn().Get()==P&&P->GetController()==C&&C->GetViewTarget()==P&&P->GetCharacterMovement()==Move&&!C->IsMoveInputIgnored()&&!Held&&!C->IsInputKeyDown(EKeys::W);
+        GroundObservedSupport=Move&&Move->IsMovingOnGround()&&Move->CurrentFloor.IsWalkableFloor();
+        auto Row=MakeShared<FJsonObject>();Row->SetStringField(TEXT("scope"),FailureSnapshot?TEXT("Immediate read-only failure snapshot, not a scheduled movement receipt"):TEXT("Ordinary engine TG_PostUpdateWork read; prerequisite qualification recorded separately; no movement setter or manual tick"));Row->SetBoolField(TEXT("engine_scheduled_reader"),!FailureSnapshot);Row->SetBoolField(TEXT("pawn_observed"),P&&P->GetCapsuleComponent());Row->SetBoolField(TEXT("movement_observed"),Move!=nullptr);
+        Row->SetStringField(TEXT("frame"),LexToString(GroundObservedFrame));Row->SetNumberField(TEXT("world_seconds"),GroundObservedWorld);Row->SetNumberField(TEXT("wall_seconds_from_start"),FPlatformTime::Seconds()-GroundStartWall);Row->SetBoolField(TEXT("current_pawn_identity"),GroundObservedIdentity);Row->SetBoolField(TEXT("grounded_and_walkable"),GroundObservedSupport);Row->SetNumberField(TEXT("reader_actual_tick_group"),int32(InputReadTick.GetActualTickGroup().GetValue()));
+        Row->SetBoolField(TEXT("movement_prerequisite_bound"),GroundPrerequisiteBound);Row->SetStringField(TEXT("movement_prerequisite_bound_frame"),LexToString(GroundPrerequisiteFrame));Row->SetBoolField(TEXT("after_bound_enabled_movement_prerequisite"),GroundObservedTickReady&&!FailureSnapshot);
+        Row->SetStringField(TEXT("expected_pawn_id"),P?LexToString(P->GetUniqueID()):TEXT("invalid"));Row->SetStringField(TEXT("controller_current_pawn_id"),C&&C->GetPawn()?LexToString(C->GetPawn()->GetUniqueID()):TEXT("invalid"));
+        if(P&&P->GetCapsuleComponent()){
+            const auto* Capsule=P->GetCapsuleComponent();GroundObservedFeet=P->GetActorLocation()-FVector(0,0,Capsule->GetScaledCapsuleHalfHeight());GroundObservedSpeedXY=P->GetVelocity().Size2D();
+            Row->SetObjectField(TEXT("actor_cm"),GroundVector(P->GetActorLocation()));Row->SetObjectField(TEXT("feet_cm"),GroundVector(GroundObservedFeet));Row->SetObjectField(TEXT("velocity_cm_s"),GroundVector(P->GetVelocity()));Row->SetNumberField(TEXT("speed_xy_cm_s"),GroundObservedSpeedXY);Row->SetNumberField(TEXT("capsule_radius_cm"),Capsule->GetScaledCapsuleRadius());Row->SetNumberField(TEXT("capsule_half_height_cm"),Capsule->GetScaledCapsuleHalfHeight());Row->SetNumberField(TEXT("spawn_xy_error_cm"),FVector::Dist2D(GroundObservedFeet,Route[0]));Row->SetNumberField(TEXT("spawn_height_error_cm"),GroundObservedFeet.Z-Route[0].Z);Row->SetStringField(TEXT("movement_base"),GetPathNameSafe(P->GetMovementBase()));
+        }
+        if(Move){
+            const auto& Floor=Move->CurrentFloor;Row->SetNumberField(TEXT("movement_mode"),int32(Move->MovementMode.GetValue()));Row->SetNumberField(TEXT("custom_movement_mode"),Move->CustomMovementMode);Row->SetBoolField(TEXT("moving_on_ground"),Move->IsMovingOnGround());Row->SetBoolField(TEXT("floor_blocking_hit"),bool(Floor.bBlockingHit));Row->SetBoolField(TEXT("floor_walkable"),Floor.IsWalkableFloor());Row->SetBoolField(TEXT("floor_line_trace"),bool(Floor.bLineTrace));Row->SetNumberField(TEXT("floor_dist_cm"),Floor.FloorDist);Row->SetNumberField(TEXT("line_dist_cm"),Floor.LineDist);Row->SetStringField(TEXT("floor_hit_component"),GetPathNameSafe(Floor.HitResult.GetComponent()));Row->SetStringField(TEXT("floor_hit_actor"),GetPathNameSafe(Floor.HitResult.GetActor()));Row->SetObjectField(TEXT("floor_impact_cm"),GroundVector(Floor.HitResult.ImpactPoint));Row->SetObjectField(TEXT("floor_impact_normal"),GroundVector(Floor.HitResult.ImpactNormal));Row->SetBoolField(TEXT("floor_hit_start_penetrating"),Floor.HitResult.bStartPenetrating);Row->SetBoolField(TEXT("movement_registered"),Move->IsRegistered());Row->SetBoolField(TEXT("movement_active"),Move->IsActive());Row->SetBoolField(TEXT("movement_tick_registered"),Move->PrimaryComponentTick.IsTickFunctionRegistered());Row->SetBoolField(TEXT("movement_tick_enabled"),Move->IsComponentTickEnabled());Row->SetNumberField(TEXT("movement_actual_tick_group"),int32(Move->PrimaryComponentTick.GetActualTickGroup().GetValue()));Row->SetStringField(TEXT("floor_observation_source"),TEXT("CharacterMovement.CurrentFloor cached result; no new trace"));Row->SetNumberField(TEXT("movement_tick_interval_seconds"),Move->GetComponentTickInterval());Row->SetObjectField(TEXT("movement_last_update_location_cm"),GroundVector(Move->GetLastUpdateLocation()));Row->SetObjectField(TEXT("movement_last_update_velocity_cm_s"),GroundVector(Move->GetLastUpdateVelocity()));
+        }
+        GroundApproach->SetObjectField(TEXT("latest_observation"),Row);if(FailureSnapshot)GroundApproach->SetObjectField(TEXT("failure_live_observation"),Row);
+        if(GroundSamples.Num()>=MaxGroundSamples){GroundHistoryOverflow=true;GroundApproach->SetBoolField(TEXT("history_overflow"),true);return;}
+        GroundSamples.Add(MakeShared<FJsonValueObject>(Row));GroundApproach->SetArrayField(TEXT("samples"),GroundSamples);
+    }
+    bool AwaitApproachGround(UWorld* W,ACharacter* P){
+        if(GroundAcquired)return true;
+        const double Now=W->GetTimeSeconds(),Wall=FPlatformTime::Seconds();
+        if(!Need(P&&P==GroundPawn.Get()&&(!GroundMovement.IsValid()||P->GetCharacterMovement()==GroundMovement.Get())&&Controller.IsValid()&&!Held&&!Controller->IsInputKeyDown(EKeys::W),TEXT("ground_acquisition.current_pawn_and_no_walk_input"))||
+            !Need(Now-GroundStartWorld<5&&Wall-GroundStartWall<15&&Now-LegStart<30&&Wall<Deadline,TEXT("ground_acquisition.finite5world15wall_within_original_leg_and_test"))||
+            !Need(!GroundHistoryOverflow,TEXT("ground_acquisition.bounded1024_actual_frame_history")))return false;
+        if(GroundObservedFrame==MAX_uint64||GroundObservedFrame<=GroundStartFrame||GroundObservedWorld<=GroundStartWorld)return false;
+        if(!Need(GroundObservedFrame<=GFrameCounter&&GFrameCounter-GroundObservedFrame<=1,TEXT("ground_acquisition.fresh_engine_reader_observation")))return false;
+        if(!GroundObservedTickReady)return false;
+        if(!Need(GroundObservedIdentity,TEXT("ground_acquisition.actual_current_pawn_observation"))||
+            !Need(FVector::Dist2D(GroundObservedFeet,Route[0])<=5.5&&GroundObservedSpeedXY<=2,TEXT("ground_acquisition.stationary_xy_at_authored_spawn")))return false;
+        if(!GroundObservedSupport)return false;
+        if(!Need(FMath::Abs(GroundObservedFeet.Z-Route[0].Z)<=4,TEXT("ground_acquisition.original_source_spawn_height")))return false;
+        GroundAcquired=true;GroundApproach->SetStringField(TEXT("status"),TEXT("ACQUIRED_ACTUAL_LATER_NATURAL_FRAME_SUPPORT"));GroundApproach->SetStringField(TEXT("acquired_frame"),LexToString(GroundObservedFrame));GroundApproach->SetNumberField(TEXT("acquired_world_seconds"),GroundObservedWorld);GroundApproach->SetNumberField(TEXT("acquired_wall_seconds_from_start"),Wall-GroundStartWall);return true;
+    }
     void StartApproach(UWorld* W,ACharacter* P){Release();Waypoint=1;Settling=false;LegStart=W->GetTimeSeconds();LastWalkTime=-1;
-        const FVector Feet=P->GetActorLocation()-FVector(0,0,P->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());Need(FVector::Dist2D(Feet,Route[0])<=5.5,TEXT("Production persona switch started at its authored spawn; test never places it"));}
+        RemoveGroundPrerequisite();
+        GroundPawn=P;GroundMovement=P->GetCharacterMovement();GroundStartFrame=GFrameCounter;GroundStartWorld=LegStart;GroundStartWall=FPlatformTime::Seconds();GroundObservedFrame=MAX_uint64;GroundObservedWorld=-1;GroundObservedIdentity=false;GroundObservedSupport=false;GroundHistoryOverflow=false;GroundAcquired=false;GroundSamples.Empty();
+        GroundApproach=MakeShared<FJsonObject>();GroundApproach->SetStringField(TEXT("status"),TEXT("WAITING_FOR_ACTUAL_NATURAL_GROUND"));GroundApproach->SetNumberField(TEXT("approach"),CompletedApproaches+1);GroundApproach->SetStringField(TEXT("pawn_id"),LexToString(P->GetUniqueID()));GroundApproach->SetStringField(TEXT("start_frame"),LexToString(GroundStartFrame));GroundApproach->SetNumberField(TEXT("start_world_seconds"),GroundStartWorld);GroundApproach->SetNumberField(TEXT("original_first_leg_deadline_world_seconds"),LegStart+30);GroundApproach->SetNumberField(TEXT("maximum_acquisition_world_seconds"),5);GroundApproach->SetNumberField(TEXT("maximum_acquisition_wall_seconds"),15);GroundApproach->SetNumberField(TEXT("maximum_history_samples"),MaxGroundSamples);GroundApproaches.Add(MakeShared<FJsonValueObject>(GroundApproach.ToSharedRef()));
+        const FVector Feet=P->GetActorLocation()-FVector(0,0,P->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());Need(FVector::Dist2D(Feet,Route[0])<=5.5,TEXT("Production persona switch started at its authored spawn; test never places it"));
+    }
     bool Walk(UWorld* W,ACharacter* P) {
+        if(!AwaitApproachGround(W,P))return false;
         auto* Move=P->GetCharacterMovement();const FVector Feet=P->GetActorLocation()-FVector(0,0,P->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());const double Now=W->GetTimeSeconds();
         if(!Need(Move->IsMovingOnGround()&&Move->CurrentFloor.IsWalkableFloor()&&Now-LegStart<30,TEXT("Natural grounded indoor route and finite leg deadline")))return false;
         if(LastWalkTime>=0&&Now>LastWalkTime){const double Distance=FVector::Dist2D(Feet,LastFeet);if(!Need(Distance<=Move->GetMaxSpeed()*(Now-LastWalkTime)+3,TEXT("No position/time substitution in observed movement")))return false;WalkCm+=Distance;++RouteSamples;}
@@ -344,10 +413,12 @@ public:
         if(Stage==19){if(!AwaitTap(W))return Done;const auto& Q=Queued.Kernel;if(!Money(A,20,4,TEXT("ben"),TEXT("ben"))||!Need(!Q.lease().active,TEXT("surrender.lease_inactive"))||!Need(Count(Q,"pay")==2,TEXT("surrender.no_additional_payment"))||!Need(Count(Q,"property_lease_ended")==1,TEXT("surrender.one_end_event")))return true;FinishTap();if(!QueueTap(W,EKeys::F2,TEXT("select_final_ben")))return true;Stage=20;return false;}
         if(Stage==20){if(!AwaitTap(W)||!AwaitPersona(W,C,A,ELivingTownCafeWorldPersona::Ben))return Done;if(!V.bMealAvailable){if(!Need(W->GetTimeSeconds()-Queued.SentWorld<60&&FPlatformTime::Seconds()-Queued.SentWall<90,TEXT("final_ben.provider_timeout"))||!ObservePendingSameBind(A,C,P))return true;return false;}auto* Source=Provider(P,A);if(!Source)return Done;if(!Need(Source->GetUniqueID()!=ReacquiredProviderId&&Retired(ReacquiredProvider),TEXT("Final Ben has another current-owner provider"))||!Inactive(P,A,Source))return true;FinalProviderId=Source->GetUniqueID();FinishTap();StartApproach(W,P);Stage=21;return false;}
         if(!Persona(C,A,ELivingTownCafeWorldPersona::Ben)||!Walk(W,P))return Done;
-        if(!Need(A->GetPresentation().bReachable,TEXT("final_counter.reachable"))||!Need(A->GetPresentation().bMealAvailable,TEXT("final_counter.provider_available"))||!Need(CompletedApproaches==4,TEXT("route.four_actual_approaches"))||!Need(RouteSamples>=48,TEXT("route.minimum48_natural_samples"))||!Need(WalkCm>=1920,TEXT("route.minimum1920_observed_cm"))||!Money(A,20,4,TEXT("ben"),TEXT("ben"))||!Census(W))return true;
+        if(!Need(A->GetPresentation().bReachable,TEXT("final_counter.reachable"))||!Need(A->GetPresentation().bMealAvailable,TEXT("final_counter.provider_available"))||!Need(CompletedApproaches==4,TEXT("route.four_actual_approaches"))||!Need(GroundApproaches.Num()==4,TEXT("ground_acquisition.four_bound_approaches"))||!Need(RouteSamples>=48,TEXT("route.minimum48_natural_samples"))||!Need(WalkCm>=1920,TEXT("route.minimum1920_observed_cm"))||!Money(A,20,4,TEXT("ben"),TEXT("ben"))||!Census(W))return true;
         auto Proof=MakeShared<FJsonObject>();Proof->SetStringField(TEXT("status"),TEXT("PASS_CURRENT_TOWN_PROPERTY_INPUT_STATE_ONLY"));Proof->SetStringField(TEXT("scope"),TEXT("Sale/fixed lease/F5-F9/surrender plus provider reacquisition, failed candidate retention and actual physical entry/cancel; no completed meal, cold process, recurring due, art or FPS qualification"));
         Proof->SetNumberField(TEXT("initial_bind_preload_epoch"),double(InitialBindEpoch));Proof->SetBoolField(TEXT("initial_bind_had_pending_handle"),InitialBindHadHandle);Proof->SetBoolField(TEXT("initial_bind_roles_ready"),InitialBindRolesReady);Proof->SetBoolField(TEXT("pending_same_pawn_rebind_observed"),PendingRebindObserved);Proof->SetNumberField(TEXT("initial_provider_id"),FirstProviderId);Proof->SetNumberField(TEXT("reacquired_provider_id"),ReacquiredProviderId);Proof->SetNumberField(TEXT("final_provider_id"),FinalProviderId);Proof->SetBoolField(TEXT("failed_candidate_retained_live_provider"),FailedCandidateRetained);Proof->SetBoolField(TEXT("actual_fresh_entry_seen"),FreshEntrySeen);Proof->SetStringField(TEXT("entry_input_frame"),FString::Printf(TEXT("%llu"),static_cast<unsigned long long>(ProbeInputFrame)));Proof->SetStringField(TEXT("entry_observed_frame"),FString::Printf(TEXT("%llu"),static_cast<unsigned long long>(FreshEntryFrame)));Proof->SetNumberField(TEXT("entry_observed_world_seconds"),FreshEntryWorldSeconds);Proof->SetNumberField(TEXT("explicit_owner_entry_stock_used"),OpeningStock-ExpectedStock);Proof->SetNumberField(TEXT("restored_clock_tick"),SavedClock.tick);Proof->SetStringField(TEXT("restored_fraction_bits"),FString::Printf(TEXT("%llu"),static_cast<unsigned long long>(SavedClock.fraction_bits)));Proof->SetNumberField(TEXT("walk_cm"),WalkCm);Proof->SetNumberField(TEXT("natural_walk_samples"),RouteSamples);Proof->SetNumberField(TEXT("completed_counter_approaches"),CompletedApproaches);Proof->SetNumberField(TEXT("census_samples"),CensusSamples);Proof->SetStringField(TEXT("paid_lease_slot_sha256"),SlotSha);Proof->SetObjectField(TEXT("final_native_status"),LatestTownStatus);
         const FString Directory=FPaths::ProjectSavedDir()/TEXT("WorldV3PropertyJourney");IFileManager::Get().MakeDirectory(*Directory,true);FString Text;
+        auto AcquisitionRecord=MakeShared<FJsonObject>();AcquisitionRecord->SetStringField(TEXT("format"),TEXT("LivingTown.NativeGroundAcquisition"));AcquisitionRecord->SetStringField(TEXT("version"),TEXT("1"));AcquisitionRecord->SetStringField(TEXT("status"),TEXT("PASS_FOUR_NATURAL_GROUND_ACQUISITIONS"));AcquisitionRecord->SetStringField(TEXT("scope"),TEXT("Test-only natural-frame cached-ground acquisition for four authored approaches; scheduling is not a movement execution receipt; no physics/art/FPS qualification"));AcquisitionRecord->SetNumberField(TEXT("approach_count"),GroundApproaches.Num());AcquisitionRecord->SetNumberField(TEXT("history_sample_limit_per_approach"),MaxGroundSamples);AcquisitionRecord->SetBoolField(TEXT("movement_setters_or_manual_ticks_used"),false);AcquisitionRecord->SetArrayField(TEXT("observations"),GroundApproaches);FString GroundText;
+        if(!Need(FJsonSerializer::Serialize(AcquisitionRecord,TJsonWriterFactory<>::Create(&GroundText))&&FFileHelper::SaveStringToFile(GroundText,*(Directory/TEXT("NATIVE_GROUND_ACQUISITION.json"))),TEXT("Four actual bounded acquisition histories published separately from unchanged property proof")))return true;
         if(!Need(FJsonSerializer::Serialize(Proof,TJsonWriterFactory<>::Create(&Text))&&FFileHelper::SaveStringToFile(Text,*(Directory/TEXT("NATIVE_PROPERTY_PROOF.json"))),TEXT("Actual source-bound property proof published")))return true;
         auto Inputs=MakeShared<FJsonObject>();Inputs->SetStringField(TEXT("scope"),TEXT("Actual one-shot queued key events and ordinary post-controller/pre-source-clock observations only"));Inputs->SetArrayField(TEXT("observations"),InputObservations);FString InputText;
         if(!Need(FJsonSerializer::Serialize(Inputs,TJsonWriterFactory<>::Create(&InputText))&&FFileHelper::SaveStringToFile(InputText,*(Directory/TEXT("NATIVE_INPUT_OBSERVATIONS.json"))),TEXT("Actual input observation evidence published")))return true;
