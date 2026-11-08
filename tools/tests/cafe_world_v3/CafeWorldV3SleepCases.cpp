@@ -102,7 +102,10 @@ int main(int argc,char** argv){try{
   check(w::import_v5_care_envelope(k,use,legacy,sources(),clock),"explicit exact v5 migration");
   check(clock.tick==103&&c::same_need_values(use.needs(),oldcare->needs)&&use.requests().back().progressed_ticks==3,"all needs, clock and partial progress preserved");
   check(!use.active()&&use.requests().back().end==c::End::AfterLoad&&!k.residential_right().active&&k.residential_right().activation_event_id==-1,"migration grants no new home or physical continuation");
-  for(std::size_t i=0;i<oldworld->events.size();++i)check(w::detail::same_event(k.events()[i],oldworld->events[i]),"old financial/meal events preserved byte-exact");money(k,14,10,1);
+  for(std::size_t i=0;i<oldworld->events.size();++i){
+   check(w::detail::same_event(k.events()[i],oldworld->events[i]),"old financial/meal events preserved byte-exact");
+  }
+  money(k,14,10,1);
   check(k.activate_residential(authored(clock.tick)).ok,"new assignment only subsequent explicit source event");
   auto smuggled=*e;auto forged=*oldworld;w::Event event;event.id=static_cast<w::Int>(forged.events.size())+1;event.tick=103;event.type="residential_owner_occupancy_activated";event.actor="ben";event.target=w::residential_assignment;event.subject=w::sleep_site;event.note=w::residential_registry_sha256;event.accepted=true;forged.events.push_back(event);forged.digest=w::detail::hash_bytes(forged.digest,w::detail::event_bytes(event));forged.last_tick=103;smuggled.world_payload=w::encode(forged);smuggled.world_digest=w::detail::hash_bytes(14695981039346656037ULL,smuggled.world_payload);
   const auto before=k.save_bytes();check(!w::import_v5_care_envelope(k,use,w::encode_care_envelope_document(smuggled),sources(),clock)&&k.save_bytes()==before,"rehashed v5 cannot smuggle residential semantics");pass("S07_explicit_migration_preserves_old_ledger");
