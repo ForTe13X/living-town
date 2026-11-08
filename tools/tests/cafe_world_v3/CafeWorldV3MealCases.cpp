@@ -41,6 +41,9 @@ w::care::Contact care_contact(const w::care::ResidentUse& use) {
     // Synthetic observation only. No native pose, prop or contact is asserted.
     const auto& g=use.active()->grant;return {g.resident_id,g.site_id,g.grant_id,true,true,true,true,true};
 }
+w::care::WaitingObservation holding(const w::care::ResidentUse& use) {
+    const auto& g=use.active()->grant;return {g.resident_id,g.site_id,g.grant_id,true,true,true,true,true,true};
+}
 }
 int main() {
     try {
@@ -331,6 +334,35 @@ int main() {
             check(!w::load_envelope(target,*good,bindings(),clock),"unpaired envelope reader rejects paired V5");
             check(!w::decode_care_document(w::encode_care_document(use.export_state())+"x"),"care trailing bytes refused");
             passed("M21_paired_corruption_and_explicit_versions");
+        }
+        {
+            auto k=enabled();w::care::ResidentUse use("ben");check(use.advance_idle_to(100),"low-needs wait fixture clock");
+            check(w::begin_meal_use(k,use,meal(k),observed("ben",100)).ok,"served meal before preparation");const auto paid=k.save_bytes();const auto before=use.needs();
+            for(w::Int i=1;i<=w::care::max_wait_before_first_progress_ticks;++i){const auto r=w::wait_before_first_meal_progress(k,use,100+i,holding(use));check(r.ok&&r.outcome==w::care::Outcome::WaitingBeforeFirstProgress,"atomic waiting tick");check(k.save_bytes()==paid&&use.active()->elapsed==0&&use.requests().back().progressed_ticks==0&&use.needs().hunger==before.hunger-i*28&&use.needs().fun==before.fun,"no new transaction/progress/positive needs");check(w::save_care_envelope(k,use,care_bindings(),{100+i,bits(.25)}).has_value(),"waiting world/care clocks match");}
+            const auto waiting=w::encode_care_document(use.export_state());check(!w::wait_before_first_meal_progress(k,use,106,holding(use)).ok&&k.save_bytes()==paid&&w::encode_care_document(use.export_state())==waiting,"finite wait budget refuses atomically");
+            const auto saved=w::save_care_envelope(k,use,care_bindings(),{105,bits(.25)});w::Kernel loaded;w::care::ResidentUse stopped("ben");w::ClockMetadata clock;
+            check(w::load_care_envelope(loaded,stopped,*saved,care_bindings(),clock)&&clock.tick==105&&clock.fraction_bits==bits(.25)&&!stopped.active()&&stopped.requests().back().progressed_ticks==0&&loaded.events().back().note=="after_load"&&stopped.needs().fun==before.fun,"waiting load preserves zero benefit but invalidates reservation/use");
+            for(w::Int tick=106;tick<=123;++tick)check(w::advance_meal_use(k,use,tick,care_contact(use)).ok,"ordinary18 consumption increments after waiting");
+            check(!use.active()&&use.requests().back().progressed_ticks==18&&use.needs().hunger==before.hunger-23*28+5000&&use.needs().fun==before.fun+300&&k.events().back().note=="completed"&&k.events().back().amount==18,"waiting adds no benefit and retains authored completion");same_money(k,14,10);check(k.rations()==1,"one served ration only");passed("M22_wait_then_original18_progress_and_load");
+        }
+        {
+            auto k=enabled();w::care::ResidentUse use("ben");auto command=meal(k);auto missing=observed("ben",0);missing.qualified_clip=false;
+            check(!w::begin_meal_use(k,use,command,missing).ok&&!w::wait_before_first_meal_progress(k,use,1,{}).ok,"refused grant never waits");
+            command=meal(k,"waiting/valid");check(w::begin_meal_use(k,use,command,observed("ben",0)).ok,"valid waiting source");const auto wb=k.save_bytes(),cb=w::encode_care_document(use.export_state());
+            check(!w::wait_before_first_meal_progress(k,use,2,holding(use)).ok&&k.save_bytes()==wb&&w::encode_care_document(use.export_state())==cb,"skipped preparation tick has no publication");
+            auto lost=holding(use);lost.reservation_valid=false;check(!w::wait_before_first_meal_progress(k,use,1,lost).ok&&k.save_bytes()==wb&&w::encode_care_document(use.export_state())==cb,"lost preparation observation refused exactly");
+            auto raw=k;check(raw.restore_bytes(k.save_bytes())&&!w::wait_before_first_meal_progress(raw,use,1,holding(use)).ok,"loaded grant is not current preparation authority");
+            check(property(k,"ben",1,"waiting/operator-changed",w::Action::lease).ok,"actual operator change");const auto changed=k.save_bytes();
+            check(!w::wait_before_first_meal_progress(k,use,1,holding(use)).ok&&k.save_bytes()==changed&&w::encode_care_document(use.export_state())==cb,"true caller flags cannot waive current provider rights");
+            auto active=enabled();w::care::ResidentUse progressed("ben");check(w::begin_meal_use(active,progressed,meal(active),observed("ben",0)).ok&&w::advance_meal_use(active,progressed,1,care_contact(progressed)).ok,"progress source");const auto aw=active.save_bytes(),ac=w::encode_care_document(progressed.export_state());
+            check(!w::wait_before_first_meal_progress(active,progressed,2,holding(progressed)).ok&&active.save_bytes()==aw&&w::encode_care_document(progressed.export_state())==ac,"cannot suspend consuming progress with preparation wait");passed("M23_wait_grant_rights_time_and_phase_refusals");
+        }
+        {
+            auto k=enabled();w::care::ResidentUse use("ben");check(w::begin_meal_use(k,use,meal(k),observed("ben",0)).ok,"waiting rollback source");const auto wb=k.save_bytes(),cb=w::encode_care_document(use.export_state());
+            check(!w::wait_before_first_meal_progress(k,use,1,holding(use),w::CareCommitFault::AfterCareWait).ok&&k.save_bytes()==wb&&w::encode_care_document(use.export_state())==cb,"failure after candidate waiting decay/history rolls back both sides");
+            check(w::wait_before_first_meal_progress(k,use,1,holding(use)).ok,"fresh retry waiting commits once");const auto good=use.export_state();
+            for(int i=0;i<6;++i){auto bad=good;switch(i){case 0:bad.version="2";break;case 1:bad.history.back().waiting->permission_valid=false;break;case 2:bad.history.back().contact=care_contact(use);break;case 3:bad.history.back().op=static_cast<w::care::Op>(7);break;case 4:++bad.active->elapsed;break;case 5:++bad.needs.hunger;break;}check(!w::decode_care_document(w::encode_care_document(bad)),"canonical encoding cannot waive waiting replay or schema");}
+            const auto before_cancel=use.needs();check(w::cancel_meal_use(k,use).ok&&!use.active()&&use.requests().back().progressed_ticks==0&&w::care::same_need_values(before_cancel,use.needs())&&k.events().back().note=="cancelled","early cancel keeps zero benefit and releases once");same_money(k,14,10);check(k.rations()==1,"early cancel preserves existing serving policy");passed("M24_wait_replay_atomicity_and_early_cancel");
         }
         std::cout<<"PASS "<<groups<<" groups, "<<checks<<" checks. Portable CPU only; native integration absent.\n";return 0;
     }catch(const std::exception& e){std::cerr<<"FAIL "<<e.what()<<" after "<<checks<<" checks\n";return 1;}

@@ -1,0 +1,205 @@
+{
+  "status": "RECORDED_ROOT_ADMITTED_NATIVE_SEMANTICS_ONLY_NO_ART",
+  "actual_log_date_utc": "2026-11-08",
+  "source": {
+    "commit": "509951c52382ca0e564ecb93a8990dad7e5efbdb",
+    "worktree": "D:/Dev/living-town-native-meal-diagnostics-fix",
+    "native_family": "b7c34fccd86024019f8bf0029f097c3ec4a3466a69e82f1beddbb7d047c1976f"
+  },
+  "builds": {
+    "Game": {
+      "receipt": {
+        "path": "D:/Dev/LivingTownNativeRuns/2026-11-04/NativeHudGameBuild_v034/BUILD_RECEIPT.json",
+        "bytes": 60696,
+        "sha256": "d08e2adedaa0be7839a740e4ad10de7e32e7fca0e06714c8d1c2d7cd698cda7a"
+      },
+      "status": "PASS_NATIVE_GAME_TARGET_BUILD_CURRENT_ACTION_CAPTURE",
+      "wall_seconds": 274.43699999997625,
+      "all_nine_custody_checks": true,
+      "exit_code": 0,
+      "waited": true,
+      "remaining_owned_pids": []
+    },
+    "Editor": {
+      "receipt": {
+        "path": "D:/Dev/LivingTownNativeRuns/2026-11-04/NativeHudEditorBuild_v034/BUILD_RECEIPT.json",
+        "bytes": 61234,
+        "sha256": "4a34ac0e66edac833e75821530a1ca979f2667ba63a49bb915c7f1fe12d6b12d"
+      },
+      "status": "PASS_NATIVE_EDITOR_BUILD",
+      "wall_seconds": 493.14100000000326,
+      "all_nine_custody_checks": true,
+      "exit_code": 0,
+      "waited": true,
+      "remaining_owned_pids": []
+    }
+  },
+  "build_pair_review": {
+    "path": "F:/Living Town/2026-10-20_Refined_Town/root_hud034_build_pair_review_v1_001/actual_review/REVIEW_COMPLETE.json",
+    "bytes": 5503,
+    "sha256": "dd47623e2a4626f4e0d5eba8f2144652363da63111c11b6de7337401fe7f0c4f"
+  },
+  "build_freeze": {
+    "path": "F:/Living Town/2026-10-20_Refined_Town/native_hud_runtime_build_prepare_v1_007/FROZEN_BUILD.json",
+    "bytes": 78119,
+    "sha256": "ee68ff2437d0bdd5396b6abab1cb38f7c5969f68d8272e46ef67c4ec2c452564"
+  },
+  "consumer_freeze": {
+    "path": "F:/Living Town/2026-10-20_Refined_Town/metahuman_meal_journey_prepare_v1_003/FROZEN_HANDOFF.json",
+    "bytes": 13036,
+    "sha256": "c262b875ecd0776feb36f71c2d4c7d9a06bd13f8227888a76ca3ca46d9b7d72a"
+  },
+  "root_semantic_admission": {
+    "path": "F:/Living Town/2026-10-20_Refined_Town/root_character_pipeline_macro_review_v1_001/METAHUMAN_MEAL034_ROOT_SEMANTIC_ADMISSION.json",
+    "bytes": 3044,
+    "sha256": "9fad19ba1c999187f7bd200692a4d6d23a4a8f9b28bbe1e5b1c100200dd04c31"
+  },
+  "cases": {
+    "Journey": {
+      "run_report": {
+        "path": "D:/Dev/LivingTownNativeRuns/2026-11-04/Meal034Journey_v003/RUN_REPORT.json",
+        "bytes": 30373,
+        "sha256": "7f78ef8688680a86f6295e30bb7dcba996b7842804d6e483427d737326207f85"
+      },
+      "native_test": "LivingTown.WorldV3.MetaHumanMealJourneyInput",
+      "native_test_result": "Success",
+      "native_test_seconds": 49.87984085083008,
+      "owned_application_seconds": 87.21900000004098,
+      "raw_automation_counts": {
+        "succeeded": 0,
+        "succeededWithWarnings": 1,
+        "failed": 0,
+        "notRun": 0,
+        "inProcess": 0
+      },
+      "raw_test_warning_count": 1,
+      "raw_engine_warning_lines_disclosed": 7,
+      "closure_checks": {
+        "SOURCE": true,
+        "STAGED": true,
+        "CANONICAL": true,
+        "GLOBAL": true,
+        "PRIVATE_CONFIG": true,
+        "QUEUE": true
+      },
+      "exit_code": 0,
+      "waited": true,
+      "remaining_owned_pids": [],
+      "saved_proof": {
+        "path": "D:/Dev/LivingTownNativeRuns/2026-11-04/Meal034Journey_v003/c2/private/User/Saved/CafeWorldV3/MetaHumanMealJourney.json",
+        "bytes": 774,
+        "sha256": "1182c21860d49fbd291f9d1d3215952386861e502f34b97d1edacd1a6b508f88"
+      },
+      "observations": {
+        "status": "PASS_NATIVE_INPUT_STATE_ONLY_NO_ART_ADMISSION",
+        "recipe_sha256": "d6f8cf7a70873e40dc0d1bc155683e13578aa9e422822e49c029f66f943a93df",
+        "certificate_sha256": "e9c9f3d7e0824a259fa10d3057c6fa5a5a6af8a08b6ea5f7df1f27a12abf634f",
+        "binding_sha256": "38171606986ba5086102aeba31927fac698558eebed861dd0f4d8eaf713fad6e",
+        "requests": 2,
+        "completed_ordinary_ticks": 18,
+        "bite_observed_world_seconds": 7.964070502668619,
+        "first_benefit_observed_world_seconds": 10.080758202821016,
+        "certified_first_progress_delay_seconds": 1,
+        "qualified_bitten_geometry_observed": true,
+        "no_grant_visual_tail_observed": true,
+        "same_original_body_player_and_face_ownership": true,
+        "physical_resume_after_load": false,
+        "pixels_or_hardware_keypress_claimed": false
+      },
+      "mode": "D3D12/SM6 on AMD Radeon(TM) 8060S Graphics; no pixel or FPS admission",
+      "only_admitted_test_warning": "LogHttp: HTTP request timed out after 3.00 seconds URL=https://www.google.com/generate_204"
+    },
+    "Parser": {
+      "run_report": {
+        "path": "D:/Dev/LivingTownNativeRuns/2026-11-04/Meal034Parser_v003/RUN_REPORT.json",
+        "bytes": 25378,
+        "sha256": "a6db2b3bc879ef32590bc086037c4b75969543a5eb94b90831b78f37dd219ab2"
+      },
+      "native_test": "LivingTown.WorldV3.MetaHumanMealV2Parser",
+      "native_test_result": "Success",
+      "native_test_seconds": 0.016176600009202957,
+      "owned_application_seconds": 16.93800000002375,
+      "raw_automation_counts": {
+        "succeeded": 1,
+        "succeededWithWarnings": 0,
+        "failed": 0,
+        "notRun": 0,
+        "inProcess": 0
+      },
+      "raw_test_warning_count": 0,
+      "raw_engine_warning_lines_disclosed": 5,
+      "closure_checks": {
+        "SOURCE": true,
+        "STAGED": true,
+        "CANONICAL": true,
+        "GLOBAL": true,
+        "PRIVATE_CONFIG": true,
+        "QUEUE": true
+      },
+      "exit_code": 0,
+      "waited": true,
+      "remaining_owned_pids": [],
+      "mode": "NullRHI synthetic parser controls; no physical fixture"
+    }
+  },
+  "fixture": {
+    "packages": 494,
+    "raw_content_files": 13,
+    "private_descriptor_files": 1,
+    "copied_files": 508,
+    "calibrated_roles": 22,
+    "whole_material_slots": 1,
+    "bitten_material_slots": 1,
+    "unique_texture_union": 8,
+    "clip_asset": "/Game/LivingTown_UEPilot/MetaHumanFinalMealCandidate_v003/AS_EatBread_24p5_Candidate.AS_EatBread_24p5_Candidate",
+    "clip_bytes": 3761145,
+    "clip_sha256": "67a9470c7eb4d7f23bf7ab83fa78dc0846d3a8dbba905d513a6f484c22ec66b5"
+  },
+  "prior_action032": {
+    "raw_host": {
+      "path": "D:/Dev/LivingTownNativeRuns/2026-11-04/Meal032Action_v001/RUN_REPORT.json",
+      "bytes": 28345,
+      "sha256": "b7c74584816991efeda75661a573f28f10d1935effa9b4c14ba688c67918b09d"
+    },
+    "raw_host_status": "FAIL_RETAINED_NATIVE_HUD_INPUT_SEMANTIC",
+    "proof": {
+      "path": "D:/Dev/LivingTownNativeRuns/2026-11-04/Meal032Action_v001/c2/private/User/Saved/MetaHuman/ActionClipOwnership.json",
+      "bytes": 1487,
+      "sha256": "60b1c81c7214e9f2b6920b515f25c5de717758540ca2e5d3deb2bcba3156efe4"
+    },
+    "root_data_admission": {
+      "path": "F:/Living Town/2026-10-20_Refined_Town/root_action032_semantic_data_review_v1_001/ROOT_ACTION032_DATA_ADMISSION.json",
+      "bytes": 1510,
+      "sha256": "5bc065283d3f22554485dd21da389cf932b33ae2306080e2bb3057162d5e872a"
+    },
+    "native_family": "3662ce977491c0675e3f126a7a7a5d7ae9a5c23ba48f05d91a86b4925b99f421",
+    "native_test_result": "Success",
+    "native_test_seconds": 8.25845718383789,
+    "warning_scope": "One exact admitted external HTTP test warning; raw Engine warnings retained",
+    "failure_boundary": "Post-run Path arguments supplied where saved-path reader required strings; separate CPU review rechecked data",
+    "native_rerun": false,
+    "technical_ownership_only": true
+  },
+  "reproduction": {
+    "exact_host_commands": {
+      "path": "F:/Living Town/2026-10-20_Refined_Town/metahuman_meal_journey_prepare_v1_003/ROOT_COMMANDS.json",
+      "bytes": 2607,
+      "sha256": "c90a063407a459c613d1820e5d3a5747bec38d99a0eac60a48f8ce4c13f6306c"
+    },
+    "default_preflight_launches_or_stages": false,
+    "existing_actual_outputs_must_not_be_reused": true,
+    "new_execution_requires_fresh_root_owned_consumer_and_same_explicit_binding": true
+  },
+  "limitations": [
+    "No screenshots or continuous rendered walkthrough",
+    "No final food/Face/hand art or lip/finger surface-collision admission",
+    "Software InputKey events are not hardware keyboard input",
+    "One near-clock-boundary run does not cover every clock phase or frame stall",
+    "Movement, pause, unpossess and foreign-takeover meal negatives remain separate",
+    "No distinct PIE EndPlay completion claim beyond observed process exit/reap",
+    "No material readiness behavior change or threshold waiver",
+    "No cooked/IoStore, FPS, full-town or home/sleep admission",
+    "Prior failed raw reports remain preserved",
+    "Broader game goal remains active"
+  ]
+}

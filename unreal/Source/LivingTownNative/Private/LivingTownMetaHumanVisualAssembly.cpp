@@ -287,7 +287,7 @@ bool ULivingTownMetaHumanVisualAssembly::Configure(const FLivingTownMetaHumanVis
         Outfit->SetOverlayMaterial(nullptr);
         if(!HasPreservedPoseOwnership()||!HasExpectedOutfit()) return Rollback(TEXT("metahuman_workwear_swap_changed_pose_or_material_ownership"));
     }
-    Body->PlayAnimation(Idle,true);Body->SetPlayRate(1.f);bWalking=false;bConfigured=true;
+    Body->PlayAnimation(Idle,true);Body->SetPlayRate(1.f);ConfiguredPlayer=Body->GetSingleNodeInstance();bWalking=false;bConfigured=true;
     if(!IsConfigured()) return Rollback(TEXT("metahuman_owned_native_idle_player_required"));
     return true;
 }
@@ -295,13 +295,71 @@ AActor* ULivingTownMetaHumanVisualAssembly::GetVisualActor() const{return Visual
 bool ULivingTownMetaHumanVisualAssembly::IsConfigured() const
 {
     const AActor* A=GetVisualActor();auto* Player=Body?Body->GetSingleNodeInstance():nullptr;
+    bool Playback=false;
+    if(IsValid(Player)&&Player==ConfiguredPlayer.Get()&&IsValid(Idle)&&IsValid(Walk))
+    {
+        if(IsValid(ActionClip))
+        {
+            const float Time=Player->GetCurrentTime(),Length=ActionClip->GetPlayLength();
+            Playback=Player==ActionPlayer.Get()&&Player->GetCurrentAsset()==ActionClip&&
+                FMath::IsFinite(Length)&&Length>0.f&&FMath::IsFinite(Time)&&Time>=0.f&&Time<=Length&&
+                ActionClip->GetSkeleton()==Idle->GetSkeleton()&&ActionClip->RateScale==1.f&&
+                Player->IsLooping()==bActionLooping&&Player->GetPlayRate()==1.f&&
+                (Player->IsPlaying()||(!bActionLooping&&Time==Length));
+        }
+        else if(!ActionClip) Playback=Player->GetCurrentAsset()==(bWalking?Walk.Get():Idle.Get())&&
+            Player->IsPlaying()&&Player->IsLooping()&&Player->GetPlayRate()==1.f;
+    }
     return bConfigured&&Prepared.IsValidated()&&IsValid(GetOwner())&&IsValid(VisualChild)&&IsValid(A)&&A->HasActorBegunPlay()&&A->GetParentActor()==GetOwner()&&A->GetOwner()==GetOwner()&&A->GetWorld()==GetWorld()&&PreparedClass(A->GetClass())&&
         VisualChild->GetAttachParent()==GetOwner()->GetRootComponent()&&VisualChild->GetRelativeTransform().Equals(Prepared.ActorRelative,1.e-6)&&
         Mesh(Body,A,LivingTownMetaHumanVisual::BodyMesh)&&Mesh(Face,A,LivingTownMetaHumanVisual::FaceMesh)&&HasExpectedOutfit()&&
         Face->GetAttachParent()==Body&&Outfit->GetAttachParent()==Body&&!Body->LeaderPoseComponent.IsValid()&&Body->GetAnimationMode()==EAnimationMode::AnimationSingleNode&&
-        Player&&Player->GetClass()==UAnimSingleNodeInstance::StaticClass()&&Player->GetCurrentAsset()==(bWalking?Walk.Get():Idle.Get())&&
+        Player&&Player->GetClass()==UAnimSingleNodeInstance::StaticClass()&&Playback&&
         Body->DoesSocketExist(Prepared.HandBone)&&Body->bEnableAnimation&&!Body->bPauseAnims&&Body->GlobalAnimRateScale==1.f&&BodyPostProcess(Body)&&
-        Player->IsPlaying()&&Player->IsLooping()&&Player->GetPlayRate()==1.f&&HasPreservedPoseOwnership()&&!A->GetActorEnableCollision()&&!A->IsHidden();
+        HasPreservedPoseOwnership()&&!A->GetActorEnableCollision()&&!A->IsHidden();
+}
+bool ULivingTownMetaHumanVisualAssembly::BeginActionClip(UAnimSequence* Clip,bool bLooping,FString& Error)
+{
+    Error.Reset();
+    if(!IsInGameThread()||ActionClip||!IsConfigured())
+    {Error=TEXT("metahuman_configured_normal_animation_owner_required");return false;}
+    const float Length=IsValid(Clip)?Clip->GetPlayLength():0.f;
+    if(!IsValid(Clip)||Clip==Idle||Clip==Walk||!Clip->GetSkeleton()||Clip->GetSkeleton()!=Body->GetSkeletalMeshAsset()->GetSkeleton()||
+       !FMath::IsFinite(Length)||Length<=0.f||Clip->RateScale!=1.f||Clip->IsValidAdditive())
+    {Error=TEXT("metahuman_same_skeleton_nonadditive_action_clip_required");return false;}
+    auto* Player=ConfiguredPlayer.Get();
+    const float Time=Player->GetCurrentTime(),PreviousLength=Player->GetLength();
+    if(!FMath::IsFinite(Time)||!FMath::IsFinite(PreviousLength)||PreviousLength<=0.f||Time<0.f||Time>PreviousLength)
+    {Error=TEXT("metahuman_prior_animation_time_invalid");return false;}
+    PreviousAnimation=Player->GetCurrentAsset();PreviousAnimationTime=Time;PreviousAnimationPlayRate=Player->GetPlayRate();
+    bPreviousLooping=Player->IsLooping();bPreviousPlaying=Player->IsPlaying();bPreviousWalking=bWalking;
+    ActionPlayer=Player;ActionClip=Clip;bActionLooping=bLooping;
+    Player->SetAnimationAsset(Clip,bLooping,1.f);Player->SetPosition(0.f,false);Player->SetPlaying(true);
+    if(!IsConfigured())
+    {EndActionClip();Error=TEXT("metahuman_action_playback_start_refused");return false;}
+    return true;
+}
+void ULivingTownMetaHumanVisualAssembly::ClearActionState()
+{
+    ActionClip=nullptr;ActionPlayer.Reset();PreviousAnimation=nullptr;
+    PreviousAnimationTime=0.f;PreviousAnimationPlayRate=1.f;
+    bActionLooping=false;bPreviousLooping=false;bPreviousPlaying=false;bPreviousWalking=false;
+}
+bool ULivingTownMetaHumanVisualAssembly::EndActionClip()
+{
+    if(!IsInGameThread())return false;
+    if(!ActionClip){ClearActionState();return true;}
+    auto* Player=ActionPlayer.Get();
+    // Never overwrite a replacement instance or another caller's asset on our instance.
+    const bool Owned=IsValid(Body)&&Player&&Player==ConfiguredPlayer.Get()&&Body->GetSingleNodeInstance()==Player&&
+        Player->GetCurrentAsset()==ActionClip;
+    if(Owned)
+    {
+        Player->SetAnimationAsset(PreviousAnimation.Get(),bPreviousLooping,PreviousAnimationPlayRate);
+        Player->SetPosition(PreviousAnimationTime,false);Player->SetPlaying(bPreviousPlaying);bWalking=bPreviousWalking;
+    }
+    ClearActionState();
+    return Owned&&IsConfigured();
 }
 bool ULivingTownMetaHumanVisualAssembly::HasExpectedOutfit() const
 {
@@ -328,8 +386,14 @@ bool ULivingTownMetaHumanVisualAssembly::UpdateMotion(float Speed)
 {
     if(!IsInGameThread()||!IsConfigured()||!FMath::IsFinite(Speed)||Speed<0) return false;
     const bool WantWalk=bWalking?Speed>2.f:Speed>=4.f;
+    if(ActionClip)
+    {
+        // Movement ends visual ownership; the upstream action authority observes that interruption.
+        if(!WantWalk)return true;
+        if(!EndActionClip())return false;
+    }
     if(WantWalk!=bWalking)
-    { bWalking=WantWalk;Body->PlayAnimation(bWalking?Walk:Idle,true);Body->SetPlayRate(1.f); }
+    { bWalking=WantWalk;auto* Player=ConfiguredPlayer.Get();Player->SetAnimationAsset(bWalking?Walk.Get():Idle.Get(),true,1.f);Player->SetPlaying(true); }
     return IsConfigured();
 }
 void ULivingTownMetaHumanVisualAssembly::RestoreTickPolicies()
@@ -341,7 +405,7 @@ void ULivingTownMetaHumanVisualAssembly::RestoreTickPolicies()
 void ULivingTownMetaHumanVisualAssembly::SetPossessedPlayer(bool bPossessed)
 {
     if(!IsInGameThread()) return;
-    RestoreTickPolicies();if(!bPossessed||!IsConfigured()) return;
+    RestoreTickPolicies();if(!bPossessed){EndActionClip();return;}if(!IsConfigured()) return;
     for(auto* C:{Body.Get(),Face.Get(),Outfit.Get()})
     {
         FTickPolicy P;P.Component=C;P.Visibility=uint8(C->VisibilityBasedAnimTickOption);P.bURO=C->bEnableUpdateRateOptimizations;SavedPolicies.Add(P);
@@ -352,13 +416,14 @@ FVector ULivingTownMetaHumanVisualAssembly::InteractionHand() const
 {return IsConfigured()?Body->GetSocketLocation(Prepared.HandBone):FVector::ZeroVector;}
 void ULivingTownMetaHumanVisualAssembly::ResetAfterTeleport()
 {
-    if(!IsInGameThread()||!IsConfigured()) return;
+    if(!IsInGameThread()) return;
+    EndActionClip();if(!IsConfigured()) return;
     for(auto* C:{Body.Get(),Face.Get(),Outfit.Get()}) C->ForceClothNextUpdateTeleportAndReset();
 }
 void ULivingTownMetaHumanVisualAssembly::Reset()
 {
     if(!IsInGameThread()) return;
-    RestoreTickPolicies();bConfigured=false;
+    EndActionClip();RestoreTickPolicies();bConfigured=false;ConfiguredPlayer.Reset();
     if(VisualChild) {VisualChild->DestroyComponent();VisualChild=nullptr;}
     Body=nullptr;Face=nullptr;Outfit=nullptr;Idle=nullptr;Walk=nullptr;ExpectedWorkwear=nullptr;ExpectedWorkwearMaterials.Empty();Prepared={};PoseOwnership.Empty();bWalking=false;
 }

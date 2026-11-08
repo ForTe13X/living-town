@@ -1,6 +1,7 @@
 #include "LivingTownCafeWorldV3Subsystem.h"
 #include "LivingTownCafeWorldV3Scenario.h"
 #include "LivingTownCafeCharacter.h"
+#include "LivingTownMetaHumanMealProducer.h"
 #include "LivingTownCafeVenue.h"
 #include "LivingTownCafeProjectionSubsystem.h"
 #include "LivingTownLeaseSubsystem.h"
@@ -11,6 +12,8 @@
 #include "../ThirdParty/CafeBackendV3.hpp"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
+#include "Engine/AssetManager.h"
+#include "Engine/StreamableManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -35,8 +38,8 @@ constexpr const TCHAR* CoreHash=TEXT("9c31b82a263b389457a8d3ea00344f90e24b81f646
 constexpr const TCHAR* RosterHash=TEXT("fda4596387cffd0eec0cab7fb021e7950afc4c6e878467712949924a630f0d8b");
 constexpr const TCHAR* ConfigHash=TEXT("d45f1b001e0177088757be4e45ee3a4910c5cd6b09b18128693058886f40637f");
 constexpr int64 MaxEnvelopeBytes=64*1024*1024;
-constexpr const TCHAR* CareHash=TEXT("3968a82beab862fdd56054d1fe6cfe08aca3c7be41003a1fdc82abae56841d06");
-constexpr const TCHAR* EnvelopeHashSource=TEXT("f003c16885a0fb8213f492114d1b9aa108791385f45a6c23f4e12e67d17b7616");
+constexpr const TCHAR* CareHash=TEXT("57726bcfe8a45cd9db099ad85c8affe325c6538404e0ae2c09acf35bd45da527");
+constexpr const TCHAR* EnvelopeHashSource=TEXT("ba807df992a9163dbb26df6fc4b7d582443b74c53403fc7298279ac51b93d63b");
 
 FString Text(const std::string& S){return FString(UTF8_TO_TCHAR(S.c_str()));}
 std::string Utf8(const FString& S){return std::string(TCHAR_TO_UTF8(*S));}
@@ -64,16 +67,21 @@ P::Action Action(ELivingTownCafePropertyAction A){switch(A){case ELivingTownCafe
 
 namespace {
 P::CareBindings CareSources(const FLivingTownCafeBinding& B);
-bool ReadMealSource(const FLivingTownCafeBinding& B,P::CareBindings& Sources,FString& Error);
+bool ReadMealSource(const FLivingTownCafeBinding& B,P::CareBindings& Sources,bool& bMetaRecipe,FLivingTownMetaHumanMealRecipeV2& MetaRecipe,FString& Error);
 }
-struct ULivingTownCafeWorldV3Subsystem::FState {P::Kernel Kernel;Care::ResidentUse Use{"ben"};P::CareBindings Sources;int64 Clock=0;};
+struct ULivingTownCafeWorldV3Subsystem::FState {
+    P::Kernel Kernel;Care::ResidentUse Use{"ben"};P::CareBindings Sources;int64 Clock=0;
+    bool bMetaRecipe=false,bMetaTail=false;int64 MetaGrant=-1;int32 MetaGrantIndex=INDEX_NONE;
+    FLivingTownMetaHumanMealRecipeV2 MetaRecipe;
+    uint64 MetaConsumedFrame=MAX_uint64;FLivingTownMealPhysicalObservation MetaObservation;
+};
 void ULivingTownCafeWorldV3Subsystem::FStateDeleter::operator()(FState* Pn)const{delete Pn;}
 ULivingTownCafeWorldV3Subsystem::ULivingTownCafeWorldV3Subsystem()=default;
 ULivingTownCafeWorldV3Subsystem::~ULivingTownCafeWorldV3Subsystem()=default;
 bool ULivingTownCafeWorldV3Subsystem::ShouldCreateSubsystem(UObject* Outer)const{return Super::ShouldCreateSubsystem(Outer)&&LivingTownCafeNativeBackend::Selected()==Backend::Backend::WorldV3;}
 bool ULivingTownCafeWorldV3Subsystem::DoesSupportWorldType(EWorldType::Type T)const{return T==EWorldType::Game||T==EWorldType::PIE;}
 TStatId ULivingTownCafeWorldV3Subsystem::GetStatId()const{RETURN_QUICK_DECLARE_CYCLE_STAT(ULivingTownCafeWorldV3Subsystem,STATGROUP_Tickables);}
-void ULivingTownCafeWorldV3Subsystem::Deinitialize(){DetachNativeSession();State.Reset();if(IsValid(Venue))Venue->Destroy();Venue=nullptr;bPrepared=false;Super::Deinitialize();}
+void ULivingTownCafeWorldV3Subsystem::Deinitialize(){CancelMealPreload();FWorldDelegates::OnWorldPostActorTick.Remove(PostActorTickHandle);PostActorTickHandle.Reset();DetachNativeSession();State.Reset();if(IsValid(Venue))Venue->Destroy();Venue=nullptr;bPrepared=false;Super::Deinitialize();}
 bool ULivingTownCafeWorldV3Subsystem::PrepareScenario(FString& Error){
     Error.Reset();auto Fail=[&](const TCHAR* Why){Error=Why;Notice=Error;RefreshPresentation();return false;};
     UWorld* W=GetWorld();if(!IsInGameThread()||bPrepared||!W)return Fail(TEXT("single_game_thread_property_scenario_required"));
@@ -87,15 +95,62 @@ bool ULivingTownCafeWorldV3Subsystem::PrepareScenario(FString& Error){
     FHitResult Floor;FCollisionQueryParams Q(SCENE_QUERY_STAT(WorldV3ScenarioSpawn),true);const FVector Center=B.SpawnFeetCm+FVector(0,0,B.CapsuleHalfHeightCm);
     if(!B.FloorBoundsCm.IsInsideXY(B.SpawnFeetCm)||!V->FloorAt(B.SpawnFeetCm,Floor)||W->OverlapBlockingTestByChannel(Center,FQuat::Identity,ECC_Pawn,FCollisionShape::MakeCapsule(B.CapsuleRadiusCm,B.CapsuleHalfHeightCm),Q)){V->Destroy();return Fail(TEXT("qualified_property_scenario_spawn_refused"));}
     // Construct the sole book only after source, scenario, geometry and v1 absence checks.
-    State.Reset(new FState());if(!ReadMealSource(B,State->Sources,Error)){State.Reset();V->Destroy();return false;}if(!State->Kernel.activate_care({0,true}).ok){State.Reset();V->Destroy();return Fail(TEXT("world_care_activation_failed"));}Binding=MoveTemp(B);Venue=V;bPrepared=true;ClockRemainder=0;Notice=TEXT("Choose Ben or Aria, then walk to the cafe counter.");RefreshPresentation();return true;
+    State.Reset(new FState());if(!ReadMealSource(B,State->Sources,State->bMetaRecipe,State->MetaRecipe,Error)){State.Reset();V->Destroy();return false;}if(!State->Kernel.activate_care({0,true}).ok){State.Reset();V->Destroy();return Fail(TEXT("world_care_activation_failed"));}Binding=MoveTemp(B);Venue=V;bPrepared=true;ClockRemainder=0;
+    if(Binding.MetaHumanActor.IsSet())PostActorTickHandle=FWorldDelegates::OnWorldPostActorTick.AddUObject(this,&ULivingTownCafeWorldV3Subsystem::AfterActorTick);
+    Notice=TEXT("Choose Ben or Aria, then walk to the cafe counter.");RefreshPresentation();if(State->bMetaRecipe)BeginMealPreload();return true;
 }
-void ULivingTownCafeWorldV3Subsystem::DetachNativeSession(){if(State)P::cancel_meal_use(State->Kernel,State->Use,P::ReleaseReason::Interrupted);StopPhysicalMeal();SessionController.Reset();SessionPawn.Reset();RefreshPresentation();}
+void ULivingTownCafeWorldV3Subsystem::DetachNativeSession(){if(SessionPawn.IsValid()||MetaHumanMeal)CancelMealPreload();if(State)P::cancel_meal_use(State->Kernel,State->Use,P::ReleaseReason::Interrupted);StopPhysicalMeal();if(MetaHumanMeal){if(auto* Owner=MetaHumanMeal->GetOwner())Owner->RemoveInstanceComponent(MetaHumanMeal);MetaHumanMeal->DestroyComponent();MetaHumanMeal=nullptr;}MetaHumanMealFailure.Reset();SessionController.Reset();SessionPawn.Reset();RefreshPresentation();}
 bool ULivingTownCafeWorldV3Subsystem::BindNativeSession(ALivingTownCafeWorldV3Controller* PC,ACharacter* Pawn,FString& Error){
     Error.Reset();if(!IsInGameThread()||!bPrepared||!State||!PC||!Pawn||PC!=GetWorld()->GetFirstPlayerController()||PC->GetWorld()!=GetWorld()||Pawn->GetWorld()!=GetWorld()||PC->GetPawn()!=Pawn||Pawn->GetController()!=PC||!PC->HasNativePersona()||!ValidPersona(PC->GetNativePersona())){Error=TEXT("native_persona_possession_required");return false;}
     const auto* Ben=Cast<ALivingTownCafeCharacter>(Pawn);const auto* Owner=Cast<ALivingTownCafePropertyOwnerProxy>(Pawn);
     if((PC->GetNativePersona()==ELivingTownCafeWorldPersona::Ben&&(!Ben||!Ben->HasQualifiedVisual()))||(PC->GetNativePersona()==ELivingTownCafeWorldPersona::Aria&&(!Owner||!Owner->IsFunctionalOwnerConfigured()))){Error=TEXT("persona_and_native_pawn_class_must_match");return false;}
     if(!FMath::IsNearlyEqual(Pawn->GetCapsuleComponent()->GetScaledCapsuleRadius(),Binding.CapsuleRadiusCm,.01f)||!FMath::IsNearlyEqual(Pawn->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),Binding.CapsuleHalfHeightCm,.01f)){Error=TEXT("persona_capsule_binding_mismatch");return false;}
-    SessionController=PC;SessionPawn=Pawn;Notice=PC->GetNativePersona()==ELivingTownCafeWorldPersona::Aria?TEXT("Playing Aria. Walk to the cafe counter."):TEXT("Playing Ben. Walk to the cafe counter.");RefreshPresentation();return true;
+    SessionController=PC;SessionPawn=Pawn;Notice=PC->GetNativePersona()==ELivingTownCafeWorldPersona::Aria?TEXT("Playing Aria. Walk to the cafe counter."):TEXT("Playing Ben. Walk to the cafe counter.");RefreshPresentation();
+    if(PC->GetNativePersona()==ELivingTownCafeWorldPersona::Ben&&Binding.MetaHumanActor.IsSet()){if(bMealRolesReady)ConfigureMetaHumanMeal();else BeginMealPreload();}
+    else CancelMealPreload();
+    RefreshPresentation();return true;
+}
+void ULivingTownCafeWorldV3Subsystem::CancelMealPreload(){++MealPreloadEpoch;bMealRolesReady=false;if(MealPreload)MealPreload->CancelHandle();MealPreload.Reset();}
+void ULivingTownCafeWorldV3Subsystem::BeginMealPreload(){
+    if(!bPrepared||!State||!State->bMetaRecipe||MealPreload||bMealRolesReady||MetaHumanMeal)return;
+    const uint64 Epoch=++MealPreloadEpoch;TWeakObjectPtr<ULivingTownCafeWorldV3Subsystem> Weak(this);TArray<FSoftObjectPath> Paths;
+    for(const auto& Role:State->MetaRecipe.Assets)Paths.AddUnique(FSoftObjectPath(Role.Asset));
+    auto Handle=UAssetManager::GetStreamableManager().RequestAsyncLoad(Paths,FStreamableDelegate::CreateLambda([Weak,Epoch](){if(auto* Owner=Weak.Get())Owner->CompleteMealPreload(Epoch);}));
+    if(!Handle&&!bMealRolesReady&&!MetaHumanMeal){MetaHumanMealFailure=TEXT("qualified_meta_meal_async_preload_request_failed");UE_LOG(LogTemp,Display,TEXT("MetaHumanMeal preload_refused=%s"),*MetaHumanMealFailure);}
+    if(Epoch==MealPreloadEpoch&&bPrepared&&!MetaHumanMeal)MealPreload=MoveTemp(Handle);else if(Handle)Handle->CancelHandle();
+}
+void ULivingTownCafeWorldV3Subsystem::CompleteMealPreload(uint64 Epoch){
+    if(!IsInGameThread()||Epoch!=MealPreloadEpoch||!bPrepared||!State||!GetWorld()||GetWorld()->bIsTearingDown)return;
+    UE_LOG(LogTemp,Display,TEXT("MetaHumanMeal preload_complete"));bMealRolesReady=true;ConfigureMetaHumanMeal();RefreshPresentation();
+}
+void ULivingTownCafeWorldV3Subsystem::ConfigureMetaHumanMeal(){
+    if(MetaHumanMeal||!bMealRolesReady||!State||!State->bMetaRecipe||!SessionController.IsValid()||SessionController->GetNativePersona()!=ELivingTownCafeWorldPersona::Ben)return;
+    auto* Pawn=Cast<ALivingTownCafeCharacter>(SessionPawn.Get());if(!Pawn)return;
+    auto* Source=NewObject<ULivingTownMetaHumanMealProducer>(Pawn,NAME_None,RF_Transient);Pawn->AddInstanceComponent(Source);Source->RegisterComponent();
+    const bool Configured=Source->ConfigureVerified(State->MetaRecipe,MetaHumanMealFailure);
+    if(!Configured||Utf8(Source->GetRecipe().RecipeSha256)!=State->Sources.world.clip_sha256){
+        UE_LOG(LogTemp,Display,TEXT("MetaHumanMeal configure_refused=%s"),Configured?TEXT("meal_v2_owner_recipe_sha_mismatch"):*MetaHumanMealFailure);
+        Pawn->RemoveInstanceComponent(Source);Source->DestroyComponent();return;
+    }
+    TWeakObjectPtr<ULivingTownCafeWorldV3Subsystem> Weak(this);
+    if(!Source->BindTrustedSessionObserver(this,[Weak](const ALivingTownCafeCharacter* P){const auto* Owner=Weak.Get();return Owner&&Owner->TrustedMetaHumanMealSession(P);})){UE_LOG(LogTemp,Display,TEXT("MetaHumanMeal configure_refused=meal_v2_trusted_session_observer_bind_refused"));Pawn->RemoveInstanceComponent(Source);Source->DestroyComponent();return;}
+    MetaHumanMeal=Source;MealPreload.Reset();UE_LOG(LogTemp,Display,TEXT("MetaHumanMeal configure_ready"));
+}
+bool ULivingTownCafeWorldV3Subsystem::TrustedMetaHumanMealSession(const ALivingTownCafeCharacter* Pawn)const{
+    const auto* PC=SessionController.Get();const auto* W=GetWorld();
+    if(!bPrepared||!State||!W||W->IsPaused()||W->bIsTearingDown||!Pawn||Pawn!=SessionPawn.Get()||!PC||PC!=W->GetFirstPlayerController()||PC->GetPawn()!=Pawn||Pawn->GetController()!=PC||PC->GetViewTarget()!=Pawn||!PC->HasNativePersona()||PC->GetNativePersona()!=ELivingTownCafeWorldPersona::Ben||State->Kernel.loaded_grants_require_interruption()||State->MetaGrant<1)return false;
+    const auto& Grants=State->Kernel.care_grants();if(State->MetaGrantIndex<0||size_t(State->MetaGrantIndex)>=Grants.size())return false;
+    const auto& G=Grants[size_t(State->MetaGrantIndex)];if(G.event_id!=State->MetaGrant||G.resident!="ben"||G.site_id!=P::meal_site||G.provider!=State->Kernel.operator_at(State->Clock))return false;
+    if(State->bMetaTail){
+        if(State->Use.active())return false;
+        if(!G.active&&G.release_event_id>0&&G.release_event_id<=int64(State->Kernel.events().size())){
+            const auto& E=State->Kernel.events()[size_t(G.release_event_id-1)];return E.accepted&&E.type=="care_grant_released"&&E.note==P::release_name(P::ReleaseReason::Completed)&&E.amount==std::optional<P::Int>(18)&&E.grant_event_id==std::optional<P::Int>(G.event_id);
+        }
+        return false;
+    }
+    if(!State->Use.active())return false;const auto& A=State->Use.active()->grant;
+    if(A.grant_event_id!=State->MetaGrant||A.resident_id!="ben"||A.site_id!=P::meal_site)return false;
+    return G.active&&Care::same_request(A,P::approved_meal(G));
 }
 bool ULivingTownCafeWorldV3Subsystem::ObserveCounter(bool& Reach,FString& Why)const{
     Reach=false;Why.Reset();const auto* PC=SessionController.Get();const auto* Pawn=SessionPawn.Get();UWorld* W=GetWorld();
@@ -116,9 +171,10 @@ ULivingTownCafeMealContactComponent* ULivingTownCafeWorldV3Subsystem::MealProvid
 }
 bool ULivingTownCafeWorldV3Subsystem::StartPhysicalMeal(FString& Error){
     auto* Pawn=SessionPawn.Get();auto* Provider=MealProvider();
-    // The old socket/clip recipe proves a different body. A readable MetaHuman
-    // hand and locomotion player grant no reviewed eating/contact capability.
-    if(Binding.MetaHumanActor.IsSet()){Error=TEXT("metahuman_reviewed_eating_contact_recipe_required");return false;}
+    if(Binding.MetaHumanActor.IsSet()){
+        if(!IsValid(MetaHumanMeal)||!MetaHumanMeal->IsRegistered()||!State||Utf8(MetaHumanMeal->GetRecipe().RecipeSha256)!=State->Sources.world.clip_sha256){Error=TEXT("metahuman_reviewed_eating_contact_recipe_required");return false;}
+        return MetaHumanMeal->BeginPhysicalUse(Error);
+    }
     if(!Pawn||!Provider||!Provider->ValidateRecipe(Pawn,Binding.BindingFileSha256,Error)){if(Error.IsEmpty())Error=TEXT("reviewed_eat_clip_contact_recipe_required");return false;}
     auto* Mesh=ActualVisualBody(Pawn);auto* Player=Mesh?Mesh->GetSingleNodeInstance():nullptr;FLivingTownCafeMealClipRecipe R;
     if(!Player||!Provider->ReviewedRecipe(R)||!R.Clip||Utf8(R.RecipeFileSha256)!=State->Sources.world.clip_sha256||MealAnimationPlayer.IsValid()||!Mesh->bEnableAnimation||Mesh->bPauseAnims||!FMath::IsNearlyEqual(Mesh->GlobalAnimRateScale,1.f,.001f)){
@@ -137,6 +193,8 @@ bool ULivingTownCafeWorldV3Subsystem::StartPhysicalMeal(FString& Error){
     if(!FMath::IsFinite(LastObservedClipTime)){Error=TEXT("actual_eat_playback_time_invalid");StopPhysicalMeal();return false;}return true;
 }
 void ULivingTownCafeWorldV3Subsystem::StopPhysicalMeal(){
+    if(IsValid(MetaHumanMeal))MetaHumanMeal->StopPhysicalUse();
+    if(State){State->bMetaTail=false;State->MetaGrant=-1;State->MetaGrantIndex=INDEX_NONE;State->MetaConsumedFrame=MAX_uint64;State->MetaObservation={};}
     auto* Pawn=SessionPawn.Get();auto* Mesh=ActualVisualBody(Pawn);auto* Player=MealAnimationPlayer.Get();
     // Restore our still-installed instance, including partial start failures.
     // A foreign replacement player is never overwritten. The original custom
@@ -149,7 +207,10 @@ void ULivingTownCafeWorldV3Subsystem::StopPhysicalMeal(){
 }
 bool ULivingTownCafeWorldV3Subsystem::ObservePhysicalMeal(FString& Error){
     bClipAdvancedThisFrame=false;
-    if(Binding.MetaHumanActor.IsSet()){Error=TEXT("metahuman_reviewed_eating_contact_recipe_required");return false;}
+    if(Binding.MetaHumanActor.IsSet()){
+        if(!State||!IsValid(MetaHumanMeal)||!MetaHumanMeal->ReadLatest(State->MetaObservation,Error))return false;
+        bClipAdvancedThisFrame=State->MetaObservation.bFresh&&State->MetaObservation.bConsumptionPhase;return true;
+    }
     auto* Pawn=SessionPawn.Get();auto* Mesh=ActualVisualBody(Pawn);auto* Player=MealAnimationPlayer.Get();auto* Clip=PlayingMealClip.Get();auto* Provider=MealProvider();
     if(!Mesh||!Player||!Clip||Mesh->GetSingleNodeInstance()!=Player||Player->GetCurrentAsset()!=Clip||!Provider||!Provider->ObserveContact(Pawn,Binding.BindingFileSha256,Error))return false;
     const double Now=GetWorld()->GetTimeSeconds(),Elapsed=Now-LastObservedWorldTime;const float Time=Player->GetCurrentTime(),Length=Clip->GetPlayLength();
@@ -175,16 +236,28 @@ FLivingTownCafeWorldReceipt ULivingTownCafeWorldV3Subsystem::SubmitMeal(const FL
     const P::MealCommand Command{Utf8(C.RequestId),Utf8(C.SiteId),C.Kind==ELivingTownCafeMealKind::PurchaseMeal?P::MealKind::PurchaseMeal:P::MealKind::PublicMeal,C.ExpectedRevision};
     // Let the core return original receipts before attempting a new animation.
     bool Known=false;for(const auto& E:State->Kernel.events())if(E.meal_command&&E.meal_command->request_id==Command.request_id){Known=true;break;}
-    if(Binding.MetaHumanActor.IsSet()&&!Known){
+    if(Binding.MetaHumanActor.IsSet()&&!Known&&!MetaHumanMeal){
         auto Out=Refused(TEXT("metahuman_reviewed_eating_contact_recipe_required"));
         Out.Message=TEXT("Eating is not available for this character yet. You have not been charged.");Notice=Out.Message;RefreshPresentation();return Out;
     }
-    bool ClipReady=false,Started=false;
-    if(!Known&&Reach&&!State->Use.active()&&Command.expected_revision==State->Kernel.revision()&&Command.site_id==P::meal_site&&P::token(Command.request_id)){
+    bool ClipReady=Binding.MetaHumanActor.IsSet()&&MetaHumanMeal&&!State->bMetaTail,Started=false;
+    if(!Binding.MetaHumanActor.IsSet()&&!Known&&Reach&&!State->Use.active()&&Command.expected_revision==State->Kernel.revision()&&Command.site_id==P::meal_site&&P::token(Command.request_id)){
         ClipReady=StartPhysicalMeal(Why);Started=ClipReady;
     }
     const P::MealContext At{"ben","ben",State->Clock,true,Reach,Reach,true,ClipReady};
+    // The unchanged core stages the exact price/stock/reservation. No callback
+    // or authority tick can run during this game-thread transaction. Publish the
+    // actual grant for the producer's trusted owner check, then roll both books
+    // back if physical start refuses. No needs or physical pose are fabricated.
+    auto BeforeKernel=State->Kernel;auto BeforeUse=State->Use;
     const auto R=P::begin_meal_use(State->Kernel,State->Use,Command,At);
+    if(Binding.MetaHumanActor.IsSet()&&R.ok&&!R.already_applied){
+        State->MetaGrant=R.event_id;State->MetaGrantIndex=int32(State->Kernel.care_grants().size())-1;State->bMetaTail=false;
+        if(!StartPhysicalMeal(Why)){
+            StopPhysicalMeal();State->Kernel=std::move(BeforeKernel);State->Use=std::move(BeforeUse);
+            auto Out=Refused(TEXT("qualified_metahuman_physical_start_refused"));Out.Message=TEXT("The meal could not start. You have not been charged.");Notice=Out.Message;RefreshPresentation();return Out;
+        }
+    }
     if(Started&&(!R.ok||R.already_applied))StopPhysicalMeal();
     FLivingTownCafeWorldReceipt Out;Out.bAccepted=R.ok;Out.bAlreadyApplied=R.already_applied;Out.Reason=Text(R.reason);Out.EventId=R.event_id;
     Out.Message=R.ok?(R.already_applied?TEXT("This meal request was already recorded."):TEXT("Meal started. Stay at the counter while Ben eats. X cancels.")):
@@ -229,13 +302,34 @@ bool ULivingTownCafeWorldV3Subsystem::AdvanceNaturalClock(int64 Whole,bool bCont
     const auto Due=Candidate.reconcile_property_until(Next);if(!Due.ok){Error=TEXT("natural_property_reconciliation_refused");return false;}
     if(Use.active()){
         // At most one contact sample from this actual frame. No loop reuses it.
-        bool Reach=false;FString Why;const bool Scene=ObserveCounter(Reach,Why);auto* Provider=MealProvider();
-        const bool Contact=Scene&&Reach&&bClipAdvancedThisFrame&&Provider&&Provider->ObserveContact(SessionPawn.Get(),Binding.BindingFileSha256,Why);
         const auto& A=Use.active()->grant;bool Reservation=false,Permission=false;
         for(const auto& G:Candidate.care_grants())if(G.active&&G.event_id==A.grant_event_id&&G.resident==A.resident_id&&G.site_id==A.site_id){Reservation=true;Permission=G.provider==Candidate.operator_at(Next);}
-        const Care::Contact Observed{A.resident_id,A.site_id,A.grant_id,Scene,Scene&&Reach,Contact,Permission,Reservation};
-        const auto R=P::advance_meal_use(Candidate,Use,Next,Observed);if(!R.ok){Error=Text(R.reason);return false;}
-        if(R.outcome==Care::Outcome::Completed)Notice=TEXT("Meal finished. Ben feels better and had a little fun.");
+        P::CareTickReceipt R;
+        if(Binding.MetaHumanActor.IsSet()){
+            const auto& O=State->MetaObservation;
+            const bool Fresh=O.Frame==GFrameCounter&&O.Frame!=State->MetaConsumedFrame&&O.bFresh&&O.bHolding;
+            if(Use.active()->elapsed==0&&!O.bConsumptionPhase){
+                const Care::WaitingObservation Waiting{A.resident_id,A.site_id,A.grant_id,Fresh,Fresh,Fresh,Fresh,Permission,Reservation};
+                R=P::wait_before_first_meal_progress(Candidate,Use,Next,Waiting);
+                // A finite preparation budget or lost rights interrupts at the
+                // normal next tick with decay. It never earns fallback progress.
+                if(!R.ok&&(R.reason=="meal_preparation_wait_refused"||R.reason=="meal_preparation_rights_lost")){
+                    const Care::Contact Invalid{A.resident_id,A.site_id,A.grant_id,false,false,false,false,false};
+                    R=P::advance_meal_use(Candidate,Use,Next,Invalid);
+                }
+            }else{
+                const Care::Contact Observed{A.resident_id,A.site_id,A.grant_id,Fresh,Fresh,Fresh&&O.bBiteObserved&&O.bConsumptionPhase,Permission,Reservation};
+                R=P::advance_meal_use(Candidate,Use,Next,Observed);
+            }
+            if(R.ok)State->MetaConsumedFrame=O.Frame;
+        }else{
+            bool Reach=false;FString Why;const bool Scene=ObserveCounter(Reach,Why);auto* Provider=MealProvider();
+            const bool Contact=Scene&&Reach&&bClipAdvancedThisFrame&&Provider&&Provider->ObserveContact(SessionPawn.Get(),Binding.BindingFileSha256,Why);
+            const Care::Contact Observed{A.resident_id,A.site_id,A.grant_id,Scene,Scene&&Reach,Contact,Permission,Reservation};
+            R=P::advance_meal_use(Candidate,Use,Next,Observed);
+        }
+        if(!R.ok){Error=Text(R.reason);return false;}
+        if(R.outcome==Care::Outcome::Completed){Notice=TEXT("Meal finished. Ben feels better and had a little fun.");State->bMetaTail=Binding.MetaHumanActor.IsSet();}
         else if(R.outcome==Care::Outcome::Interrupted)Notice=TEXT("Meal interrupted. Progress earned so far is kept.");
     }else if(!Use.advance_idle_to(Next)){Error=TEXT("idle_care_clock_refused");return false;}
     if(!P::care_matches_world(Candidate,Use)||!P::valid_clock_for(Candidate,{Next,0})){Error=TEXT("natural_care_reconciliation_failed");return false;}
@@ -243,12 +337,23 @@ bool ULivingTownCafeWorldV3Subsystem::AdvanceNaturalClock(int64 Whole,bool bCont
     if(Due.reason=="rent_paid")Notice=TEXT("Rent paid: 4 coins. The cafe lease continues.");
     else if(Due.reason=="rent_unpaid")Notice=TEXT("The next rent could not be paid. No payment was taken for that period; the cafe lease ended.");
     else if(Due.reason=="term_limit_reached")Notice=TEXT("The cafe lease reached its final term and ended.");
-    if(!State->Use.active())StopPhysicalMeal();return true;
+    if(!State->Use.active()&&!State->bMetaTail)StopPhysicalMeal();return true;
 }
 void ULivingTownCafeWorldV3Subsystem::Tick(float Delta){
     Super::Tick(Delta);if(!bPrepared||!State||!GetWorld())return;
+    // UTickableWorldSubsystem runs before TG_PostUpdateWork in UE 5.8. Pause
+    // cleanup still runs here; normal MetaHuman clock/consumption runs once from
+    // the world delegate after the producer and skeletal completion tasks.
+    if(Binding.MetaHumanActor.IsSet()&&!GetWorld()->IsPaused())return;
+    TickNaturalClock(Delta);
+}
+void ULivingTownCafeWorldV3Subsystem::AfterActorTick(UWorld* World,ELevelTick Type,float Delta){
+    if(World==GetWorld()&&Binding.MetaHumanActor.IsSet()&&Type!=LEVELTICK_TimeOnly)TickNaturalClock(Delta);
+}
+void ULivingTownCafeWorldV3Subsystem::TickNaturalClock(float Delta){
+    if(!bPrepared||!State||!GetWorld()||LastNaturalClockFrame==GFrameCounter)return;LastNaturalClockFrame=GFrameCounter;
     if(GetWorld()->IsPaused()){
-        if(State->Use.active()){P::cancel_meal_use(State->Kernel,State->Use,P::ReleaseReason::Interrupted);StopPhysicalMeal();Notice=TEXT("Meal interrupted while paused. Progress is kept.");RefreshPresentation();}return;
+        if(State->Use.active()||State->bMetaTail){P::cancel_meal_use(State->Kernel,State->Use,P::ReleaseReason::Interrupted);StopPhysicalMeal();Notice=TEXT("Meal interrupted while paused. Progress is kept.");RefreshPresentation();}return;
     }
     if(!FMath::IsFinite(Delta)||Delta<0||Delta>3600){P::cancel_meal_use(State->Kernel,State->Use,P::ReleaseReason::Interrupted);StopPhysicalMeal();Notice=TEXT("The cafe clock stopped. Reload the scenario to continue.");bPrepared=false;RefreshPresentation();return;}
     const double Accumulated=ClockRemainder+double(Delta);const int64 Whole=int64(FMath::FloorToDouble(Accumulated));
@@ -256,9 +361,16 @@ void ULivingTownCafeWorldV3Subsystem::Tick(float Delta){
     // tick. A lost session/reach/pose cannot disappear between sampled seconds.
     bool Continuous=Delta<=.25f&&Whole<=1;FString Why;
     if(State->Use.active()){
-        bool Reach=false;
-        Continuous=Continuous&&ObserveCounter(Reach,Why)&&Reach&&ObservePhysicalMeal(Why);
+        if(Binding.MetaHumanActor.IsSet()){
+            Continuous=Continuous&&MetaHumanMeal&&Delta<=MetaHumanMeal->GetRecipe().MaxFrameGap&&ObservePhysicalMeal(Why)&&State->MetaObservation.bHolding;
+            if(State->Use.active()->elapsed>0)Continuous=Continuous&&State->MetaObservation.bConsumptionPhase;
+        }else{
+            bool Reach=false;Continuous=Continuous&&ObserveCounter(Reach,Why)&&Reach&&ObservePhysicalMeal(Why);
+        }
         if(!Continuous){const auto R=P::cancel_meal_use(State->Kernel,State->Use,P::ReleaseReason::Interrupted);if(!R.ok){Notice=TEXT("Meal interruption could not be recorded.");bPrepared=false;RefreshPresentation();return;}StopPhysicalMeal();Notice=TEXT("Meal interrupted. Progress earned so far is kept.");}
+    }
+    else if(State->bMetaTail){
+        if(!MetaHumanMeal||!MetaHumanMeal->IsPhysicalUseActive()||!ObservePhysicalMeal(Why))StopPhysicalMeal();
     }
     if(Whole>0&&!AdvanceNaturalClock(Whole,Continuous,Why)){Notice=TEXT("The cafe clock stopped. Reload the scenario to continue.");bPrepared=false;StopPhysicalMeal();RefreshPresentation();return;}
     ClockRemainder=Accumulated-double(Whole);RefreshPresentation();
@@ -276,7 +388,7 @@ void ULivingTownCafeWorldV3Subsystem::RefreshPresentation(){
     FString Why;ObserveCounter(V.bReachable,Why);V.Diagnostic=Why;
     // Recipe presence is an availability hint only. Submission independently
     // validates source bytes and the natural ticks observe actual animation.
-    FLivingTownCafeMealClipRecipe Recipe;auto* Provider=MealProvider();V.bMealAvailable=!Binding.MetaHumanActor.IsSet()&&V.Persona==TEXT("ben")&&Provider&&Provider->ReviewedRecipe(Recipe)&&Recipe.Clip;
+    FLivingTownCafeMealClipRecipe Recipe;auto* Provider=Binding.MetaHumanActor.IsSet()?nullptr:MealProvider();V.bMealAvailable=V.Persona==TEXT("ben")&&(Binding.MetaHumanActor.IsSet()?IsValid(MetaHumanMeal)&&MetaHumanMeal->IsRegistered()&&!State->bMetaTail:Provider&&Provider->ReviewedRecipe(Recipe)&&Recipe.Clip);
     const auto Name=[](const FString& S){return S==TEXT("aria")?FString(TEXT("Aria")):S==TEXT("ben")?FString(TEXT("Ben")):FString(TEXT("Choose a resident"));};
     V.ResidentLabel=Name(V.Persona);if(V.bSessionReady)V.ResidentLabel+=FString::Printf(TEXT("  |  %lld coins"),(long long)(V.Persona==TEXT("aria")?V.AriaCoins:V.BenCoins));
     V.PropertyLabel=TEXT("Owned by ")+Name(V.Owner)+TEXT("  |  Run by ")+Name(V.Operator);
@@ -304,14 +416,17 @@ P::CareBindings CareSources(const FLivingTownCafeBinding& B){
     Out.world.clip_sha256=Utf8(Fingerprint({TEXT("no_reviewed_native_eat_provider_v1")}));
     Out.world.roster_sha256=Utf8(RosterHash);return Out;
 }
-bool ReadMealSource(const FLivingTownCafeBinding& B,P::CareBindings& Sources,FString& Error){
-    Sources=CareSources(B);
-    // This explicit visual family has no eating capability. A leftover recipe
-    // for a mesh family cannot qualify its actor or prevent the rest of WorldV3
-    // from starting. Keep the source-bound unavailable-provider policy instead.
+bool ReadMealSource(const FLivingTownCafeBinding& B,P::CareBindings& Sources,bool& bMetaRecipe,FLivingTownMetaHumanMealRecipeV2& MetaRecipe,FString& Error){
+    Sources=CareSources(B);bMetaRecipe=false;MetaRecipe={};
+    // Verify optional V2 files once at startup, before asynchronous role preload.
+    // Missing, legacy or unqualified files leave the unavailable-provider policy.
     if(B.MetaHumanActor.IsSet()){
         if(B.MotionStrategy!=ELivingTownCafeMotionStrategy::MetaHumanWholeActor||!B.MetaHumanActor->IsValidated()||B.VisualSha256!=B.MetaHumanActor->DescriptorSha256)
         {Error=TEXT("metahuman_prepared_unavailable_meal_policy_required");return false;}
+        FString Why;FLivingTownMetaHumanMealRecipeV2 R;
+        const bool Qualified=FLivingTownMetaHumanMealRecipeV2::ReadQualified(TEXT("LivingTown/MetaHumanMealContactV2.json"),R,Why);
+        if(Qualified&&R.BindingSha256==B.BindingFileSha256&&R.VisualDescriptorSha256==B.MetaHumanActor->DescriptorSha256&&R.SourceClosureSha256==B.MetaHumanActor->SourceClosureSha256){Sources.world.clip_sha256=Utf8(R.RecipeSha256);bMetaRecipe=true;MetaRecipe=MoveTemp(R);}
+        else UE_LOG(LogTemp,Display,TEXT("MetaHumanMeal source_refused=%s"),Qualified?TEXT("meal_v2_binding_or_visual_source_mismatch"):*Why);
         return true;
     }
     const FString Path=FPaths::ProjectContentDir()/TEXT("LivingTown/CafeWorldV3MealContact.json");

@@ -7,10 +7,13 @@
 #include "LivingTownCafeWorldV3Subsystem.generated.h"
 class ALivingTownCafeVenue;
 class ALivingTownCafeWorldV3Controller;
+class ALivingTownCafeCharacter;
 class ACharacter;
 class UAnimationAsset;
 class UAnimSequence;
 class UAnimSingleNodeInstance;
+class ULivingTownMetaHumanMealProducer;
+struct FStreamableHandle;
 UCLASS()
 class LIVINGTOWNNATIVE_API ULivingTownCafeWorldV3Subsystem final : public UTickableWorldSubsystem {
     GENERATED_BODY()
@@ -61,6 +64,20 @@ private:
     uint32 LastObservedBoneRevision=0;
     bool bClipAdvancedThisFrame=false;
     bool bPreviousLooping=false,bPreviousPlaying=false;
+    UPROPERTY(Transient) TObjectPtr<ULivingTownMetaHumanMealProducer> MetaHumanMeal;
+    FDelegateHandle PostActorTickHandle;
+    uint64 LastNaturalClockFrame=MAX_uint64;
+    FString MetaHumanMealFailure;
+    TSharedPtr<FStreamableHandle> MealPreload;
+    uint64 MealPreloadEpoch=0;
+    bool bMealRolesReady=false;
+    void BeginMealPreload();
+    void CompleteMealPreload(uint64 Epoch);
+    void CancelMealPreload();
+    void AfterActorTick(UWorld* World,ELevelTick TickType,float Delta);
+    void TickNaturalClock(float Delta);
+    void ConfigureMetaHumanMeal();
+    bool TrustedMetaHumanMealSession(const ALivingTownCafeCharacter* Pawn)const;
     bool ObserveCounter(bool& Reachable,FString& Why)const;
     ULivingTownCafeMealContactComponent* MealProvider()const;
     bool StartPhysicalMeal(FString& Error);
