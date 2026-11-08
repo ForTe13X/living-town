@@ -57,7 +57,7 @@ class FMetaHumanMealJourney final:public IAutomationLatentCommand {
     UStaticMesh* Whole=nullptr;UStaticMesh* Bitten=nullptr;
     FString Diagnostic()const{
         int32 Count=0;auto* W=MealWorld(Count);const auto* A=W?W->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;
-        const auto* C=W?Cast<ALivingTownCafeWorldV3Controller>(W->GetFirstPlayerController()):nullptr;const auto* P=C?C->GetPawn():nullptr;
+        const auto* C=W?Cast<ALivingTownCafeWorldV3Controller>(W->GetFirstPlayerController()):nullptr;const APawn* P=C?C->GetPawn().Get():nullptr;
         const auto* S=P?P->FindComponentByClass<ULivingTownMetaHumanMealProducer>():nullptr;const auto* Ben=Cast<ALivingTownCafeCharacter>(P);
         return FString::Printf(TEXT("stage=%d worlds=%d pawn=%s position=%s meta_visual=%d source=%s source_active=%d source_failure=%s prepared=%d session=%d available=%d reachable=%d"),
             Stage,Count,*GetNameSafe(P),P?*P->GetActorLocation().ToString():TEXT("none"),Ben&&Ben->HasMetaHumanVisual(),*GetNameSafe(S),S&&S->IsPhysicalUseActive(),S?*S->GetFailure():TEXT("none"),A&&A->IsPrepared(),A&&A->GetPresentation().bSessionReady,A&&A->GetPresentation().bMealAvailable,A&&A->GetPresentation().bReachable);
