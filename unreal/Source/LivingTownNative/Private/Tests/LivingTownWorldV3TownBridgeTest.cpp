@@ -35,6 +35,7 @@
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "UObject/StrongObjectPtrTemplates.h"
+#include "UObject/Package.h"
 
 namespace
 {
