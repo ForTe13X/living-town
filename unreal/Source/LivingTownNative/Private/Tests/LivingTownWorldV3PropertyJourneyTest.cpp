@@ -18,6 +18,8 @@
 #include "Engine/Engine.h"
 #include "Engine/GameInstance.h"
 #include "Engine/World.h"
+#include "Engine/EngineBaseTypes.h"
+#include "Dom/JsonValue.h"
 #include "Engine/StaticMesh.h"
 #include "EngineUtils.h"
 #include "Components/CapsuleComponent.h"
@@ -66,17 +68,32 @@ bool ReadRoute(TArray<FVector>& Route) {
     }
     return true;
 }
-bool ReadDocument(const FString& Text,W3::Kernel& K,W3::CareEnvelope* Out=nullptr) {
-    FString Encoded;TArray<uint8> Bytes;TSharedPtr<FJsonObject> O;
-    if(!LivingTownCafeJournal::HasUniqueObjectKeys(Text)||!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),O)||!O||!O->TryGetStringField(TEXT("payload_base64"),Encoded)||!FBase64::Decode(Encoded,Bytes)||Bytes.IsEmpty())return false;
+bool ReadDocument(const FString& Text,W3::Kernel& K,W3::CareEnvelope* Out=nullptr,FString* Diagnostic=nullptr) {
+    auto Fail=[&](const TCHAR* Why){if(Diagnostic)*Diagnostic=Why;return false;};if(Diagnostic)Diagnostic->Reset();
+    FString Encoded,ExpectedHash,ActualHash;TArray<uint8> Bytes;TSharedPtr<FJsonObject> O;
+    if(!LivingTownCafeJournal::HasUniqueObjectKeys(Text))return Fail(TEXT("native_json_duplicate_keys"));
+    if(!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),O)||!O)return Fail(TEXT("native_json_parse"));
+    if(!O->TryGetStringField(TEXT("payload_base64"),Encoded)||!O->TryGetStringField(TEXT("payload_sha256"),ExpectedHash))return Fail(TEXT("native_payload_fields"));
+    if(!FBase64::Decode(Encoded,Bytes)||Bytes.IsEmpty()||FBase64::Encode(Bytes)!=Encoded)return Fail(TEXT("native_payload_base64"));
+    if(!LivingTownCafeJournal::Sha256(Bytes,ActualHash)||ActualHash!=ExpectedHash)return Fail(TEXT("native_payload_sha256"));
     const auto Envelope=W3::decode_care_envelope_document(std::string(reinterpret_cast<const char*>(Bytes.GetData()),size_t(Bytes.Num())));
-    if(!Envelope||!K.restore_bytes(Envelope->world_payload))return false;if(Out)*Out=*Envelope;return true;
+    if(!Envelope)return Fail(TEXT("portable_care_envelope_decode"));
+    if(!K.restore_bytes(Envelope->world_payload))return Fail(TEXT("portable_world_strict_replay"));
+    if(Out)*Out=*Envelope;return true;
 }
-bool ReadWorld(ULivingTownCafeWorldV3Subsystem* A,W3::Kernel& K,W3::CareEnvelope* Out=nullptr) {
-    FString Text,Error;return A->EncodeJournal(Text,Error)&&ReadDocument(Text,K,Out);
+bool ReadWorld(ULivingTownCafeWorldV3Subsystem* A,W3::Kernel& K,W3::CareEnvelope* Out=nullptr,FString* Diagnostic=nullptr) {
+    FString Text,Error;if(!A||!A->EncodeJournal(Text,Error)){if(Diagnostic)*Diagnostic=TEXT("EncodeJournal: ")+Error;return false;}return ReadDocument(Text,K,Out,Diagnostic);
 }
 int32 Count(const W3::Kernel& K,const char* Type){int32 N=0;for(const auto& E:K.events())if(E.type==Type)++N;return N;}
 
+// An ordinary engine-scheduled read callback, never a manually executed tick.
+struct FPropertyInputReadTick final:public FTickFunction {
+    TFunction<void()> ReadOnly;
+    FPropertyInputReadTick(){bCanEverTick=true;bStartWithTickEnabled=true;bRunOnAnyThread=false;TickGroup=TG_PostUpdateWork;EndTickGroup=TG_PostUpdateWork;}
+    void ExecuteTick(float,ELevelTick,ENamedThreads::Type,const FGraphEventRef&)override{if(ReadOnly)ReadOnly();}
+    FString DiagnosticMessage()override{return TEXT("LivingTown property test post-input read");}
+    FName DiagnosticContext(bool)override{return FName(TEXT("LivingTownPropertyInputRead"));}
+};
 class FCurrentTownPropertyJourney final:public IAutomationLatentCommand {
     FAutomationTestBase* Test;TArray<FVector> Route;
     const double Deadline=FPlatformTime::Seconds()+420.;
@@ -85,7 +102,7 @@ class FCurrentTownPropertyJourney final:public IAutomationLatentCommand {
     FVector LastFeet=FVector::ZeroVector;bool Held=false,Settling=false,Done=false;
     TWeakObjectPtr<ALivingTownCafeWorldV3Controller> Controller;
     std::string SavedWorld;FString SlotSha;int64 OpeningStock=-1,ExpectedStock=-1;
-    W3::ClockMetadata SavedClock;int32 ProviderPhase=0;double ProbeStarted=0;
+    W3::ClockMetadata SavedClock;double ProbeStarted=0;bool EntryWindow=false;
     FString ExpectedRecipeSha,ProbeFailure;bool FreshEntrySeen=false,FailedCandidateRetained=false;
     uint64 ProbeInputFrame=0,FreshEntryFrame=0;double FreshEntryWorldSeconds=-1;
     bool InitialBindObserved=false,InitialBindHadHandle=false,InitialBindRolesReady=false,PendingRebindObserved=false;
@@ -95,9 +112,75 @@ class FCurrentTownPropertyJourney final:public IAutomationLatentCommand {
     TWeakObjectPtr<AActor> TemporaryBlocker;
     FDelegateHandle ProviderObserver;
     TSharedPtr<FJsonObject> LatestTownStatus;
+    FPropertyInputReadTick InputReadTick;FDelegateHandle WorldCleanup;
+    TWeakObjectPtr<UWorld> ObservedWorld;
+    struct FQueuedTap {
+        FKey Key;FString Label,ReadError,Notice;bool Active=false,Observed=false,ReadOK=false,PressReturn=false,ReleaseReturn=false,Physical=false;
+        uint64 SentFrame=0,ObservedFrame=0;double SentWorld=-1,ObservedWorld=-1,SentWall=0;
+        TWeakObjectPtr<APawn> PawnBefore,PawnAfter;FTransform BeforeTransform,AfterTransform;FRotator BeforeControl,AfterControl;
+        FLivingTownCafeWorldView View;W3::Kernel Kernel;W3::CareEnvelope Envelope;int64 BeforeEvents=0;
+    } Queued;
+    TArray<TSharedPtr<FJsonValue>> InputObservations;
+    FString SlotPath()const{return FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldResidentialCareV6.slot.json");}
+    TSharedRef<FJsonObject> TapDiagnostic()const {
+        auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("scope"),TEXT("Actual simulated key submission and ordinary post-controller/pre-source-clock read; no manual tick or action bypass"));
+        O->SetStringField(TEXT("action"),Queued.Label);O->SetStringField(TEXT("key"),Queued.Key.ToString());O->SetBoolField(TEXT("active"),Queued.Active);O->SetBoolField(TEXT("observed"),Queued.Observed);
+        O->SetBoolField(TEXT("submission_recorded"),!Queued.Label.IsEmpty());if(!Queued.Label.IsEmpty()){O->SetStringField(TEXT("submitted_frame"),LexToString(Queued.SentFrame));O->SetNumberField(TEXT("submitted_world_seconds"),Queued.SentWorld);}
+        O->SetBoolField(TEXT("press_return_is_not_dispatch_ack"),Queued.PressReturn);O->SetBoolField(TEXT("release_return_is_not_dispatch_ack"),Queued.ReleaseReturn);
+        if(Queued.Observed){O->SetStringField(TEXT("observed_frame"),LexToString(Queued.ObservedFrame));O->SetNumberField(TEXT("observed_world_seconds"),Queued.ObservedWorld);O->SetBoolField(TEXT("both_actual_key_events_observed"),true);O->SetBoolField(TEXT("journal_read_ok"),Queued.ReadOK);O->SetStringField(TEXT("journal_error"),Queued.ReadError);O->SetStringField(TEXT("operation_notice"),Queued.Notice);}
+        if(Queued.Observed&&Queued.ReadOK){O->SetStringField(TEXT("captured_persona"),Queued.View.Persona);O->SetStringField(TEXT("captured_clock_tick"),LexToString(Queued.Envelope.clock.tick));O->SetStringField(TEXT("captured_fraction_bits"),LexToString(Queued.Envelope.clock.fraction_bits));O->SetStringField(TEXT("captured_aria_coins"),LexToString(Queued.View.AriaCoins));O->SetStringField(TEXT("captured_ben_coins"),LexToString(Queued.View.BenCoins));O->SetStringField(TEXT("captured_owner"),Queued.View.Owner);O->SetStringField(TEXT("captured_operator"),Queued.View.Operator);O->SetStringField(TEXT("captured_stock"),LexToString(Queued.View.Stock));O->SetNumberField(TEXT("captured_event_count"),double(Queued.Kernel.events().size()));O->SetNumberField(TEXT("captured_pay_count"),Count(Queued.Kernel,"pay"));if(!Queued.Kernel.events().empty()){O->SetStringField(TEXT("captured_last_event_type"),UTF8_TO_TCHAR(Queued.Kernel.events().back().type.c_str()));O->SetStringField(TEXT("captured_last_event_note"),UTF8_TO_TCHAR(Queued.Kernel.events().back().note.c_str()));}}
+        return O;
+    }
+    FString FailureDiagnostic(const TCHAR* Why){
+        auto O=MakeShared<FJsonObject>();O->SetStringField(TEXT("status"),TEXT("FAIL_RETAINED_CURRENT_PROPERTY_ASSERTION"));O->SetNumberField(TEXT("stage"),Stage);O->SetStringField(TEXT("predicate"),Why);O->SetStringField(TEXT("current_frame"),LexToString(GFrameCounter));O->SetObjectField(TEXT("queued_input"),TapDiagnostic());O->SetArrayField(TEXT("completed_input_observations"),InputObservations);
+        if(LatestTownStatus)O->SetObjectField(TEXT("native_status"),LatestTownStatus);
+        if(auto* W=ObservedWorld.Get()){
+            O->SetNumberField(TEXT("current_world_seconds"),W->GetTimeSeconds());auto* A=W->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();W3::Kernel K;FString Error;
+            if(A){const auto V=A->GetPresentation();O->SetBoolField(TEXT("reachable"),V.bReachable);O->SetStringField(TEXT("counter_diagnostic"),V.Diagnostic);O->SetStringField(TEXT("notice"),V.Notice);O->SetStringField(TEXT("owner"),V.Owner);O->SetStringField(TEXT("operator"),V.Operator);O->SetStringField(TEXT("aria_coins"),LexToString(V.AriaCoins));O->SetStringField(TEXT("ben_coins"),LexToString(V.BenCoins));O->SetStringField(TEXT("stock"),LexToString(V.Stock));
+                const bool OK=ReadWorld(A,K,nullptr,&Error);O->SetBoolField(TEXT("live_journal_read_ok"),OK);O->SetStringField(TEXT("live_journal_error"),Error);
+                if(OK){O->SetNumberField(TEXT("event_count"),double(K.events().size()));O->SetNumberField(TEXT("pay_count"),Count(K,"pay"));O->SetNumberField(TEXT("deed_count"),Count(K,"property_deed_transferred"));O->SetNumberField(TEXT("lease_grant_count"),Count(K,"property_lease_granted"));O->SetNumberField(TEXT("lease_end_count"),Count(K,"property_lease_ended"));O->SetStringField(TEXT("offer_kind"),UTF8_TO_TCHAR(K.offer().kind.c_str()));O->SetBoolField(TEXT("offer_present"),K.offer().present);if(!K.events().empty()){O->SetStringField(TEXT("last_event_type"),UTF8_TO_TCHAR(K.events().back().type.c_str()));O->SetStringField(TEXT("last_event_note"),UTF8_TO_TCHAR(K.events().back().note.c_str()));}}}
+            if(Controller.IsValid()){O->SetStringField(TEXT("controller_notice"),Controller->GetOperationNotice());if(auto* P=Cast<ACharacter>(Controller->GetPawn().Get())){O->SetStringField(TEXT("pawn_position"),P->GetActorLocation().ToString());O->SetStringField(TEXT("control_rotation"),Controller->GetControlRotation().ToString());O->SetBoolField(TEXT("on_walkable_floor"),P->GetCharacterMovement()->IsMovingOnGround()&&P->GetCharacterMovement()->CurrentFloor.IsWalkableFloor());TArray<ULivingTownMetaHumanMealProducer*> Providers;P->GetComponents(Providers);O->SetNumberField(TEXT("provider_component_count"),Providers.Num());if(auto* Source=P->FindComponentByClass<ULivingTownMetaHumanMealProducer>()){O->SetStringField(TEXT("provider_id"),LexToString(Source->GetUniqueID()));O->SetBoolField(TEXT("provider_registered"),Source->IsRegistered());O->SetBoolField(TEXT("provider_active"),Source->IsPhysicalUseActive());O->SetStringField(TEXT("provider_failure"),Source->GetFailure());FLivingTownMealPhysicalObservation Physical;FString PhysicalError;const bool Fresh=Source->ReadLatest(Physical,PhysicalError);O->SetBoolField(TEXT("provider_fresh_read"),Fresh);O->SetStringField(TEXT("provider_read_error"),PhysicalError);if(Fresh){O->SetStringField(TEXT("provider_observed_frame"),LexToString(Physical.Frame));O->SetNumberField(TEXT("provider_observed_world_seconds"),Physical.WorldSeconds);O->SetBoolField(TEXT("provider_bite_observed"),Physical.bBiteObserved);O->SetBoolField(TEXT("provider_progress_eligible"),Physical.bFirstProgressEligible);}}if(auto* Assembly=P->FindComponentByClass<ULivingTownMetaHumanVisualAssembly>())O->SetBoolField(TEXT("action_clip_active"),Assembly->IsActionClipActive());}}
+        }
+        const FString Directory=FPaths::ProjectSavedDir()/TEXT("WorldV3PropertyJourney");IFileManager::Get().MakeDirectory(*Directory,true);FString Text;const FString Path=Directory/TEXT("NATIVE_PROPERTY_FAILURE.json");
+        if(FJsonSerializer::Serialize(O,TJsonWriterFactory<>::Create(&Text)))FFileHelper::SaveStringToFile(Text,*Path);return Path;
+    }
+    void RemoveReaders(){InputReadTick.ReadOnly=nullptr;if(InputReadTick.IsTickFunctionRegistered())InputReadTick.UnRegisterTickFunction();RemoveProviderObserver();if(WorldCleanup.IsValid())FWorldDelegates::OnWorldCleanup.Remove(WorldCleanup);WorldCleanup.Reset();}
+    void WorldEnding(UWorld* W,bool,bool){if(W&&W->GetUniqueID()==WorldId){Release();RemoveReaders();}}
+    void ReadAfterInput(){
+        auto* W=ObservedWorld.Get();auto* C=Controller.Get();if(!W||!C||!Queued.Active||Queued.Observed||GFrameCounter<=Queued.SentFrame||W->GetTimeSeconds()<=Queued.SentWorld||C->GetWorld()!=W)return;
+        if(!C->WasInputKeyJustPressed(Queued.Key)||!C->WasInputKeyJustReleased(Queued.Key))return;
+        auto* A=W->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();if(!A)return;
+        Queued.Observed=true;Queued.ObservedFrame=GFrameCounter;Queued.ObservedWorld=W->GetTimeSeconds();Queued.View=A->GetPresentation();Queued.Notice=C->GetOperationNotice();
+        Queued.ReadOK=ReadWorld(A,Queued.Kernel,&Queued.Envelope,&Queued.ReadError);Queued.PawnAfter=C->GetPawn().Get();Queued.AfterControl=C->GetControlRotation();
+        if(auto* P=C->GetPawn().Get()){Queued.AfterTransform=P->GetActorTransform();if(auto* Source=P->FindComponentByClass<ULivingTownMetaHumanMealProducer>())Queued.Physical=Source->IsPhysicalUseActive();}
+    }
+    bool InstallReader(UWorld* W,ALivingTownCafeWorldV3Controller* C){
+        if(InputReadTick.IsTickFunctionRegistered())return true;
+        if(!Need(W->PersistentLevel&&C->PrimaryActorTick.IsTickFunctionRegistered()&&C->PrimaryActorTick.TickGroup==TG_PrePhysics,TEXT("input_reader.requires_actual_controller_PrePhysics_tick")))return false;
+        InputReadTick.ReadOnly=[this](){ReadAfterInput();};InputReadTick.AddPrerequisite(C,C->PrimaryActorTick);InputReadTick.RegisterTickFunction(W->PersistentLevel);InputReadTick.SetTickFunctionEnable(true);
+        WorldCleanup=FWorldDelegates::OnWorldCleanup.AddRaw(this,&FCurrentTownPropertyJourney::WorldEnding);return true;
+    }
+    bool QueueTap(UWorld* W,FKey Key,const TCHAR* Label){
+        if(!Need(!Queued.Active&&Controller.IsValid()&&InputReadTick.IsTickFunctionRegistered(),TEXT("queued_input.single_pending_action")))return false;
+        W3::Kernel Before;FString Error;const bool BaselineOK=ReadWorld(W->GetSubsystem<ULivingTownCafeWorldV3Subsystem>(),Before,nullptr,&Error);if(!Need(BaselineOK,*(TEXT("queued_input.baseline_journal: ")+Error)))return false;
+        Release();Queued=FQueuedTap{};Queued.Active=true;Queued.Key=Key;Queued.Label=Label;Queued.SentFrame=GFrameCounter;Queued.SentWorld=W->GetTimeSeconds();Queued.SentWall=FPlatformTime::Seconds();Queued.BeforeEvents=int64(Before.events().size());
+        Queued.PawnBefore=Controller->GetPawn().Get();if(Queued.PawnBefore.IsValid())Queued.BeforeTransform=Queued.PawnBefore->GetActorTransform();Queued.BeforeControl=Controller->GetControlRotation();
+        Queued.PressReturn=Controller->InputKey(FInputKeyEventArgs::CreateSimulated(Key,IE_Pressed,1.f));Queued.ReleaseReturn=Controller->InputKey(FInputKeyEventArgs::CreateSimulated(Key,IE_Released,0.f));return true;
+    }
+    bool AwaitTap(UWorld* W){
+        if(!Need(Queued.Active,TEXT("queued_input.await_has_pending_action")))return false;
+        if(!Queued.Observed){Need(W->GetTimeSeconds()-Queued.SentWorld<5&&FPlatformTime::Seconds()-Queued.SentWall<15,TEXT("queued_input.timeout_no_actual_pressed_and_released_batch"));return false;}
+        return Need(Queued.ObservedFrame>Queued.SentFrame&&Queued.ObservedWorld>Queued.SentWorld,TEXT("queued_input.later_natural_frame_and_world_time"))&&Need(Queued.ReadOK,*(TEXT("queued_input.observed_journal: ")+Queued.ReadError));
+    }
+    bool AwaitPersona(UWorld* W,ALivingTownCafeWorldV3Controller* C,ULivingTownCafeWorldV3Subsystem* A,ELivingTownCafeWorldPersona Expected){
+        if(Persona(C,A,Expected))return true;if(Done)return false;Need(W->GetTimeSeconds()-Queued.SentWorld<60&&FPlatformTime::Seconds()-Queued.SentWall<90,TEXT("queued_persona.timeout_current_pawn_not_ready"));return false;
+    }
+    void FinishTap(){InputObservations.Add(MakeShared<FJsonValueObject>(TapDiagnostic()));Queued.Active=false;}
+    bool OneEvent(const char* Type,const char* Note=nullptr){
+        const auto& K=Queued.Kernel;return Need(int64(K.events().size())==Queued.BeforeEvents+1,TEXT("property.exactly_one_new_event"))&&Need(!K.events().empty(),TEXT("property.event_present"))&&Need(K.events().back().type==Type,*(FString(TEXT("property.event_type_actual="))+UTF8_TO_TCHAR(K.events().empty()?"empty":K.events().back().type.c_str())))&&(!Note||Need(K.events().back().note==Note,*(FString(TEXT("property.event_note_actual="))+UTF8_TO_TCHAR(K.events().back().note.c_str()))));
+    }
     void Release(){if(Held&&Controller.IsValid())Controller->InputKey(FInputKeyEventArgs::CreateSimulated(EKeys::W,IE_Released,0.f));Held=false;}
-    void Tap(FKey Key){Release();Controller->InputKey(FInputKeyEventArgs::CreateSimulated(Key,IE_Pressed,1.f));Controller->InputKey(FInputKeyEventArgs::CreateSimulated(Key,IE_Released,0.f));}
-    bool Need(bool Ok,const TCHAR* Why){if(!Ok){Release();Test->AddError(FString::Printf(TEXT("Current town property stage=%d: %s"),Stage,Why));Done=true;}return Ok;}
+    bool Need(bool Ok,const TCHAR* Why){if(!Ok&&!Done){const FString Diagnostic=FailureDiagnostic(Why);Release();RemoveReaders();Test->AddError(FString::Printf(TEXT("Current town property stage=%d action=%s: %s; diagnostic=%s"),Stage,*Queued.Label,Why,*Diagnostic));Done=true;}return Ok;}
     bool Persona(ALivingTownCafeWorldV3Controller* C,ULivingTownCafeWorldV3Subsystem* A,ELivingTownCafeWorldPersona Expected) {
         auto* P=C->GetPawn().Get();if(!P||!C->HasNativePersona()||C->GetNativePersona()!=Expected||!A->GetPresentation().bSessionReady)return false;
         if(!Need(P->GetController()==C&&C->GetViewTarget()==P&&!C->IsMoveInputIgnored(),TEXT("Actual possession/view target/movement owners retained")))return false;
@@ -197,79 +280,78 @@ class FCurrentTownPropertyJourney final:public IAutomationLatentCommand {
         ++Waypoint;Settling=false;LegStart=Now;
         if(Waypoint<Route.Num())return false;++CompletedApproaches;return true;
     }
+    bool ReadSavedDocument(const FString& Text,W3::Kernel& K,W3::CareEnvelope& Envelope){FString Error;const bool OK=ReadDocument(Text,K,&Envelope,&Error);return Need(OK,*(FString(TEXT("save.slot_decode: "))+Error));}
     bool Money(ULivingTownCafeWorldV3Subsystem* A,int64 Aria,int64 Ben,const TCHAR* Owner,const TCHAR* Operator) {
-        const auto& V=A->GetPresentation();W3::Kernel K;
-        if(!Need(ReadWorld(A,K),TEXT("Actual paired journal decodes and strictly replays")))return false;
-        return Need(V.AriaCoins==Aria&&V.BenCoins==Ben&&Aria+Ben==24&&V.Owner==Owner&&V.Operator==Operator&&
-            K.accounts()[0].coin==Aria&&K.accounts()[1].coin==Ben&&K.title().owner==TCHAR_TO_UTF8(Owner),TEXT("HUD authority and real conserved kernel balances/title/operator agree"));
+        const auto V=A->GetPresentation();W3::Kernel K;FString Error;const bool ReadOK=ReadWorld(A,K,nullptr,&Error);
+        return Need(ReadOK,*(TEXT("money.journal: ")+Error))&&Need(Aria+Ben==24,TEXT("money.expected_sum24"))&&
+            Need(V.AriaCoins==Aria,*FString::Printf(TEXT("money.presentation_aria actual=%lld expected=%lld"),(long long)V.AriaCoins,(long long)Aria))&&Need(V.BenCoins==Ben,*FString::Printf(TEXT("money.presentation_ben actual=%lld expected=%lld"),(long long)V.BenCoins,(long long)Ben))&&
+            Need(V.Owner==Owner,*(TEXT("money.owner_actual=")+V.Owner))&&Need(V.Operator==Operator,*(TEXT("money.operator_actual=")+V.Operator))&&Need(K.accounts()[0].coin==Aria,TEXT("money.kernel_aria"))&&Need(K.accounts()[1].coin==Ben,TEXT("money.kernel_ben"))&&Need(K.title().owner==TCHAR_TO_UTF8(Owner),TEXT("money.kernel_title"));
     }
 public:
     FCurrentTownPropertyJourney(FAutomationTestBase* T,const TArray<FVector>& InRoute,const FString& RecipeSha):Test(T),Route(InRoute),ExpectedRecipeSha(RecipeSha){}
-    ~FCurrentTownPropertyJourney(){Release();RemoveProviderObserver();
+    ~FCurrentTownPropertyJourney(){Release();RemoveReaders();
         if(TemporaryBlocker.IsValid()&&GEngine)for(const auto& Context:GEngine->GetWorldContexts())if(Context.World()&&Context.World()->GetUniqueID()==WorldId){TemporaryBlocker->Destroy();break;}
     }
     bool Update()override {
         if(Done)return true;if(!Need(FPlatformTime::Seconds()<Deadline,TEXT("Finite420s actual current-town journey")))return true;
-        UWorld* W=nullptr;int32 Worlds=0;if(GEngine)for(const auto& C:GEngine->GetWorldContexts())if(C.World()&&(C.WorldType==EWorldType::Game||C.WorldType==EWorldType::PIE)){W=C.World();++Worlds;}
-        if(!Need(Worlds<=1,TEXT("One native fixture world")))return true;if(!W||!W->HasBegunPlay())return false;
+        UWorld* W=nullptr;int32 Worlds=0;if(GEngine)for(const auto& Context:GEngine->GetWorldContexts())if(Context.World()&&(Context.WorldType==EWorldType::Game||Context.WorldType==EWorldType::PIE)){W=Context.World();++Worlds;}
+        if(!Need(Worlds<=1,TEXT("One native fixture world")))return true;if(!W||!W->HasBegunPlay())return false;ObservedWorld=W;
         if(!WorldId)WorldId=W->GetUniqueID();if(!Need(W->GetUniqueID()==WorldId&&UWorld::RemovePIEPrefix(W->GetOutermost()->GetName())==PropertyRoot,TEXT("Exact same saved current root")))return true;
-        auto* Town=W->GetSubsystem<ULivingTownFullTownStreamingSubsystem>();auto* A=W->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();auto* C=Cast<ALivingTownCafeWorldV3Controller>(W->GetFirstPlayerController());
+        auto* Town=W->GetSubsystem<ULivingTownFullTownStreamingSubsystem>();auto* A=W->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();
         if(!Need(Town&&A&&W->GetAuthGameMode()&&W->GetAuthGameMode()->GetClass()==ALivingTownCafeWorldV3GameMode::StaticClass(),TEXT("Actual WorldV3/full-town owners")))return true;
         TSharedPtr<FJsonObject> S;FString Status;double CurrentEpoch=0,Relocks=0;bool Locked=true;
         if(!Need(FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Town->GetStatusJson()),S)&&S&&S->TryGetStringField(TEXT("status"),Status)&&S->TryGetNumberField(TEXT("epoch"),CurrentEpoch)&&S->TryGetNumberField(TEXT("post_possession_owned_relocks"),Relocks)&&S->TryGetBoolField(TEXT("owned_movement_lock"),Locked),TEXT("Actual typed town status")))return true;
-        if(!Need(Status!=TEXT("FAILED_SUPPORT_RETAINED")&&Status!=TEXT("STOPPED_SUPPORT_RETAINED"),TEXT("No native startup/source/ownership refusal")))return true;
-        if(Stage==0&&!ObserveInitialBind(A,C))return true;
+        LatestTownStatus=S;if(!Need(Status!=TEXT("FAILED_SUPPORT_RETAINED")&&Status!=TEXT("STOPPED_SUPPORT_RETAINED"),TEXT("No startup/source/ownership refusal")))return true;
+        auto* C=Cast<ALivingTownCafeWorldV3Controller>(W->GetFirstPlayerController());if(Stage==0&&!ObserveInitialBind(A,C))return true;
         if(Status!=TEXT("SUBSET_CONTROLLABLE_NOT_FULL_TOWN")){if(!Need(Stage==0&&Epoch<0,TEXT("Ready town stays ready")))return true;return false;}
-        if(!C||!A->IsPrepared()||!A->GetPresentation().bSessionReady)return false;
+        if(!C||!C->HasNativePersona()||!C->GetPawn())return false;
         if(!ControllerId){Controller=C;ControllerId=C->GetUniqueID();Epoch=CurrentEpoch;}
-        if(!Need(C==Controller.Get()&&C->GetUniqueID()==ControllerId&&CurrentEpoch==Epoch&&!Locked&&Relocks==1&&!W->IsPaused()&&W->GetNetMode()==NM_Standalone,TEXT("One controller/epoch with original balanced movement ownership")))return true;
-        const auto* Legacy=W->GetSubsystem<ULivingTownCafeProjectionSubsystem>();
+        if(!Need(C==Controller.Get()&&C->GetUniqueID()==ControllerId&&CurrentEpoch==Epoch&&!Locked&&Relocks==1&&!W->IsPaused()&&W->GetNetMode()==NM_Standalone,TEXT("One controller/epoch and balanced movement ownership"))||!InstallReader(W,C))return true;
+        auto* Legacy=W->GetSubsystem<ULivingTownCafeProjectionSubsystem>();
         if(!Need((!Legacy||(!Legacy->IsReady()&&!Legacy->IsScenePrepared()))&&!W->GetSubsystem<ULivingTownCafePropertyV2Subsystem>()&&W->GetGameInstance()&&!W->GetGameInstance()->GetSubsystem<ULivingTownLeaseSubsystem>(),TEXT("No parallel legacy authority or wallet")))return true;
-        const auto& V=A->GetPresentation();const auto& Binding=A->GetBinding();LatestTownStatus=S;
-        if(!Need(Binding.Parts.Num()==289&&Binding.BindingFileSha256==BindingSha&&Binding.MetaHumanActor.IsSet()&&Binding.MetaHumanActor->UsesWorkwear()&&(!V.bMealActive||(Stage==4&&ProviderPhase==1)),TEXT("Current289/workwear authority; active action exists only during the explicit entry/cancel probe")))return true;
-        if(OpeningStock<0){OpeningStock=V.Stock;ExpectedStock=OpeningStock;}if(!Need(V.Stock==ExpectedStock,TEXT("Only the one explicitly observed owner-meal probe consumes one stock item")))return true;
-        auto* P=Cast<ACharacter>(C->GetPawn().Get());if(!P)return false;
-        W3::Kernel K;
-        if(Stage==0){if(!Persona(C,A,ELivingTownCafeWorldPersona::Ben))return Done;if(!V.bMealAvailable){if(!ObservePendingSameBind(A,C,P))return true;return false;}auto* Source=Provider(P,A);if(!Source)return Done;const auto Boot=FWorldV3MealProviderLifecycleTestAccess::Read(A);if(!Need(InitialBindObserved&&Boot.Epoch==1&&Boot.RolesReady&&!Boot.Handle&&Boot.Pawn==P,TEXT("Positive first-bind preload completed without cancellation or re-request"))||!Inactive(P,A,Source)||!SameBindPreservesState(A,C,P))return true;FirstProvider=Source;FirstProviderId=Source->GetUniqueID();if(!Money(A,12,12,TEXT("aria"),TEXT("aria"))||!Census(W))return true;Tap(EKeys::F1);Stage=1;return false;}
-        if(Stage==1){if(!Persona(C,A,ELivingTownCafeWorldPersona::Aria))return Done;if(!Need(Retired(FirstProvider),TEXT("Committed Aria switch retired original Ben provider")))return true;if(!Need(!V.bReachable,TEXT("Off-counter refusal is physically observed, not injected")))return true;
-            Tap(EKeys::O);if(!Need(ReadWorld(A,K)&&!K.events().empty()&&K.events().back().type=="property_refused"&&K.events().back().note=="not_at_commercial_counter"&&Count(K,"pay")==0,TEXT("Off-counter offer records refusal without payment"))||!Money(A,12,12,TEXT("aria"),TEXT("aria")))return true;StartApproach(W,P);Stage=2;return false;}
-        if(Stage==2){if(!Persona(C,A,ELivingTownCafeWorldPersona::Aria)||!Walk(W,P))return Done;if(!Need(A->GetPresentation().bReachable,TEXT("Actual Aria counter rays/facing permit offer")))return true;
-            Tap(EKeys::O);if(!Need(ReadWorld(A,K)&&K.offer().present&&K.offer().kind=="sale"&&K.offer().owner=="aria"&&Count(K,"pay")==0,TEXT("Owner's actual O input opens sale without charge")))return true;Tap(EKeys::F2);Stage=3;return false;}
-        if(Stage==3){if(!Persona(C,A,ELivingTownCafeWorldPersona::Ben))return Done;if(!V.bMealAvailable){if(!ObservePendingSameBind(A,C,P))return true;return false;}auto* Source=Provider(P,A);if(!Source)return Done;if(!Need(Source->GetUniqueID()!=FirstProviderId&&Retired(FirstProvider)&&Inactive(P,A,Source),TEXT("Returning Ben reacquired a fresh current-owner provider")))return true;ReacquiredProvider=Source;ReacquiredProviderId=Source->GetUniqueID();StartApproach(W,P);Stage=4;return false;}
-        if(Stage==4){
-            if(!Persona(C,A,ELivingTownCafeWorldPersona::Ben))return Done;auto* Source=Provider(P,A);if(!Source)return Done;
-            if(!Need(ReacquiredProvider.Get()==Source,TEXT("Same reacquired provider remains owned throughout the counter tenure")))return true;
-            if(ProviderPhase==0){
-                if(!Walk(W,P))return Done;if(!Need(A->GetPresentation().bReachable,TEXT("Actual Ben counter rays/facing permit purchase")))return true;
-                Tap(EKeys::B);if(!Money(A,24,0,TEXT("ben"),TEXT("ben"))||!Need(ReadWorld(A,K)&&Count(K,"pay")==1&&Count(K,"property_deed_transferred")==1&&K.title().revision==1,TEXT("One actual sale payment and deed")))return true;
-                Tap(EKeys::L);if(!Need(ReadWorld(A,K)&&K.offer().present&&K.offer().kind=="lease"&&K.offer().owner=="ben",TEXT("New owner explicitly lists a fixed lease"))||!BlockedCandidate(W,P,A,Source))return true;
-                ProviderObserver=FWorldDelegates::OnWorldPostActorTick.AddRaw(this,&FCurrentTownPropertyJourney::ObserveProvider);FreshEntrySeen=false;ProbeStarted=W->GetTimeSeconds();ProbeInputFrame=GFrameCounter;
-                Tap(EKeys::E);if(!Need(A->GetPresentation().bMealActive&&Source->IsPhysicalUseActive()&&A->GetPresentation().Stock==OpeningStock-1&&ReadWorld(A,K)&&Count(K,"pay")==1,TEXT("Actual owner E starts qualified physical entry, consumes one stock and no money")))return true;
-                ExpectedStock=OpeningStock-1;ProviderPhase=1;return false;
-            }
-            if(ProviderPhase==1){
-                if(!Need(ProbeFailure.IsEmpty()&&Source->GetFailure().IsEmpty()&&W->GetTimeSeconds()-ProbeStarted<1,TEXT("Finite natural provider entry observation without stale action or benefit")))return true;
-                if(!FreshEntrySeen)return false;Tap(EKeys::X);RemoveProviderObserver();
-                if(!Inactive(P,A,Source)||!Money(A,24,0,TEXT("ben"),TEXT("ben")))return true;StageTime=W->GetTimeSeconds();ProviderPhase=2;return false;
-            }
-            if(!Inactive(P,A,Source))return true;if(W->GetTimeSeconds()-StageTime<.5)return false;
-            Tap(EKeys::F1);Stage=5;return false;
+        auto* P=Cast<ACharacter>(C->GetPawn().Get());if(!Need(P!=nullptr,TEXT("Actual current native character")))return true;
+        const auto V=A->GetPresentation();const auto& Binding=A->GetBinding();
+        if(!Need(Binding.Parts.Num()==289&&Binding.BindingFileSha256==BindingSha&&Binding.MetaHumanActor.IsSet()&&Binding.MetaHumanActor->UsesWorkwear()&&(!V.bMealActive||EntryWindow),TEXT("Current289/workwear; active action only in explicit entry/cancel window")))return true;
+        if(OpeningStock<0){OpeningStock=V.Stock;ExpectedStock=OpeningStock;}
+        if(Stage!=9&&!Need(V.Stock==ExpectedStock,TEXT("Only the explicitly observed owner entry consumes stock")))return true;
+        if(Stage>=6&&Stage<=12){if(!Need(V.bMealAvailable,TEXT("owner_tenure.provider_available")))return true;auto* Source=Provider(P,A);if(!Source)return Done;if(!Need(Source==ReacquiredProvider.Get(),TEXT("Same reacquired provider remains owned throughout the counter tenure")))return true;}
+        if(Stage==0){
+            if(!Persona(C,A,ELivingTownCafeWorldPersona::Ben))return Done;if(!V.bMealAvailable){if(!ObservePendingSameBind(A,C,P))return true;return false;}auto* Source=Provider(P,A);if(!Source)return Done;
+            const auto Boot=FWorldV3MealProviderLifecycleTestAccess::Read(A);if(!Need(InitialBindObserved&&Boot.Epoch==1&&Boot.RolesReady&&!Boot.Handle&&Boot.Pawn==P,TEXT("Positive first-bind preload completed without cancellation/re-request"))||!Inactive(P,A,Source)||!SameBindPreservesState(A,C,P))return true;
+            FirstProvider=Source;FirstProviderId=Source->GetUniqueID();if(!Money(A,12,12,TEXT("aria"),TEXT("aria"))||!Census(W)||!QueueTap(W,EKeys::F1,TEXT("select_aria_off_counter")))return true;Stage=1;return false;
         }
-        if(Stage==5){if(!Persona(C,A,ELivingTownCafeWorldPersona::Aria))return Done;if(!Need(Retired(ReacquiredProvider),TEXT("Successful switch retires the used old provider after cancellation")))return true;StartApproach(W,P);Stage=6;return false;}
-        if(Stage==6){if(!Persona(C,A,ELivingTownCafeWorldPersona::Aria)||!Walk(W,P))return Done;if(!Need(A->GetPresentation().bReachable,TEXT("Actual former owner reaches lease counter")))return true;
-            Tap(EKeys::K);if(!Money(A,20,4,TEXT("ben"),TEXT("aria"))||!Need(ReadWorld(A,K)&&K.lease().active&&!K.recurring_lease()&&K.lease().end-K.lease().start==720&&Count(K,"pay")==2&&Count(K,"property_lease_granted")==1&&K.can_operate("aria","cafe","1f",A->GetPresentation().Clock)&&!K.can_operate("aria","cafe","2f",A->GetPresentation().Clock),TEXT("One paid fixed lease grants commercial operation, never private upstairs")))return true;
-            SavedWorld=K.save_bytes();Tap(EKeys::F5);TArray<uint8> Bytes;FString SavedText;W3::CareEnvelope SavedEnvelope;W3::Kernel SavedKernel;const FString Slot=FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldResidentialCareV6.slot.json");
-            if(!Need(C->GetOperationNotice()==TEXT("Cafe saved.")&&FFileHelper::LoadFileToArray(Bytes,*Slot)&&LivingTownCafeJournal::Sha256(Bytes,SlotSha)&&FFileHelper::LoadFileToString(SavedText,*Slot)&&ReadDocument(SavedText,SavedKernel,&SavedEnvelope)&&SavedKernel.save_bytes()==SavedWorld,TEXT("Actual F5 publishes readable current V6 slot and exact paid state")))return true;SavedClock=SavedEnvelope.clock;StageTime=W->GetTimeSeconds();Stage=7;return false;}
-        if(Stage==7){if(!Need(W->GetTimeSeconds()-StageTime<3,TEXT("Finite natural clock-advance observation before F9")))return true;if(V.Clock<=SavedClock.tick)return false;W3::CareEnvelope RestoredEnvelope;const auto PawnBefore=C->GetPawn();const FTransform Transform=P->GetActorTransform();const FRotator Control=C->GetControlRotation();Tap(EKeys::F9);
-            if(!Need(C->GetOperationNotice().StartsWith(TEXT("Cafe restored."))&&C->GetPawn()==PawnBefore&&P->GetActorTransform().Equals(Transform,0)&&C->GetControlRotation().Equals(Control,0)&&ReadWorld(A,K,&RestoredEnvelope)&&RestoredEnvelope.clock.tick==SavedClock.tick&&RestoredEnvelope.clock.fraction_bits==SavedClock.fraction_bits&&A->GetPresentation().Clock==SavedClock.tick&&K.save_bytes()==SavedWorld&&Count(K,"pay")==2&&!A->GetPresentation().bMealActive,TEXT("Actual F9 restores paid rights with no double charge, pawn move or physical resume"))||!Money(A,20,4,TEXT("ben"),TEXT("aria")))return true;
-            Tap(EKeys::R);if(!Money(A,20,4,TEXT("ben"),TEXT("ben"))||!Need(ReadWorld(A,K)&&!K.lease().active&&Count(K,"pay")==2&&Count(K,"property_lease_ended")==1,TEXT("Tenant R surrenders operation without another payment")))return true;Tap(EKeys::F2);Stage=8;return false;}
-        if(Stage==8){if(!Persona(C,A,ELivingTownCafeWorldPersona::Ben))return Done;if(!V.bMealAvailable){if(!ObservePendingSameBind(A,C,P))return true;return false;}auto* Source=Provider(P,A);if(!Source)return Done;if(!Need(Source->GetUniqueID()!=ReacquiredProviderId&&Retired(ReacquiredProvider)&&Inactive(P,A,Source),TEXT("Final Ben gets another live current-owner provider, no saved action resumed")))return true;FinalProviderId=Source->GetUniqueID();StartApproach(W,P);Stage=9;return false;}
+        if(Stage==1){if(!AwaitTap(W)||!AwaitPersona(W,C,A,ELivingTownCafeWorldPersona::Aria))return Done;if(!Need(Retired(FirstProvider),TEXT("Committed Aria switch retired original provider"))||!Need(!V.bReachable,TEXT("Off-counter condition physically observed")))return true;FinishTap();if(!QueueTap(W,EKeys::O,TEXT("off_counter_sale_refusal")))return true;Stage=2;return false;}
+        if(Stage==2){if(!AwaitTap(W))return Done;if(!OneEvent("property_refused","not_at_commercial_counter")||!Need(Count(Queued.Kernel,"pay")==0,TEXT("off_counter.no_payment"))||!Money(A,12,12,TEXT("aria"),TEXT("aria")))return true;FinishTap();StartApproach(W,P);Stage=3;return false;}
+        if(Stage==3){if(!Persona(C,A,ELivingTownCafeWorldPersona::Aria)||!Walk(W,P))return Done;if(!Need(A->GetPresentation().bReachable,TEXT("Actual Aria counter rays/facing"))||!QueueTap(W,EKeys::O,TEXT("sale_offer")))return true;Stage=4;return false;}
+        if(Stage==4){if(!AwaitTap(W))return Done;const auto& Q=Queued.Kernel;if(!OneEvent("property_offer_opened","offer_sale")||!Need(Q.offer().present,TEXT("sale_offer.present"))||!Need(Q.offer().kind=="sale",TEXT("sale_offer.kind"))||!Need(Q.offer().owner=="aria",TEXT("sale_offer.owner"))||!Need(Count(Q,"pay")==0,TEXT("sale_offer.no_payment")))return true;FinishTap();if(!QueueTap(W,EKeys::F2,TEXT("select_ben_purchase")))return true;Stage=5;return false;}
+        if(Stage==5){if(!AwaitTap(W)||!AwaitPersona(W,C,A,ELivingTownCafeWorldPersona::Ben))return Done;if(!V.bMealAvailable){if(!Need(W->GetTimeSeconds()-Queued.SentWorld<60&&FPlatformTime::Seconds()-Queued.SentWall<90,TEXT("ben_purchase.provider_timeout"))||!ObservePendingSameBind(A,C,P))return true;return false;}auto* Source=Provider(P,A);if(!Source)return Done;if(!Need(Source->GetUniqueID()!=FirstProviderId&&Retired(FirstProvider),TEXT("Returning Ben reacquired fresh current-owner provider"))||!Inactive(P,A,Source))return true;ReacquiredProvider=Source;ReacquiredProviderId=Source->GetUniqueID();FinishTap();StartApproach(W,P);Stage=6;return false;}
+        if(Stage==6){if(!Persona(C,A,ELivingTownCafeWorldPersona::Ben)||!Walk(W,P))return Done;if(!Need(A->GetPresentation().bReachable,TEXT("Actual Ben counter rays/facing"))||!QueueTap(W,EKeys::B,TEXT("purchase")))return true;Stage=7;return false;}
+        if(Stage==7){if(!AwaitTap(W))return Done;const auto& Q=Queued.Kernel;if(!Money(A,24,0,TEXT("ben"),TEXT("ben"))||!Need(Count(Q,"pay")==1,TEXT("purchase.one_payment"))||!Need(Count(Q,"property_deed_transferred")==1,TEXT("purchase.one_deed"))||!Need(Q.title().revision==1,TEXT("purchase.title_revision")))return true;FinishTap();if(!QueueTap(W,EKeys::L,TEXT("fixed_lease_offer")))return true;Stage=8;return false;}
+        if(Stage==8){if(!AwaitTap(W))return Done;const auto& Q=Queued.Kernel;if(!OneEvent("property_offer_opened","offer_lease")||!Need(Q.offer().present,TEXT("fixed_offer.present"))||!Need(Q.offer().kind=="lease",TEXT("fixed_offer.kind"))||!Need(Q.offer().owner=="ben",TEXT("fixed_offer.owner")))return true;auto* Source=Provider(P,A);if(!Source)return Done;if(!Need(Source==ReacquiredProvider.Get(),TEXT("Same provider through owner tenure")))return true;FinishTap();if(!BlockedCandidate(W,P,A,Source))return true;
+            ProviderObserver=FWorldDelegates::OnWorldPostActorTick.AddRaw(this,&FCurrentTownPropertyJourney::ObserveProvider);FreshEntrySeen=false;ProbeStarted=W->GetTimeSeconds();ProbeInputFrame=GFrameCounter;EntryWindow=true;if(!QueueTap(W,EKeys::E,TEXT("owner_physical_entry")))return true;Stage=9;return false;}
+        if(Stage==9){if(!Need(W->GetTimeSeconds()-ProbeStarted<1,TEXT("entry.dispatch_within_finite_no_benefit_window")))return true;if(!AwaitTap(W))return Done;if(!Need(Queued.View.bMealActive,TEXT("entry.active_authority"))||!Need(Queued.Physical,TEXT("entry.actual_provider_active"))||!Need(Queued.View.Stock==OpeningStock-1,TEXT("entry.exactly_one_stock"))||!Need(Count(Queued.Kernel,"pay")==1,TEXT("entry.no_additional_owner_payment")))return true;ExpectedStock=OpeningStock-1;if(!Need(V.Stock==ExpectedStock,TEXT("entry.current_stock_matches_observed")))return true;FinishTap();Stage=10;return false;}
+        if(Stage==10){auto* Source=Provider(P,A);if(!Source)return Done;if(!Need(ProbeFailure.IsEmpty(),*(TEXT("entry.observer: ")+ProbeFailure))||!Need(Source->GetFailure().IsEmpty(),*(TEXT("entry.provider: ")+Source->GetFailure()))||!Need(W->GetTimeSeconds()-ProbeStarted<1,TEXT("Finite natural provider entry observation without benefit")))return true;if(!FreshEntrySeen)return false;if(!QueueTap(W,EKeys::X,TEXT("cancel_physical_entry")))return true;Stage=11;return false;}
+        if(Stage==11){if(!Need(W->GetTimeSeconds()-ProbeStarted<1,TEXT("cancel.dispatch_within_finite_no_benefit_window")))return true;if(!AwaitTap(W))return Done;if(!Need(!Queued.View.bMealActive&&!Queued.Physical,TEXT("cancel.observed_authority_and_physical_stopped")))return true;FinishTap();RemoveProviderObserver();EntryWindow=false;auto* Source=Provider(P,A);if(!Source)return Done;if(!Need(ProbeFailure.IsEmpty(),*(TEXT("cancel.observer: ")+ProbeFailure))||!Inactive(P,A,Source)||!Money(A,24,0,TEXT("ben"),TEXT("ben")))return true;StageTime=W->GetTimeSeconds();Stage=12;return false;}
+        if(Stage==12){auto* Source=Provider(P,A);if(!Source)return Done;if(!Inactive(P,A,Source))return true;if(W->GetTimeSeconds()-StageTime<.5)return false;if(!QueueTap(W,EKeys::F1,TEXT("select_aria_lease")))return true;Stage=13;return false;}
+        if(Stage==13){if(!AwaitTap(W)||!AwaitPersona(W,C,A,ELivingTownCafeWorldPersona::Aria))return Done;if(!Need(Retired(ReacquiredProvider),TEXT("Cancelled old provider retired on Aria commit")))return true;FinishTap();StartApproach(W,P);Stage=14;return false;}
+        if(Stage==14){if(!Persona(C,A,ELivingTownCafeWorldPersona::Aria)||!Walk(W,P))return Done;if(!Need(A->GetPresentation().bReachable,TEXT("Former owner physically reaches lease counter"))||!QueueTap(W,EKeys::K,TEXT("accept_fixed_lease")))return true;Stage=15;return false;}
+        if(Stage==15){if(!AwaitTap(W))return Done;const auto& Q=Queued.Kernel;if(!Money(A,20,4,TEXT("ben"),TEXT("aria"))||!Need(Q.lease().active,TEXT("lease.active"))||!Need(!Q.recurring_lease(),TEXT("lease.fixed_not_recurring"))||!Need(Q.lease().end-Q.lease().start==720,TEXT("lease.exact720_ticks"))||!Need(Count(Q,"pay")==2,TEXT("lease.second_payment"))||!Need(Count(Q,"property_lease_granted")==1,TEXT("lease.one_grant"))||!Need(Q.can_operate("aria","cafe","1f",Queued.View.Clock),TEXT("lease.commercial_permission"))||!Need(!Q.can_operate("aria","cafe","2f",Queued.View.Clock),TEXT("lease.private_upstairs_excluded")))return true;SavedWorld=Q.save_bytes();FinishTap();if(!Need(!IFileManager::Get().FileExists(*SlotPath()),TEXT("save.no_stale_slot_in_fresh_project"))||!QueueTap(W,EKeys::F5,TEXT("save_paid_fixed_lease")))return true;Stage=16;return false;}
+        if(Stage==16){if(!AwaitTap(W))return Done;TArray<uint8> Bytes;FString SavedText;W3::CareEnvelope SavedEnvelope;W3::Kernel SavedKernel;
+            if(!Need(Queued.Notice==TEXT("Cafe saved."),TEXT("save.observed_operation_notice"))||!Need(FFileHelper::LoadFileToArray(Bytes,*SlotPath()),TEXT("save.actual_slot_bytes"))||!Need(LivingTownCafeJournal::Sha256(Bytes,SlotSha),TEXT("save.slot_sha"))||!Need(FFileHelper::LoadFileToString(SavedText,*SlotPath()),TEXT("save.actual_slot_text"))||!ReadSavedDocument(SavedText,SavedKernel,SavedEnvelope)||!Need(SavedKernel.save_bytes()==SavedWorld&&Queued.Kernel.save_bytes()==SavedWorld,TEXT("save.exact_paid_world_bytes"))||!Need(SavedEnvelope.clock.tick==Queued.Envelope.clock.tick&&SavedEnvelope.clock.fraction_bits==Queued.Envelope.clock.fraction_bits,TEXT("save.exact_actual_post_input_clock")))return true;
+            SavedClock=SavedEnvelope.clock;FinishTap();StageTime=W->GetTimeSeconds();Stage=17;return false;}
+        if(Stage==17){if(!Need(W->GetTimeSeconds()-StageTime<3,TEXT("Finite natural clock-advance observation before F9")))return true;if(V.Clock<=SavedClock.tick)return false;if(!QueueTap(W,EKeys::F9,TEXT("restore_paid_fixed_lease")))return true;Stage=18;return false;}
+        if(Stage==18){if(!AwaitTap(W))return Done;if(!Need(Queued.Notice.StartsWith(TEXT("Cafe restored.")),TEXT("restore.observed_operation_notice"))||!Need(Queued.PawnAfter==Queued.PawnBefore&&C->GetPawn().Get()==Queued.PawnBefore.Get(),TEXT("restore.same_pawn"))||!Need(Queued.AfterTransform.Equals(Queued.BeforeTransform,0)&&P->GetActorTransform().Equals(Queued.BeforeTransform,0),TEXT("restore.no_pawn_move"))||!Need(Queued.AfterControl.Equals(Queued.BeforeControl,0)&&C->GetControlRotation().Equals(Queued.BeforeControl,0),TEXT("restore.no_control_change"))||!Need(Queued.Envelope.clock.tick==SavedClock.tick,TEXT("restore.exact_tick_at_post_input_boundary"))||!Need(Queued.Envelope.clock.fraction_bits==SavedClock.fraction_bits,TEXT("restore.exact_fraction_bits_at_post_input_boundary"))||!Need(Queued.View.Clock==SavedClock.tick,TEXT("restore.presentation_tick_at_boundary"))||!Need(Queued.Kernel.save_bytes()==SavedWorld,TEXT("restore.exact_saved_world_bytes"))||!Need(Count(Queued.Kernel,"pay")==2,TEXT("restore.no_duplicate_payment"))||!Need(!Queued.View.bMealActive&&!A->GetPresentation().bMealActive,TEXT("restore.no_physical_resume"))||!Money(A,20,4,TEXT("ben"),TEXT("aria")))return true;FinishTap();if(!QueueTap(W,EKeys::R,TEXT("surrender_fixed_lease")))return true;Stage=19;return false;}
+        if(Stage==19){if(!AwaitTap(W))return Done;const auto& Q=Queued.Kernel;if(!Money(A,20,4,TEXT("ben"),TEXT("ben"))||!Need(!Q.lease().active,TEXT("surrender.lease_inactive"))||!Need(Count(Q,"pay")==2,TEXT("surrender.no_additional_payment"))||!Need(Count(Q,"property_lease_ended")==1,TEXT("surrender.one_end_event")))return true;FinishTap();if(!QueueTap(W,EKeys::F2,TEXT("select_final_ben")))return true;Stage=20;return false;}
+        if(Stage==20){if(!AwaitTap(W)||!AwaitPersona(W,C,A,ELivingTownCafeWorldPersona::Ben))return Done;if(!V.bMealAvailable){if(!Need(W->GetTimeSeconds()-Queued.SentWorld<60&&FPlatformTime::Seconds()-Queued.SentWall<90,TEXT("final_ben.provider_timeout"))||!ObservePendingSameBind(A,C,P))return true;return false;}auto* Source=Provider(P,A);if(!Source)return Done;if(!Need(Source->GetUniqueID()!=ReacquiredProviderId&&Retired(ReacquiredProvider),TEXT("Final Ben has another current-owner provider"))||!Inactive(P,A,Source))return true;FinalProviderId=Source->GetUniqueID();FinishTap();StartApproach(W,P);Stage=21;return false;}
         if(!Persona(C,A,ELivingTownCafeWorldPersona::Ben)||!Walk(W,P))return Done;
-        if(!Need(A->GetPresentation().bReachable&&A->GetPresentation().bMealAvailable&&CompletedApproaches==4&&RouteSamples>=48&&WalkCm>=1920,TEXT("Four real counter approaches end with independent qualified meal provider still present"))||!Money(A,20,4,TEXT("ben"),TEXT("ben"))||!Census(W))return true;
+        if(!Need(A->GetPresentation().bReachable,TEXT("final_counter.reachable"))||!Need(A->GetPresentation().bMealAvailable,TEXT("final_counter.provider_available"))||!Need(CompletedApproaches==4,TEXT("route.four_actual_approaches"))||!Need(RouteSamples>=48,TEXT("route.minimum48_natural_samples"))||!Need(WalkCm>=1920,TEXT("route.minimum1920_observed_cm"))||!Money(A,20,4,TEXT("ben"),TEXT("ben"))||!Census(W))return true;
         auto Proof=MakeShared<FJsonObject>();Proof->SetStringField(TEXT("status"),TEXT("PASS_CURRENT_TOWN_PROPERTY_INPUT_STATE_ONLY"));Proof->SetStringField(TEXT("scope"),TEXT("Sale/fixed lease/F5-F9/surrender plus provider reacquisition, failed candidate retention and actual physical entry/cancel; no completed meal, cold process, recurring due, art or FPS qualification"));
         Proof->SetNumberField(TEXT("initial_bind_preload_epoch"),double(InitialBindEpoch));Proof->SetBoolField(TEXT("initial_bind_had_pending_handle"),InitialBindHadHandle);Proof->SetBoolField(TEXT("initial_bind_roles_ready"),InitialBindRolesReady);Proof->SetBoolField(TEXT("pending_same_pawn_rebind_observed"),PendingRebindObserved);Proof->SetNumberField(TEXT("initial_provider_id"),FirstProviderId);Proof->SetNumberField(TEXT("reacquired_provider_id"),ReacquiredProviderId);Proof->SetNumberField(TEXT("final_provider_id"),FinalProviderId);Proof->SetBoolField(TEXT("failed_candidate_retained_live_provider"),FailedCandidateRetained);Proof->SetBoolField(TEXT("actual_fresh_entry_seen"),FreshEntrySeen);Proof->SetStringField(TEXT("entry_input_frame"),FString::Printf(TEXT("%llu"),static_cast<unsigned long long>(ProbeInputFrame)));Proof->SetStringField(TEXT("entry_observed_frame"),FString::Printf(TEXT("%llu"),static_cast<unsigned long long>(FreshEntryFrame)));Proof->SetNumberField(TEXT("entry_observed_world_seconds"),FreshEntryWorldSeconds);Proof->SetNumberField(TEXT("explicit_owner_entry_stock_used"),OpeningStock-ExpectedStock);Proof->SetNumberField(TEXT("restored_clock_tick"),SavedClock.tick);Proof->SetStringField(TEXT("restored_fraction_bits"),FString::Printf(TEXT("%llu"),static_cast<unsigned long long>(SavedClock.fraction_bits)));Proof->SetNumberField(TEXT("walk_cm"),WalkCm);Proof->SetNumberField(TEXT("natural_walk_samples"),RouteSamples);Proof->SetNumberField(TEXT("completed_counter_approaches"),CompletedApproaches);Proof->SetNumberField(TEXT("census_samples"),CensusSamples);Proof->SetStringField(TEXT("paid_lease_slot_sha256"),SlotSha);Proof->SetObjectField(TEXT("final_native_status"),LatestTownStatus);
         const FString Directory=FPaths::ProjectSavedDir()/TEXT("WorldV3PropertyJourney");IFileManager::Get().MakeDirectory(*Directory,true);FString Text;
-        if(!Need(FJsonSerializer::Serialize(Proof,TJsonWriterFactory<>::Create(&Text))&&FFileHelper::SaveStringToFile(Text,*(Directory/TEXT("NATIVE_PROPERTY_PROOF.json"))),TEXT("Actual source-bound property proof published")))return true;Release();Done=true;return true;
+        if(!Need(FJsonSerializer::Serialize(Proof,TJsonWriterFactory<>::Create(&Text))&&FFileHelper::SaveStringToFile(Text,*(Directory/TEXT("NATIVE_PROPERTY_PROOF.json"))),TEXT("Actual source-bound property proof published")))return true;
+        auto Inputs=MakeShared<FJsonObject>();Inputs->SetStringField(TEXT("scope"),TEXT("Actual one-shot queued key events and ordinary post-controller/pre-source-clock observations only"));Inputs->SetArrayField(TEXT("observations"),InputObservations);FString InputText;
+        if(!Need(FJsonSerializer::Serialize(Inputs,TJsonWriterFactory<>::Create(&InputText))&&FFileHelper::SaveStringToFile(InputText,*(Directory/TEXT("NATIVE_INPUT_OBSERVATIONS.json"))),TEXT("Actual input observation evidence published")))return true;
+        Release();RemoveReaders();Done=true;return true;
     }
 };
 }
