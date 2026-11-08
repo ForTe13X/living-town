@@ -1,10 +1,18 @@
 # MetaHuman meal physical source v2
 
-This is a conditional source candidate, not an eating capability admission.
-The WorldV3 owner can configure the physical source only with verified v2 files
-and preloaded roles. No recipe, certificate or calibrated asset is shipped.
-Missing or unqualified inputs retain the default MetaHuman refusal and hide E.
-The legacy v1 provider and financial/care core bytes are unchanged.
+The root admitted one actual native meal journey and the separate strict parser
+test on 8 November 2026 UTC (7 November local time). The 034 Game/Editor pair
+compiled source `509951c52382ca0e564ecb93a8990dad7e5efbdb`, native family
+`b7c34fccd86024019f8bf0029f097c3ec4a3466a69e82f1beddbb7d047c1976f`.
+The admitted scope is natural native input, playback ownership and authoritative
+meal state; rendered contact and final art remain open. See the actual results
+below and the [small evidence index](../evidence/metahuman_meal034_semantics.json).
+
+The WorldV3 owner configures the physical source only with verified external v2
+files and preloaded roles. No recipe, certificate or calibrated binary asset is
+shipped in this repository. Missing or unqualified inputs retain the default
+MetaHuman refusal and hide E. The legacy v1 provider remains separate; the
+financial/care cores were not changed for the 034 validation.
 
 `ULivingTownMetaHumanMealProducer` observes one owned bread component and the
 original Assembly Body/Face/Outfit. It never creates a second animation player,
@@ -46,16 +54,16 @@ strings alone are not qualification: actual files and the loaded/live physical
 observations must all agree. Root admissions are trusted local source records,
 not signed or adversarial cryptographic certificates.
 
-Configuration performs file IO, hashes and texture enumeration once. Active
+Startup performs file verification, hashes and texture enumeration once. Active
 frames use the cached role map and component/player references, bounded grip
 and material comparisons, station queries, pose revisions, time and curves.
 There is no per-frame package hashing, load, asset or component enumeration.
 
 There is deliberately no public/Blueprint setter for a qualifying boolean.
 Only the friend `ULivingTownCafeWorldV3Subsystem` can bind the private
-`BindTrustedSessionObserver` callback. That future owner must continuously
-check its actual SessionPawn/controller, active reserved use/grant, current
-rights and eligibility, including the no-grant exit policy. The callback must
+`BindTrustedSessionObserver` callback. The owner continuously checks its actual
+SessionPawn/controller, active reserved use/grant, current rights and
+eligibility, including the no-grant exit policy. The callback must
 be read-only and must not mutate or stop the producer while it is observing.
 The owner now wires this check to its real SessionPawn/controller, exact active
 reserved grant and current operator. Its cached grant index is revalidated by
@@ -195,10 +203,17 @@ also removes this component's persistent pose delegates/prerequisites;
 Assembly restores only a still-owned same-player/clip action. A foreign player's
 asset is never overwritten. No physical observation is saved or restored.
 
-## WorldV3 composition and remaining admission work
+## WorldV3 composition
 
-Root still needs the final authored asset and role/proof files, measured bread
-grip/bite geometry and tolerances, and natural Body-to-Face curve/jaw/contact proof.
+The admitted 034 fixture uses the root-adopted held-pose calibration and actual
+22-role closure, including the distinct Whole/OneBite bread materials and eight
+maps. Its 24.5-second action is
+`/Game/LivingTown_UEPilot/MetaHumanFinalMealCandidate_v003/AS_EatBread_24p5_Candidate.AS_EatBread_24p5_Candidate`,
+3,761,145 bytes, SHA256
+`67a9470c7eb4d7f23bf7ab83fa78dc0846d3a8dbba905d513a6f484c22ec66b5`.
+Held-pose calibration remains the source of the measured anchors and finite
+thresholds; the successful natural journey supplies separate live observations.
+Neither establishes finger-pad or lip-surface collision or final animation art.
 
 The owner uses `OnWorldPostActorTick` (UE 5.8 `LevelTick.cpp:1906`), after
 `TG_PostUpdateWork` and tick task completion. Its ordinary subsystem Tick runs
@@ -226,12 +241,11 @@ Recipe SHA binds the full certificate/role/proof closure into current paired
 save sources; adding/changing this capability does not waive old source checks.
 No global clock, animation rate or core increment count is changed to fit a clip.
 
-`LivingTown.WorldV3.MetaHumanMealV2Parser` adds source-only C++ parser controls
+`LivingTown.WorldV3.MetaHumanMealV2Parser` provides C++ parser controls
 for strict recipe/certificate fields, aliases/order, absent calibration,
 traversal/duplicate keys, zero hashes, phase bounds, and refusal without real
-files. Its synthetic fixture is intentionally not a qualification artifact.
-UHT, compilation, these native tests and live physical/cleanup tests have not
-run for this source candidate; root owns the next native build/run.
+files. Its synthetic fixture is intentionally not a physical qualification
+artifact. It passed separately under NullRHI on the actual 034 Editor build.
 
 `LivingTown.WorldV3.MetaHumanMealJourneyInput` is the one focused real-input
 fixture. It requires a fresh private Entry PIE, `-LivingTownCafeWorldV3`, the
@@ -246,6 +260,79 @@ facts without a new authority API. The resulting
 `Saved/CafeWorldV3/MetaHumanMealJourney.json` is a test observation, not an art or
 physical capability certificate. Separate movement/pause/unpossess/foreign-
 takeover care negatives and native rendered contact review remain required.
+
+## Actual 034 results and remaining limits
+
+The fresh Game and Editor builds passed in 274.437 and 493.141 seconds. The
+independent pair review verified 164 native source files, the full 213-file
+source closure and 426 metadata records, matching runtime modules and all nine
+build custody checks. Both build processes exited 0, were waited and had no
+remaining owned descendants. The review and exact receipt hashes are indexed
+in [metahuman_meal034_semantics.json](../evidence/metahuman_meal034_semantics.json).
+
+| Actual case | Native result | Host/native test time | Warning scope |
+| --- | --- | --- | --- |
+| `Meal034Journey_v003` | Exactly one `MetaHumanMealJourneyInput`, Success, 0 errors; D3D12/SM6 on Radeon 8060S | 87.219 s / 49.879841 s | Raw automation: 0 succeeded, 1 succeededWithWarnings; exactly one admitted external HTTP connectivity timeout |
+| `Meal034Parser_v003` | Exactly one `MetaHumanMealV2Parser`, Success, 0 errors; NullRHI, synthetic data only | 16.938 s / 0.016177 s | 1 succeeded, 0 succeededWithWarnings; 0 test warnings |
+
+Both hosts passed SOURCE, STAGED, CANONICAL, GLOBAL, PRIVATE_CONFIG and QUEUE
+closure checks, exited 0 and reaped empty. Raw Engine startup warnings remain
+in the reports: seven observed lines for the meal, including an earlier HTTP
+timeout, and five for the parser, including its NullRHI support warning. The
+sole exported meal test warning is exactly
+`LogHttp: HTTP request timed out after 3.00 seconds URL=https://www.google.com/generate_204`;
+it was disclosed, not suppressed. No material-readiness retry, blocking shader
+warmup or threshold waiver was added. Ordinary GPU preload reached
+`configure_ready`, followed by all nine journey stages.
+
+The saved 774-byte `MetaHumanMealJourney.json`, SHA256
+`1182c21860d49fbd291f9d1d3215952386861e502f34b97d1edacd1a6b508f88`,
+records two requests and 18 completed ordinary ticks. The first actual bite was
+observed at world time 7.964070503 s and the first benefit at 10.080758203 s:
+2.116687700 s later, beyond the certified minimum 1 s. Test assertions also
+checked pre-bite decay without benefit; actual W/E/F5/X/F9 callbacks; one paid
+pre-bite save/cancel/load without physical resume; a second paid meal; exact
+coin/stock changes and +3 fun; actual Whole-to-Bitten change; original Body
+player, Face/PP and Outfit ownership; and no-grant tail/owned cleanup.
+
+This is one naturally advancing near-clock-boundary run, not coverage of every
+clock phase or frame stall. Software `InputKey` events are not hardware keyboard
+input. The host used a GPU, but captured no screenshots or continuous video and
+measured no FPS. Final food/hand/Face appearance, lip/finger surface clearance,
+rendered contact, movement/pause/unpossess/foreign-takeover meal negatives,
+cooked/IoStore operation, and the home/sleep/full-town journey remain open.
+The host records natural process exit/reap; it explicitly leaves a distinct
+PIE EndPlay completion unknown where the raw log does not name it.
+
+The root's semantic admission is
+`F:/Living Town/2026-10-20_Refined_Town/root_character_pipeline_macro_review_v1_001/METAHUMAN_MEAL034_ROOT_SEMANTIC_ADMISSION.json`.
+Its scope does not promote final art or complete the broader game goal. Prior
+failed build/parser/NullRHI-journey reports remain retained.
+
+## Reproduce the qualified scope
+
+The exact frozen host is
+`F:/Living Town/2026-10-20_Refined_Town/metahuman_meal_journey_prepare_v1_003`,
+freeze SHA256 `c262b875ecd0776feb36f71c2d4c7d9a06bd13f8227888a76ca3ca46d9b7d72a`.
+Its `ROOT_COMMANDS.json` preserves both actual execution argument arrays;
+`binding/BUILD_BINDING034.json` binds the actual positive build pair. Default
+commands validate without launching or staging:
+
+```powershell
+$MealPython = 'C:/Users/yp/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe'
+$MealHost = 'F:/Living Town/2026-10-20_Refined_Town/metahuman_meal_journey_prepare_v1_003'
+$MealFreeze = 'c262b875ecd0776feb36f71c2d4c7d9a06bd13f8227888a76ca3ca46d9b7d72a'
+& $MealPython -B -X utf8 -W error "$MealHost/run_automation.py" --case meal_journey --expected-preparation-sha256 $MealFreeze
+& $MealPython -B -X utf8 -W error "$MealHost/run_automation.py" --case parser --expected-preparation-sha256 $MealFreeze
+```
+
+The retained actual output paths must not be reused. A new execution needs a
+fresh root-owned consumer/output with the same explicit sources and build
+binding; do not edit the sealed kit or substitute failed Project/DDC outputs.
+The original finite host policy is an aggregate 600 native seconds, a 180-second
+journey deadline, 16 GiB native job cap, 24 GiB reserve, full 32 logical CPUs and
+at most two shader workers. The parser remains a separate explicit case;
+ActionClipOwnership was not rerun or relabelled as a 034 result.
 
 Developer diagnostics log source/preload/configuration refusal tags at Display
 and report the journey's initial stage and each transition once. Journey failure
