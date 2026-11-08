@@ -41,6 +41,9 @@ public:
     bool LoadSlot(FString& Error);
     bool EncodeJournal(FString& Json,FString& Error)const;
     bool LoadJournal(const FString& Json,FString& Error);
+    // Explicit migration only; ordinary loading accepts native/portable V6.
+    bool ImportLegacyV5Journal(const FString& Json,FString& Error);
+    bool ImportLegacyV5Slot(FString& Error);
     bool ImportLegacyV4Journal(const FString& Json,FString& Error);
     bool ImportLegacyV4Slot(FString& Error);
 private:
@@ -87,5 +90,5 @@ private:
     void RefreshPresentation();
     FString SlotPath()const;
     FLivingTownCafeWorldReceipt SubmitPropertyInternal(const FLivingTownCafePropertyCommand& Command,bool bRecurringOffer,bool bRecurringAgreement,int64 ObservedOfferRevision,int64 ObservedTitleRevision);
-    bool DecodeJournal(const FString& Json,bool bLegacyImport,FString& Error);
+    bool DecodeJournal(const FString& Json,uint8 Version,FString& Error);
 };

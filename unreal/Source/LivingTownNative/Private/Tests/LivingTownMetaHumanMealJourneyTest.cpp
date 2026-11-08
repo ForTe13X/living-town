@@ -102,7 +102,7 @@ public:
             PC=C;Pawn=P;Authority=A;Source=S;Assembly=V;Body=V->GetBody();Face=V->GetFace();Player=Body->GetSingleNodeInstance();FaceMain=Face->GetAnimInstance();FacePost=Face->GetPostProcessInstance();BodyPost=Body->GetPostProcessInstance();
             TArray<USkeletalMeshComponent*> Parts;V->GetVisualActor()->GetComponents(Parts);for(auto* Part:Parts)if(Part!=Body.Get()&&Part!=Face.Get())Outfit=Part;
             Whole=Cast<UStaticMesh>(FSoftObjectPath(Recipe.FindRole(TEXT("bread"))->Asset).ResolveObject());Bitten=Cast<UStaticMesh>(FSoftObjectPath(Recipe.FindRole(TEXT("bread_bitten"))->Asset).ResolveObject());
-            if(!Need(Parts.Num()==3&&Outfit.IsValid()&&Whole&&Bitten&&Outfit->LeaderPoseComponent.Get()==Body.Get()&&!IFileManager::Get().FileExists(*(FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldRentCareV5.slot.json"))),TEXT("Original assembly and fresh paired native slot required")))return true;
+            if(!Need(Parts.Num()==3&&Outfit.IsValid()&&Whole&&Bitten&&Outfit->LeaderPoseComponent.Get()==Body.Get()&&!IFileManager::Get().FileExists(*(FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldResidentialCareV6.slot.json"))),TEXT("Original assembly and fresh paired native slot required")))return true;
             Opening=A->GetPresentation();if(!Need(Opening.Operator==TEXT("aria")&&Opening.Stock==2,TEXT("Fresh authored two-ration Aria-operated meal fixture required")))return true;
             Observer=FWorldDelegates::OnWorldPostActorTick.AddRaw(this,&FMetaHumanMealJourney::Sample);Transition(1);
         }
@@ -130,7 +130,7 @@ public:
             if(!Need(J.needs.hunger<=MealOpening.Hunger&&J.needs.fun==MealOpening.Fun&&A->GetPresentation().BenCoins==Opening.BenCoins-2&&A->GetPresentation().AriaCoins==Opening.AriaCoins+2&&A->GetPresentation().Stock==1,TEXT("Preparation decays normally, gives no benefit and settles exactly once")))return true;
             Press(EKeys::F5);Transition(5);return false;
         }
-        if(Stage==5){if(!Released())return false;if(!IFileManager::Get().FileExists(*(FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldRentCareV5.slot.json"))))return false;Press(EKeys::X);Transition(6);return false;}
+        if(Stage==5){if(!Released())return false;if(!IFileManager::Get().FileExists(*(FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldResidentialCareV6.slot.json"))))return false;Press(EKeys::X);Transition(6);return false;}
         if(Stage==6){
             if(!Released())return false;if(!Need(Inspect(A,E,J)&&!J.active&&J.requests.size()==1&&J.requests.back().end==Care::End::Cancelled&&J.requests.back().progressed_ticks==0&&!Source->IsPhysicalUseActive()&&!Food.IsValid(),TEXT("Real X cancels active preparation and destroys only owned food/action")))return true;
             Monitoring=false;Press(EKeys::F9);Transition(7);return false;
