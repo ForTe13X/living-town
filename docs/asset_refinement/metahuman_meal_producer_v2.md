@@ -1,9 +1,10 @@
 # MetaHuman meal physical source v2
 
-This is an unregistered source candidate, not an eating capability admission.
-The legacy v1 provider, MetaHuman refusal, E availability, paid reservation,
-stock, needs, clock, waiting, save/replay and release paths are unchanged.
-There is no recipe, certificate, calibrated asset or registration in this commit.
+This is a conditional source candidate, not an eating capability admission.
+The WorldV3 owner can configure the physical source only with verified v2 files
+and preloaded roles. No recipe, certificate or calibrated asset is shipped.
+Missing or unqualified inputs retain the default MetaHuman refusal and hide E.
+The legacy v1 provider and financial/care core bytes are unchanged.
 
 `ULivingTownMetaHumanMealProducer` observes one owned bread component and the
 original Assembly Body/Face/Outfit. It never creates a second animation player,
@@ -22,7 +23,20 @@ proof files. Package aliases are checked for identical bytes/hash and hashed
 once per configuration. This uncooked loose-package route refuses missing
 files; it does not waive hashes for a cooked build.
 
-`Configure` only resolves already preloaded UObjects, checks exact object paths,
+The owner verifies optional v2 files once during scenario preparation and starts
+an owned asynchronous Streamable role preload. Other session/game operations
+continue while meals remain unavailable. A weak owner/epoch guard cancels stale
+completion on persona change/teardown. The handle survives until the producer's
+strong role references exist. The private owner-only `ConfigureVerified` seam
+accepts that cached `ReadQualified` result without another large file hash pass.
+Public `Configure(file)` shares the same final configuration after independently
+verifying its file input; it cannot reconfigure an existing producer.
+
+The optional owner entry is `Content/LivingTown/MetaHumanMealContactV2.json`.
+Legacy `Content/LivingTown/CafeWorldV3MealContact.json` remains a separate v1
+source; staging a v2 capability must never replace it.
+
+Final configuration only resolves already preloaded UObjects, checks exact object paths,
 skeletons, nonadditive/root-motion-free clip, duration, ordered bread materials
 and complete used-texture roster, and caches strong object references. It does
 not reload a package whose UObject was already resolved. Preload and source
@@ -42,9 +56,12 @@ Only the friend `ULivingTownCafeWorldV3Subsystem` can bind the private
 check its actual SessionPawn/controller, active reserved use/grant, current
 rights and eligibility, including the no-grant exit policy. The callback must
 be read-only and must not mutate or stop the producer while it is observing.
-No callback is wired here. Without it, `BeginPhysicalUse` refuses even if all
-file/calibration checks pass. Cached presentation flags are only additional
-diagnostics and cannot replace this authority observation.
+The owner now wires this check to its real SessionPawn/controller, exact active
+reserved grant and current operator. Its cached grant index is revalidated by
+event/request identity, avoiding per-frame grant scans. The no-grant tail only
+accepts the exact completed 18-tick release, not an active or cancelled grant.
+Cached presentation flags are additional diagnostics and cannot replace this
+authority observation.
 
 ## Exact JSON contracts
 
@@ -73,12 +90,14 @@ Its format/version/status are `LivingTown.MetaHumanMeal.PhysicalCertificate`,
 `assets` rows contain exactly `role`, `asset`, `bytes`, `sha256`. Paths must be
 full top-level object paths under `/Game/` or `/MetaHumanCharacter/`. Required
 roles are `actor_class`, `clip`, `body`, `face`, `outfit`, `body_skeleton`,
-`face_skeleton`, `bread`, `body_post`, `face_main`, `face_post`, plus exactly one
+`face_skeleton`, `bread`, `bread_bitten`, `body_post`, `face_main`, `face_post`, plus exactly one
 `bread_material/N` per ordered material slot and `bread_texture/N` per unique
 texture. `bread_materials` has 1–8 paths and preserves repeated slots;
 `bread_textures` has 1–32 unique paths. No fixed third material slot is assumed.
 Body/Outfit/clip share the declared Body skeleton. Face is checked against its
 own declared skeleton; the two skeleton paths may alias with identical bytes.
+Whole and bitten bread must be distinct actual meshes with the same explicit
+grip and ordered material/texture closure. Both packages are verified and loaded.
 
 `proofs` has exactly the distinct `jaw`, `grip`, `bite` rows, each with `kind`,
 `file`, `bytes`, `sha256`. Each actual proof JSON has exactly `format`,
@@ -123,13 +142,16 @@ task participates in the tick completion handle; the finalized callback runs
 after evaluation and animation notify dispatch. No socket is read as fresh
 merely because a component tick was requested.
 
-Start may occur before or after the first animation ticks in its frame. The
-producer emits no observation in that frame, then waits at most the certified
-`max_frame_gap` for a later naturally finalized, advancing Body and Face frame.
-It anchors world/clip time there without treating a partial initial tick as a
-full frame. Only the following naturally completed frame can produce a fresh
-sample. This entry wait cannot expose holding or consumption evidence, cannot
-force pose evaluation and cancels on its finite deadline.
+Finalized observers are installed at configuration and remain prewarmed between
+uses. Start may occur before or after animation ticks, so Entry can supply a
+separate holding-only observation from the actual current naturally finalized
+Body/Face transforms and unchanged grip probes. This may still be the prior idle
+pose: it qualifies holding only if the real fingers/food/station measurements
+pass. Attachment or a new clip alone never qualifies it. Entry always clears
+bite, first-progress and consumption flags. The source still waits at most the
+certified `max_frame_gap` for a later naturally finalized, advancing frame to
+anchor playback time; only subsequent frames prove motion. No clock reset,
+timewarp, forced evaluation or invented holding bridges this boundary.
 
 Every sample also requires unpaused standalone ownership, advancing real world
 and clip time with the certified gap/error bounds, original player/asset/rate,
@@ -141,7 +163,10 @@ an early movement sample cannot qualify a later frozen jaw. Holding probes compa
 bones with measured points on the owned bread. Mouth contact uses the actual
 Face anchor and actual bread bite point, not `ACharacter::GetMesh()` or the
 Body's neck/head bones. During the bite interval, every sample must meet the
-explicit contact and jaw bounds; latching requires a measured multi-frame span.
+explicit contact and jaw bounds until the bite latch; latching requires a measured
+multi-frame span. Only after that actual latch and `clip_seconds > bite_end`
+does the component swap its own Whole mesh to the qualified bitten mesh. The
+removed Whole-tip point is not claimed as continuing bitten-mesh mouth contact.
 
 Before this latch, `bFirstProgressEligible` and `bConsumptionPhase` are false.
 They also remain false until the certified real-time delay has elapsed and
@@ -152,23 +177,44 @@ and does not know how many care increments were applied.
 
 `ReadLatest` accepts only a still-active current-frame sample, rechecks live
 identity/prop and unchanged sampled revisions/time, and clears its output on
-refusal. A future consumer must execute after this producer and consume a frame
+refusal. The owner consumes after this producer and uses a frame
 stamp at most once. Explicit stop, failure, pause/stale pose, action takeover,
 end play and normal clip completion invalidate all latest benefit evidence.
-Cleanup removes only this component's delegates/prerequisites and its own bread;
+Use cleanup destroys only its own bread and invalidates observations. Teardown
+also removes this component's persistent pose delegates/prerequisites;
 Assembly restores only a still-owned same-player/clip action. A foreign player's
 asset is never overwritten. No physical observation is saved or restored.
 
-## Remaining admission work
+## WorldV3 composition and remaining admission work
 
 Root still needs the final authored asset and role/proof files, measured bread
-grip/bite geometry and tolerances, natural Body-to-Face curve/jaw/contact proof,
-the trusted owner callback and a post-producer consumption ordering. The actual
-calibrated first eligible sample must fit the care core's maximum five waiting
-ticks for every admitted global-clock remainder. E-time charge/reservation,
-wait-with-decay, eighteen ordinary increments, cancellation/save policy and the
-no-grant tail remain a separate authority integration slice. No global clock,
-animation rate, core increment count or current refusal is changed to fit a clip.
+grip/bite geometry and tolerances, and natural Body-to-Face curve/jaw/contact proof.
+
+The owner uses `OnWorldPostActorTick` (UE 5.8 `LevelTick.cpp:1906`), after
+`TG_PostUpdateWork` and tick task completion. Its ordinary subsystem Tick runs
+too early (`LevelTick.cpp:1821`) and therefore only handles paused cleanup for
+this family. Each natural frame is processed once; the global clock remainder
+is neither reset nor stretched. The actual calibrated first eligible sample
+must fit the care core's maximum five waiting
+ticks for every admitted global-clock remainder, including the initial idle-to-
+action holding transition. E retains the original floor/hand/eye entry reach.
+The unchanged core stages the exact price, stock and reservation; the owner
+publishes that real grant for physical start within one game-thread transaction
+and rolls both books back if start refuses. Continuous use instead checks the
+measured feet/facing/eyes station and actual grip; the raised hand need not stay
+at the counter. Before the first eligible bite-plus-delay/chew sample it applies
+only bounded zero-benefit waiting with ordinary needs decay. Afterwards it uses
+eighteen ordinary increments, at most one per fresh frame/tick. Budget/rights/
+contact loss interrupts with decay; no fallback contact earns benefits.
+
+Completion releases the reservation once and leaves only a bounded visual tail
+on the same owned clip/prop, with normal idle needs decay and no grants. X,
+movement/action loss, pause, unpossess/persona change and successful load stop
+owned food/action. Saved physical observations, the tail and preload handles
+are never resumed. F9 retains replayed earned progress and releases loaded use.
+Recipe SHA binds the full certificate/role/proof closure into current paired
+save sources; adding/changing this capability does not waive old source checks.
+No global clock, animation rate or core increment count is changed to fit a clip.
 
 `LivingTown.WorldV3.MetaHumanMealV2Parser` adds source-only C++ parser controls
 for strict recipe/certificate fields, aliases/order, absent calibration,
@@ -176,3 +222,17 @@ traversal/duplicate keys, zero hashes, phase bounds, and refusal without real
 files. Its synthetic fixture is intentionally not a qualification artifact.
 UHT, compilation, these native tests and live physical/cleanup tests have not
 run for this source candidate; root owns the next native build/run.
+
+`LivingTown.WorldV3.MetaHumanMealJourneyInput` is the one focused real-input
+fixture. It requires a fresh private Entry PIE, `-LivingTownCafeWorldV3`, the
+qualified `-LivingTownMetaHumanBen=<descriptor>`, `-CafeWorldPersona=ben` and
+`-LivingTownMetaHumanMealJourney`. It uses ordinary owner preload (no test asset
+loading), real controller W/E/F5/F9/X and natural frames. It walks to the
+certified station, starts E near a clock boundary, verifies paid zero-benefit
+waiting, saves/cancels/loads before the bite with no physical resume, then purchases the
+second ration and checks actual bite/delay, Whole-to-bitten change, 18 increments
+and no-grant tail cleanup. Public journal inspection supplies request/history
+facts without a new authority API. The resulting
+`Saved/CafeWorldV3/MetaHumanMealJourney.json` is a test observation, not an art or
+physical capability certificate. Separate movement/pause/unpossess/foreign-
+takeover care negatives and native rendered contact review remain required.

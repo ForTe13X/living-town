@@ -23,7 +23,7 @@ FObject Certificate(){
     auto O=Object();O->SetStringField(TEXT("format"),TEXT("LivingTown.MetaHumanMeal.PhysicalCertificate"));O->SetStringField(TEXT("version"),TEXT("2"));O->SetStringField(TEXT("status"),TEXT("ROOT_ACCEPTED_NATIVE_PHYSICAL_EATING"));
     O->SetStringField(TEXT("binding_sha256"),HashA);O->SetStringField(TEXT("visual_descriptor_sha256"),HashB);O->SetStringField(TEXT("source_closure_sha256"),HashC);
     TArray<TSharedPtr<FJsonValue>> Assets;const auto AddRole=[&](const FString& Role,const FString& Asset){auto R=Object();R->SetStringField(TEXT("role"),Role);R->SetStringField(TEXT("asset"),Asset);R->SetNumberField(TEXT("bytes"),17);R->SetStringField(TEXT("sha256"),HashA);Assets.Add(MakeShared<FJsonValueObject>(R));};
-    for(const auto* Role:{TEXT("actor_class"),TEXT("clip"),TEXT("body"),TEXT("face"),TEXT("outfit"),TEXT("body_skeleton"),TEXT("face_skeleton"),TEXT("bread"),TEXT("body_post"),TEXT("face_main"),TEXT("face_post")}){
+    for(const auto* Role:{TEXT("actor_class"),TEXT("clip"),TEXT("body"),TEXT("face"),TEXT("outfit"),TEXT("body_skeleton"),TEXT("face_skeleton"),TEXT("bread"),TEXT("bread_bitten"),TEXT("body_post"),TEXT("face_main"),TEXT("face_post")}){
         const FString Name=FString(Role).EndsWith(TEXT("skeleton"))?TEXT("shared_skeleton"):FString(Role);AddRole(Role,FString::Printf(TEXT("/Game/ParserOnly/%s.%s"),*Name,*Name));
     }
     const FString M=TEXT("/Game/ParserOnly/material.material"),T=TEXT("/Game/ParserOnly/texture.texture");
@@ -63,6 +63,7 @@ bool FLivingTownMetaHumanMealRecipeV2Test::RunTest(const FString&){
     C=Certificate();C->GetObjectField(TEXT("anchors"))->RemoveField(TEXT("grip_relative"));RejectCertificate(C);
     C=Certificate();C->GetArrayField(TEXT("assets"))[1]->AsObject()->SetStringField(TEXT("asset"),TEXT("/Game/ParserOnly/clip"));RejectCertificate(C);
     C=Certificate();C->GetArrayField(TEXT("assets"))[6]->AsObject()->SetStringField(TEXT("sha256"),HashB);RejectCertificate(C);
+    C=Certificate();C->GetArrayField(TEXT("assets"))[8]->AsObject()->SetStringField(TEXT("asset"),TEXT("/Game/ParserOnly/bread.bread"));RejectCertificate(C);
     C=Certificate();C->SetArrayField(TEXT("proofs"),{});RejectCertificate(C);
     C=Certificate();C->SetBoolField(TEXT("trust_ui"),true);RejectCertificate(C);
     const FString Missing=TEXT("__livingtown_missing_meal_v2_parser_control__/recipe.json");

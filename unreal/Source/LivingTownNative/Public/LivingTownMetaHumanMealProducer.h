@@ -23,8 +23,8 @@ struct FLivingTownMealPhysicalObservation {
     bool bFresh=false,bHolding=false,bBiteObserved=false,bFirstProgressEligible=false,bConsumptionPhase=false;
 };
 
-// No automatic registration, capability admission, E hook, needs or ledger API.
-// A future trusted WorldV3 owner must configure/start/consume this physical source.
+// Physical source only: no needs or ledger API. The WorldV3 owner conditionally
+// configures/starts/consumes it after actual source verification and role preload.
 UCLASS(NotBlueprintable)
 class LIVINGTOWNNATIVE_API ULivingTownMetaHumanMealProducer final : public UActorComponent {
     GENERATED_BODY()
@@ -32,7 +32,7 @@ public:
     ULivingTownMetaHumanMealProducer();
     bool Configure(const FString& ContentRelativeRecipe,FString& Error);
     bool BeginPhysicalUse(FString& Error);
-    bool ReadLatest(FLivingTownMealPhysicalObservation& Out,FString& Error)const;
+    bool ReadLatest(FLivingTownMealPhysicalObservation& Out,FString& Error);
     void StopPhysicalUse();
     bool IsPhysicalUseActive()const{return bActive;}
     const FString& GetFailure()const{return Failure;}
@@ -41,14 +41,17 @@ public:
     virtual void EndPlay(const EEndPlayReason::Type Reason)override;
 private:
     friend class ULivingTownCafeWorldV3Subsystem;
-    // Only the authority owner can bind its actual private session/grant check.
-    // Deliberately unwired in this source slice; presentation booleans do not qualify.
+    // The sole owner supplies only its cached ReadQualified result, never a bool.
+    bool ConfigureVerified(const FLivingTownMetaHumanMealRecipeV2& Candidate,FString& Error);
+    // Only the authority owner binds its actual private session/grant check.
+    // Presentation booleans cannot qualify a physical use or its no-grant tail.
     bool BindTrustedSessionObserver(ULivingTownCafeWorldV3Subsystem* Owner,TFunction<bool(const ALivingTownCafeCharacter*)>&& Observer);
     TFunction<bool(const ALivingTownCafeCharacter*)> TrustedSessionObserver;
     FLivingTownMetaHumanMealRecipeV2 Recipe;
     UPROPERTY(Transient) TMap<FString,TObjectPtr<UObject>> SourceObjects;
     UPROPERTY(Transient) TObjectPtr<UAnimSequence> Clip;
     UPROPERTY(Transient) TObjectPtr<UStaticMesh> BreadMesh;
+    UPROPERTY(Transient) TObjectPtr<UStaticMesh> BittenBreadMesh;
     UPROPERTY(Transient) TObjectPtr<UStaticMeshComponent> OwnedBread;
     TWeakObjectPtr<ALivingTownCafeCharacter> Pawn;
     TWeakObjectPtr<ALivingTownCafeVenue> Venue;
@@ -60,10 +63,12 @@ private:
     TWeakObjectPtr<UAnimInstance> BodyPost,FaceMain,FacePost,OutfitMain,OutfitPost;
     TWeakObjectPtr<USkinnedMeshComponent> FaceLeader,OutfitLeader;
     uint8 FaceMode=0,OutfitMode=0;bool bFacePostDisabled=false,bOutfitPostDisabled=false;
-    bool bConfigured=false,bActive=false,bBiteObserved=false,bChewObserved=false,bMayRestoreAction=false,bAwaitingFirstPose=false;
+    bool bConfigured=false,bActive=false,bBiteObserved=false,bChewObserved=false,bMayRestoreAction=false,bAwaitingFirstPose=false,bBittenVisible=false;
     FString Failure;
     FDelegateHandle BodyFinalizedHandle,FaceFinalizedHandle;
     uint64 BodyFinalizedFrame=0,FaceFinalizedFrame=0;
+    uint32 BodyFinalizedRevision=0,FaceFinalizedRevision=0,ObservedBodyRevision=0,ObservedFaceRevision=0;
+    double ObservedClip=0;
     uint64 StartedFrame=0;double StartedWorld=0;
     uint32 LastBodyRevision=0,LastFaceRevision=0;
     double LastWorld=0,LastClip=0,BiteSpanStart=0,BiteObservedAt=0;
@@ -76,6 +81,10 @@ private:
     UObject* RoleObject(const FString& Role)const;
     bool LiveIdentity(FString& Error)const;
     bool LiveBread(FString& Error)const;
+    bool CaptureOriginalAssembly(FString& Error);
+    void ClearPoseObservers();
+    bool ObserveHolding(FVector& Bite,FVector& Mouth,FString& Error)const;
+    bool ObserveEntryHolding(FString& Error);
     bool ObserveStation(FString& Error)const;
     bool ObserveFrame(FString& Error);
     void BodyFinalized();void FaceFinalized();

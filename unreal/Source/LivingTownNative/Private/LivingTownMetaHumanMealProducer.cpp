@@ -35,24 +35,36 @@ bool ULivingTownMetaHumanMealProducer::BindTrustedSessionObserver(ULivingTownCaf
     TrustedSessionObserver=MoveTemp(Observer);return true;
 }
 bool ULivingTownMetaHumanMealProducer::Configure(const FString& RelativeRecipe,FString& Error){
+    Error.Reset();FLivingTownMetaHumanMealRecipeV2 Candidate;
+    if(!IsInGameThread()||bConfigured||bActive)return Refuse(Error,TEXT("meal_v2_single_game_thread_configuration_required"));
+    if(!FLivingTownMetaHumanMealRecipeV2::ReadQualified(RelativeRecipe,Candidate,Error))return false;
+    return ConfigureVerified(Candidate,Error);
+}
+bool ULivingTownMetaHumanMealProducer::ConfigureVerified(const FLivingTownMetaHumanMealRecipeV2& Verified,FString& Error){
     Error.Reset();if(!IsInGameThread()||bConfigured||bActive||!IsRegistered()||!GetWorld()||!GetWorld()->IsGameWorld()||GetWorld()->GetNetMode()!=NM_Standalone)return Refuse(Error,TEXT("meal_v2_registered_standalone_owner_required"));
     auto* P=Cast<ALivingTownCafeCharacter>(GetOwner());auto* A=GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();
     if(!P||!A||!A->IsPrepared()||!P->HasMetaHumanVisual()||!A->GetBinding().MetaHumanActor.IsSet())return Refuse(Error,TEXT("meal_v2_actual_metahuman_session_required"));
-    FLivingTownMetaHumanMealRecipeV2 Candidate;if(!FLivingTownMetaHumanMealRecipeV2::ReadQualified(RelativeRecipe,Candidate,Error))return false;
+    auto Candidate=Verified;
     const auto& B=A->GetBinding();const auto& D=B.MetaHumanActor.GetValue();
     if(Candidate.BindingSha256!=B.BindingFileSha256||Candidate.VisualDescriptorSha256!=D.DescriptorSha256||Candidate.SourceClosureSha256!=D.SourceClosureSha256||
        Candidate.FindRole(TEXT("actor_class"))->Asset!=D.ActorClassPath||Candidate.FindRole(TEXT("body"))->Asset!=LivingTownMetaHumanVisual::BodyMesh||Candidate.FindRole(TEXT("face"))->Asset!=LivingTownMetaHumanVisual::FaceMesh||Candidate.FindRole(TEXT("outfit"))->Asset!=D.ExpectedOutfitMesh()||
        !B.CounterUsePointCm.Equals(Candidate.CounterPointCm,Candidate.TransformTolerance)||!B.FloorBoundsCm.IsInsideXY(Candidate.StationFeetCm))return Refuse(Error,TEXT("meal_v2_recipe_does_not_match_current_binding"));
     TMap<FString,TObjectPtr<UObject>> Objects;for(const auto& Role:Candidate.Assets){auto* Object=FSoftObjectPath(Role.Asset).ResolveObject();if(!IsValid(Object)||Object->GetPathName()!=Role.Asset)return Refuse(Error,TEXT("meal_v2_exact_preloaded_roles_required_no_runtime_load"));Objects.Add(Role.Role,Object);}
     const auto ObjectFor=[&](const FString& Role)->UObject*{const auto* Object=Objects.Find(Role);return Object?Object->Get():nullptr;};
-    auto* NewClip=Cast<UAnimSequence>(ObjectFor(TEXT("clip")));auto* NewBread=Cast<UStaticMesh>(ObjectFor(TEXT("bread")));
+    auto* NewClip=Cast<UAnimSequence>(ObjectFor(TEXT("clip")));auto* NewBread=Cast<UStaticMesh>(ObjectFor(TEXT("bread")));auto* NewBitten=Cast<UStaticMesh>(ObjectFor(TEXT("bread_bitten")));
     const auto* BMesh=Cast<USkeletalMesh>(ObjectFor(TEXT("body")));const auto* FMesh=Cast<USkeletalMesh>(ObjectFor(TEXT("face")));const auto* OMesh=Cast<USkeletalMesh>(ObjectFor(TEXT("outfit")));
-    if(!NewClip||!NewBread||!BMesh||!FMesh||!OMesh||BMesh->GetSkeleton()!=ObjectFor(TEXT("body_skeleton"))||FMesh->GetSkeleton()!=ObjectFor(TEXT("face_skeleton"))||NewClip->GetSkeleton()!=BMesh->GetSkeleton()||OMesh->GetSkeleton()!=BMesh->GetSkeleton()||
-       NewClip->IsValidAdditive()||NewClip->bEnableRootMotion||NewClip->RateScale!=1.f||NewClip->GetNumberOfSampledKeys()<2||!FMath::IsNearlyEqual(double(NewClip->GetPlayLength()),Candidate.Duration,Candidate.TimeError)||NewBread->GetStaticMaterials().Num()!=Candidate.BreadMaterials.Num())return Refuse(Error,TEXT("meal_v2_preloaded_mesh_rig_clip_or_material_mismatch"));
-    TSet<FString> Used;for(int32 I=0;I<Candidate.BreadMaterials.Num();++I){auto* M=NewBread->GetStaticMaterials()[I].MaterialInterface.Get();if(!M||M!=ObjectFor(FString::Printf(TEXT("bread_material/%d"),I)))return Refuse(Error,TEXT("meal_v2_ordered_bread_material_mismatch"));TArray<UTexture*> Textures;M->GetUsedTextures(Textures);for(auto* T:Textures)if(T)Used.Add(T->GetPathName());}
+    if(!NewClip||!NewBread||!NewBitten||NewBread==NewBitten||!BMesh||!FMesh||!OMesh||BMesh->GetSkeleton()!=ObjectFor(TEXT("body_skeleton"))||FMesh->GetSkeleton()!=ObjectFor(TEXT("face_skeleton"))||NewClip->GetSkeleton()!=BMesh->GetSkeleton()||OMesh->GetSkeleton()!=BMesh->GetSkeleton()||
+       NewClip->IsValidAdditive()||NewClip->bEnableRootMotion||NewClip->RateScale!=1.f||NewClip->GetNumberOfSampledKeys()<2||!FMath::IsNearlyEqual(double(NewClip->GetPlayLength()),Candidate.Duration,Candidate.TimeError)||NewBread->GetStaticMaterials().Num()!=Candidate.BreadMaterials.Num()||NewBitten->GetStaticMaterials().Num()!=Candidate.BreadMaterials.Num())return Refuse(Error,TEXT("meal_v2_preloaded_mesh_rig_clip_or_material_mismatch"));
+    TSet<FString> Used;for(auto* Mesh:{NewBread,NewBitten})for(int32 I=0;I<Candidate.BreadMaterials.Num();++I){auto* M=Mesh->GetStaticMaterials()[I].MaterialInterface.Get();if(!M||M!=ObjectFor(FString::Printf(TEXT("bread_material/%d"),I)))return Refuse(Error,TEXT("meal_v2_ordered_bread_material_mismatch"));TArray<UTexture*> Textures;M->GetUsedTextures(Textures);for(auto* T:Textures)if(T)Used.Add(T->GetPathName());}
     TSet<FString> Expected;for(int32 I=0;I<Candidate.BreadTextures.Num();++I){if(!Cast<UTexture>(ObjectFor(FString::Printf(TEXT("bread_texture/%d"),I))))return Refuse(Error,TEXT("meal_v2_real_texture_role_required"));Expected.Add(Candidate.BreadTextures[I]);}
     if(Used.Num()!=Expected.Num())return Refuse(Error,TEXT("meal_v2_complete_bread_texture_closure_mismatch"));for(const auto& T:Used)if(!Expected.Contains(T))return Refuse(Error,TEXT("meal_v2_unbound_bread_texture"));
-    Recipe=MoveTemp(Candidate);SourceObjects=MoveTemp(Objects);Clip=NewClip;BreadMesh=NewBread;Pawn=P;Authority=A;bConfigured=true;return true;
+    Recipe=MoveTemp(Candidate);SourceObjects=MoveTemp(Objects);Clip=NewClip;BreadMesh=NewBread;BittenBreadMesh=NewBitten;Pawn=P;Authority=A;bConfigured=true;
+    if(!CaptureOriginalAssembly(Error)){bConfigured=false;return false;}
+    BodyFinalizedFrame=FaceFinalizedFrame=MAX_uint64;
+    BodyFinalizedHandle=Body->RegisterOnBoneTransformsFinalizedDelegate(FOnBoneTransformsFinalizedMultiCast::FDelegate::CreateUObject(this,&ULivingTownMetaHumanMealProducer::BodyFinalized));
+    FaceFinalizedHandle=Face->RegisterOnBoneTransformsFinalizedDelegate(FOnBoneTransformsFinalizedMultiCast::FDelegate::CreateUObject(this,&ULivingTownMetaHumanMealProducer::FaceFinalized));
+    if(!BodyFinalizedHandle.IsValid()||!FaceFinalizedHandle.IsValid()){ClearPoseObservers();bConfigured=false;return Refuse(Error,TEXT("meal_v2_finalized_pose_observers_required"));}
+    AddTickPrerequisiteComponent(Body.Get());AddTickPrerequisiteComponent(Face.Get());return true;
 }
 bool ULivingTownMetaHumanMealProducer::LiveIdentity(FString& Error)const{
     const auto* P=Pawn.Get();const auto* A=Authority.Get();const auto* W=GetWorld();const auto* PC=W?Cast<ALivingTownCafeWorldV3Controller>(W->GetFirstPlayerController()):nullptr;
@@ -74,8 +86,7 @@ bool ULivingTownMetaHumanMealProducer::ObserveStation(FString& Error)const{
     FCollisionQueryParams Q(SCENE_QUERY_STAT(MetaHumanMealStation),true);Q.AddIgnoredActor(P);FVector Eyes;FRotator Rotation;P->GetActorEyesViewPoint(Eyes,Rotation);FHitResult Hit;
     if(!W->LineTraceSingleByChannel(Hit,Eyes,Recipe.CounterPointCm,ECC_Visibility,Q)||!V->IsCounterComponent(Hit.GetComponent()))return Refuse(Error,TEXT("meal_v2_counter_eye_line_lost"));return true;
 }
-bool ULivingTownMetaHumanMealProducer::BeginPhysicalUse(FString& Error){
-    Error.Reset();if(!IsInGameThread()||!bConfigured||bActive||!Pawn.IsValid())return Refuse(Error,TEXT("meal_v2_inactive_qualified_producer_required"));
+bool ULivingTownMetaHumanMealProducer::CaptureOriginalAssembly(FString& Error){
     auto* P=Pawn.Get();auto* S=P->FindComponentByClass<ULivingTownMetaHumanVisualAssembly>();auto* B=S?S->GetBody():nullptr;auto* F=S?S->GetFace():nullptr;auto* V=S?S->GetVisualActor():nullptr;USkeletalMeshComponent* O=nullptr;
     if(!S||!S->IsConfigured()||S->IsActionClipActive()||!B||!F||!V)return Refuse(Error,TEXT("meal_v2_original_live_assembly_required"));
     TArray<USkeletalMeshComponent*> Parts;V->GetComponents(Parts);for(auto* Part:Parts)if(Part!=B&&Part!=F)O=Part;
@@ -84,42 +95,63 @@ bool ULivingTownMetaHumanMealProducer::BeginPhysicalUse(FString& Error){
     Assembly=S;Visual=V;Body=B;Face=F;Outfit=O;Player=B->GetSingleNodeInstance();BodyPost=B->GetPostProcessInstance();FaceMain=F->GetAnimInstance();FacePost=F->GetPostProcessInstance();FaceLeader=F->LeaderPoseComponent;FaceMode=uint8(F->GetAnimationMode());bFacePostDisabled=F->GetDisablePostProcessBlueprint();OutfitMain=O->GetAnimInstance();OutfitPost=O->GetPostProcessInstance();OutfitLeader=O->LeaderPoseComponent;OutfitMode=uint8(O->GetAnimationMode());bOutfitPostDisabled=O->GetDisablePostProcessBlueprint();
     int32 Venues=0;for(TActorIterator<ALivingTownCafeVenue> It(GetWorld());It;++It)if(It->IsQualified()){Venue=*It;++Venues;}
     if(Venues!=1)return Refuse(Error,TEXT("meal_v2_one_qualified_venue_required"));
+    return true;
+}
+bool ULivingTownMetaHumanMealProducer::BeginPhysicalUse(FString& Error){
+    Error.Reset();if(!IsInGameThread()||!bConfigured||bActive||!Pawn.IsValid())return Refuse(Error,TEXT("meal_v2_inactive_qualified_producer_required"));
+    auto* P=Pawn.Get();auto* S=Assembly.Get();auto* B=Body.Get();auto* F=Face.Get();
+    if(!S||S->IsActionClipActive())return Refuse(Error,TEXT("meal_v2_original_live_assembly_required"));
     if(!LiveIdentity(Error)||!ObserveStation(Error))return false;
-    Failure.Reset();Latest={};BiteSamples=0;bBiteObserved=false;bChewObserved=false;BiteSpanStart=0;BiteObservedAt=0;MaxChewJawDegrees=0;BodyFinalizedFrame=FaceFinalizedFrame=MAX_uint64;
+    Failure.Reset();Latest={};BiteSamples=0;bBiteObserved=false;bBittenVisible=false;bChewObserved=false;BiteSpanStart=0;BiteObservedAt=0;MaxChewJawDegrees=0;
     OwnedBread=NewObject<UStaticMeshComponent>(P);P->AddInstanceComponent(OwnedBread);OwnedBread->SetMobility(EComponentMobility::Movable);OwnedBread->SetupAttachment(B,Recipe.HandBone);OwnedBread->SetRelativeTransform(Recipe.GripRelative);OwnedBread->SetStaticMesh(BreadMesh);OwnedBread->SetCollisionEnabled(ECollisionEnabled::NoCollision);OwnedBread->SetGenerateOverlapEvents(false);OwnedBread->SetCanEverAffectNavigation(false);OwnedBread->RegisterComponent();
     if(!OwnedBread->IsRegistered()||!S->BeginActionClip(Clip,false,Error)){StopPhysicalUse();return false;}
     bActive=true;bMayRestoreAction=true;bAwaitingFirstPose=true;StartedFrame=GFrameCounter;StartedWorld=LastWorld=GetWorld()->GetTimeSeconds();LastClip=Player->GetCurrentTime();LastBodyRevision=B->GetBoneTransformRevisionNumber();LastFaceRevision=F->GetBoneTransformRevisionNumber();
-    BodyFinalizedHandle=B->RegisterOnBoneTransformsFinalizedDelegate(FOnBoneTransformsFinalizedMultiCast::FDelegate::CreateUObject(this,&ULivingTownMetaHumanMealProducer::BodyFinalized));
-    FaceFinalizedHandle=F->RegisterOnBoneTransformsFinalizedDelegate(FOnBoneTransformsFinalizedMultiCast::FDelegate::CreateUObject(this,&ULivingTownMetaHumanMealProducer::FaceFinalized));
-    if(!BodyFinalizedHandle.IsValid()||!FaceFinalizedHandle.IsValid()){StopPhysicalUse();return Refuse(Error,TEXT("meal_v2_finalized_pose_observers_required"));}
-    AddTickPrerequisiteComponent(B);AddTickPrerequisiteComponent(F);SetComponentTickEnabled(true);return true;
+    SetComponentTickEnabled(true);return true;
 }
-void ULivingTownMetaHumanMealProducer::BodyFinalized(){if(IsInGameThread()&&bActive)BodyFinalizedFrame=GFrameCounter;}
-void ULivingTownMetaHumanMealProducer::FaceFinalized(){if(IsInGameThread()&&bActive)FaceFinalizedFrame=GFrameCounter;}
+void ULivingTownMetaHumanMealProducer::BodyFinalized(){if(IsInGameThread()&&bConfigured&&Body.IsValid()){BodyFinalizedFrame=GFrameCounter;BodyFinalizedRevision=Body->GetBoneTransformRevisionNumber();}}
+void ULivingTownMetaHumanMealProducer::FaceFinalized(){if(IsInGameThread()&&bConfigured&&Face.IsValid()){FaceFinalizedFrame=GFrameCounter;FaceFinalizedRevision=Face->GetBoneTransformRevisionNumber();}}
 bool ULivingTownMetaHumanMealProducer::LiveBread(FString& Error)const{
     const auto* Food=OwnedBread.Get();
-    if(!Food||Food->GetOwner()!=Pawn.Get()||!Food->IsRegistered()||Food->GetAttachParent()!=Body.Get()||Food->GetAttachSocketName()!=Recipe.HandBone||Food->GetStaticMesh()!=BreadMesh||Food->GetCollisionEnabled()!=ECollisionEnabled::NoCollision||!Food->IsVisible()||Food->bHiddenInGame||Food->GetOverlayMaterial()||Food->GetNumMaterials()!=Recipe.BreadMaterials.Num()||!Food->GetRelativeTransform().Equals(Recipe.GripRelative,Recipe.TransformTolerance))return Refuse(Error,TEXT("meal_v2_owned_bread_replaced_or_detached"));
+    if(!Food||Food->GetOwner()!=Pawn.Get()||!Food->IsRegistered()||Food->GetAttachParent()!=Body.Get()||Food->GetAttachSocketName()!=Recipe.HandBone||Food->GetStaticMesh()!=(bBittenVisible?BittenBreadMesh:BreadMesh)||Food->GetCollisionEnabled()!=ECollisionEnabled::NoCollision||!Food->IsVisible()||Food->bHiddenInGame||Food->GetOverlayMaterial()||Food->GetNumMaterials()!=Recipe.BreadMaterials.Num()||!Food->GetRelativeTransform().Equals(Recipe.GripRelative,Recipe.TransformTolerance))return Refuse(Error,TEXT("meal_v2_owned_bread_replaced_or_detached"));
     for(int32 I=0;I<Recipe.BreadMaterials.Num();++I)if(Food->GetMaterial(I)!=RoleObject(FString::Printf(TEXT("bread_material/%d"),I))||Food->GetOverlayMaterial(true,I))return Refuse(Error,TEXT("meal_v2_live_bread_material_changed"));
     return true;
 }
-bool ULivingTownMetaHumanMealProducer::ObserveFrame(FString& Error){
-    if(!LiveIdentity(Error)||!LiveBread(Error)||!ObserveStation(Error))return false;auto* B=Body.Get();auto* F=Face.Get();auto* P=Player.Get();auto* Food=OwnedBread.Get();
-    const double Now=GetWorld()->GetTimeSeconds(),Elapsed=Now-LastWorld,Time=P->GetCurrentTime(),Advanced=Time-LastClip;
-    if(!FMath::IsFinite(Elapsed)||Elapsed<=0||Elapsed>Recipe.MaxFrameGap||!FMath::IsFinite(Time)||Time<0||Time>Recipe.Duration+Recipe.TimeError||Advanced<=0||FMath::Abs(Advanced-Elapsed)>Recipe.TimeError)return Refuse(Error,TEXT("meal_v2_stale_frozen_or_reset_clip_time"));
-    if(BodyFinalizedFrame!=GFrameCounter||FaceFinalizedFrame!=GFrameCounter||B->GetBoneTransformRevisionNumber()==LastBodyRevision||F->GetBoneTransformRevisionNumber()==LastFaceRevision)return Refuse(Error,TEXT("meal_v2_fresh_finalized_body_and_face_required"));
+bool ULivingTownMetaHumanMealProducer::ObserveHolding(FVector& Bite,FVector& Mouth,FString& Error)const{
+    if(!LiveBread(Error))return false;auto* B=Body.Get();auto* F=Face.Get();auto* Food=OwnedBread.Get();
     const FTransform FoodWorld=Food->GetComponentTransform(),HandWorld=B->GetSocketTransform(Recipe.HandBone,RTS_World),MouthWorld=F->GetSocketTransform(Recipe.MouthBone,RTS_World);
     if(!FoodWorld.IsValid()||!HandWorld.IsValid()||!MouthWorld.IsValid()||!FoodWorld.Equals(Recipe.GripRelative*HandWorld,Recipe.TransformTolerance))return Refuse(Error,TEXT("meal_v2_actual_food_socket_transform_stale"));
     for(const auto& G:Recipe.GripProbes){const FVector Bone=B->GetSocketLocation(G.BodyBone),Point=FoodWorld.TransformPosition(G.FoodPointCm);if(Bone.ContainsNaN()||Point.ContainsNaN()||FVector::Dist(Bone,Point)>G.MaxDistanceCm)return Refuse(Error,TEXT("meal_v2_measured_physical_grip_lost"));}
-    const FVector Bite=FoodWorld.TransformPosition(Recipe.FoodBitePointCm),Mouth=MouthWorld.TransformPosition(Recipe.MouthOffsetCm);
+    Bite=FoodWorld.TransformPosition(Recipe.FoodBitePointCm);Mouth=MouthWorld.TransformPosition(Recipe.MouthOffsetCm);
     if(Bite.ContainsNaN()||Mouth.ContainsNaN())return Refuse(Error,TEXT("meal_v2_finite_bite_and_mouth_points_required"));
+    return true;
+}
+bool ULivingTownMetaHumanMealProducer::ObserveEntryHolding(FString& Error){
+    if(!bActive||!bAwaitingFirstPose||!LiveIdentity(Error)||!ObserveStation(Error))return false;
+    const double Now=GetWorld()->GetTimeSeconds(),Time=Player->GetCurrentTime(),Age=Now-StartedWorld;
+    if(!FMath::IsFinite(Age)||Age<0||Age>Recipe.MaxFrameGap||!FMath::IsFinite(Time)||Time<0||Time>Recipe.Duration)return Refuse(Error,TEXT("meal_v2_initial_natural_pose_deadline"));
+    if(BodyFinalizedFrame!=GFrameCounter||FaceFinalizedFrame!=GFrameCounter||Body->GetBoneTransformRevisionNumber()!=BodyFinalizedRevision||Face->GetBoneTransformRevisionNumber()!=FaceFinalizedRevision)return Refuse(Error,TEXT("meal_v2_fresh_finalized_entry_holding_required"));
+    FVector Bite,Mouth;if(!ObserveHolding(Bite,Mouth,Error))return false;
+    Latest={};Latest.Frame=GFrameCounter;Latest.WorldSeconds=Now;Latest.ClipSeconds=Time;Latest.Phase=ELivingTownMealPhysicalPhase::Entry;Latest.FoodBiteWorld=Bite;Latest.MouthWorld=Mouth;Latest.bFresh=true;Latest.bHolding=true;
+    ObservedBodyRevision=BodyFinalizedRevision;ObservedFaceRevision=FaceFinalizedRevision;ObservedClip=Time;return true;
+}
+bool ULivingTownMetaHumanMealProducer::ObserveFrame(FString& Error){
+    if(!LiveIdentity(Error)||!ObserveStation(Error))return false;auto* B=Body.Get();auto* F=Face.Get();auto* P=Player.Get();
+    const double Now=GetWorld()->GetTimeSeconds(),Elapsed=Now-LastWorld,Time=P->GetCurrentTime(),Advanced=Time-LastClip;
+    if(!FMath::IsFinite(Elapsed)||Elapsed<=0||Elapsed>Recipe.MaxFrameGap||!FMath::IsFinite(Time)||Time<0||Time>Recipe.Duration+Recipe.TimeError||Advanced<=0||FMath::Abs(Advanced-Elapsed)>Recipe.TimeError)return Refuse(Error,TEXT("meal_v2_stale_frozen_or_reset_clip_time"));
+    if(BodyFinalizedFrame!=GFrameCounter||FaceFinalizedFrame!=GFrameCounter||B->GetBoneTransformRevisionNumber()==LastBodyRevision||F->GetBoneTransformRevisionNumber()==LastFaceRevision)return Refuse(Error,TEXT("meal_v2_fresh_finalized_body_and_face_required"));
+    FVector Bite,Mouth;if(!ObserveHolding(Bite,Mouth,Error))return false;
     const float ExpectedCurve=Clip->EvaluateCurveData(Recipe.JawCurve,FAnimExtractContext(Time),false);
     float BC=0,FC=0;if(!P->GetCurveValue(Recipe.JawCurve,BC)||!FaceMain->GetCurveValue(Recipe.JawCurve,FC)||!FMath::IsFinite(ExpectedCurve)||!FMath::IsFinite(BC)||!FMath::IsFinite(FC)||FMath::Abs(double(BC)-ExpectedCurve)>Recipe.CurveTolerance||FMath::Abs(double(BC)-FC)>Recipe.CurveTolerance)return Refuse(Error,TEXT("meal_v2_actual_body_face_curve_chain_lost"));
-    if(Time>=Recipe.BiteStart&&Time<=Recipe.BiteEnd){
+    if(Time>=Recipe.BiteStart&&Time<=Recipe.BiteEnd&&!bBiteObserved){
         if(Bite.ContainsNaN()||Mouth.ContainsNaN()||FVector::Dist(Bite,Mouth)>Recipe.MaxBiteDistanceCm||BC<Recipe.MinBiteJawCurve||FC<Recipe.MinBiteJawCurve)return Refuse(Error,TEXT("meal_v2_actual_food_mouth_bite_lost"));
         if(BiteSamples==0)BiteSpanStart=Time;++BiteSamples;
-        if(!bBiteObserved&&BiteSamples>=Recipe.MinBiteSamples&&Time-BiteSpanStart>=Recipe.MinBiteSpan){bBiteObserved=true;BiteObservedAt=Now;}
+        if(BiteSamples>=Recipe.MinBiteSamples&&Time-BiteSpanStart>=Recipe.MinBiteSpan){bBiteObserved=true;BiteObservedAt=Now;}
     }
     if(Time>Recipe.BiteEnd&&!bBiteObserved)return Refuse(Error,TEXT("meal_v2_measured_bite_interval_not_observed"));
+    if(Time>Recipe.BiteEnd&&bBiteObserved&&!bBittenVisible){
+        if(!OwnedBread->SetStaticMesh(BittenBreadMesh))return Refuse(Error,TEXT("meal_v2_owned_bitten_mesh_swap_refused"));
+        bBittenVisible=true;
+    }
     if(Time>=Recipe.ChewStart&&Time<=Recipe.ChewEnd){
         const FTransform RelativeJaw=F->GetSocketTransform(Recipe.JawBone,RTS_Component).GetRelativeTransform(F->GetSocketTransform(Recipe.JawParentBone,RTS_Component));if(!RelativeJaw.IsValid())return Refuse(Error,TEXT("meal_v2_finite_relative_jaw_pose_required"));
         if(!bChewObserved){bChewObserved=true;MinBodyCurve=MaxBodyCurve=MotionBodyCurve=BC;MinFaceCurve=MaxFaceCurve=MotionFaceCurve=FC;FirstChewJaw=MotionJaw=RelativeJaw.GetRotation();LastCurveMotionWorld=LastJawMotionWorld=Now;}
@@ -134,7 +166,7 @@ bool ULivingTownMetaHumanMealProducer::ObserveFrame(FString& Error){
     Latest.Phase=Time>=Recipe.Duration-Recipe.TimeError?ELivingTownMealPhysicalPhase::Finished:Time>=Recipe.TailStart?ELivingTownMealPhysicalPhase::Exit:Time>=Recipe.ChewStart?ELivingTownMealPhysicalPhase::Chew:Time>=Recipe.BiteStart?ELivingTownMealPhysicalPhase::Bite:ELivingTownMealPhysicalPhase::Entry;
     const bool ChewWitness=bChewObserved&&double(MaxBodyCurve-MinBodyCurve)>=Recipe.MinChewCurveDelta&&double(MaxFaceCurve-MinFaceCurve)>=Recipe.MinChewCurveDelta&&MaxChewJawDegrees>=Recipe.MinChewJawDegrees;
     Latest.bFirstProgressEligible=bBiteObserved&&ChewWitness&&Now-BiteObservedAt>=Recipe.FirstProgressDelay&&Time>=Recipe.ChewStart&&Time<=Recipe.ChewEnd;Latest.bConsumptionPhase=Latest.bFirstProgressEligible;
-    LastWorld=Now;LastClip=Time;LastBodyRevision=B->GetBoneTransformRevisionNumber();LastFaceRevision=F->GetBoneTransformRevisionNumber();return true;
+    LastWorld=Now;LastClip=Time;ObservedClip=Time;ObservedBodyRevision=LastBodyRevision=B->GetBoneTransformRevisionNumber();ObservedFaceRevision=LastFaceRevision=F->GetBoneTransformRevisionNumber();return true;
 }
 void ULivingTownMetaHumanMealProducer::TickComponent(float Delta,ELevelTick Type,FActorComponentTickFunction* Tick){
     Super::TickComponent(Delta,Type,Tick);if(!bActive)return;FString Error;
@@ -142,32 +174,38 @@ void ULivingTownMetaHumanMealProducer::TickComponent(float Delta,ELevelTick Type
         const double Now=GetWorld()->GetTimeSeconds(),Age=Now-StartedWorld;
         if(!LiveIdentity(Error)||!LiveBread(Error)||!ObserveStation(Error)){Failure=Error;StopPhysicalUse();return;}
         if(!FMath::IsFinite(Age)||Age<0||Age>Recipe.MaxFrameGap){Failure=TEXT("meal_v2_initial_natural_pose_deadline");StopPhysicalUse();return;}
+        if(!ObserveEntryHolding(Error)){Failure=Error;StopPhysicalUse();return;}
         // Begin may run before or after either animation tick. Never label the
         // start frame fresh, and never compare a partial first tick with a full dt.
         const double Time=Player->GetCurrentTime();
         if(GFrameCounter!=StartedFrame&&Age>0&&FMath::IsFinite(Time)&&Time>LastClip&&Time<=Recipe.Duration&&BodyFinalizedFrame==GFrameCounter&&FaceFinalizedFrame==GFrameCounter&&Body->GetBoneTransformRevisionNumber()!=LastBodyRevision&&Face->GetBoneTransformRevisionNumber()!=LastFaceRevision){
             LastWorld=Now;LastClip=Time;LastBodyRevision=Body->GetBoneTransformRevisionNumber();LastFaceRevision=Face->GetBoneTransformRevisionNumber();bAwaitingFirstPose=false;
         }
-        return; // No holding/contact/benefit sample until the next natural frame.
+        return; // Entry holding is measured, but no playback/bite/benefit is claimed.
     }
     if(!ObserveFrame(Error)){Failure=Error;Latest={};StopPhysicalUse();return;}
     if(Latest.Phase==ELivingTownMealPhysicalPhase::Finished)StopPhysicalUse();
 }
-bool ULivingTownMetaHumanMealProducer::ReadLatest(FLivingTownMealPhysicalObservation& Out,FString& Error)const{
+bool ULivingTownMetaHumanMealProducer::ReadLatest(FLivingTownMealPhysicalObservation& Out,FString& Error){
     Out={};Error.Reset();if(!IsInGameThread())return Refuse(Error,TEXT("meal_v2_game_thread_observation_required"));
+    // If E ran after this component's tick, the post-actor owner may still read
+    // independently measured current-frame entry holding from prewarmed finalizers.
+    if(bActive&&bAwaitingFirstPose&&(!Latest.bFresh||Latest.Frame!=GFrameCounter)&&!ObserveEntryHolding(Error))return false;
     const double Age=GetWorld()?GetWorld()->GetTimeSeconds()-Latest.WorldSeconds:-1;
     if(!bActive||!Failure.IsEmpty()||!Latest.bFresh||Latest.Frame!=GFrameCounter||Age<0||Age>Recipe.MaxFrameGap)return Refuse(Error,TEXT("meal_v2_no_fresh_observation"));
     if(!LiveIdentity(Error)||!LiveBread(Error))return false;
-    if(Body->GetBoneTransformRevisionNumber()!=LastBodyRevision||Face->GetBoneTransformRevisionNumber()!=LastFaceRevision||Player->GetCurrentTime()!=LastClip)return Refuse(Error,TEXT("meal_v2_observed_pose_changed_after_production"));
+    if(Body->GetBoneTransformRevisionNumber()!=ObservedBodyRevision||Face->GetBoneTransformRevisionNumber()!=ObservedFaceRevision||Player->GetCurrentTime()!=ObservedClip)return Refuse(Error,TEXT("meal_v2_observed_pose_changed_after_production"));
     Out=Latest;return true;
 }
 void ULivingTownMetaHumanMealProducer::StopPhysicalUse(){
     if(!IsInGameThread())return;Latest={};bActive=false;SetComponentTickEnabled(false);
+    if(OwnedBread){if(auto* P=Pawn.Get())P->RemoveInstanceComponent(OwnedBread);OwnedBread->DestroyComponent();OwnedBread=nullptr;}
+    if(bMayRestoreAction&&Assembly.IsValid()&&Assembly->IsActionClipActive()&&Body.IsValid()&&Player.IsValid()&&Body->GetSingleNodeInstance()==Player.Get()&&Player->GetCurrentAsset()==Clip)Assembly->EndActionClip();
+    Latest={};bActive=false;bMayRestoreAction=false;bAwaitingFirstPose=false;bBiteObserved=false;bBittenVisible=false;bChewObserved=false;BiteSamples=0;
+}
+void ULivingTownMetaHumanMealProducer::ClearPoseObservers(){
     if(Body.IsValid()){if(BodyFinalizedHandle.IsValid())Body->UnregisterOnBoneTransformsFinalizedDelegate(BodyFinalizedHandle);RemoveTickPrerequisiteComponent(Body.Get());}
     if(Face.IsValid()){if(FaceFinalizedHandle.IsValid())Face->UnregisterOnBoneTransformsFinalizedDelegate(FaceFinalizedHandle);RemoveTickPrerequisiteComponent(Face.Get());}
     BodyFinalizedHandle.Reset();FaceFinalizedHandle.Reset();
-    if(OwnedBread){if(auto* P=Pawn.Get())P->RemoveInstanceComponent(OwnedBread);OwnedBread->DestroyComponent();OwnedBread=nullptr;}
-    if(bMayRestoreAction&&Assembly.IsValid()&&Assembly->IsActionClipActive()&&Body.IsValid()&&Player.IsValid()&&Body->GetSingleNodeInstance()==Player.Get()&&Player->GetCurrentAsset()==Clip)Assembly->EndActionClip();
-    Latest={};bActive=false;bMayRestoreAction=false;bAwaitingFirstPose=false;bBiteObserved=false;bChewObserved=false;BiteSamples=0;
 }
-void ULivingTownMetaHumanMealProducer::EndPlay(const EEndPlayReason::Type Reason){StopPhysicalUse();bConfigured=false;TrustedSessionObserver=nullptr;SourceObjects.Empty();Clip=nullptr;BreadMesh=nullptr;Super::EndPlay(Reason);}
+void ULivingTownMetaHumanMealProducer::EndPlay(const EEndPlayReason::Type Reason){StopPhysicalUse();ClearPoseObservers();bConfigured=false;TrustedSessionObserver=nullptr;SourceObjects.Empty();Clip=nullptr;BreadMesh=nullptr;BittenBreadMesh=nullptr;Super::EndPlay(Reason);}
