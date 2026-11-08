@@ -10,6 +10,10 @@ class UWorld;
 UENUM(BlueprintType)
 enum class ELivingTownFullTownComponentKind : uint8 { StaticMesh, HierarchicalInstances };
 
+// Zero preserves the interpretation of existing serialized descriptors.
+UENUM(BlueprintType)
+enum class ELivingTownFullTownCafeBackend : uint8 { LegacyProjection262, WorldV3Qualified289 };
+
 USTRUCT(BlueprintType)
 struct FLivingTownFullTownMaterialSlot
 {
@@ -73,6 +77,7 @@ public:
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="FullTown manifest") int32 SchemaVersion = 1;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="FullTown manifest") FString Scope = TEXT("IntegrationSubset");
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="FullTown manifest") FString ProfileId = TEXT("U0131_U0142_Ground151_ExternalCafe81_v001");
+    UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="FullTown manifest") ELivingTownFullTownCafeBackend CafeBackend = ELivingTownFullTownCafeBackend::LegacyProjection262;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="FullTown manifest") FSoftObjectPath RootWorld;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="FullTown manifest") FString SourceDispatchSha256;
     UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="FullTown manifest") FString SourceWorldLedgerSha256;
@@ -86,6 +91,7 @@ public:
 namespace LivingTownFullTown
 {
     LIVINGTOWNNATIVE_API bool ValidateManifest(const ULivingTownFullTownData& Data, FString& Error);
+    LIVINGTOWNNATIVE_API bool IsWorldV3CafeProfile(const ULivingTownFullTownData& Data);
     LIVINGTOWNNATIVE_API bool SameQualifiedTransform(const FTransform& Actual, const FTransform& Expected);
     LIVINGTOWNNATIVE_API double DistanceToBoundsXY(const FVector& Point, const FBox& Bounds);
 }

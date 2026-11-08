@@ -3,6 +3,7 @@
 #include "LivingTownCafePropertyV2Scenario.h"
 #include "LivingTownCafeCharacter.h"
 #include "LivingTownMetaHumanVisualAssembly.h"
+#include "LivingTownFullTownStreamingSubsystem.h"
 #include "Engine/World.h"
 #include "Engine/Engine.h"
 #include "Engine/Canvas.h"
@@ -155,12 +156,17 @@ bool ALivingTownCafeWorldV3GameMode::SelectPersonaImmediate(ALivingTownCafeWorld
     if(bTransactional&&OldPawn.IsValid())Q.AddIgnoredActor(OldPawn.Get());
     if(GetWorld()->OverlapBlockingTestByChannel(Pawn->GetActorLocation(),FQuat::Identity,ECC_Pawn,FCollisionShape::MakeCapsule(B.CapsuleRadiusCm,B.CapsuleHalfHeightCm),Q))
     {Pawn->Destroy();Error=TEXT("actual_persona_spawn_capsule_overlap");return false;}
-    // This family has no qualified eating/contact recipe. Do not cancel paired
-    // authority to attempt a visual switch: Bind publishes only after validation.
+    // Do not cancel paired authority to attempt a visual switch: Bind publishes
+    // only after validation, with any current physical meal already excluded.
     if(bTransactional&&P->GetPresentation().bMealActive)
     {Pawn->Destroy();Error=TEXT("metahuman_persona_switch_requires_no_active_meal");return false;}
-    PC->Possess(Pawn);PC->SetViewTarget(Pawn);PC->SetControlRotation(B.SpawnRotation);PC->Persona=Persona;PC->bAuthorized=PC->GetPawn()==Pawn;
-    if(!PC->bAuthorized||!P->BindNativeSession(PC,Pawn,Error))
+    auto* FullTown=GetWorld()->GetSubsystem<ULivingTownFullTownStreamingSubsystem>();
+    const bool bTownBoot=FullTown&&FullTown->IsBootPossessionPending();
+    if(FullTown&&!FullTown->BeforeQualifiedPossess(PC,Error)){Pawn->Destroy();return false;}
+    PC->Possess(Pawn);
+    const bool bTownPossessed=!FullTown||FullTown->AfterQualifiedPossess(PC,Pawn,Error);
+    PC->SetViewTarget(Pawn);PC->SetControlRotation(B.SpawnRotation);PC->Persona=Persona;PC->bAuthorized=PC->GetPawn()==Pawn;
+    if(!bTownPossessed||!PC->bAuthorized||!P->BindNativeSession(PC,Pawn,Error))
     {
         const FString SelectionError=Error.IsEmpty()?TEXT("actual_persona_possession_required"):Error;
         PC->bAuthorized=false;if(PC->GetPawn()==Pawn)PC->UnPossess();Pawn->Destroy();
@@ -177,6 +183,7 @@ bool ALivingTownCafeWorldV3GameMode::SelectPersonaImmediate(ALivingTownCafeWorld
             }
             else if(OldView.IsValid())PC->SetViewTarget(OldView.Get());
         }
+        if(bTownBoot)FullTown->RequestSafeStop();
         Error=SelectionError;return false;
     }
     if(bTransactional&&OldPawn.IsValid())OldPawn->Destroy();return true;
@@ -213,7 +220,7 @@ void ALivingTownCafeWorldV3Controller::Eat(){auto* P=GetWorld()?GetWorld()->GetS
 void ALivingTownCafeWorldV3Controller::Cancel(){RequestCancelMeal();}
 void ALivingTownCafeWorldV3Controller::Save(){FString Error;auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;OperationNotice=P&&P->SaveSlot(Error)?TEXT("Cafe saved."):TEXT("Unable to save the cafe.");}
 void ALivingTownCafeWorldV3Controller::Load(){FString Error;auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;OperationNotice=P&&P->LoadSlot(Error)?TEXT("Cafe restored. Previous meals stay stopped; earned progress is kept."):TEXT("Unable to restore this cafe save.");}
-void ALivingTownCafeWorldV3Controller::ImportOlderSave(){FString Error;auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;OperationNotice=P&&P->ImportLegacyV4Slot(Error)?TEXT("Older cafe save imported. Fixed leases stay fixed."):TEXT("Unable to import this older cafe save. Your current cafe is unchanged.");}
+void ALivingTownCafeWorldV3Controller::ImportOlderSave(){FString Error;auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;OperationNotice=P&&P->ImportLegacyV5Slot(Error)?TEXT("Previous cafe save imported."):TEXT("Unable to import this previous cafe save. Your current cafe is unchanged.");}
 FLivingTownCafeWorldReceipt ALivingTownCafeWorldV3Controller::RequestRecurringLeaseOffer(const FString& RequestId){
     auto* P=GetWorld()?GetWorld()->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;FLivingTownCafeWorldReceipt R;
     if(P&&GetWorld()->GetFirstPlayerController()==this)R=P->SubmitRecurringLeaseOffer(RequestId);else R.Message=TEXT("The cafe is unavailable.");
@@ -254,7 +261,7 @@ TArray<FString> ALivingTownCafeWorldV3HUD::GetControlRows()const{
     if(P&&P->IsPrepared()&&P->GetPresentation().bMealActive)Rows.Add(TEXT("X Cancel meal"));
     else if(P&&P->IsPrepared()&&P->GetPresentation().bMealAvailable)Rows.Add(TEXT("E Eat a meal"));
     else Rows.Add(TEXT("Meals unavailable"));
-    Rows.Append({TEXT("PROPERTY"),TEXT("O Offer sale"),TEXT("L Fixed | N Recurring lease"),TEXT("B Buy  |  K Lease"),TEXT("R End lease"),TEXT("SAVE"),TEXT("F5 Save  |  F9 Load"),TEXT("I Import older save")});
+    Rows.Append({TEXT("PROPERTY"),TEXT("O Offer sale"),TEXT("L Fixed | N Recurring lease"),TEXT("B Buy  |  K Lease"),TEXT("R End lease"),TEXT("SAVE"),TEXT("F5 Save  |  F9 Load"),TEXT("I Import previous save")});
     return Rows;
 }
 void ALivingTownCafeWorldV3HUD::DrawHUD(){
