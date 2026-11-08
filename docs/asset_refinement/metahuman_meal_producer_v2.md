@@ -69,6 +69,8 @@ authority observation.
 All keys below are required; additional or duplicate keys, nonfinite/fractional
 integer values, zero hashes, absolute/traversing paths and unspecified anchors
 are refused. Hashes are 64 lowercase hex characters. Versions are JSON strings.
+Scalar helpers require actual JSON string/number types before UE conversions:
+numeric versions and quoted numbers are refused rather than coerced.
 Recipe/certificate/proof files are at most 128 KiB; package roles at most 512 MiB
 each. JSON path references are contained Content-relative `.json` paths.
 
@@ -244,3 +246,9 @@ facts without a new authority API. The resulting
 `Saved/CafeWorldV3/MetaHumanMealJourney.json` is a test observation, not an art or
 physical capability certificate. Separate movement/pause/unpossess/foreign-
 takeover care negatives and native rendered contact review remain required.
+
+Developer diagnostics log source/preload/configuration refusal tags at Display
+and report the journey's initial stage and each transition once. Journey failure
+and timeout messages include the stage, current pawn position, source presence,
+availability and reach. These diagnostics add no retries, readiness changes,
+HUD text or deadline extension.

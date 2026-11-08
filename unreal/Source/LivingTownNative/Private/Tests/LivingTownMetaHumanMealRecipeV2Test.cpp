@@ -51,6 +51,7 @@ bool FLivingTownMetaHumanMealRecipeV2Test::RunTest(const FString&){
     TestEqual(TEXT("Body and Face skeleton identity may alias when declared bytes agree"),Out.FindRole(TEXT("body_skeleton"))->Asset,Out.FindRole(TEXT("face_skeleton"))->Asset);
     const auto RejectRecipe=[&](const FObject& O){Out.RecipeSha256=TEXT("unchanged_on_refusal");TestFalse(TEXT("Malformed recipe refused"),FLivingTownMetaHumanMealRecipeV2::ParseRecipe(Json(O),Out,Error));TestEqual(TEXT("No partial output publication"),Out.RecipeSha256,FString(TEXT("unchanged_on_refusal")));TestFalse(TEXT("Refusal explains reason"),Error.IsEmpty());};
     auto O=Recipe();O->SetNumberField(TEXT("version"),2);RejectRecipe(O);
+    O=Recipe();O->SetStringField(TEXT("certificate_bytes"),TEXT("17"));RejectRecipe(O);
     O=Recipe();O->SetStringField(TEXT("extra"),TEXT("ignored?"));RejectRecipe(O);
     O=Recipe();O->SetStringField(TEXT("certificate_sha256"),FString::ChrN(64,TCHAR('0')));RejectRecipe(O);
     for(const auto* Path:{TEXT("../escape.json"),TEXT("C:/escape.json"),TEXT("/escape.json")}){O=Recipe();O->SetStringField(TEXT("certificate_file"),Path);RejectRecipe(O);}
@@ -58,6 +59,9 @@ bool FLivingTownMetaHumanMealRecipeV2Test::RunTest(const FString&){
     const auto RejectCertificate=[&](const FObject& C){Out.RecipeSha256=TEXT("unchanged_on_refusal");TestFalse(TEXT("Unqualified certificate refused"),FLivingTownMetaHumanMealRecipeV2::ParseCertificate(Json(C),R,Out,Error));TestEqual(TEXT("No partial certificate publication"),Out.RecipeSha256,FString(TEXT("unchanged_on_refusal")));};
     for(const auto* Status:{TEXT("PENDING"),TEXT("ROOT_ACCEPTED_NATIVE"),TEXT("ROOT_ACCEPTED_NATIVE_PHYSICAL_EATING")}){auto C=Certificate();C->SetStringField(TEXT("status"),Status);RejectCertificate(C);}
     auto C=Certificate();C->SetStringField(TEXT("source_closure_sha256"),HashA);RejectCertificate(C);
+    C=Certificate();C->SetNumberField(TEXT("version"),2);RejectCertificate(C);
+    C=Certificate();C->GetObjectField(TEXT("timing"))->SetStringField(TEXT("duration"),TEXT("24.5"));RejectCertificate(C);
+    C=Certificate();C->GetObjectField(TEXT("timing"))->SetStringField(TEXT("min_bite_samples"),TEXT("3"));RejectCertificate(C);
     C=Certificate();C->GetObjectField(TEXT("timing"))->RemoveField(TEXT("max_frame_gap"));RejectCertificate(C);
     C=Certificate();C->GetObjectField(TEXT("timing"))->SetNumberField(TEXT("min_bite_samples"),2.5);RejectCertificate(C);
     C=Certificate();C->GetObjectField(TEXT("timing"))->SetNumberField(TEXT("first_progress_delay"),0);RejectCertificate(C);

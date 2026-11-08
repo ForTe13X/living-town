@@ -116,23 +116,25 @@ void ULivingTownCafeWorldV3Subsystem::BeginMealPreload(){
     const uint64 Epoch=++MealPreloadEpoch;TWeakObjectPtr<ULivingTownCafeWorldV3Subsystem> Weak(this);TArray<FSoftObjectPath> Paths;
     for(const auto& Role:State->MetaRecipe.Assets)Paths.AddUnique(FSoftObjectPath(Role.Asset));
     auto Handle=UAssetManager::GetStreamableManager().RequestAsyncLoad(Paths,FStreamableDelegate::CreateLambda([Weak,Epoch](){if(auto* Owner=Weak.Get())Owner->CompleteMealPreload(Epoch);}));
-    if(!Handle&&!bMealRolesReady&&!MetaHumanMeal)MetaHumanMealFailure=TEXT("qualified_meta_meal_async_preload_request_failed");
+    if(!Handle&&!bMealRolesReady&&!MetaHumanMeal){MetaHumanMealFailure=TEXT("qualified_meta_meal_async_preload_request_failed");UE_LOG(LogTemp,Display,TEXT("MetaHumanMeal preload_refused=%s"),*MetaHumanMealFailure);}
     if(Epoch==MealPreloadEpoch&&bPrepared&&!MetaHumanMeal)MealPreload=MoveTemp(Handle);else if(Handle)Handle->CancelHandle();
 }
 void ULivingTownCafeWorldV3Subsystem::CompleteMealPreload(uint64 Epoch){
     if(!IsInGameThread()||Epoch!=MealPreloadEpoch||!bPrepared||!State||!GetWorld()||GetWorld()->bIsTearingDown)return;
-    bMealRolesReady=true;ConfigureMetaHumanMeal();RefreshPresentation();
+    UE_LOG(LogTemp,Display,TEXT("MetaHumanMeal preload_complete"));bMealRolesReady=true;ConfigureMetaHumanMeal();RefreshPresentation();
 }
 void ULivingTownCafeWorldV3Subsystem::ConfigureMetaHumanMeal(){
     if(MetaHumanMeal||!bMealRolesReady||!State||!State->bMetaRecipe||!SessionController.IsValid()||SessionController->GetNativePersona()!=ELivingTownCafeWorldPersona::Ben)return;
     auto* Pawn=Cast<ALivingTownCafeCharacter>(SessionPawn.Get());if(!Pawn)return;
     auto* Source=NewObject<ULivingTownMetaHumanMealProducer>(Pawn,NAME_None,RF_Transient);Pawn->AddInstanceComponent(Source);Source->RegisterComponent();
-    if(!Source->ConfigureVerified(State->MetaRecipe,MetaHumanMealFailure)||Utf8(Source->GetRecipe().RecipeSha256)!=State->Sources.world.clip_sha256){
+    const bool Configured=Source->ConfigureVerified(State->MetaRecipe,MetaHumanMealFailure);
+    if(!Configured||Utf8(Source->GetRecipe().RecipeSha256)!=State->Sources.world.clip_sha256){
+        UE_LOG(LogTemp,Display,TEXT("MetaHumanMeal configure_refused=%s"),Configured?TEXT("meal_v2_owner_recipe_sha_mismatch"):*MetaHumanMealFailure);
         Pawn->RemoveInstanceComponent(Source);Source->DestroyComponent();return;
     }
     TWeakObjectPtr<ULivingTownCafeWorldV3Subsystem> Weak(this);
-    if(!Source->BindTrustedSessionObserver(this,[Weak](const ALivingTownCafeCharacter* P){const auto* Owner=Weak.Get();return Owner&&Owner->TrustedMetaHumanMealSession(P);})){Pawn->RemoveInstanceComponent(Source);Source->DestroyComponent();return;}
-    MetaHumanMeal=Source;MealPreload.Reset();
+    if(!Source->BindTrustedSessionObserver(this,[Weak](const ALivingTownCafeCharacter* P){const auto* Owner=Weak.Get();return Owner&&Owner->TrustedMetaHumanMealSession(P);})){UE_LOG(LogTemp,Display,TEXT("MetaHumanMeal configure_refused=meal_v2_trusted_session_observer_bind_refused"));Pawn->RemoveInstanceComponent(Source);Source->DestroyComponent();return;}
+    MetaHumanMeal=Source;MealPreload.Reset();UE_LOG(LogTemp,Display,TEXT("MetaHumanMeal configure_ready"));
 }
 bool ULivingTownCafeWorldV3Subsystem::TrustedMetaHumanMealSession(const ALivingTownCafeCharacter* Pawn)const{
     const auto* PC=SessionController.Get();const auto* W=GetWorld();
@@ -422,7 +424,9 @@ bool ReadMealSource(const FLivingTownCafeBinding& B,P::CareBindings& Sources,boo
         if(B.MotionStrategy!=ELivingTownCafeMotionStrategy::MetaHumanWholeActor||!B.MetaHumanActor->IsValidated()||B.VisualSha256!=B.MetaHumanActor->DescriptorSha256)
         {Error=TEXT("metahuman_prepared_unavailable_meal_policy_required");return false;}
         FString Why;FLivingTownMetaHumanMealRecipeV2 R;
-        if(FLivingTownMetaHumanMealRecipeV2::ReadQualified(TEXT("LivingTown/MetaHumanMealContactV2.json"),R,Why)&&R.BindingSha256==B.BindingFileSha256&&R.VisualDescriptorSha256==B.MetaHumanActor->DescriptorSha256&&R.SourceClosureSha256==B.MetaHumanActor->SourceClosureSha256){Sources.world.clip_sha256=Utf8(R.RecipeSha256);bMetaRecipe=true;MetaRecipe=MoveTemp(R);}
+        const bool Qualified=FLivingTownMetaHumanMealRecipeV2::ReadQualified(TEXT("LivingTown/MetaHumanMealContactV2.json"),R,Why);
+        if(Qualified&&R.BindingSha256==B.BindingFileSha256&&R.VisualDescriptorSha256==B.MetaHumanActor->DescriptorSha256&&R.SourceClosureSha256==B.MetaHumanActor->SourceClosureSha256){Sources.world.clip_sha256=Utf8(R.RecipeSha256);bMetaRecipe=true;MetaRecipe=MoveTemp(R);}
+        else UE_LOG(LogTemp,Display,TEXT("MetaHumanMeal source_refused=%s"),Qualified?TEXT("meal_v2_binding_or_visual_source_mismatch"):*Why);
         return true;
     }
     const FString Path=FPaths::ProjectContentDir()/TEXT("LivingTown/CafeWorldV3MealContact.json");

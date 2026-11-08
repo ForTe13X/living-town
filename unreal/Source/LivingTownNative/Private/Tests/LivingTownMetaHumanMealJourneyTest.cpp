@@ -41,7 +41,7 @@ class FMetaHumanMealJourney final:public IAutomationLatentCommand {
     FAutomationTestBase* Test;FLivingTownMetaHumanMealRecipeV2 Recipe;
     const double Deadline=FPlatformTime::Seconds()+180;
     uint32 WorldId=0;int32 Stage=0;uint64 PressFrame=0;FKey Held;
-    bool Done=false,Monitoring=false,SawBite=false,SawBitten=false,SawTail=false;
+    bool Done=false,Monitoring=false,SawBite=false,SawBitten=false,SawTail=false,LoggedInitialStage=false;
     double BiteWorld=-1,FirstBenefit=-1;FString Failure;
     FDelegateHandle Observer;
     TWeakObjectPtr<ALivingTownCafeWorldV3Controller> PC;
@@ -55,7 +55,15 @@ class FMetaHumanMealJourney final:public IAutomationLatentCommand {
     TWeakObjectPtr<UStaticMeshComponent> Food;
     FLivingTownCafeWorldView Opening,MealOpening;
     UStaticMesh* Whole=nullptr;UStaticMesh* Bitten=nullptr;
-    bool Need(bool OK,const TCHAR* Why){if(!OK){Test->AddError(Why);Done=true;}return OK;}
+    FString Diagnostic()const{
+        int32 Count=0;auto* W=MealWorld(Count);const auto* A=W?W->GetSubsystem<ULivingTownCafeWorldV3Subsystem>():nullptr;
+        const auto* C=W?Cast<ALivingTownCafeWorldV3Controller>(W->GetFirstPlayerController()):nullptr;const auto* P=C?C->GetPawn():nullptr;
+        const auto* S=P?P->FindComponentByClass<ULivingTownMetaHumanMealProducer>():nullptr;const auto* Ben=Cast<ALivingTownCafeCharacter>(P);
+        return FString::Printf(TEXT("stage=%d worlds=%d pawn=%s position=%s meta_visual=%d source=%s source_active=%d source_failure=%s prepared=%d session=%d available=%d reachable=%d"),
+            Stage,Count,*GetNameSafe(P),P?*P->GetActorLocation().ToString():TEXT("none"),Ben&&Ben->HasMetaHumanVisual(),*GetNameSafe(S),S&&S->IsPhysicalUseActive(),S?*S->GetFailure():TEXT("none"),A&&A->IsPrepared(),A&&A->GetPresentation().bSessionReady,A&&A->GetPresentation().bMealAvailable,A&&A->GetPresentation().bReachable);
+    }
+    bool Need(bool OK,const TCHAR* Why){if(!OK){Test->AddError(FString(Why)+TEXT(" | ")+Diagnostic());Done=true;}return OK;}
+    void Transition(int32 Next){if(Stage!=Next){Stage=Next;Test->AddInfo(TEXT("MealJourney transition ")+Diagnostic());}}
     void Release(){if(PC.IsValid()&&Held.IsValid())PC->InputKey(FInputKeyEventArgs::CreateSimulated(Held,IE_Released,0.f));Held=FKey();}
     void Press(FKey Key){Release();Held=Key;PressFrame=GFrameCounter;PC->InputKey(FInputKeyEventArgs::CreateSimulated(Key,IE_Pressed,1.f));}
     bool Released(){if(GFrameCounter<PressFrame+2)return false;Release();return true;}
@@ -79,6 +87,7 @@ public:
     FMetaHumanMealJourney(FAutomationTestBase* T):Test(T){}
     virtual ~FMetaHumanMealJourney(){FWorldDelegates::OnWorldPostActorTick.Remove(Observer);Release();}
     virtual bool Update()override{
+        if(!LoggedInitialStage){LoggedInitialStage=true;Test->AddInfo(TEXT("MealJourney initial ")+Diagnostic());}
         if(Done)return true;if(!Need(FPlatformTime::Seconds()<Deadline,TEXT("Finite native eating journey deadline exceeded"))||!Need(Failure.IsEmpty(),*Failure))return true;
         int32 Count=0;auto* W=MealWorld(Count);if(!Need(Count<=1&&(!WorldId||(W&&W->GetUniqueID()==WorldId)),TEXT("One unchanged runtime world required")))return true;if(!W||!W->HasBegunPlay())return false;
         if(!WorldId)WorldId=W->GetUniqueID();auto* A=W->GetSubsystem<ULivingTownCafeWorldV3Subsystem>();auto* C=Cast<ALivingTownCafeWorldV3Controller>(W->GetFirstPlayerController());
@@ -95,17 +104,17 @@ public:
             Whole=Cast<UStaticMesh>(FSoftObjectPath(Recipe.FindRole(TEXT("bread"))->Asset).ResolveObject());Bitten=Cast<UStaticMesh>(FSoftObjectPath(Recipe.FindRole(TEXT("bread_bitten"))->Asset).ResolveObject());
             if(!Need(Parts.Num()==3&&Outfit.IsValid()&&Whole&&Bitten&&Outfit->LeaderPoseComponent.Get()==Body.Get()&&!IFileManager::Get().FileExists(*(FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldRentCareV5.slot.json"))),TEXT("Original assembly and fresh paired native slot required")))return true;
             Opening=A->GetPresentation();if(!Need(Opening.Operator==TEXT("aria")&&Opening.Stock==2,TEXT("Fresh authored two-ration Aria-operated meal fixture required")))return true;
-            Observer=FWorldDelegates::OnWorldPostActorTick.AddRaw(this,&FMetaHumanMealJourney::Sample);Stage=1;
+            Observer=FWorldDelegates::OnWorldPostActorTick.AddRaw(this,&FMetaHumanMealJourney::Sample);Transition(1);
         }
         if(!Need(C==PC.Get()&&C->GetPawn()==Pawn.Get()&&Assembly.IsValid()&&Body.IsValid()&&Face.IsValid()&&Outfit.IsValid()&&Player.IsValid()&&Assembly->GetBody()==Body.Get()&&Assembly->GetFace()==Face.Get()&&Body->GetSingleNodeInstance()==Player.Get()&&Face->GetAnimInstance()==FaceMain.Get()&&Face->GetPostProcessInstance()==FacePost.Get()&&Body->GetPostProcessInstance()==BodyPost.Get()&&Outfit->LeaderPoseComponent.Get()==Body.Get(),TEXT("No player, Face ABP/post-process or Outfit leader replacement allowed")))return true;
         if(Stage==1){
             const FVector Feet=Pawn->GetActorLocation()-FVector(0,0,Pawn->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());const FVector To=Recipe.StationFeetCm-Feet;
             if(To.Size2D()>Recipe.StationRadiusCm*.25){PC->SetControlRotation(FRotator(0,To.Rotation().Yaw,0));if(Held!=EKeys::W)Press(EKeys::W);return false;}
-            Release();PC->SetControlRotation(FRotator(0,(Recipe.CounterPointCm-Pawn->GetActorLocation()).Rotation().Yaw,0));Press(EKeys::W);Stage=2;return false;
+            Release();PC->SetControlRotation(FRotator(0,(Recipe.CounterPointCm-Pawn->GetActorLocation()).Rotation().Yaw,0));Press(EKeys::W);Transition(2);return false;
         }
         if(Stage==2){
             if(Held==EKeys::W){const FVector To=(Recipe.CounterPointCm-Pawn->GetActorLocation()).GetSafeNormal2D();if(FVector::DotProduct(Pawn->GetActorForwardVector().GetSafeNormal2D(),To)<Recipe.StationFacingDot)return false;Release();}
-            if(Pawn->GetVelocity().Size2D()>2)return false;if(!Need(A->GetPresentation().bReachable,TEXT("Actual walked entry must satisfy original floor/hand/eye counter reach")))return true;Stage=3;
+            if(Pawn->GetVelocity().Size2D()>2)return false;if(!Need(A->GetPresentation().bReachable,TEXT("Actual walked entry must satisfy original floor/hand/eye counter reach")))return true;Transition(3);
         }
         W3::CareEnvelope E;Care::Journal J;
         if(Stage==3){
@@ -113,28 +122,28 @@ public:
             // A fixed 20 ms window can be missed forever by valid 30 Hz frames.
             // Schedule across the observed next two natural frames, not by
             // changing the authority clock, delta or animation playback.
-            if(Fraction+2.0*double(W->GetDeltaSeconds())<1)return false;MealOpening=A->GetPresentation();Monitoring=true;Press(EKeys::E);Stage=4;return false;
+            if(Fraction+2.0*double(W->GetDeltaSeconds())<1)return false;MealOpening=A->GetPresentation();Monitoring=true;Press(EKeys::E);Transition(4);return false;
         }
         if(Stage==4){
             if(!Released())return false;if(!Need(Inspect(A,E,J)&&J.active&&J.active->elapsed==0&&J.requests.size()==1,TEXT("Near-boundary E must reserve a real zero-progress use")))return true;
             bool Wait=false;for(const auto& H:J.history)Wait|=H.op==Care::Op::WaitBeforeFirstProgress;if(!Wait)return false;
             if(!Need(J.needs.hunger<=MealOpening.Hunger&&J.needs.fun==MealOpening.Fun&&A->GetPresentation().BenCoins==Opening.BenCoins-2&&A->GetPresentation().AriaCoins==Opening.AriaCoins+2&&A->GetPresentation().Stock==1,TEXT("Preparation decays normally, gives no benefit and settles exactly once")))return true;
-            Press(EKeys::F5);Stage=5;return false;
+            Press(EKeys::F5);Transition(5);return false;
         }
-        if(Stage==5){if(!Released())return false;if(!IFileManager::Get().FileExists(*(FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldRentCareV5.slot.json"))))return false;Press(EKeys::X);Stage=6;return false;}
+        if(Stage==5){if(!Released())return false;if(!IFileManager::Get().FileExists(*(FPaths::ProjectSavedDir()/TEXT("CafeWorldV3/CafeWorldRentCareV5.slot.json"))))return false;Press(EKeys::X);Transition(6);return false;}
         if(Stage==6){
             if(!Released())return false;if(!Need(Inspect(A,E,J)&&!J.active&&J.requests.size()==1&&J.requests.back().end==Care::End::Cancelled&&J.requests.back().progressed_ticks==0&&!Source->IsPhysicalUseActive()&&!Food.IsValid(),TEXT("Real X cancels active preparation and destroys only owned food/action")))return true;
-            Monitoring=false;Press(EKeys::F9);Stage=7;return false;
+            Monitoring=false;Press(EKeys::F9);Transition(7);return false;
         }
         if(Stage==7){
             if(!Released())return false;if(!Need(Inspect(A,E,J)&&!J.active&&J.requests.size()==1&&J.requests.back().end==Care::End::AfterLoad&&J.requests.back().progressed_ticks==0&&A->GetPresentation().BenCoins==Opening.BenCoins-2&&A->GetPresentation().Stock==1&&!Source->IsPhysicalUseActive()&&!Food.IsValid(),TEXT("Real F9 retains the paid save, interrupts loaded use and never recreates bread or grants pre-bite progress")))return true;
-            MealOpening=A->GetPresentation();SawBite=SawBitten=SawTail=false;BiteWorld=FirstBenefit=-1;Monitoring=true;Press(EKeys::E);Stage=8;return false;
+            MealOpening=A->GetPresentation();SawBite=SawBitten=SawTail=false;BiteWorld=FirstBenefit=-1;Monitoring=true;Press(EKeys::E);Transition(8);return false;
         }
         if(Stage==8){
             if(!Released())return false;if(A->GetPresentation().bMealActive)return false;
             if(!Need(Inspect(A,E,J)&&J.requests.size()==2&&J.requests.back().end==Care::End::Completed&&J.requests.back().progressed_ticks==18,TEXT("Second actual E must earn exactly eighteen ordinary increments")))return true;
             int32 Advances=0;for(const auto& H:J.history)if(H.op==Care::Op::Advance&&H.contact&&H.contact->grant_id==J.requests.back().grant.grant_id)++Advances;
-            if(!Need(Advances==18&&SawBite&&SawBitten&&FirstBenefit>=0&&J.needs.fun==MealOpening.Fun+300&&A->GetPresentation().BenCoins==Opening.BenCoins-4&&A->GetPresentation().AriaCoins==Opening.AriaCoins+4&&A->GetPresentation().Stock==0,TEXT("One paid second meal, real bite/mesh change and exact authored +3 fun required")))return true;Stage=9;
+            if(!Need(Advances==18&&SawBite&&SawBitten&&FirstBenefit>=0&&J.needs.fun==MealOpening.Fun+300&&A->GetPresentation().BenCoins==Opening.BenCoins-4&&A->GetPresentation().AriaCoins==Opening.AriaCoins+4&&A->GetPresentation().Stock==0,TEXT("One paid second meal, real bite/mesh change and exact authored +3 fun required")))return true;Transition(9);
         }
         if(Stage==9){
             if(Source->IsPhysicalUseActive())return false;

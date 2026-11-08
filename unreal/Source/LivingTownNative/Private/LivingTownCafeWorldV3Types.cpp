@@ -68,8 +68,8 @@ namespace MealV2 {
 bool Fail(FString& E,const TCHAR* Why){E=Why;return false;}
 bool Hash(const FString& S){return Sha(S)&&S!=FString::ChrN(64,TCHAR('0'));}
 bool Keys(const FJsonObject& O,std::initializer_list<const TCHAR*> Names){if(O.Values.Num()!=int32(Names.size()))return false;for(const auto* N:Names)if(!O.HasField(FStringView(N)))return false;return true;}
-bool String(const FJsonObject& O,const TCHAR* K,FString& V){return O.TryGetStringField(K,V)&&!V.IsEmpty()&&V.Len()<=2048;}
-bool Number(const FJsonObject& O,const TCHAR* K,double& V,double Lo,double Hi){return O.TryGetNumberField(K,V)&&FMath::IsFinite(V)&&V>=Lo&&V<=Hi;}
+bool String(const FJsonObject& O,const TCHAR* K,FString& V){return O.HasTypedField<EJson::String>(K)&&O.TryGetStringField(K,V)&&!V.IsEmpty()&&V.Len()<=2048;}
+bool Number(const FJsonObject& O,const TCHAR* K,double& V,double Lo,double Hi){return O.HasTypedField<EJson::Number>(K)&&O.TryGetNumberField(K,V)&&FMath::IsFinite(V)&&V>=Lo&&V<=Hi;}
 bool Integer(const FJsonObject& O,const TCHAR* K,int64& V,int64 Lo,int64 Hi){double N=0;if(!Number(O,K,N,double(Lo),double(Hi))||FMath::FloorToDouble(N)!=N)return false;V=int64(N);return true;}
 bool Json(const FString& S,TSharedPtr<FJsonObject>& O){return S.Len()<=128*1024&&LivingTownCafeJournal::HasUniqueObjectKeys(S)&&FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(S),O)&&O.IsValid();}
 bool Relative(const FString& S){return !S.IsEmpty()&&S.Len()<=240&&FPaths::IsRelative(S)&&!S.Contains(TEXT(".."))&&!S.Contains(TEXT("\\"))&&!S.Contains(TEXT(":"))&&!S.StartsWith(TEXT("/"))&&S.EndsWith(TEXT(".json"));}
