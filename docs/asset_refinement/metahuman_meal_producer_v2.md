@@ -316,7 +316,9 @@ The exact frozen host is
 freeze SHA256 `c262b875ecd0776feb36f71c2d4c7d9a06bd13f8227888a76ca3ca46d9b7d72a`.
 Its `ROOT_COMMANDS.json` preserves both actual execution argument arrays;
 `binding/BUILD_BINDING034.json` binds the actual positive build pair. Default
-commands validate without launching or staging:
+commands launch and stage nothing. With the retained actual outputs present,
+they stop at the fresh-output refusal; a fresh consumer is required for another
+successful preflight or execution:
 
 ```powershell
 $MealPython = 'C:/Users/yp/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe'
