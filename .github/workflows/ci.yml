@@ -220,8 +220,7 @@ jobs:
         run: |
           set -euo pipefail
           GV=4.6.2-stable
-          curl -fLo godot.zip \
-            "https://github.com/godotengine/godot/releases/download/${GV}/Godot_v${GV}_linux.x86_64.zip"
+          bash .github/actions/lt-setup/download-godot.sh "$GV"
           unzip -q godot.zip
           sudo mv "Godot_v${GV}_linux.x86_64" /usr/local/bin/godot
           sudo chmod +x /usr/local/bin/godot
