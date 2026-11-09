@@ -42,7 +42,9 @@ jobs:
       - name: In-game capture safety
         run: python3 tools/in_game_capture/test_capture_safety.py
       - name: Archived Unreal capture source identity
-        run: python3 -B tools/unreal/stage_capture_fixture.py --fixture continuous_capture_v003
+        run: |
+          python3 -B tools/unreal/stage_capture_fixture.py --fixture continuous_capture_v003
+          python3 -B tools/unreal/fixtures/continuous_capture_v003/test_archive.py
       - name: Offline asset refinement contracts
         shell: bash
         run: |
