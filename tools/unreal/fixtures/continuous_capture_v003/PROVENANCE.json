@@ -1,0 +1,146 @@
+{
+  "schema": "living_town.capture_fixture_source_provenance.v1",
+  "fixture_id": "continuous_capture_v003",
+  "source_family_sha256": "b1150cc9e6c1e7a9363c6052eab774e139fd59a03857fc47aa4866e35249f844",
+  "repository_review_baseline": "14d78c51a2ea18188d59312fedc3da00a3e5aff1",
+  "source_preserved_exactly": true,
+  "cpp_substitutions_for_archival": [],
+  "selected_engine": {
+    "version": {
+      "MajorVersion": 5,
+      "MinorVersion": 8,
+      "PatchVersion": 4,
+      "Changelist": 58902052,
+      "CompatibleChangelist": 55116800,
+      "IsLicenseeVersion": 0,
+      "IsPromotedBuild": 1,
+      "BranchName": "++UE5+Release-5.8"
+    },
+    "build_id": "55116800",
+    "installed_input_files": [
+      {
+        "file": "Engine/Build/Build.version",
+        "bytes": 215,
+        "sha256": "80a6af0f427f373b43a1c373082acf2b3de07305d215a67c27f18272e6dff24f"
+      },
+      {
+        "file": "Engine/Binaries/Win64/UnrealEditor.modules",
+        "bytes": 32290,
+        "sha256": "bbe466e4330f3fddea1120a9070a7402f5a9655404223f55c9e0d1d322568747"
+      },
+      {
+        "file": "Engine/Binaries/Win64/UnrealEditor.exe",
+        "bytes": 513464,
+        "sha256": "a423ab94410aa4f4cc34d99a2af75240c5d0e376a33d903a3e819fecf1177143"
+      },
+      {
+        "file": "Engine/Binaries/Win64/UnrealEditor-Core.dll",
+        "bytes": 22327224,
+        "sha256": "5839df1e7873cf51e37d5cef2184ea06dd07a5f37eb86fcd02a5ef0714cf3593"
+      },
+      {
+        "file": "Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.dll",
+        "bytes": 3214776,
+        "sha256": "926b6abd6352714226eb20ab152ac372f8dd957f62b7192a6b2298c15008eb45"
+      }
+    ],
+    "distributed_with_fixture": false
+  },
+  "historical_build": {
+    "status": "PASS_CLOSED_ENGINE_ONLY_CAPTURE_ADAPTER_BUILD_NO_RUNTIME_ADMISSION",
+    "target": "CapturePilotHostEditor",
+    "platform": "Win64",
+    "configuration": "Development",
+    "command_template_exact_except_engine_and_artifact_roots": [
+      "<ENGINE_ROOT>/Engine/Binaries/ThirdParty/DotNet/10.0/win-x64/dotnet.exe",
+      "<ENGINE_ROOT>/Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.dll",
+      "CapturePilotHostEditor",
+      "Win64",
+      "Development",
+      "-Project=<FRESH_ARTIFACT_ROOT>/project/CapturePilotHost.uproject",
+      "-NoEngineChanges",
+      "-NoHotReloadFromIDE",
+      "-NoUBA",
+      "-NoXGE",
+      "-NoFASTBuild",
+      "-NoSNDBS",
+      "-MaxParallelActions=2",
+      "-Compiler=VisualStudio2022",
+      "-CompilerVersion=14.44.35229",
+      "-WindowsSDKVersion=10.0.22621.0",
+      "-Log=<FRESH_ARTIFACT_ROOT>/Build/UBT.log",
+      "-XmlConfigCache=<FRESH_ARTIFACT_ROOT>/Build/DefaultXmlConfigCache.bin",
+      "-UBANoDetour",
+      "-UBADisableRemote",
+      "-nocache",
+      "-UBANoWrite",
+      "-UBANoRetry",
+      "-UBAMaxWorkers=2",
+      "-UBAStoreCapacityGb=2",
+      "-UBARootDir=<FRESH_ARTIFACT_ROOT>/private/UBA"
+    ],
+    "command_template_source": "Positive build output PLAN.json bound by hash; command() in receipt-bound run_build.py",
+    "stock_BuildPlugin_invoked": false,
+    "direct_UBT_substitution": true,
+    "wall_seconds": 44.31299999996554,
+    "resource_limits_from_original_plan": {
+      "seconds": 900,
+      "owned_RSS_and_private_bytes": 17179869184,
+      "host_physical_commit_reserve_bytes": 25769803776,
+      "actions": 2,
+      "full_CPU_count": 32
+    },
+    "template_is_not_a_native_launch_command": true
+  },
+  "historical_pixel_acceptance": {
+    "status": "ROOT_ACCEPT_CLOSED_CONTINUOUS_PIXEL_PTS_PIPELINE_PILOT_ONLY",
+    "scene_frames": 360,
+    "dropped_opportunities": 0,
+    "capture_duration_wall_seconds": 15,
+    "scheduled_opportunities_hz_not_game_fps": 24,
+    "max_actual_source_wall_gap_seconds": 0.07628510147333145,
+    "new_writer_interval_mean_ms": 26.66421455020706,
+    "new_max_copy_to_admission_ms": 37.49699890613556,
+    "host_total_seconds": 163.35900000005495,
+    "native_seconds": 65.73400000005495,
+    "owned_root_exit_code": 92,
+    "controlled_job_termination": true,
+    "remaining_owned_pids": [],
+    "FPS_capture_overhead_causality_HDR10bit_final_art_final_tour_qualified": false
+  },
+  "historical_evidence": [
+    {
+      "id": "accepted_source_rows",
+      "historical_file_name": "SOURCE_ROWS.json",
+      "bytes": 2018,
+      "sha256": "0ab1cc3f03e7d8720b47dc0caabca8d5923b68e514bf18da6f409be194614b89"
+    },
+    {
+      "id": "accepted_build_receipt",
+      "historical_file_name": "BUILD_RECEIPT.json",
+      "bytes": 11284,
+      "sha256": "79d9a09a17bcdbe0557bcfb4aad2f61b94a349cc9a36d823e3944b9a61af1877"
+    },
+    {
+      "id": "build_plan",
+      "historical_file_name": "PLAN.json",
+      "bytes": 3429,
+      "sha256": "03539ca0e88e641ace33eb3af8e30b84a4c388df234f09809ad61d4326294ba1"
+    },
+    {
+      "id": "root_build_review",
+      "historical_file_name": "CONTINUOUS003_BUILD_ROOT_REVIEW.json",
+      "bytes": 6044,
+      "sha256": "3a1060e17d06f55562f4a736b1904a3d6357a3f84ea8e8b06ff4747961387411"
+    },
+    {
+      "id": "root_full_pixel_review",
+      "historical_file_name": "CONTINUOUS003_ROOT_ACTUAL_PIXEL_REVIEW.json",
+      "bytes": 2692,
+      "sha256": "6c5df78fcbb25a3f04ddbd48c2d9667507f73e3746f6eea8b24747bb9535445f"
+    }
+  ],
+  "historical_main_pair_and_6008_assets_not_distributed": true,
+  "scope": "Exact source preservation and rebuild input; historical pilot recording throughput only. No transfer of runtime qualification to current HEAD or future configurable derivative.",
+  "archive_base_commit": "c62c75e071e2d76fdb2b01a0ad258c8818d99ce3"
+}

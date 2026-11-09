@@ -1,0 +1,17 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.8",
+  "Modules": [
+    {
+      "Name": "CapturePilotHost",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "LivingTownCapturePilot",
+      "Enabled": true
+    }
+  ]
+}
