@@ -1,0 +1,64 @@
+{
+  "schema": "living_town.capture_fixture_source_manifest.v1",
+  "fixture_id": "continuous_capture_v003",
+  "source_root": "HostProject",
+  "source_file_count": 10,
+  "source_total_bytes": 84826,
+  "source_family_sha256": "b1150cc9e6c1e7a9363c6052eab774e139fd59a03857fc47aa4866e35249f844",
+  "source_family_digest": "SHA-256 of UTF-8 json.dumps(files, sort_keys=True, separators=(comma, colon)); files in ordinal relative-path sort order",
+  "files": [
+    {
+      "file": "CapturePilotHost.uproject",
+      "bytes": 287,
+      "sha256": "9a905748503142fad18e321cedab71f3a78628953d7b4c9940b285a784c79331"
+    },
+    {
+      "file": "Plugins/LivingTownCapturePilot/LivingTownCapturePilot.uplugin",
+      "bytes": 335,
+      "sha256": "81be77f6ef5786b354785f0314c9b0484f3494b7d12c7dde2de6d157b3fd1081"
+    },
+    {
+      "file": "Plugins/LivingTownCapturePilot/Source/LivingTownCapturePilot/LivingTownCapturePilot.Build.cs",
+      "bytes": 458,
+      "sha256": "5f986b82ce886506c0fad095714eaedb8402e01d7c22b380db8986c4f5251037"
+    },
+    {
+      "file": "Plugins/LivingTownCapturePilot/Source/LivingTownCapturePilot/Private/LivingTownCapturePilotLibrary.cpp",
+      "bytes": 18254,
+      "sha256": "7fe0a9bfe485d5c10dc1ca11102e9c68b2d8bb955ca7dd802a427407b0daeb2d"
+    },
+    {
+      "file": "Plugins/LivingTownCapturePilot/Source/LivingTownCapturePilot/Private/LivingTownContinuousCapture.cpp",
+      "bytes": 42169,
+      "sha256": "cce43abc5d0af7c7f5bc4df8f3272d907d58f12d5856bd7bcdb70affe12ef642"
+    },
+    {
+      "file": "Plugins/LivingTownCapturePilot/Source/LivingTownCapturePilot/Private/LivingTownDirectReadback.cpp",
+      "bytes": 20421,
+      "sha256": "d257d7ced6e090729b55482442faabae0e6448afeac8a026157c5c39864ada22"
+    },
+    {
+      "file": "Plugins/LivingTownCapturePilot/Source/LivingTownCapturePilot/Public/LivingTownCapturePilotLibrary.h",
+      "bytes": 2166,
+      "sha256": "54709b48f5b4953a9b9519b6d53bdcf4bb80f9bec3e0e85cd0ea1effadff7c00"
+    },
+    {
+      "file": "Source/CapturePilotHost/CapturePilotHost.Build.cs",
+      "bytes": 262,
+      "sha256": "3b3c639bc0eeca0e83f3340cf47ad5992f3ad608cccb01793ed63f163eee301f"
+    },
+    {
+      "file": "Source/CapturePilotHost/Private/CapturePilotHost.cpp",
+      "bytes": 128,
+      "sha256": "77af83f3f97b4a468b9bf334be73135fe13aa161cb33b1031e39e1cf034175af"
+    },
+    {
+      "file": "Source/CapturePilotHostEditor.Target.cs",
+      "bytes": 346,
+      "sha256": "d0aedabe16e2728eca5dc4ee183f40f0fc322781f5fb984ca60cc92e31f50e66"
+    }
+  ],
+  "require_exact_file_set": true,
+  "allow_symlinks_or_reparse_points": false,
+  "default_action": "verify_bytes_only_no_compiler_or_native_launch"
+}
