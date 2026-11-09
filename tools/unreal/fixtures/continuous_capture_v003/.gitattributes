@@ -1,4 +1,4 @@
-HostProject/** -text
+HostProject/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 *.json text eol=lf
 *.md text eol=lf
 *.py text eol=lf
