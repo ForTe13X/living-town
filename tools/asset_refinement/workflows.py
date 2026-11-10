@@ -342,12 +342,52 @@ def _ultra(original: dict, staged_mesh: str, staged_reference: str, atlas_valida
     return graph
 
 
-def build_variants(output_dir, mesh_path, reference_path, sheet_path, *, atlas_validated=False) -> dict:
+def _usage_policy(graphs: dict, purpose: str) -> dict:
+    """Separate declared model-use eligibility from execution and distribution."""
+    if not isinstance(purpose, str) or purpose not in {"unspecified", "noncommercial-research"}:
+        raise ValueError("Unsupported usage purpose")
+    research = purpose == "noncommercial-research"
+    policy = {"purpose": purpose, "research_declared": research,
+              "model_use": "ELIGIBLE_FOR_DECLARED_NC_RESEARCH" if research else "PURPOSE_NOT_DECLARED",
+              "model_use_scope": ["FLUX.2 Klein base 9B", "Qwen-Image 2.1"],
+              "other_component_terms": "SEPARATE_REVIEW_REQUIRED",
+              "runtime": {"permitted": False, "status": "BACKEND_AND_DEPENDENCIES_UNQUALIFIED"},
+              "redistribution": {"workflow_code": "MIT_NOTICES_RETAINED",
+                                 "weights": "SEPARATE_TERMS_REVIEW_REQUIRED",
+                                 "outputs": "REVIEW_INPUT_AND_MODEL_OUTPUT_TERMS"}}
+    if research:
+        replacements = {
+            "Qwen-Image 2.1 research weights are blocked.":
+                "Qwen-Image 2.1 is eligible for declared noncommercial research; runtime remains unqualified.",
+            "The default FLUX.2 Klein base 9B model is blocked for the project's license-free asset route.":
+                "FLUX.2 Klein base 9B is eligible for declared noncommercial research; matching checkpoints and runtime remain unqualified.",
+            "FLUX.2 Klein base 9B noncommercial gate remains blocked.":
+                "FLUX.2 Klein base 9B research use is eligible; runtime and redistribution remain separately gated.",
+        }
+        for graph in graphs.values():
+            meta = graph.setdefault("extra", {}).setdefault("living_town_refinement", {})
+            meta["usage_purpose"] = purpose
+            meta["execution_permitted"] = False
+            for old, new in replacements.items():
+                if isinstance(meta.get("license_notice"), str):
+                    meta["license_notice"] = meta["license_notice"].replace(old, new)
+                for node in graph["nodes"]:
+                    if node["type"] == "MarkdownNote" and node.get("widgets_values"):
+                        text = node["widgets_values"][0]
+                        if isinstance(text, str):
+                            _set_widget(node, "text", 0, text.replace(old, new))
+    return policy
+
+
+def build_variants(output_dir, mesh_path, reference_path, sheet_path, *, atlas_validated=False,
+                   usage_purpose="unspecified") -> dict:
     """Write three review-only layouts and a source-bound manifest to a new folder.
 
     Four owned PNGs named front/left/back/right.png must accompany the sheet.
     ``atlas_validated`` is a caller-supplied acceptance result, not a UV audit
     performed by this adapter. It must come from the separate atlas contract.
+    ``usage_purpose`` declares eligibility for the selected model-use terms;
+    it never enables inference or clears redistribution of model weights.
     """
     if not isinstance(atlas_validated, bool):
         raise ValueError("atlas_validated must be a boolean acceptance result")
@@ -388,6 +428,8 @@ def build_variants(output_dir, mesh_path, reference_path, sheet_path, *, atlas_v
             ultra_original, staged_mesh, staged_reference, atlas_validated
         ),
     }
+    usage_policy = _usage_policy(graphs, usage_purpose)
+    research = usage_policy["research_declared"]
     for name, graph in graphs.items():
         project = "PixelArtistry-UltraTex" if name.startswith("ultratex") else "PixelArtistry-Pixal3D-MultiView"
         # Keep the copyright and full MIT notice inside each derivative too, so
@@ -399,6 +441,7 @@ def build_variants(output_dir, mesh_path, reference_path, sheet_path, *, atlas_v
     manifest = {
         "schema": "living-town.asset-refinement-workflows.v1",
         "status": "OFFLINE_LAYOUTS_READY_INFERENCE_NOT_RUN",
+        "usage_policy": usage_policy,
         "default_workflow": "multiview_owned_views.json",
         "execution": {"permitted": False, "performed": False,
                       "installs": False, "downloads_models": False,
@@ -431,7 +474,9 @@ def build_variants(output_dir, mesh_path, reference_path, sheet_path, *, atlas_v
         "parameters": {
             "ultratex": {"views": 6, "sampler_resolution": 1024, "sampler_steps": 25,
                          "paired_albedo_mr_seed": 12345, "bake_texture_size": 2048,
-                         "text_prompt": "", "model_variant": "9B-specific; blocked"},
+                         "text_prompt": "",
+                         "model_variant": ("9B-specific; research-eligible, runtime unqualified"
+                                           if research else "9B-specific; blocked")},
             "multiview": {"view_order": list(VIEW_ORDER), "conditioning_fov": 20,
                           "research_edit_resolution": [4096, 1024], "research_edit_steps": 25,
                           "research_prompt_enhancement": False,
@@ -439,12 +484,16 @@ def build_variants(output_dir, mesh_path, reference_path, sheet_path, *, atlas_v
         },
         "gates": {
             "workflow_source": {"status": "MIT", "scope": "Only the four vendored source files; preserve both license notices."},
-            "ultratex_9b": {"status": "BLOCKED_NONCOMMERCIAL", "model": "FLUX.2 Klein base 9B",
+            "ultratex_9b": {"status": ("RESEARCH_ELIGIBLE_RUNTIME_UNQUALIFIED"
+                                      if research else "BLOCKED_NONCOMMERCIAL"),
+                            "model": "FLUX.2 Klein base 9B",
                             "note": "Separate base-weight terms; matching UltraTex LoRA is 9B-specific. No 4B compatibility claim."},
-            "qwen_research": {"status": "BLOCKED_RESEARCH_LICENSE", "model": "Qwen-Image 2.1"},
+            "qwen_research": {"status": ("RESEARCH_ELIGIBLE_RUNTIME_UNQUALIFIED"
+                                        if research else "BLOCKED_RESEARCH_LICENSE"),
+                              "model": "Qwen-Image 2.1"},
             "owned_multiview": {"status": "MANUAL_REVIEW_REQUIRED",
                                 "pixal3d_weight_license": "MIT; does not clear the whole pipeline",
-                                "pending": ["DINOv3 weight license eligibility", "Every required node and dependency license", "AMD 8060S backend compatibility and resource test", "Generated mesh and PBR quality review"],
+                                "pending": ["Exact DINOv3/repackaged encoder agreement and research acknowledgment", "Every required node and dependency license", "AMD 8060S backend compatibility and resource test", "Generated mesh and PBR quality review"],
                                 "avoided": ["Qwen generation weights", "Prompt enhancer weights", "Background removal weights"],
                                 "note": "No inference or performance claim; owned RGBA views go directly to the original conditioning node."}
         },
@@ -470,9 +519,11 @@ def main(argv=None) -> int:
     parser.add_argument("--sheet", required=True, type=Path)
     parser.add_argument("--atlas-validated", action="store_true",
                         help="Only after a separate audit accepts the exact input's unique 0..1 atlas")
+    parser.add_argument("--usage-purpose", choices=("unspecified", "noncommercial-research"),
+                        default="unspecified", help="Declares model-use scope; never permits inference or weight redistribution")
     args = parser.parse_args(argv)
     record = build_variants(args.output, args.mesh, args.reference, args.sheet,
-                            atlas_validated=args.atlas_validated)
+                            atlas_validated=args.atlas_validated, usage_purpose=args.usage_purpose)
     print(json.dumps({"status": record["status"], "output": str(args.output),
                       "execution_performed": False}, indent=2))
     return 0
