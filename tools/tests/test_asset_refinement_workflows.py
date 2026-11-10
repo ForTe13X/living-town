@@ -166,6 +166,83 @@ class AssetWorkflowTests(unittest.TestCase):
         self.assertEqual(record["gates"]["qwen_research"]["status"], "BLOCKED_RESEARCH_LICENSE")
         self.assertEqual(record["gates"]["owned_multiview"]["status"], "MANUAL_REVIEW_REQUIRED")
 
+    def test_research_purpose_separates_model_use_from_execution_and_redistribution(self):
+        with patch.object(socket, "create_connection", side_effect=AssertionError("network")), \
+                patch.object(subprocess, "Popen", side_effect=AssertionError("execution")):
+            record = self.build(usage_purpose="noncommercial-research")
+        policy = record["usage_policy"]
+        self.assertTrue(policy["research_declared"])
+        self.assertEqual(policy["model_use"], "ELIGIBLE_FOR_DECLARED_NC_RESEARCH")
+        self.assertEqual(policy["model_use_scope"], ["FLUX.2 Klein base 9B", "Qwen-Image 2.1"])
+        self.assertEqual(policy["other_component_terms"], "SEPARATE_REVIEW_REQUIRED")
+        self.assertFalse(policy["runtime"]["permitted"])
+        self.assertEqual(policy["runtime"]["status"], "BACKEND_AND_DEPENDENCIES_UNQUALIFIED")
+        self.assertEqual(policy["redistribution"]["weights"], "SEPARATE_TERMS_REVIEW_REQUIRED")
+        self.assertEqual(policy["redistribution"]["outputs"], "REVIEW_INPUT_AND_MODEL_OUTPUT_TERMS")
+        for gate in ("ultratex_9b", "qwen_research"):
+            self.assertEqual(record["gates"][gate]["status"], "RESEARCH_ELIGIBLE_RUNTIME_UNQUALIFIED")
+        self.assertEqual(record["gates"]["owned_multiview"]["status"], "MANUAL_REVIEW_REQUIRED")
+        for flag in ("permitted", "performed", "installs", "downloads_models", "queues_comfyui", "runtime_tested"):
+            self.assertFalse(record["execution"][flag])
+        self.assertFalse(record["uv"]["atlas_validated_by_caller"])
+        self.assertEqual(record["uv"]["ultratex_mode"], "comfy_gpu")
+
+    def test_usage_purpose_changes_only_policy_notes_and_metadata_in_graphs(self):
+        default = self.build()
+        originals = {name: self.load(name) for name in default["workflows"]}
+        self.assertEqual(default["usage_policy"]["model_use"], "PURPOSE_NOT_DECLARED")
+        self.output = self.base / "research review"
+        record = self.build(usage_purpose="noncommercial-research")
+        for name, original in originals.items():
+            graph = self.load(name)
+            self.assertEqual(graph["links"], original["links"])
+            self.assertEqual(graph.get("definitions"), original.get("definitions"))
+            self.assertEqual(len(graph["nodes"]), len(original["nodes"]))
+            for before, after in zip(original["nodes"], graph["nodes"]):
+                if before["type"] == "MarkdownNote":
+                    if "widgets_values_named" in after:
+                        self.assertEqual(after["widgets_values"][0], after["widgets_values_named"]["text"])
+                    before.pop("widgets_values", None)
+                    after.pop("widgets_values", None)
+                    before.pop("widgets_values_named", None)
+                    after.pop("widgets_values_named", None)
+                self.assertEqual(before, after)
+            meta = graph["extra"]["living_town_refinement"]
+            self.assertEqual(meta["usage_purpose"], "noncommercial-research")
+            self.assertFalse(meta["execution_permitted"])
+            self.assertIn("MIT License", meta["workflow_source_license_notice"])
+            self.assertEqual(record["workflows"][name]["sha256"], adapter.sha256(self.output / name))
+        ultra = self.load("ultratex_standard_9b_BLOCKED.json")
+        text = json.dumps(ultra)
+        self.assertIn("eligible for declared noncommercial research", text)
+        self.assertNotIn("blocked for the project's license-free asset route", text)
+        self.assertEqual(adapter._nodes(ultra)[14]["widgets_values"][3], "comfy_gpu")
+
+    def test_research_policy_notes_agree_in_both_widget_encodings(self):
+        self.build(usage_purpose="noncommercial-research")
+        for name in ("multiview_owned_views.json", "multiview_qwen_research_BLOCKED.json"):
+            with self.subTest(workflow=name):
+                graph = self.load(name)
+                note = adapter._nodes(graph)[502]
+                self.assertEqual(note["widgets_values"][0], note["widgets_values_named"]["text"])
+                self.assertIn("eligible for declared noncommercial research", note["widgets_values"][0])
+                self.assertNotIn("Qwen-Image 2.1 research weights are blocked.", json.dumps(graph))
+
+    def test_research_with_accepted_atlas_still_cannot_run_or_redistribute_weights(self):
+        record = self.build(usage_purpose="noncommercial-research", atlas_validated=True)
+        graph = self.load("ultratex_standard_9b_BLOCKED.json")
+        self.assertEqual(adapter._nodes(graph)[14]["widgets_values"][3], "keep_existing")
+        self.assertTrue(record["uv"]["atlas_validated_by_caller"])
+        self.assertFalse(record["execution"]["permitted"])
+        self.assertEqual(record["usage_policy"]["redistribution"]["weights"],
+                         "SEPARATE_TERMS_REVIEW_REQUIRED")
+
+    def test_invalid_usage_purpose_fails_before_output_creation(self):
+        for purpose in ("commercial", None, []):
+            with self.subTest(purpose=purpose), self.assertRaisesRegex(ValueError, "Unsupported usage purpose"):
+                self.build(usage_purpose=purpose)
+            self.assertFalse(self.output.exists())
+
     def test_every_graph_and_source_is_bound_and_integrity_passes(self):
         before = {path: adapter.sha256(adapter.VENDOR / path) for path in adapter.PINNED_FILES}
         record = self.build()
@@ -245,6 +322,19 @@ class AssetWorkflowTests(unittest.TestCase):
             ])
         self.assertEqual(result, 0)
         self.assertIn('"execution_performed": false', printed.call_args.args[0])
+
+    def test_cli_declares_noncommercial_research_without_enabling_execution(self):
+        with patch("builtins.print"):
+            result = adapter.main([
+                "--output", str(self.output), "--mesh", str(self.mesh),
+                "--reference", str(self.reference), "--sheet", str(self.sheet),
+                "--usage-purpose", "noncommercial-research"
+            ])
+        self.assertEqual(result, 0)
+        record = self.load("workflow_manifest.json")
+        self.assertEqual(record["usage_policy"]["purpose"], "noncommercial-research")
+        self.assertFalse(record["execution"]["performed"])
+        self.assertFalse(record["execution"]["permitted"])
 
 
 if __name__ == "__main__":
