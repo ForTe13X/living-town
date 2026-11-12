@@ -41,6 +41,8 @@ jobs:
       - uses: ./.github/actions/lt-setup
       - name: In-game capture safety
         run: python3 tools/in_game_capture/test_capture_safety.py
+      - name: Ordinary Unreal input timing and cleanup
+        run: python3 -B tools/unreal/test_ordinary_input.py
       - name: Archived Unreal capture source identity
         run: |
           python3 -B tools/unreal/stage_capture_fixture.py --fixture continuous_capture_v003

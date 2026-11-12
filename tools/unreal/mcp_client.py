@@ -1,6 +1,6 @@
 """Discovery only; toolset dispatch/import calls deliberately absent."""
 from common import *
-import urllib.request,urllib.error,re,time,socket
+import urllib.request,urllib.error,re,time,socket,math
 def free_port(port):
  need(isinstance(port,int)and not isinstance(port,bool)and 1<=port<=65535,'Valid explicit loopback port required')
  with socket.socket()as s:s.setsockopt(socket.SOL_SOCKET,socket.SO_EXCLUSIVEADDRUSE,1);s.bind(('127.0.0.1',port))
@@ -29,8 +29,11 @@ class Client:
  def __init__(self,output,supervise,url):
   from urllib.parse import urlsplit
   endpoint=urlsplit(url);need(endpoint.scheme=='http'and endpoint.hostname=='127.0.0.1'and endpoint.port is not None and endpoint.path=='/mcp'and not endpoint.query and not endpoint.fragment and endpoint.username is None and endpoint.password is None,'Explicit loopback /mcp endpoint required')
-  self.output=output;self.supervise=supervise;self.url=url;self.session=None;self.seq=0;self.protocol='2025-11-25';self.tools={};self.toolsets={};self.history=[]
- def request(self,method,params=None,notification=False):
+  self.output=output;self.supervise=supervise;self.url=url;self.session=None;self.seq=0;self.protocol='2025-11-25';self.tools={};self.toolsets={};self.history=[];self.defer_history_persistence=False
+ def flush_history(self):write(self.output/'HTTP_TRANSCRIPT.json',self.history)
+ def request(self,method,params=None,notification=False,request_timeout=15):
+  need(type(request_timeout)in(int,float)and math.isfinite(request_timeout)and 0<request_timeout<=15,'Finite request timeout within existing15s maximum')
+  deadline=time.monotonic()+request_timeout
   self.supervise();self.seq+=1;value={'jsonrpc':'2.0','method':method}
   if not notification:value['id']=self.seq
   if params is not None:value['params']=params
@@ -38,9 +41,12 @@ class Client:
   if self.session:headers['Mcp-Session-Id']=self.session
   start=time.monotonic()
   try:
-   with urllib.request.urlopen(urllib.request.Request(self.url,data=json.dumps(value).encode(),headers=headers),timeout=15)as response:
+   request=urllib.request.Request(self.url,data=json.dumps(value).encode(),headers=headers)
+   remaining=min(request_timeout,deadline-time.monotonic());need(remaining>0,'Request deadline exhausted before transport')
+   with urllib.request.urlopen(request,timeout=remaining)as response:
     data=response.read(32*1024*1024+1);need(len(data)<=32*1024*1024,'Finite MCP response exceeded32MiB');answer=decode_body(data,response.headers.get('Content-Type',''));new_session=response.headers.get('Mcp-Session-Id');status=response.status
-   self.history.append({'request':value,'response':answer,'http_status':status,'seconds':time.monotonic()-start,'session_header_present':bool(new_session or self.session)});write(self.output/'HTTP_TRANSCRIPT.json',self.history)
+   self.history.append({'request':value,'response':answer,'http_status':status,'seconds':time.monotonic()-start,'session_header_present':bool(new_session or self.session)})
+   if not self.defer_history_persistence:self.flush_history()
    if new_session:self.session=new_session
    if notification:need(status in[200,202,204],'Notification refused');return answer
    need(isinstance(answer,dict)and answer.get('id')==value['id']and'error'not in answer and'result'in answer,'MCP JSONRPC request refused/mismatched');return answer['result']
